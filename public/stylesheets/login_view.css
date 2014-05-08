@@ -1,0 +1,74 @@
+/*
+Set
+*/
+body{
+  height:100%;
+  position:relative;
+  font-family:sans-serif;
+  background-color:rgba(91, 91, 91, 0.67);
+  color:#4d4d4d;
+}
+
+.content{
+  width:1000px;
+  height:100vh;
+  margin:-10px auto;
+  background-color:#ffffff;
+}
+
+.banner{
+  width:inherit;
+  height:175px;
+  background:url('../resources/images/sentinel_web_banner_3.png')
+}
+
+#login-module{
+  width:320px;
+  height:180px;
+  margin:0 auto;
+  margin-top:5%;
+  border:solid #294873;/*219fe9 - alternate color*/
+  border-radius:5px;
+  text-align:center; /*centers children*/
+}
+
+label.title{
+  display:block;
+  margin:10px auto;
+  text-align:center;
+  font-weight:bold;
+  font-size:1.6em;
+}
+
+label.login{
+  width:90px;
+  display:inline-block;
+  margin:10px 0 0 0;
+  font-size:1em;
+  font-weight:bold;
+}
+
+input.login{
+  width:180px;
+  font-family:sans-serif;
+  font-size:1em;
+  color:#4d4d4d;
+}
+
+#login-submit{
+  width:100px;
+  height:30px;
+  margin-top:15px;
+  background-color:#294873;
+  border:none;
+  border-radius:5px;
+  font-family:sans-serif;
+  font-size:1.1em;
+  font-weight:bold;
+  color:#ffffff;
+}
+
+#login-submit:hover,
+#login-submit:focus{
+  background-color:#142539;/*1e8abf - alternate color*/
+}

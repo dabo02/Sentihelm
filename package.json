@@ -1,0 +1,14 @@
+{
+  "name": "sentinel",
+  "description": "Sentinel dashboard service; part of ¡Basta Ya! crime prevention suite.",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies" : {
+    "opentok" : "~1.0.x",
+    "express" : "~4.1.1",
+    "body-parser" : "~1.0.2",
+    "socket.io" : "~0.9.16",
+    "mime" : "~1.2.7",
+    "kaiseki" : "~0.5.4"
+  }
+}
