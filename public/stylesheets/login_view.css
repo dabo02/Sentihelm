@@ -19,7 +19,7 @@ body{
 .banner{
   width:inherit;
   height:175px;
-  background:url('../resources/images/sentinel_web_banner_3.png')
+  background:url('../resources/images/sentinel_web_banner_3.png');
 }
 
 #login-module{
