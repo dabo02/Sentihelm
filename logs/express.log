@@ -1,0 +1,5 @@
+127.0.0.1 - - [Fri, 09 May 2014 19:07:56 GMT] "GET / HTTP/1.1" 304 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+127.0.0.1 - - [Fri, 09 May 2014 19:07:56 GMT] "GET /stylesheets/login_view.css HTTP/1.1" 304 - "http://localhost:8080/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+127.0.0.1 - - [Fri, 09 May 2014 19:07:56 GMT] "GET /resources/images/sentinel_web_banner_5.png HTTP/1.1" 304 - "http://localhost:8080/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+127.0.0.1 - - [Fri, 09 May 2014 19:10:05 GMT] "POST /login HTTP/1.1" - - "http://localhost:8080/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
+127.0.0.1 - - [Fri, 09 May 2014 19:12:05 GMT] "POST /login HTTP/1.1" - - "http://localhost:8080/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36"
