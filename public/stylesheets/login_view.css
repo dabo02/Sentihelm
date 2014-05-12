@@ -1,12 +1,10 @@
-/*
-Set
-*/
 body{
   height:100%;
   position:relative;
   font-family:sans-serif;
   background-color:rgba(91, 91, 91, 0.67);
   color:#4d4d4d;
+  text-align:center; /*centers children*/
 }
 
 .content{
@@ -23,13 +21,13 @@ body{
 }
 
 #login-module{
-  width:320px;
+  width:350px;
   height:180px;
   margin:0 auto;
   margin-top:5%;
-  border:solid #294873;/*219fe9 - alternate color*/
+  border:solid #294873;
   border-radius:5px;
-  text-align:center; /*centers children*/
+
 }
 
 label.title{
@@ -70,5 +68,25 @@ input.login{
 
 #login-submit:hover,
 #login-submit:focus{
-  background-color:#142539;/*1e8abf - alternate color*/
+  background-color:#142539;
+}
+
+/*
+*===================
+*ERROR STYLES
+*===================
+*/
+
+input.error{
+  border:1px solid red;
+}
+
+#error-dialog{
+  display:inline-block;
+  padding:10px;
+  margin:10px auto;
+  border:2px solid red;
+  border-radius:5px;
+  text-align:center;
+  color:red;
 }

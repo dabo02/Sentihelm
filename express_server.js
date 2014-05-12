@@ -18,7 +18,7 @@ Parse.initialize(APP_ID, JS_KEY);
 *  to by the 'morgan' logger - so as to
 *  not write to the terminal. Set the
 *  flag of the file to 'a' for appending
-*  (not override).
+*  (non-overriding).
 */
 var fs = require('fs');
 var logFile = fs.createWriteStream('./logs/express.log', {flag:'a'});
@@ -34,7 +34,7 @@ var logFile = fs.createWriteStream('./logs/express.log', {flag:'a'});
 *  Attach a bodyParser in order to handle json and urlencoded
 *  bodies.
 *
-*  Add the static middleware, which allow express to serve up
+*  Add the static middleware, which allows express to serve up
 *  static content in the specified directory (for CSS/JS).
 */
 var app = express();
@@ -60,7 +60,7 @@ app.post('/login', function(request, response){
       console.log("Succesfuly logged in: "+user.get('firstName')+" "+user.get('lastName'));
     },
     error: function(user, error) {
-      console.log("ERROR: "+error);
+      console.log("Error "+error.code+": "+error.message);
     }
   });
 });
@@ -75,6 +75,6 @@ app.get('/video_stream', function(request, response){
 *
 *  (alternative: process.env.PORT, instead of hard-coded port)
 */
-app.listen(8080, function(){
-  console.log("Server is now listening on port 8080.");
+app.listen(3000, function(){
+  console.log("Server is now listening on port 3000.");
 });
