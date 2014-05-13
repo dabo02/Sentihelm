@@ -12,7 +12,7 @@ $(document).ready(function(){
   $("#login-form").submit('click', function(event){
 
     //Clear past error marks/messages
-    $("#username").removeClass("error");
+    $("#username").removeClass("error"); //TRY: $(".error").removeClass("error");
     $("#password").removeClass("error");
     $("#error-dialog").hide();
 
@@ -24,20 +24,37 @@ $(document).ready(function(){
     if(!$("#username").val()){
       errorMessage = "Username field is empty"
       $("#username").addClass("error");
+      $("#username").focus();
       $("#error-dialog").text(errorMessage);
       $("#error-dialog").show();
     }
     else if(!$("#password").val()){
       errorMessage = "Password field is empty"
       $("#password").addClass("error");
+      $("#password").focus();
       $("#error-dialog").text(errorMessage);
       $("#error-dialog").show();
     }
     else{
-      //No error detected; submit form
+
+      // var data={};
+      // data.username=$("#username").text();
+      // data.password=$("#password").text();
+      //
+      // $.ajax({
+      //   url: 'http://localhost/login',
+      //   type:'POST',
+      //   data: JSON.stringify(data),
+      //   contentType:'text/json',
+      // });
+      // $.done(function (data){
+      //
+      // });
+      // $.fail(function(error){
+      //   $("#error-dialog").text(error.message);
+      //   $("#error-dialog").show();
+      // });
       document.getElementById("login-form").submit();
     }
   });
-
-
 });

@@ -4,6 +4,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
+var fs = require('fs');
 var Parse = require('parse').Parse;
 
 /*
@@ -14,13 +15,8 @@ var JS_KEY="0Q5ibbPcsYPyOfuslRGwKWvE6YDKiBmX23yjnqQy";
 Parse.initialize(APP_ID, JS_KEY);
 
 /*
-*  Create a log file that'll be written
-*  to by the 'morgan' logger - so as to
-*  not write to the terminal. Set the
-*  flag of the file to 'a' for appending
-*  (non-overriding).
+*  Create an appending log file (no overriding).
 */
-var fs = require('fs');
 var logFile = fs.createWriteStream('./logs/express.log', {flag:'a'});
 
 /*
@@ -43,24 +39,25 @@ app.use(bodyParser());
 app.use(express.static(__dirname + '/public'));
 
 /*
-*  Set up routing.
+*=========================================
+*  SET UP ROUTING
+*=========================================
 */
-
-    //Landing/login page
-app.get('/', function(request, response){
-  response.sendfile(__dirname+'/public/index.html');
-});
-
     //Login handler
 app.post('/login', function(request, response){
+  //TODO Sanitize user input
   var username = request.body.username;
   var password = request.body.password;
   Parse.User.logIn(username, password, {
     success: function(user) {
-      console.log("Succesfuly logged in: "+user.get('firstName')+" "+user.get('lastName'));
+      var firstName = user.get('firstName');
+      var lastName = user.get('lastName');
+      console.log("Succesfuly logged in: "+firstName+" "+lastName);
+      response.sendfile(__dirname+'/public/browser_demo.html');
     },
     error: function(user, error) {
       console.log("Error "+error.code+": "+error.message);
+      var errorMessage = "Invalid login parameters";
     }
   });
 });
@@ -70,11 +67,24 @@ app.get('/video_stream', function(request, response){
   response.sendfile(__dirname+'/public/browser_demo.html');
 });
 
+    //Landing/login page
+app.get('/', function(request, response){
+  response.sendfile(__dirname+'/public/index.html');
+});
+
+    //Base-case where page was not found, send 404 error
+app.get('*', function(request, response){
+  response.send(404,"Error 404: Not Found");
+});
+/*
+*=========================================
+*/
+
 /*
 *  Start the server by listening in on specified port.
 *
 *  (alternative: process.env.PORT, instead of hard-coded port)
 */
-app.listen(3000, function(){
-  console.log("Server is now listening on port 3000.");
+app.listen((process.env.PORT || 80), function(){
+  console.log("Server is now listening on port 80.");
 });
