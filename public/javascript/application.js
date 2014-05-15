@@ -9,15 +9,13 @@ $(document).ready(function(){
   *  When the login button is clicked,
   *  check for valid inputs.
   */
-  $("#login-form").submit('click', function(event){
+  $("#login-form").on('click', 'button', function(event){
 
-    //Clear past error marks/messages
-    $("#username").removeClass("error"); //TRY: $(".error").removeClass("error");
-    $("#password").removeClass("error");
+    //Clear past error marks and messages
+    $(".error").removeClass("error");
     $("#error-dialog").hide();
 
-    //Create an error message, prevent from from submitting
-    //and check to see if inputs are valid
+    //If user input is invalid, throw error message
     //(right now, only checking if values are null/empty)
     var errorMessage;
     event.preventDefault(); //Prevent form from submitting
@@ -35,11 +33,11 @@ $(document).ready(function(){
       $("#error-dialog").text(errorMessage);
       $("#error-dialog").show();
     }
-    else{
+    else{ //Input is valid, proceed with login
 
       // var data={};
-      // data.username=$("#username").text();
-      // data.password=$("#password").text();
+      // data.username=$("#username").val();
+      // data.password=$("#password").val();
       //
       // $.ajax({
       //   url: 'http://localhost/login',
@@ -56,5 +54,14 @@ $(document).ready(function(){
       // });
       document.getElementById("login-form").submit();
     }
+  });
+
+  /*
+  *  When errors trigger due to null inputs,
+  *  remove errors once user starts typing.
+  */
+  $(".login").on('keydown', function(){ //TODO Should filter by "input[type='text']""
+    $(this).removeClass("error");
+    $("#error-dialog").hide();
   });
 });
