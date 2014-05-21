@@ -34,24 +34,21 @@ $(document).ready(function(){
       $("#error-dialog").show();
     }
     else{ //Input is valid, proceed with login
-
-      // var data={};
-      // data.username=$("#username").val();
-      // data.password=$("#password").val();
-      //
-      // $.ajax({
-      //   url: 'http://localhost/login',
-      //   type:'POST',
-      //   data: JSON.stringify(data),
-      //   contentType:'text/json',
-      // });
-      // $.done(function (data){
-      //
-      // });
-      // $.fail(function(error){
-      //   $("#error-dialog").text(error.message);
-      //   $("#error-dialog").show();
-      // });
+      var data = {};
+      data.username=$("#username").val();
+      data.password=$("#password").val();
+      $.ajax({
+        type: "POST",
+        url: "/login",
+        data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json"
+      }).done(function( data ) {
+        //TODO
+      }).fail(function(error){
+        $("#error-dialog").text(error.message);
+        $("#error-dialog").show();
+      });
       document.getElementById("login-form").submit();
     }
   });
@@ -61,7 +58,7 @@ $(document).ready(function(){
   *  remove errors once user starts typing.
   */
   $(".login").on('keydown', function(){ //TODO Should filter by "input[type='text']""
-    $(this).removeClass("error");
-    $("#error-dialog").hide();
-  });
+  $(this).removeClass("error");
+  $("#error-dialog").hide();
+});
 });
