@@ -13,8 +13,9 @@ to the repo's root directory and run the following
 command:
 
 ```
-node server.js
+sudo node server.js
 ```
+**You need root permissions.**
 
 Note that this assumes you haven't moved/renamed the
 ```server.js``` file.
