@@ -1,4 +1,4 @@
-Sentinel Crime Management and Prevention Dashboard
+###Sentinel Crime Management and Prevention Dashboard###
 ==================================================
 Sentinel is the server side component of the ¡Basta Ya!
 crime management system.
@@ -17,7 +17,7 @@ node server.js
 ```
 
 Note that this assumes you haven't moved/renamed the
-```express_server.js``` file.
+```server.js``` file.
 
 Node.js Routing
 ---------------
@@ -55,8 +55,6 @@ app.post('/login', function(request, response){
 The paths aren't actual files/directories: they act much like
 different pages in any other server environment, or actions
 in html forms.
-
-
 
 [1]:http://nodejs.org
 [2]:http://jquery.com
