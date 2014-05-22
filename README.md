@@ -1,4 +1,5 @@
-###Sentinel Crime Management and Prevention Dashboard###
+Sentinel Crime Management and Prevention Dashboard
+==================================================
 Sentinel is the server side component of the ¡Basta Ya!
 crime management system.
 
