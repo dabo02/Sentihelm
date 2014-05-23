@@ -17,6 +17,8 @@ var io = require('socket.io').listen(socketServer);
 //Others
 var net = require('net');
 var Parse = require('parse').Parse;
+var OpenTok = require('opentok');
+var MobileClient = require('./lib/mobileclient');
 /*
 *=========================================
 */
@@ -58,6 +60,16 @@ var app = express();
 app.use(morgan({format:'default', stream:logFile}));
 app.use(bodyParser());
 app.use(express.static(__dirname + '/public'));
+
+/*
+*  Set OpenTok key and secret. Create a new opentok object,
+*  which is used to manage sessions and tokens.
+*/
+var otKey = '44755992';
+var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
+var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
+var videoStreams = new Array();
+
 /*
 *=========================================
 */
@@ -105,6 +117,7 @@ app.get('*', function(request, response){
 *=========================================
 */
 
+
 /*
 *=========================================
 *  TCP SERVER FOR VIDEOSTREAMING
@@ -115,20 +128,45 @@ app.get('*', function(request, response){
 *  that client connected and set callbacks
 *  for events.
 */
-var tcp_server = net.createServer(function(client) {
-console.log('TCP Client connected.\n');
+var tcp_server = net.createServer(function(socket) {
+  socket.on('data', function(data){
+    try{
+      var tempClient = JSON.parse(data.toString());
+      var client = new MobileClient(tempClient, socket, function(sessionId){
+        if(!sessionId){
+          //Session does not exit.
+          //Create one and return it.
+          var createdSession = generateSessionId();
 
-client.write('TESTING');
+          return createdSession
+          //TODO generate session ID and push to local storage
+        }
+        //Session now exists, even if it didnt.
+        //Store it.
+        videoStreams.push({username : tempClient.username, sessionId : createdSession);
+      });
+    }
+    catch{
+      //TODO DATA WAS NOT A JSON OBJECT,
+      //OR INVALID KEY
+    }
 
-client.on('data', function(data){
-  console.log(data.toString());
-});
 
-client.on('end', function() {
-  console.log('TCP Client disconnected.\n');
-});
+    var command = data.toString();
+    if(command="bahamut"){
+      generateSession(client);
+      //TODO CREATE, SEND SESSION
+      //send ifrit[SESSION_ID]
+    }
+    if(command="anima"){
+      //TODO CREATE, SEND TOKEN
+      //send shiva[TOKEN]
+    }
+  });
 
-client.pipe(client);
+  socket.on('end', function() {
+    console.log('TCP Client disconnected.\n');
+  });
 });
 
 tcp_server.listen(3000, function() {
@@ -137,6 +175,7 @@ tcp_server.listen(3000, function() {
 /*
 *=========================================
 */
+
 
 /*
 *=========================================
@@ -151,6 +190,24 @@ tcp_server.listen(3000, function() {
 var server = app.listen((process.env.PORT || 80), function(){;
   console.log("Web Server is now listening in on port %s.\n", server.address().port)
 });
+/*
+*=========================================
+*/
+
+
+/*
+*=========================================
+*  HELPER FUNCTIONS
+*=========================================
+*/
+function generateSession(client){
+  opentok.createSession(function(error, sessionId){
+    if (error) {
+      throw new Error("Session creation failed.");
+    }
+    client.createSession(sessionId);
+  });
+}
 /*
 *=========================================
 */

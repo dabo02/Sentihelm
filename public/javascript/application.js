@@ -49,7 +49,7 @@ $(document).ready(function(){
         $("#error-dialog").text(error.message);
         $("#error-dialog").show();
       });
-      document.getElementById("login-form").submit();
+      // document.getElementById("login-form").submit();
     }
   });
 
