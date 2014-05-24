@@ -42,12 +42,20 @@ $(document).ready(function(){
         url: "/login",
         data: JSON.stringify(data),
         contentType: "application/json; charset=utf-8",
-        dataType: "json"
-      }).done(function( data ) {
-        //TODO
-      }).fail(function(error){
-        $("#error-dialog").text(error.message);
-        $("#error-dialog").show();
+        dataType: "json",
+        success : function(data){
+            console.log(data); //DEBUG
+            $("#error-dialog").text("Welcome "+data.firstName);
+            $("#error-dialog").slideDown();
+        },
+        error : function(error){
+          console.log(error); //DEBUG
+          if(error.code==101){
+            $("#error-dialog").text("Wrong Username/Password Combination");
+            $("#error-dialog").slideDown();
+          }
+
+        }
       });
       // document.getElementById("login-form").submit();
     }

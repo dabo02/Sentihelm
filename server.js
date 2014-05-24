@@ -85,16 +85,18 @@ app.post('/login', function(request, response){
   //TODO Sanitize user input
   var username = request.body.username;
   var password = request.body.password;
+  console.log(username+ " "+password);//DEBUG
   Parse.User.logIn(username, password, {
     success: function(user) {
       var firstName = user.get('firstName');
       var lastName = user.get('lastName');
       console.log("Succesfuly logged in: "+firstName+" "+lastName);
-      response.sendfile(__dirname+'/public/browser_demo.html');
+      response.send(200,user);
     },
     error: function(user, error) {
-      console.log("Error "+error.code+": "+error.message);
-      response.send(500, error);
+      console.log(error); //DEBUG
+      console.log("Error "+error.code+": "+error.message); //DEBUG
+      response.send(200,error);
     }
   });
 });
@@ -127,40 +129,39 @@ app.get('*', function(request, response){
 *  is the 'connection' event listener; notify
 *  that client connected and set callbacks
 *  for events.
+*
+*  A stringified JSON object is recieved, parsed,
+*  then passed to a MobileClient object - along
+*  with the active socket and a callback to handle
+*  session generation - in order to create the
+*  object representation of that mobile client.
+*
+*  If the string recieved is not a valid stringified
+*  JSON, or the secret handshaking key is invalid, an
+*  error is thrown.
 */
-var tcp_server = net.createServer(function(socket) {
+var tcpServer = net.createServer(function(socket) {
   socket.on('data', function(data){
     try{
       var tempClient = JSON.parse(data.toString());
       var client = new MobileClient(tempClient, socket, function(sessionId){
         if(!sessionId){
-          //Session does not exit.
+          //Session does not exist.
           //Create one and return it.
-          var createdSession = generateSessionId();
-
+          var createdSession = '';
+          generateSessionId(createdSession);
           return createdSession
           //TODO generate session ID and push to local storage
         }
-        //Session now exists, even if it didnt.
+        //Session now exists, even if it didn't.
         //Store it.
-        videoStreams.push({username : tempClient.username, sessionId : createdSession);
+        videoStreams.push({username : tempClient.username, sessionId : sessionId});
       });
     }
-    catch{
-      //TODO DATA WAS NOT A JSON OBJECT,
+    catch(error){
+      //TODO
+      //DATA WAS NOT A JSON OBJECT,
       //OR INVALID KEY
-    }
-
-
-    var command = data.toString();
-    if(command="bahamut"){
-      generateSession(client);
-      //TODO CREATE, SEND SESSION
-      //send ifrit[SESSION_ID]
-    }
-    if(command="anima"){
-      //TODO CREATE, SEND TOKEN
-      //send shiva[TOKEN]
     }
   });
 
@@ -169,7 +170,7 @@ var tcp_server = net.createServer(function(socket) {
   });
 });
 
-tcp_server.listen(3000, function() {
+tcpServer.listen(3000, function() {
   console.log('\nTCP Server is now listening in on port %s.', tcp_server.address().port);
 });
 /*
@@ -200,12 +201,13 @@ var server = app.listen((process.env.PORT || 80), function(){;
 *  HELPER FUNCTIONS
 *=========================================
 */
-function generateSession(client){
+function generateSession(session){
   opentok.createSession(function(error, sessionId){
     if (error) {
       throw new Error("Session creation failed.");
     }
-    client.createSession(sessionId);
+    //TODO Test if this works.
+    session = sessionId;
   });
 }
 /*
