@@ -85,7 +85,9 @@ app.post('/login', function(request, response){
   //TODO Sanitize user input
   var username = request.body.username;
   var password = request.body.password;
-  console.log(username+ " "+password);//DEBUG
+  //===========DEBUG==========
+  console.log(username+ " "+password);
+  //==========================
   Parse.User.logIn(username, password, {
     success: function(user) {
       var firstName = user.get('firstName');
@@ -94,7 +96,6 @@ app.post('/login', function(request, response){
       response.send(200,user);
     },
     error: function(user, error) {
-      console.log(error); //DEBUG
       console.log("Error "+error.code+": "+error.message); //DEBUG
       response.send(200,error);
     }
@@ -140,25 +141,45 @@ app.get('*', function(request, response){
 *  JSON, or the secret handshaking key is invalid, an
 *  error is thrown.
 */
-var tcpServer = net.createServer(function(socket) {
+var tcpServer = net.createServer(function(socket){
+  //Client has connected.
+  console.log('TCP Client connected.\n');
+
   socket.on('data', function(data){
+    //===========DEBUG==========
+    //console.log(data.toString());
+    //==========================
     try{
       var tempClient = JSON.parse(data.toString());
-      var client = new MobileClient(tempClient, socket, function(sessionId){
-        if(!sessionId){
+      var client = new MobileClient(tempClient, socket, function(session){
+        if(!session){
           //Session does not exist.
-          //Create one and return it.
-          var createdSession = '';
-          generateSessionId(createdSession);
-          return createdSession
-          //TODO generate session ID and push to local storage
+          generateSession(function(sessionId){
+            //Create a session and assign it to this MobileClient object.
+            //Emit sessionId via the socket.
+            client.sessionId = sessionId;
+            //===========DEBUG==========
+            console.log("CREATED SESSION: "+sessionId+"\n");//DEBUG
+            //==========================
+            client.socket.write(client.sessionId);
+            //===========DEBUG==========
+            console.log("SESSION SENT: "+sessionId+"\n");//DEBUG
+            //==========================
+            //Save video stream in current open streams.
+            //Must be separate from else block's videoStreams.push()
+            //because of asynchronicity.
+            videoStreams.push({username : client.username, sessionId : client.sessionId});
+          });
         }
-        //Session now exists, even if it didn't.
-        //Store it.
-        videoStreams.push({username : tempClient.username, sessionId : sessionId});
+        else{
+          videoStreams.push({username : client.username, sessionId : client.sessionId});
+        }
       });
     }
     catch(error){
+      //===========DEBUG==========
+      console.log("ERROR: "+error);
+      //==========================
       //TODO
       //DATA WAS NOT A JSON OBJECT,
       //OR INVALID KEY
@@ -171,7 +192,7 @@ var tcpServer = net.createServer(function(socket) {
 });
 
 tcpServer.listen(3000, function() {
-  console.log('\nTCP Server is now listening in on port %s.', tcp_server.address().port);
+  console.log('\nTCP Server is now listening in on port %s.', tcpServer.address().port);
 });
 /*
 *=========================================
@@ -201,13 +222,12 @@ var server = app.listen((process.env.PORT || 80), function(){;
 *  HELPER FUNCTIONS
 *=========================================
 */
-function generateSession(session){
+function generateSession(callback){
   opentok.createSession(function(error, sessionId){
     if (error) {
       throw new Error("Session creation failed.");
     }
-    //TODO Test if this works.
-    session = sessionId;
+    callback(sessionId);
   });
 }
 /*

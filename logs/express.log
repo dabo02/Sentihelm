@@ -1,4 +1,0 @@
-127.0.0.1 - - [Sat, 24 May 2014 00:45:36 GMT] "GET / HTTP/1.1" 304 - "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36"
-127.0.0.1 - - [Sat, 24 May 2014 00:45:36 GMT] "GET /stylesheets/login_view.css HTTP/1.1" 304 - "http://localhost/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36"
-127.0.0.1 - - [Sat, 24 May 2014 00:45:36 GMT] "GET /javascript/jquery-1.11.1.min.js HTTP/1.1" 304 - "http://localhost/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36"
-127.0.0.1 - - [Sat, 24 May 2014 00:45:36 GMT] "GET /javascript/application.js HTTP/1.1" 304 - "http://localhost/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.137 Safari/537.36"
