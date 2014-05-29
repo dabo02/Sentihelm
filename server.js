@@ -85,9 +85,9 @@ app.post('/login', function(request, response){
   //TODO Sanitize user input
   var username = request.body.username;
   var password = request.body.password;
-  //===========DEBUG==========
+  //!!!!!!!!!!!DEBUG!!!!!!!!!!!
   console.log(username+ " "+password);
-  //==========================
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!
   Parse.User.logIn(username, password, {
     success: function(user) {
       var firstName = user.get('firstName');
@@ -146,40 +146,35 @@ var tcpServer = net.createServer(function(socket){
   console.log('TCP Client connected.\n');
 
   socket.on('data', function(data){
-    //===========DEBUG==========
-    //console.log(data.toString());
-    //==========================
+    console.log("CLIENT SENT:\n"+data.toString()+"\n");
     try{
       var tempClient = JSON.parse(data.toString());
       var client = new MobileClient(tempClient, socket, function(session){
-        if(!session){
-          //Session does not exist.
-          generateSession(function(sessionId){
+        var token = '';
+        var modToken = '';
+        if(!session){//Session does not exist.
+          // A The session will attempt to transmit streams directly between clients.
+          // If clients cannot connect, the session uses the OpenTok TURN server
+          opentok.createSession({mediaMode:"relayed"},function(error, sessionId){
+            if (error) {
+              throw new Error("Session creation failed.");
+            }
             //Create a session and assign it to this MobileClient object.
+            //Create a JSON that will be sent as a response to the client.
             //Emit sessionId via the socket.
             client.sessionId = sessionId;
-            //===========DEBUG==========
-            console.log("CREATED SESSION: "+sessionId+"\n");//DEBUG
-            //==========================
-            client.socket.write(client.sessionId);
-            //===========DEBUG==========
-            console.log("SESSION SENT: "+sessionId+"\n");//DEBUG
-            //==========================
-            //Save video stream in current open streams.
-            //Must be separate from else block's videoStreams.push()
-            //because of asynchronicity.
-            videoStreams.push({username : client.username, sessionId : client.sessionId});
+            console.log("CREATED SESSION: "+sessionId+"\n");
+            //Once session has been created, finalize the setup.
+            finalizeConnection(client);
           });
         }
         else{
-          videoStreams.push({username : client.username, sessionId : client.sessionId});
+          finalizeConnection(client);
         }
       });
     }
     catch(error){
-      //===========DEBUG==========
       console.log("ERROR: "+error);
-      //==========================
       //TODO
       //DATA WAS NOT A JSON OBJECT,
       //OR INVALID KEY
@@ -222,13 +217,34 @@ var server = app.listen((process.env.PORT || 80), function(){;
 *  HELPER FUNCTIONS
 *=========================================
 */
-function generateSession(callback){
-  opentok.createSession(function(error, sessionId){
-    if (error) {
-      throw new Error("Session creation failed.");
-    }
-    callback(sessionId);
+//Generate both client and moderator tokens,
+//create and send a stringified JSON answer
+//which will contain the client's token and
+//session Id. Log all events and save connection.
+function finalizeConnection(client){
+  var token = opentok.generateToken(client.sessionId, {
+    role :'publisher',
+    expireTime :(new Date().getTime()/1000)+(3600),
+    data : client.username
   });
+  console.log("CREATED CLIENT TOKEN:\n"+token+"\n");
+  var answer = JSON.stringify({sessionId : client.sessionId, token : token});
+  client.socket.write(answer);
+  console.log("SESSION SENT: "+client.sessionId+"\n"+
+              "\nCLIENT TOKEN SENT:\n"+token+"\n");
+  var modToken = opentok.generateToken(client.sessionId, {
+    role :'moderator',
+    expireTime :(new Date().getTime()/1000)+(3600),
+    data : client.username
+  });
+  videoStreams.push({
+    username : client.username,
+    latitude : client.latitude,
+    longitude : client.longitude,
+    sessionId : client.sessionId,
+    modToken : modToken
+  });
+  console.log("MODERATOR TOKEN CREATED AND SAVED:\n"+modToken+"\n");
 }
 /*
 *=========================================
