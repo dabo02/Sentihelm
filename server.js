@@ -1,8 +1,7 @@
-/*
 //=========================================
-*  IMPORTS
-*=========================================
-*/
+//  IMPORTS
+//=========================================
+
 //Imports for web server
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -19,75 +18,61 @@ var net = require('net');
 var Parse = require('parse').Parse;
 var OpenTok = require('opentok');
 var MobileClient = require('./lib/mobileclient');
-/*
-*=========================================
-*/
 
 
-/*
-*=========================================
-*  ENVIRONMENT SETUP
-*=========================================
-*/
 
-/*
-*  Set up parse.
-*/
+//=========================================
+//  ENVIRONMENT SETUP
+//=========================================
+
+
+//Set up parse.
+
 var APP_ID="MpDMbPnCATUEf4FvXV1IwTX6Fq9G5tE6UWjlbNdO";
 var JS_KEY="0Q5ibbPcsYPyOfuslRGwKWvE6YDKiBmX23yjnqQy";
 Parse.initialize(APP_ID, JS_KEY);
 
-/*
-*  Create an appending log file (no overriding).
-*/
+
+//Create an appending log file (no overriding).
+
 var logFile = fs.createWriteStream('./logs/express.log', {flag:'a'});
 
-/*
-*  Create an express server.
-*
-*  Attach 'morgan' logger (logs express events) to express.
-*  Set the format to default, for full detials, and route
-*  the output to the write stream previously created
-*  (a log file).
-*
-*  Attach a bodyParser in order to handle json and urlencoded
-*  bodies.
-*
-*  Add the static middleware, which allows express to serve up
-*  static content in the specified directory (for CSS/JS).
-*/
+//Create an express server.
+
+//Attach 'morgan' logger (logs express events) to express.
+//Set the format to default, for full detials, and route
+//the output to the write stream previously created
+//(a log file).
+
+//Attach a bodyParser in order to handle json and urlencoded
+//bodies.
+
+//Add the static middleware, which allows express to serve up
+//static content in the specified directory (for CSS/JS).
+
 var app = express();
 app.use(morgan({format:'default', stream:logFile}));
 app.use(bodyParser());
 app.use(express.static(__dirname + '/public'));
 
-/*
-*  Set OpenTok key and secret. Create a new opentok object,
-*  which is used to manage sessions and tokens.
-*/
+
+//Set OpenTok key and secret. Create a new opentok object,
+//which is used to manage sessions and tokens.
 var otKey = '44755992';
 var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
 var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
 var videoStreams = new Array();
 
-/*
-*=========================================
-*/
 
+//=========================================
+//  SET UP ROUTING
+//=========================================
 
-/*
-*=========================================
-*  SET UP ROUTING
-*=========================================
-*/
 //Login handler
 app.post('/login', function(request, response){
   //TODO Sanitize user input
   var username = request.body.username;
   var password = request.body.password;
-  // //!!!!!!!!!!!DEBUG!!!!!!!!!!!
-  // console.log(username+ " "+password);
-  // //!!!!!!!!!!!!!!!!!!!!!!!!!!!
   Parse.User.logIn(username, password, {
     success: function(user) {
       var firstName = user.get('firstName');
@@ -115,66 +100,52 @@ app.get('/', function(request, response){
 app.get('*', function(request, response){
   response.send(404,"Error 404: Not Found");
 });
-/*
-*=========================================
-*/
 
 
-/*
-*=========================================
-*  TCP SERVER FOR VIDEOSTREAMING
-*=========================================
-*
-*  The function passed to 'net.createServer'
-*  is the 'connection' event listener; notify
-*  that client connected and set callbacks
-*  for events.
-*
-*  A stringified JSON object is recieved, parsed,
-*  then passed to a MobileClient object - along
-*  with the active socket and a callback to handle
-*  session generation - in order to create the
-*  object representation of that mobile client.
-*
-*  If the string recieved is not a valid stringified
-*  JSON, or the secret handshaking key is invalid, an
-*  error is thrown.
-*/
+
+//=========================================
+// TCP SERVER FOR VIDEOSTREAMING
+//=========================================
+
+//The function passed to 'net.createServer'
+//is the 'connection' event listener; notify
+//that client connected and set callbacks
+//for events.
+
+//A stringified JSON object is recieved, parsed,
+//then passed to a MobileClient object - along
+//with the active socket and a callback to handle
+//session generation - in order to create the
+//object representation of that mobile client.
+
+//If the string recieved is not a valid stringified
+//JSON, or the secret handshaking key is invalid, an
+//error is thrown.
+
 var tcpServer = net.createServer(function(socket){
   //Client has connected.
   console.log('TCP Client connected.\n');
 
   socket.on('data', function(data){
-    console.log("CLIENT SENT:\n"+data.toString()+"\n");
+    console.log("RECIEVED FROM CLIENT:\n"+data.toString()+"\n");
     try{
       var tempClient = JSON.parse(data.toString());
-      var client = new MobileClient(tempClient, socket, function(session){
+      var client = new MobileClient(tempClient, socket, function(){
         var token = '';
         var modToken = '';
-        if(!session){//Session does not exist.
-          // A The session will attempt to transmit streams directly between clients.
-          // If clients cannot connect, the session uses the OpenTok TURN server
-          opentok.createSession({mediaMode:"relayed"},function(error, sessionId){
-            if (error) {
-              throw new Error("Session creation failed.");
-            }
-            //Create a session and assign it to this MobileClient object.
-            //Create a JSON that will be sent as a response to the client.
-            //Emit sessionId via the socket.
-            client.sessionId = sessionId;
-            console.log("CREATED SESSION: "+sessionId+"\n");
-            //Once session has been created, finalize the setup.
-            finalizeConnection(client);
-          });
-        }
-        else{
-          //TODO Fix session/client mixup
-          //At this point, session is the client
-          //!!!DEBUG!!!
-          console.log("\nSESSION ALREADY EXISTS: \n"+session.sessionId+"\n");
-          //!!!!!!!!!!!
-          finalizeConnection(session);
-        }
+        //A The session will attempt to transmit streams directly between clients.
+        //If clients cannot connect, the session uses the OpenTok TURN server
+        opentok.createSession({mediaMode:"relayed"},function(error, sessionId){
+          if (error) {
+            throw new Error("Session creation failed.");
+          }
+          //Created session will be asigned to this MobileClient's instance
+          //session ID parameter.
+          client.sessionId = sessionId;
+          console.log("CREATED SESSION: "+sessionId+"\n");
+          // Once session has been created, finalize the setup.
+          finalizeConnection(client);
+        });
       });
     }
     catch(error){
@@ -193,52 +164,42 @@ var tcpServer = net.createServer(function(socket){
 tcpServer.listen(3000, function() {
   console.log('\nTCP Server is now listening in on port %s.', tcpServer.address().port);
 });
-/*
-*=========================================
-*/
 
 
-/*
-*=========================================
-*  START WEB SERVER
-*=========================================
-*
-*  Create and start the server by listening in on a port.
-*  'process.env.PORT' is the default port environment,
-*  in this case used for AWS; port 80 is for local
-*  testing purposes. Log listening port.
-*/
+//=========================================
+// START WEB SERVER
+//=========================================
+
+//Create and start the server by listening in on a port.
+//'process.env.PORT' is the default port environment,
+//in this case used for AWS; port 80 is for local
+//testing purposes. Log listening port.
+
 var server = app.listen((process.env.PORT || 80), function(){;
   console.log("Web Server is now listening in on port %s.\n", server.address().port)
 });
-/*
-*=========================================
-*/
 
 
-/*
-*=========================================
-*  HELPER FUNCTIONS
-*=========================================
-*/
+//=========================================
+//  HELPER FUNCTIONS
+//=========================================
+
 //Generate both client and moderator tokens,
 //create and send a stringified JSON answer
 //which will contain the client's token and
 //session Id. Log all events and save connection.
 function finalizeConnection(client){
-  //!!!DEBUG!!!
-  console.log("\nINSIDE FUNCTION: "+client+"\n"+client.sessionId+"\n");
-  //!!!!!!!!!!!
   var token = opentok.generateToken(client.sessionId, {
     role :'publisher',
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
+
   console.log("CREATED CLIENT TOKEN:\n"+token+"\n");
   var answer = JSON.stringify({sessionId : client.sessionId, token : token});
   client.socket.write(answer);
   console.log("SESSION SENT: "+client.sessionId+"\n"+
-              "\nCLIENT TOKEN SENT:\n"+token+"\n");
+  "\nCLIENT TOKEN SENT:\n"+token+"\n");
   var modToken = opentok.generateToken(client.sessionId, {
     role :'moderator',
     expireTime :(new Date().getTime()/1000)+(3600),
@@ -253,6 +214,3 @@ function finalizeConnection(client){
   });
   console.log("MODERATOR TOKEN CREATED AND SAVED:\n"+modToken+"\n");
 }
-/*
-*=========================================
-*/
