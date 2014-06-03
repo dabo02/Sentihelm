@@ -1,5 +1,5 @@
 /*
-*=========================================
+//=========================================
 *  IMPORTS
 *=========================================
 */
@@ -14,7 +14,7 @@ var http = require('http');
 var socketServer = http.createServer(app);
 var io = require('socket.io').listen(socketServer);
 
-//Others
+//Other imports
 var net = require('net');
 var Parse = require('parse').Parse;
 var OpenTok = require('opentok');
@@ -85,14 +85,13 @@ app.post('/login', function(request, response){
   //TODO Sanitize user input
   var username = request.body.username;
   var password = request.body.password;
-  //!!!!!!!!!!!DEBUG!!!!!!!!!!!
-  console.log(username+ " "+password);
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // //!!!!!!!!!!!DEBUG!!!!!!!!!!!
+  // console.log(username+ " "+password);
+  // //!!!!!!!!!!!!!!!!!!!!!!!!!!!
   Parse.User.logIn(username, password, {
     success: function(user) {
       var firstName = user.get('firstName');
       var lastName = user.get('lastName');
-      console.log("Succesfuly logged in: "+firstName+" "+lastName);
       response.send(200,user);
     },
     error: function(user, error) {
@@ -169,7 +168,12 @@ var tcpServer = net.createServer(function(socket){
           });
         }
         else{
-          finalizeConnection(client);
+          //TODO Fix session/client mixup
+          //At this point, session is the client
+          //!!!DEBUG!!!
+          console.log("\nSESSION ALREADY EXISTS: \n"+session.sessionId+"\n");
+          //!!!!!!!!!!!
+          finalizeConnection(session);
         }
       });
     }
@@ -222,6 +226,9 @@ var server = app.listen((process.env.PORT || 80), function(){;
 //which will contain the client's token and
 //session Id. Log all events and save connection.
 function finalizeConnection(client){
+  //!!!DEBUG!!!
+  console.log("\nINSIDE FUNCTION: "+client+"\n"+client.sessionId+"\n");
+  //!!!!!!!!!!!
   var token = opentok.generateToken(client.sessionId, {
     role :'publisher',
     expireTime :(new Date().getTime()/1000)+(3600),
