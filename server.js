@@ -19,8 +19,6 @@ var Parse = require('parse').Parse;
 var OpenTok = require('opentok');
 var MobileClient = require('./lib/mobileclient');
 
-
-
 //=========================================
 //  ENVIRONMENT SETUP
 //=========================================
@@ -63,7 +61,6 @@ var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
 var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
 var videoStreams = new Array();
 
-
 //=========================================
 //  SET UP ROUTING
 //=========================================
@@ -101,10 +98,8 @@ app.get('*', function(request, response){
   response.send(404,"Error 404: Not Found");
 });
 
-
-
 //=========================================
-// TCP SERVER FOR VIDEOSTREAMING
+//  TCP SERVER FOR VIDEOSTREAMING
 //=========================================
 
 //The function passed to 'net.createServer'
@@ -140,7 +135,7 @@ var tcpServer = net.createServer(function(socket){
             throw new Error("Session creation failed.");
           }
           //Created session will be asigned to this MobileClient's instance
-          //session ID parameter.
+          //sessionId parameter.
           client.sessionId = sessionId;
           console.log("CREATED SESSION: "+sessionId+"\n");
           // Once session has been created, finalize the setup.
@@ -165,9 +160,8 @@ tcpServer.listen(3000, function() {
   console.log('\nTCP Server is now listening in on port %s.', tcpServer.address().port);
 });
 
-
 //=========================================
-// START WEB SERVER
+//  START WEB SERVER
 //=========================================
 
 //Create and start the server by listening in on a port.
@@ -178,7 +172,6 @@ tcpServer.listen(3000, function() {
 var server = app.listen((process.env.PORT || 80), function(){;
   console.log("Web Server is now listening in on port %s.\n", server.address().port)
 });
-
 
 //=========================================
 //  HELPER FUNCTIONS
@@ -205,11 +198,18 @@ function finalizeConnection(client){
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
+  //!!!!!!!!!!!!!DEBUG!!!!!!!!!!!!!
+  //console.log("\n"+JSON.stringify(client)+"\n");
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // videoStreams.push({
+  //   username : client.username,
+  //   latitude : client.latitude,
+  //   longitude : client.longitude,
+  //   sessionId : client.sessionId,
+  //   modToken : modToken
+  // });
   videoStreams.push({
-    username : client.username,
-    latitude : client.latitude,
-    longitude : client.longitude,
-    sessionId : client.sessionId,
+    client : client,
     modToken : modToken
   });
   console.log("MODERATOR TOKEN CREATED AND SAVED:\n"+modToken+"\n");
