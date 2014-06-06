@@ -4,8 +4,9 @@
 var session;
 var videoStreams = [];
 var activeStream = $('active-stream');
-var socket = io('http://localhost');
+var socket = io('http://localhost:80');
 socket.on('new stream', function (connection) {
+  console.log(connection);
   //Get actual stream object
   var stream = connection.connection;
   //Initialize session
@@ -20,6 +21,7 @@ socket.on('new stream', function (connection) {
       //TODO
       //HANDLE ERROR WHEN UNABLE
       //TO CONNECT TO SESSION
+      console.log(error);
     }
     else{
       //TODO
@@ -56,8 +58,32 @@ function initializeMap() {
   }
   var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
   var marker = new google.maps.Marker({
-      position: location,
-      map: map,
-      title: 'Client Location'
+    position: location,
+    map: map,
+    title: 'Client Location'
   });
 }
+
+//=========================================
+//  JQUERY
+//=========================================
+
+$(document).ready(function(){
+  $('#send-button').on('click',function(event){
+    event.preventDefault();
+    var log = $('#messages');
+    var message = $('#message-text').val();
+    var newMessage = '<li>'+message+'</li>'
+    if(message!=null){
+      //TODO SEND MESSAGE VIA SOCKET
+      log.append(newMessage);
+      $('#message-text').val('');
+
+      //TODO NOT WORKING !!!!!!!!
+      var chatLog = $('chat-log');
+      var height = chatLog.prop("scrollHeight");
+      chatLog.scrollTop(height);
+      //!!!!!!!!!!!!!!!!!!!!!!!!!
+    }
+  });
+});

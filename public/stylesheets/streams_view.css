@@ -18,7 +18,7 @@ body{
   margin:30px 0 0 0;
   position:relative;
   display:inline-block;
-  border:5px solid #a2a2a2;
+  border:5px solid #DDD;
   border-radius:10px;
 }
 
@@ -26,7 +26,7 @@ body{
   width:170px;
   height:inherit;
   position:absolute;
-  border-right:5px solid #a2a2a2;
+  border-right:5px solid #DDD;
   overflow:auto;
 }
 
@@ -35,7 +35,7 @@ body{
   height:inherit;
   position:absolute;
   margin-left:175px;
-  border-right:5px solid #a2a2a2;
+  border-right:5px solid #DDD;
 }
 
 .right-view{
@@ -45,18 +45,24 @@ body{
   margin-left:700px;
 }
 
+.message-font{
+  font-family:sans-serif;
+  font-size:1rem;
+  color:#474747;
+}
+
 #active-stream{
   width:inherit;
   height:390px;
   margin: 0 auto;
-  border-bottom:5px solid #a2a2a2;
+  border-bottom:5px solid #DDD;
 }
 
 #map-canvas{
   width:inherit;
   height:390px;
   margin: 0 auto;
-  border-bottom:5px solid #a2a2a2;
+  border-bottom:5px solid #DDD;
 }
 #streams-list{
   list-style-type:none;
@@ -65,7 +71,7 @@ body{
 #streams-list>li{
   margin:15px 0;
   color:#46f93d;
-  border-bottom:2px solid #a2a2a2;
+  border-bottom:2px solid #DDD;
   text-align:center;
 }
 #streams-list>li:last-child{
@@ -77,4 +83,58 @@ body{
   padding:0 0 0.5em 0;
   font-weight:bold;
   color:#4d4d4d;
+}
+
+#chat-view{
+  position:relative;
+  width:inherit;
+  height:210px;
+}
+
+#chat-log{
+  position:relative;
+  width:inherit;
+  height:175px;
+  overflow:auto;
+}
+
+#messages{
+  list-style-type:none;
+}
+#messages>li{
+  margin:15px 0;
+  font-family:sans-serif;
+  font-size:1rem;
+  color:#474747;
+  font-weight:bold;
+}
+
+#chat-controls{
+  position:absolute;
+  bottom:2px;
+  width:inherit;
+  height:30px;
+  border-top:5px solid #DDD;
+}
+
+#message-form{
+  width:inherit;
+  height:inherit;
+}
+
+#message-text{
+  width:445px;
+  padding:5px 5px 0 5px;
+  border:none;
+  font-weight:bold;
+}
+
+#send-button{
+  width:75px;
+  height:27px;
+  position:absolute;
+  right:0;
+  color:#ffffff;
+  background-color:#616161;
+  border:none;
 }

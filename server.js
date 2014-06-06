@@ -12,7 +12,7 @@ var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var fs = require('fs');
 
-//Import/Initialize socket.io
+//Import and initialize socket.io
 var io = require('socket.io')(server);
 
 //Other imports
@@ -55,6 +55,14 @@ var otKey = '44755992';
 var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
 var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
 
+//Setup socket.io to announce when client connected/disconnected
+io.on('connect', function(socket){
+  console.log("Web client CONNECTED.");
+});
+io.on('disconnect', function(socket){
+  console.log("Web client DISCONNECTED.");
+});
+
 //=========================================
 //  SET UP ROUTING
 //=========================================
@@ -68,11 +76,11 @@ app.post('/login', function(request, response){
     success: function(user) {
       var firstName = user.get('firstName');
       var lastName = user.get('lastName');
-      response.sendfile(__dirname+'/public/streams.html');
+      response.send(200, user);
     },
     error: function(user, error) {
-      console.log("Error "+error.code+": "+error.message); //DEBUG
-      response.send(200,error);
+      console.log("WEB // ERROR "+error.code+": "+error.message+"\n");
+      response.send(400,error);
     }
   });
 });
@@ -201,7 +209,7 @@ function finalizeConnection(client){
     connection[key] = client[key];
   }
   connection.modToken = modToken;
-  conncetion.apiKey = otKey;
-  io.emit('new stream', {connection : connection});
+  connection.apiKey = otKey;
+  io.sockets.emit('new stream', {connection : connection});
   console.log("MODERATOR TOKEN CREATED AND EMITTED:\n"+connection.modToken+"\n");
 }
