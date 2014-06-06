@@ -2,12 +2,103 @@
 <html>
 <head>
   <link type="text/css" rel="stylesheet" href="stylesheets/streams_view.css"/>
-  <script type="text/javascript" src="./javascript/jquery-1.11.1.min.js"></script>
+  <script src="https://static.opentok.com/webrtc/v2.2/js/opentok.min.js" ></script>
+  <script src="https://cdn.socket.io/socket.io-1.0.4.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+  <script src="./javascript/jquery-1.11.1.min.js"></script>
+  <script src="./javascript/streams_ui.js"></script>
+
 </head>
 
 <body>
   <div class="content">
+    <div class="panel">
+      <div class="left-view">
+        <ul id="streams-list">
+          <li>
+            <span>ITEM 1</span>
+          </li>
+          <li>
+            <span>ITEM 2</span>
+          </li>
+          <li>
+            <span>ITEM 3</span>
+          </li>
+          <li>
+            <span>ITEM 4</span>
+          </li>
+          <li>
+            <span>ITEM 1</span>
+          </li>
+          <li>
+            <span>ITEM 2</span>
+          </li>
+          <li>
+            <span>ITEM 3</span>
+          </li>
+          <li>
+            <span>ITEM 4</span>
+          </li>
+          <li>
+            <span>ITEM 1</span>
+          </li>
+          <li>
+            <span>ITEM 2</span>
+          </li>
+          <li>
+            <span>ITEM 3</span>
+          </li>
+          <li>
+            <span>ITEM 4</span>
+          </li>
+          <li>
+            <span>ITEM 1</span>
+          </li>
+          <li>
+            <span>ITEM 2</span>
+          </li>
+          <li>
+            <span>ITEM 3</span>
+          </li>
+          <li>
+            <span>ITEM 4</span>
+          </li>
+          <li>
+            <span>ITEM 1</span>
+          </li>
+          <li>
+            <span>ITEM 2</span>
+          </li>
+          <li>
+            <span>ITEM 3</span>
+          </li>
+          <li>
+            <span>ITEM 4</span>
+          </li>
+        </ul>
+      </div>
+      <div class="center-view">
+        <div id="active-stream">
 
+        </div>
+        <div id="chat-view">
+          <div id="chat-log">
+
+          </div>
+          <div id="chat-controls">
+
+          </div>
+        </div>
+      </div>
+      <div class="right-view">
+        <div id="map-canvas">
+
+        </div>
+        <div id="video-controls">
+
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

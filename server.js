@@ -3,15 +3,17 @@
 //=========================================
 
 //Imports for web server
+//Create an express server (app)
+//then pass along to http server
 var express = require('express');
+var app = express();
+var server = require('http').Server(app);
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var fs = require('fs');
 
-//Imports for web socket
-var http = require('http');
-var socketServer = http.createServer(app);
-var io = require('socket.io').listen(socketServer);
+//Import/Initialize socket.io
+var io = require('socket.io')(server);
 
 //Other imports
 var net = require('net');
@@ -23,19 +25,14 @@ var MobileClient = require('./lib/mobileclient');
 //  ENVIRONMENT SETUP
 //=========================================
 
-
 //Set up parse.
-
 var APP_ID="MpDMbPnCATUEf4FvXV1IwTX6Fq9G5tE6UWjlbNdO";
 var JS_KEY="0Q5ibbPcsYPyOfuslRGwKWvE6YDKiBmX23yjnqQy";
 Parse.initialize(APP_ID, JS_KEY);
 
 
 //Create an appending log file (no overriding).
-
 var logFile = fs.createWriteStream('./logs/express.log', {flag:'a'});
-
-//Create an express server.
 
 //Attach 'morgan' logger (logs express events) to express.
 //Set the format to default, for full detials, and route
@@ -47,8 +44,6 @@ var logFile = fs.createWriteStream('./logs/express.log', {flag:'a'});
 
 //Add the static middleware, which allows express to serve up
 //static content in the specified directory (for CSS/JS).
-
-var app = express();
 app.use(morgan({format:'default', stream:logFile}));
 app.use(bodyParser());
 app.use(express.static(__dirname + '/public'));
@@ -59,7 +54,6 @@ app.use(express.static(__dirname + '/public'));
 var otKey = '44755992';
 var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
 var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
-var videoStreams = new Array();
 
 //=========================================
 //  SET UP ROUTING
@@ -74,7 +68,7 @@ app.post('/login', function(request, response){
     success: function(user) {
       var firstName = user.get('firstName');
       var lastName = user.get('lastName');
-      response.send(200,user);
+      response.sendfile(__dirname+'/public/streams.html');
     },
     error: function(user, error) {
       console.log("Error "+error.code+": "+error.message); //DEBUG
@@ -169,7 +163,7 @@ tcpServer.listen(3000, function() {
 //in this case used for AWS; port 80 is for local
 //testing purposes. Log listening port.
 
-var server = app.listen((process.env.PORT || 80), function(){;
+server.listen((process.env.PORT || 80), function(){;
   console.log("Web Server is now listening in on port %s.\n", server.address().port)
 });
 
@@ -180,14 +174,15 @@ var server = app.listen((process.env.PORT || 80), function(){;
 //Generate both client and moderator tokens,
 //create and send a stringified JSON answer
 //which will contain the client's token and
-//session Id. Log all events and save connection.
+//session Id. Tokens will be valid for 1 hour
+//only. Log all events and save connection.
+
 function finalizeConnection(client){
   var token = opentok.generateToken(client.sessionId, {
     role :'publisher',
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
-
   console.log("CREATED CLIENT TOKEN:\n"+token+"\n");
   var answer = JSON.stringify({sessionId : client.sessionId, token : token});
   client.socket.write(answer);
@@ -198,19 +193,15 @@ function finalizeConnection(client){
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
-  //!!!!!!!!!!!!!DEBUG!!!!!!!!!!!!!
-  //console.log("\n"+JSON.stringify(client)+"\n");
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // videoStreams.push({
-  //   username : client.username,
-  //   latitude : client.latitude,
-  //   longitude : client.longitude,
-  //   sessionId : client.sessionId,
-  //   modToken : modToken
-  // });
-  videoStreams.push({
-    client : client,
-    modToken : modToken
-  });
-  console.log("MODERATOR TOKEN CREATED AND SAVED:\n"+modToken+"\n");
+  //Duplicate the client to another object in order
+  //to attach the moderator token and API key the
+  //web app will use
+  var connection = {};
+  for(var key in client){
+    connection[key] = client[key];
+  }
+  connection.modToken = modToken;
+  conncetion.apiKey = otKey;
+  io.emit('new stream', {connection : connection});
+  console.log("MODERATOR TOKEN CREATED AND EMITTED:\n"+connection.modToken+"\n");
 }
