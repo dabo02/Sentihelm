@@ -30,22 +30,17 @@ var APP_ID="MpDMbPnCATUEf4FvXV1IwTX6Fq9G5tE6UWjlbNdO";
 var JS_KEY="0Q5ibbPcsYPyOfuslRGwKWvE6YDKiBmX23yjnqQy";
 Parse.initialize(APP_ID, JS_KEY);
 
-
-//Create an appending log file (no overriding).
+//Create an non-overriding log file and feed it
+//to an express logger with default settings
 var logFile = fs.createWriteStream('./logs/express.log', {flag:'a'});
-
-//Attach 'morgan' logger (logs express events) to express.
-//Set the format to default, for full detials, and route
-//the output to the write stream previously created
-//(a log file).
+app.use(morgan({format:'default', stream:logFile}));
 
 //Attach a bodyParser in order to handle json and urlencoded
 //bodies.
-
-//Add the static middleware, which allows express to serve up
-//static content in the specified directory (for CSS/JS).
-app.use(morgan({format:'default', stream:logFile}));
 app.use(bodyParser());
+
+//Add the static middleware: allows express to serve up
+//static content in the specified directory (for CSS/JS).
 app.use(express.static(__dirname + '/public'));
 
 
