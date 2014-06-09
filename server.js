@@ -57,10 +57,10 @@ var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
 
 //Setup socket.io to announce when client connected/disconnected
 io.on('connect', function(socket){
-  console.log("Web client CONNECTED.");
+  console.log("WEB || CLIENT CONNECTED\n");
 });
 io.on('disconnect', function(socket){
-  console.log("Web client DISCONNECTED.");
+  console.log("WEB || CLIENT DISCONNECTED\n");
 });
 
 //=========================================
@@ -79,18 +79,18 @@ app.post('/login', function(request, response){
       response.send(200, user);
     },
     error: function(user, error) {
-      console.log("WEB // ERROR "+error.code+": "+error.message+"\n");
+      console.log("WEB || ERROR "+error.code+": "+error.message+"\n");
       response.send(400,error);
     }
   });
 });
 
-//Live Video stream page
-app.get('/video_stream', function(request, response){
-  response.sendfile(__dirname+'/public/browser_demo.html');
+//Landing/login page
+app.get('/', function(request, response){
+  response.sendfile(__dirname+'/public/index.html');
 });
 
-//Landing/login page
+//Tip Feed
 app.get('/', function(request, response){
   response.sendfile(__dirname+'/public/index.html');
 });
@@ -99,6 +99,11 @@ app.get('/', function(request, response){
 app.get('*', function(request, response){
   response.send(404,"Error 404: Not Found");
 });
+
+//=========================================
+//  WEB SOCKETS FOR TIP FEED
+//=========================================
+
 
 //=========================================
 //  TCP SERVER FOR VIDEOSTREAMING

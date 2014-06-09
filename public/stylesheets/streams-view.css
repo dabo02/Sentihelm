@@ -1,7 +1,6 @@
 body{
   height:100%;
   position:relative;
-  font-family:sans-serif;
   background-color:#ffffff;
   color:#4d4d4d;
 }
@@ -103,10 +102,9 @@ body{
 }
 #messages>li{
   margin:15px 0;
-  font-family:sans-serif;
   font-size:1rem;
   color:#474747;
-  font-weight:bold;
+  font-weight:400;
 }
 
 #chat-controls{
@@ -126,7 +124,7 @@ body{
   width:445px;
   padding:5px 5px 0 5px;
   border:none;
-  font-weight:bold;
+  font-weight:400;
 }
 
 #send-button{

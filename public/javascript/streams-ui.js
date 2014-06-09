@@ -69,6 +69,9 @@ function initializeMap() {
 //=========================================
 
 $(document).ready(function(){
+  //Once a chat message is sent, write it to the
+  //socket, append the message to the chat-log,
+  //wipe the input field and scroll to bottom
   $('#send-button').on('click',function(event){
     event.preventDefault();
     var log = $('#messages');
@@ -78,12 +81,7 @@ $(document).ready(function(){
       //TODO SEND MESSAGE VIA SOCKET
       log.append(newMessage);
       $('#message-text').val('');
-
-      //TODO NOT WORKING !!!!!!!!
-      var chatLog = $('chat-log');
-      var height = chatLog.prop("scrollHeight");
-      chatLog.scrollTop(height);
-      //!!!!!!!!!!!!!!!!!!!!!!!!!
+      $("#chat-log").animate({scrollTop: $('#chat-log').offset().top-30});
     }
   });
 });

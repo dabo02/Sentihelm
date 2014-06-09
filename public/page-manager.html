@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel='stylesheet' type='text/css' href='stylesheets/normalize.css'/>
+  <link rel='stylesheet' type='text/css' href='http://fonts.googleapis.com/css?family=Open+Sans:400,300'>
+  <link rel='stylesheet' type='text/css' href='stylesheets/page_manager_view.css'/>
+  <script src="https://static.opentok.com/webrtc/v2.2/js/opentok.min.js" ></script>
+  <script src="https://cdn.socket.io/socket.io-1.0.4.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+  <script src="./javascript/jquery-1.11.1.min.js"></script>
+  <script src="./javascript/pm-ui.js"></script>
+</head>
+<body>
+  <div class='tab-bar'>
+    <img class='logo' src='./resources/images/sentihelm.png'/>
+    <ul class='tabs'>
+      <li class='active'><a href='./tipfeed.html'>Tip Feed</a></li>
+      <li><a href='./streams.html'>Video Streams</a></li>
+    </ul>
+  </div>
+  <div class='tab-content'>
+    <div id='tip-feed' class='tab active'>
+      THIS IS THE FEEDS VIEW
+    </div>
+    <div id='streams' class='tab'>
+      <div class="panel">
+        <div class="left-view">
+          <ul id="streams-list">
+          </ul>
+        </div>
+        <div class="center-view">
+          <div id="active-stream">
+          </div>
+          <div id="chat-view">
+            <div id="chat-log">
+              <ul id="messages">
+              </ul>
+            </div>
+            <div id="chat-controls">
+              <form id="message-form">
+                <input id="message-text" class="message-font"/>
+                <button id="send-button" class="message-font" type="submit">Send</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="right-view">
+          <div id="map-canvas">
+          </div>
+          <div id="video-controls">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
