@@ -1,0 +1,23 @@
+.content{
+  margin:0 auto;
+  padding:0;
+  width:75%;
+  height:100%;
+}
+
+#feed{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:auto;
+  list-style-type:none;
+}
+
+.tip{
+  margin:25px auto;
+  width:55em;
+  height:17em;
+  background-color:#DDD;
+  color:#616161;
+}

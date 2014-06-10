@@ -41,10 +41,10 @@ $(document).ready(function(){
         dataType: "json",
         success : function(data){
           //Login was successful, load landing page
-          window.location.href="../streams.html";
+          window.location.href="../tipfeed.html";
         },
         error : function(error){
-          //Login failed; proper show error message
+          //Login failed; show corresponding error message
           if(error.responseJSON.code==101){
             //Invalid login parameters
             $("#error-dialog").text("The email or password you entered is incorrect.");
