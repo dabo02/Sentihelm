@@ -16,6 +16,7 @@ var fs = require('fs');
 var io = require('socket.io')(server);
 
 //Other imports
+var clc = require('cli-color');
 var net = require('net');
 var Parse = require('parse').Parse;
 var OpenTok = require('opentok');
@@ -24,6 +25,14 @@ var MobileClient = require('./lib/mobileclient');
 //=========================================
 //  ENVIRONMENT SETUP
 //=========================================
+
+//Define colors for log
+var cyan = clc.cyanBright;
+var green = clc.greenBright;
+var yellow = clc.yellowBright;
+var red = clc.redBright;
+var notice = clc.magentaBright;
+var maroon = clc.red;
 
 //Set up parse.
 var APP_ID="MpDMbPnCATUEf4FvXV1IwTX6Fq9G5tE6UWjlbNdO";
@@ -52,10 +61,10 @@ var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
 
 //Setup socket.io to announce when client connected/disconnected
 io.on('connect', function(socket){
-  console.log("WEB || CLIENT CONNECTED\n");
+  console.log(cyan("WEB") +" : "+green("CLIENT CONNECTED\n"));
 });
 io.on('disconnect', function(socket){
-  console.log("WEB || CLIENT DISCONNECTED\n");
+  console.log(cyan("WEB") +" : "+red("CLIENT DISCONNECTED\n"));
 });
 
 //=========================================
@@ -74,7 +83,7 @@ app.post('/login', function(request, response){
       response.send(200, user);
     },
     error: function(user, error) {
-      console.log("WEB || ERROR "+error.code+": "+error.message+"\n");
+      console.log(cyan("WEB")+" : "+red("ERROR "+error.code+": "+error.message)+"\n");
       response.send(400,error);
     }
   });
@@ -98,7 +107,9 @@ app.get('*', function(request, response){
 //=========================================
 //  WEB SOCKETS FOR TIP FEED
 //=========================================
+app.get('/tips', function(request, response){
 
+});
 
 //=========================================
 //  TCP SERVER FOR VIDEOSTREAMING
@@ -121,10 +132,10 @@ app.get('*', function(request, response){
 
 var tcpServer = net.createServer(function(socket){
   //Client has connected.
-  console.log('TCP Client connected.\n');
+  console.log(yellow("TCP") +" : "+green("CLIENT CONNECTED\n"));
 
   socket.on('data', function(data){
-    console.log("RECIEVED FROM CLIENT:\n"+data.toString()+"\n");
+    console.log(notice("RECIEVED FROM CLIENT\n")+data.toString()+"\n");
     try{
       var tempClient = JSON.parse(data.toString());
       var client = new MobileClient(tempClient, socket, function(){
@@ -139,14 +150,14 @@ var tcpServer = net.createServer(function(socket){
           //Created session will be asigned to this MobileClient's instance
           //sessionId parameter.
           client.sessionId = sessionId;
-          console.log("CREATED SESSION: "+sessionId+"\n");
+          console.log(notice("CREATED SESSION\n")+sessionId+"\n");
           // Once session has been created, finalize the setup.
           finalizeConnection(client);
         });
       });
     }
     catch(error){
-      console.log("ERROR: "+error);
+      console.log(red("ERROR - ")+maroon(error)+"\n");
       //TODO
       //DATA WAS NOT A JSON OBJECT,
       //OR INVALID KEY
@@ -154,12 +165,12 @@ var tcpServer = net.createServer(function(socket){
   });
 
   socket.on('end', function() {
-    console.log('TCP Client disconnected.\n');
+    console.log(yellow("TCP") +" : "+red("CLIENT DISCONNECTED\n"));
   });
 });
 
 tcpServer.listen(3000, function() {
-  console.log('\nTCP Server is now listening in on port %s.', tcpServer.address().port);
+  console.log(notice('TCP SERVER RUNNING ON PORT %s\n'), tcpServer.address().port);
 });
 
 //=========================================
@@ -172,7 +183,7 @@ tcpServer.listen(3000, function() {
 //testing purposes. Log listening port.
 
 server.listen((process.env.PORT || 80), function(){;
-  console.log("Web Server is now listening in on port %s.\n", server.address().port)
+  console.log(notice('WEB SERVER RUNNING ON PORT %s\n'), server.address().port)
 });
 
 //=========================================
@@ -191,11 +202,11 @@ function finalizeConnection(client){
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
-  console.log("CREATED CLIENT TOKEN:\n"+token+"\n");
+  console.log(notice("CREATED CLIENT TOKEN\n")+token+"\n");
   var answer = JSON.stringify({sessionId : client.sessionId, token : token});
   client.socket.write(answer);
-  console.log("SESSION SENT: "+client.sessionId+"\n"+
-  "\nCLIENT TOKEN SENT:\n"+token+"\n");
+  console.log(notice("SESSION SENT\n")+client.sessionId+"\n");
+  console.log(notice("CLIENT TOKEN SENT\n")+token+"\n");
   var modToken = opentok.generateToken(client.sessionId, {
     role :'moderator',
     expireTime :(new Date().getTime()/1000)+(3600),
@@ -205,11 +216,12 @@ function finalizeConnection(client){
   //to attach the moderator token and API key the
   //web app will use
   var connection = {};
-  for(var key in client){
-    connection[key] = client[key];
-  }
+  connection.username = client.username;
+  connection.latitude = client.latitude;
+  connection.longitude = client.longitude;
+  connection.sessionId = client.sessionId;
   connection.modToken = modToken;
   connection.apiKey = otKey;
   io.sockets.emit('new stream', {connection : connection});
-  console.log("MODERATOR TOKEN CREATED AND EMITTED:\n"+connection.modToken+"\n");
+  console.log(notice("MODERATOR TOKEN CREATED AND EMITTED:\n")+connection.modToken+"\n");
 }

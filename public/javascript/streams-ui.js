@@ -4,9 +4,8 @@
 var session;
 var videoStreams = [];
 var activeStream = $('active-stream');
-var socket = io('http://localhost:80');
+var socket = io.connect('http://localhost:80');
 socket.on('new stream', function (connection) {
-  console.log(connection);
   //Get actual stream object
   var stream = connection.connection;
   //Initialize session
@@ -67,7 +66,6 @@ function initializeMap() {
 //=========================================
 //  JQUERY
 //=========================================
-
 $(document).ready(function(){
   //Once a chat message is sent, write it to the
   //socket, append the message to the chat-log,
