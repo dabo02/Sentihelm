@@ -15,9 +15,114 @@
 }
 
 .tip{
-  margin:25px auto;
+  position:relative;
+  margin:2em auto;
   width:55em;
-  height:17em;
+  height:25em;
   background-color:#DDD;
   color:#616161;
+  border:0.1em solid #219fe9;
+  box-shadow:0.1em 0.1em 1em #4d4d4d;
+}
+
+.tip-header{
+  width:100%;
+  height:10%;
+  background-color:#4d4d4d;
+  text-align:center;
+}
+.tip-header span{
+  display:inline-block;
+  margin-top:0.5em;
+  color:white;
+  font-weight:400;
+}
+
+.tip-body{
+  position:relative;
+  width:100%;
+  height:90%;
+}
+
+.left{
+  width:20%;
+  height:100%;
+  float:left;
+  text-align:center;
+}
+
+.center{
+  width:50%;
+  height:100%;
+  float:left;
+}
+
+.right{
+  width:30%;
+  height:100%;
+  float:right;
+}
+
+.left img{
+  width:80%;
+  margin:0.5em auto;
+  margin-top:0.5em;
+}
+.left span{
+  display:inline-block;
+  font-weight:400;
+}
+
+.contact-info{
+  margin:2em auto;
+  width:100%;
+}
+
+.contact-number{
+  display:inline-block;
+  padding:0.5em;
+  font-weight:400;
+  text-decoration:none;
+}
+
+.notification-button{
+  font-weight:400;
+  background-color:#219fe9;
+  color:white;
+  border:none;
+  border-radius:0.2em;
+}
+
+.attachments{
+  height:25%;
+  border-left:0.1em solid #219fe9;
+  border-right:0.1em solid #219fe9;
+  text-align:center;
+}
+
+.attachments img{
+  width:70px;
+  margin:0.5em 2em 1em 2em;
+}
+
+.disabled-link{
+  opacity:0.5;
+  pointer-events: none;
+  cursor: default;
+}
+
+.crime-description{
+  width:auto;
+  height:75%;
+  overflow:auto;
+  background-color:#f7f7f7;
+  border-left:0.1em solid #219fe9;
+  border-right:0.1em solid #219fe9;
+}
+
+.crime-description span{
+  display:inline-block;
+  padding:1em 2em;
+  color:#4d4d4d;
+  text-align:justify;
 }

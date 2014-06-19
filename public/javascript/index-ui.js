@@ -29,7 +29,7 @@ $(document).ready(function(){
       $("#error-dialog").show();
     }
     else{
-      //Input is valid, proceed with login
+      //Non-null input, proceed with login
       var data = {};
       data.username=$("#username").val();
       data.password=$("#password").val();

@@ -89,6 +89,16 @@ app.post('/login', function(request, response){
   });
 });
 
+//Recieve tips from Parse
+app.post('/tips', function(request, response){
+  var tip = request.body;
+  var pass = tip.pass;
+  if(pass=='bahamut'){
+    io.sockets.emit('new tip', {tip : tip});
+    response.send(200);
+  }
+});
+
 //Landing/login page
 app.get('/', function(request, response){
   response.sendfile(__dirname+'/public/index.html');
@@ -102,13 +112,6 @@ app.get('/', function(request, response){
 //Base-case where page was not found, send 404 error
 app.get('*', function(request, response){
   response.send(404,"Error 404: Not Found");
-});
-
-//=========================================
-//  WEB SOCKETS FOR TIP FEED
-//=========================================
-app.get('/tips', function(request, response){
-
 });
 
 //=========================================
@@ -177,8 +180,8 @@ tcpServer.listen(3000, function() {
 //  START WEB SERVER
 //=========================================
 
-//Create and start the server by listening in on a port.
-//'process.env.PORT' is the default port environment,
+//Start the server by listening in on a port.
+//process.env.PORT is the default port environment,
 //in this case used for AWS; port 80 is for local
 //testing purposes. Log listening port.
 
@@ -212,9 +215,8 @@ function finalizeConnection(client){
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
-  //Duplicate the client to another object in order
-  //to attach the moderator token and API key the
-  //web app will use
+  //Create a new object which will contain needed info
+  //for front end app
   var connection = {};
   connection.username = client.username;
   connection.latitude = client.latitude;
