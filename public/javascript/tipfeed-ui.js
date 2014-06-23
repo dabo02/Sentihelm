@@ -186,7 +186,7 @@ $(document).ready(function(){
     else if(attachmentLink=='imageAtt'){
       attchImg.attr('src','./resources/images/imageAttHover.png')
     }
-    else{
+    else if(attachmentLink=='audioAtt'){
       attchImg.attr('src','./resources/images/audioAttHover.png')
     }
   });
@@ -201,7 +201,7 @@ $(document).ready(function(){
     else if(attachmentLink=='imageAtt'){
       attchImg.attr('src','./resources/images/imageAtt.png')
     }
-    else{
+    else if(attachmentLink=='audioAtt'){
       attchImg.attr('src','./resources/images/audioAtt.png')
     }
   });
