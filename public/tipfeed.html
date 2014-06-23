@@ -7,10 +7,27 @@
   <link rel="stylesheet" type="text/css" href="stylesheets/tipfeed-view.css"/>
   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
   <script src="https://cdn.socket.io/socket.io-1.0.4.js"></script>
+  <script src="//www.parsecdn.com/js/parse-1.2.18.min.js"></script>
   <script src="./javascript/jquery-1.11.1.min.js"></script>
   <script src="./javascript/tipfeed-ui.js"></script>
 </head>
 <body>
+  <div class="notification-modal">
+    <div class="modal-title">
+      <span>Contact User</span>
+      <div class="close-modal">
+        x
+      </div>
+    </div>
+    <div class="modal-body">
+      <textarea id="notification-message" placeholder="Message to user"></textarea>
+    </div>
+    <div class="modal-send">
+      Send
+    </div>
+  </div>
+  <div class="dimmer">
+  </div>
   <div class="tab-bar">
     <img class="logo" src="./resources/images/sentihelm.png"/>
     <ul class="tabs">
@@ -23,6 +40,8 @@
       <!-- <li class="tip">
         <div class="tip-header">
           <span>NAME</span>
+          <div class="control-number">
+          </div>
         </div>
         <div class="tip-body">
           <div class="left">
@@ -36,9 +55,9 @@
           </div>
           <div class="center">
             <div class="attachments">
-              <a href="#VIDEO"><img class="disabled-link" src="./resources/images/videoAtt.png"/></a>
-              <a href="#PICTURE"><img class="disabled-link" src="./resources/images/cameraAtt.png"/></a>
-              <a href="#AUDIO"><img  class="disabled-link" src="./resources/images/audioAtt.png"/></a>
+              <a id="videoAtt" href="#VIDEO"><img src="./resources/images/videoAtt.png"/></a>
+              <a id="imageAtt" href="#PICTURE"><img src="./resources/images/imageAtt.png"/></a>
+              <a id="audioAtt" href="#AUDIO"><img  src="./resources/images/audioAtt.png"/></a>
             </div>
             <div class="crime-description">
               <span>
@@ -47,7 +66,9 @@
             </div>
           </div>
           <div class="right">
-            MAP
+            <div class="map-canvas">
+              MAP
+            </div>
           </div>
         </div>
       </li> -->
