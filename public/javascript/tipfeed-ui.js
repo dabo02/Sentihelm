@@ -10,46 +10,44 @@ var socket = io.connect('http://sentihelm.elasticbeanstalk.com');
 //Initialize Parse
 Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
 
-
 //Catch event when new tip arrives server-side.
 //Extract all tip info from received JSON
 socket.on('new tip', function(newTip){
   var tip = newTip.tip;
-  var objectId = tip.objectId;
   var controlNumber = tip.controlNumber;
   var name = tip.firstName +" "+tip.lastName;
   var crimeType = tip.crimeType;
-  var crimeImage;
-  switch(crimeType){
-  case 'Assault':
-    crimeImage = "http://199.85.204.123/fb_images/0.png";
-    break;
-  case 'Child Abuse':
-    crimeImage = "http://199.85.204.123/fb_images/1.png";
-    break;
-  case 'Domestic Violence':
-    crimeImage = "http://199.85.204.123/fb_images/2.png";
-    break;
-  case 'Drugs':
-    crimeImage = "http://199.85.204.123/fb_images/3.png";
-    break;
-  case 'Murder':
-    crimeImage = "http://199.85.204.123/fb_images/4.png";
-    break;
-  case 'Animal Abuse':
-    crimeImage = "http://199.85.204.123/fb_images/5.png";
-    break;
-  case 'Robbery':
-    crimeImage = "http://199.85.204.123/fb_images/6.png";
-    break;
-  case 'Rape':
-    crimeImage = "http://199.85.204.123/fb_images/7.png";
-    break;
-  default:
-    crimeImage = "http://199.85.204.123/fb_images/8.png"
-  }
+  var crimeImage = "http://199.85.204.123/fb_images/"+tip.crimeListPosition+".png";
+  // switch(crimeType){
+  // case 'Assault':
+  //   crimeImage = "http://199.85.204.123/fb_images/0.png";
+  //   break;
+  // case 'Child Abuse':
+  //   crimeImage = "http://199.85.204.123/fb_images/1.png";
+  //   break;
+  // case 'Domestic Violence':
+  //   crimeImage = "http://199.85.204.123/fb_images/2.png";
+  //   break;
+  // case 'Drugs':
+  //   crimeImage = "http://199.85.204.123/fb_images/3.png";
+  //   break;
+  // case 'Murder':
+  //   crimeImage = "http://199.85.204.123/fb_images/4.png";
+  //   break;
+  // case 'Animal Abuse':
+  //   crimeImage = "http://199.85.204.123/fb_images/5.png";
+  //   break;
+  // case 'Robbery':
+  //   crimeImage = "http://199.85.204.123/fb_images/6.png";
+  //   break;
+  // case 'Rape':
+  //   crimeImage = "http://199.85.204.123/fb_images/7.png";
+  //   break;
+  // default:
+  //   crimeImage = "http://199.85.204.123/fb_images/8.png"
+  // }
   var phone = tip.phone;
-  var channel = tip.channel;
+  var userChannel = tip.channel;
   var videoUrl = tip.videoUrl;
   var imageUrl = tip.imageUrl;
   var audioUrl = tip.audioUrl;
@@ -61,10 +59,10 @@ socket.on('new tip', function(newTip){
   var longitude = tip.longitude;
   var anonymous = tip.anonymous;
   var tipHTML;
-  //Replace HTML placeholders with extracted values
+  //Create tip HTML
   if(anonymous){
     tipHTML = '<li class="tip"><div class="tip-header"><span>'+'ANONYMOUS'+'</span>'+
-    '<div id="'+objectId+'" class="control-number anon">'+controlNumber+'</div>'+
+    '<div class="control-number anon">'+controlNumber+'</div>'+
     '</div><div class="tip-body"><div class="left"><img src="'+crimeImage+'"/>'+
     '<br><span>'+crimeType+'</span></div><div class="center">'+
     '<div class="attachments"><a id="videoAtt" href="'+videoUrl+'"><img src="./'+
@@ -76,10 +74,10 @@ socket.on('new tip', function(newTip){
   }
   else{
     tipHTML = '<li class="tip"><div class="tip-header"><span>'+name+'</span>'+
-    '<div id="'+objectId+'" class="control-number">'+controlNumber+'</div>'+
+    '<div class="control-number">'+controlNumber+'</div>'+
     '</div>'+'<div class="tip-body"><div class="left"><img src="'+crimeImage+'"/>'+
     '<br><span>'+crimeType+'</span><div class="contact-info">CONTACT USER\n<span '+
-    'class="contact-number">'+phone+'</span><button id="'+channel+'"'+
+    'class="contact-number">'+phone+'</span><button '+
     'class="notification-button">Send Notification</button></div></div><div class="center">'+
     '<div class="attachments"><a id="videoAtt" href="'+videoUrl+'"><img src="./'+
     'resources/images/videoAtt.png"/></a><a id="imageAtt" href="'+imageUrl+'"><img' +
@@ -91,6 +89,7 @@ socket.on('new tip', function(newTip){
   //Add tip to top of tip feed
   $('#feed').prepend(tipHTML);
   var currentTip = $('.tip').first();
+  currentTip.hide();
   //If tip is anonymous, edit CSS and map content
   if(anonymous){
     $(currentTip).find('.tip-header span').css("color", "#ff6600");
@@ -99,7 +98,11 @@ socket.on('new tip', function(newTip){
     rightDiv.html('NO LOCATION AVAILABLE');
     rightDiv.addClass("no-location");
   }
-  currentTip.hide().slideDown(750, function(){
+  //If not anonymous, set tip to hold user channel for notifications
+  else{
+    currentTip.data("userChannel", userChannel);
+  }
+  currentTip.slideDown(750, function(){
     //Only display map if user is not anonymous
     if(!anonymous){
       //Alternate method that assings unique id to each
@@ -119,62 +122,17 @@ socket.on('new tip', function(newTip){
 //=========================================
 //  JQUERY
 //=========================================
+
 $(document).ready(function(){
+  //--------------------
+  //  ON PAGE LOAD
+  //--------------------
   //Hide the notification modal once page loads
   $('.notification-modal').hide();
 
-  //Open up the modal that sends push notifications to mobile users
-  $('#feed').on('click', '.notification-button',function(){
-    modalActive=true;
-    $('.map-canvas').css("background-color","black");
-    $('.map-canvas').css("opacity","0.5");
-    $('.dimmer').addClass('visible');
-    var userName = $(this).parent().parent().parent().siblings('.tip-header').find('span').text();
-    $('.modal-title span').html('Contact '+userName);
-    $('.notification-modal').slideDown(500, function(){
-      $('#notification-message').focus();
-    });
-  });
-
-  //Send push notification
-  //TODO Display loading icon and check if notification was sent
-  $('.modal-send').on('click', function(){
-    var message = $('#notification-message').val();
-    var userChannel = $('.notification-button').attr('id');
-    var userId = $('.control-number').attr('id');
-    Parse.Push.send(
-      {
-        channels: [ userChannel ],
-        data: {
-          alert: message,
-          badge:"Increment",
-          sound: "cheering.caf"
-        }
-      },
-      {
-        success: function() {
-          var PushNotification = Parse.Object.extend("PushNotifications");
-          var notification = new PushNotification();
-          notification.set("userId", userId);
-          notification.set("alert", message);
-          notification.save(null, {
-            success : function(notification){
-              closeModal();
-              console.log(notification);
-            },
-            error : function(notification, error){
-              console.log(error);
-            }
-          });
-        },
-        error: function(error) {
-          console.log("FAILED: "+error);
-        }
-      });
-  });
-
-  //On click, close push notification modal
-  $('.close-modal').on('click', closeModal);
+  //--------------------
+  //  TIP RELATED
+  //--------------------
 
   //Change attachment image to hover state
   $('#feed').on('mouseenter','a',function(){
@@ -205,8 +163,70 @@ $(document).ready(function(){
       attchImg.attr('src','./resources/images/audioAtt.png')
     }
   });
-});
 
+  //--------------------
+  //  MODAL RELATED
+  //--------------------
+
+  //Open up the modal that sends push notifications to mobile users
+  $('#feed').on('click', '.notification-button', function(){
+    //Note that modal is active, dim background and maps,
+    //set username on modal title and user's object ID and
+    //channel for push notifications
+    modalActive = true;
+    $('.map-canvas').css("background-color","black");
+    $('.map-canvas').css("opacity","0.5");
+    $('.dimmer').addClass('visible');
+    var userName = $(this).parent().parent().parent().siblings('.tip-header').find('span').text();
+    $('.modal-title span').html('Contact '+userName);
+    var userChannel = $(this).parent().parent().parent().parent().data("userChannel");
+    var modal = $('.notification-modal');
+    modal.data("userChannel",userChannel);
+    modal.slideDown(500, function(){
+      $('#notification-message').focus();
+    });
+  });
+
+  //Send push notification
+  //TODO Display loading icon and check if notification was sent
+  //TODO Add notification attachment
+  $('.modal-send').on('click', function(){
+    var message = $('#notification-message').val();
+    var userChannel = $(this).parent().data("userChannel");
+    var userId = userChannel.substring(5);
+    Parse.Push.send({
+      channels: [ userChannel ],
+      data: {
+        alert: message,
+        badge:"Increment",
+        sound: "cheering.caf"
+      }
+    },
+    {
+      success: function() {
+        var PushNotification = Parse.Object.extend("PushNotifications");
+        var notification = new PushNotification();
+        notification.set("userId", userId);
+        notification.set("alert", message);
+        notification.save(null, {
+          success : function(notification){
+            closeModal();
+            console.log(notification);
+          },
+          error : function(notification, error){
+            console.log(error);
+          }
+        });
+      },
+      error: function(error) {
+        console.log("FAILED: "+error);
+      }
+    });
+  });
+
+  //On click, close push notification modal
+  $('.close-modal').on('click', closeModal);
+});
 
 //=========================================
 //  HELPER FUCTIONS

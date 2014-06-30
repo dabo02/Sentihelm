@@ -14,6 +14,8 @@
   list-style-type:none;
 }
 
+/*************TIP*************/
+/*****************************/
 .tip{
   margin:2em auto;
   width:55em;
@@ -24,6 +26,7 @@
   box-shadow:0.1em 0.1em 1em #4d4d4d;
 }
 
+/***TIP HEAD***/
 .tip-header{
   width:100%;
   height:10%;
@@ -47,30 +50,19 @@
   background-color:#ff6600;
 }
 
+/***TIP BODY***/
 .tip-body{
   width:100%;
   height:90%;
 }
 
+/***BODY-LEFT***/
 .left{
   width:20%;
   height:100%;
   float:left;
   text-align:center;
 }
-
-.center{
-  width:50%;
-  height:100%;
-  float:left;
-}
-
-.right{
-  width:30%;
-  height:100%;
-  float:right;
-}
-
 .left img{
   width:80%;
   margin:0.5em auto;
@@ -80,19 +72,16 @@
   display:inline-block;
   font-weight:400;
 }
-
 .contact-info{
   margin:2em auto;
   width:100%;
 }
-
 .contact-number{
   display:inline-block;
   padding:0.5em;
   font-weight:400;
   text-decoration:none;
 }
-
 .notification-button{
   margin-top:1.5em;
   font-weight:400;
@@ -106,24 +95,22 @@
   background-color:#096d9f;
 }
 
+/***BODY-CENTER***/
+.center{
+  width:50%;
+  height:100%;
+  float:left;
+}
 .attachments{
   height:25%;
   border-left:0.1em solid #219fe9;
   border-right:0.1em solid #219fe9;
   text-align:center;
 }
-
 .attachments img{
   width:70px;
   margin:0.5em 2em 1em 2em;
 }
-
-.disabled-link{
-  opacity:0.5;
-  pointer-events:none;
-  cursor:default;
-}
-
 .crime-description{
   width:99.5%;
   height:74.5%;
@@ -134,7 +121,6 @@
   border-left:0.1em solid #219fe9;
   border-right:0.1em solid #219fe9;
 }
-
 .crime-description span{
   display:inline-block;
   width:85%;
@@ -144,11 +130,19 @@
   text-align:justify;
 }
 
+/***BODY-RIGHT***/
+.right{
+  width:30%;
+  height:100%;
+  float:right;
+}
 .map-canvas{
   width:100%;
   height:100%;
 }
 
+/************MODAL************/
+/*****************************/
 .notification-modal{
   position:fixed;
   margin:10% auto;
@@ -181,6 +175,31 @@
   border-radius:50%;
   cursor:pointer;
 }
+.modal-attachment{
+  position:absolute;
+  height:12%;
+  width:100%;
+  bottom:14%;
+  background-color:#ff6600;
+  color:white;
+  text-align:center;
+}
+.modal-attachment:hover,
+.modal-attachment:active{
+  background-color:#c94900;
+}
+.modal-attachment span{
+  position:absolute;
+  display:block;
+  margin-top:2%;
+  width:100%;
+}
+#notification-att{
+  height:100%;
+  width:100%;
+  opacity:0;
+  cursor:pointer;
+}
 .modal-send{
   position:absolute;
   padding-top:1em;
@@ -189,26 +208,36 @@
   height:10%;
   font-weight:400;
   text-align:center;
-  border-top:0.1em solid #219fe9;
+  /*border-top:0.1em solid #219fe9;*/
   color:white;
   background-color:#219ef9;
   cursor:pointer;
 }
-
-.modal-body{
-  height:79%;
+.modal-send:hover,
+.modal-send:active{
+  background-color:#096d9f;
 }
-
+.modal-body{
+  height:75%;
+}
 #notification-message{
   resize:none;
   padding:1%;
-  margin:2% auto;
+  margin:0 auto;
   width:98%;
-  height:80%;
+  height:75%;
   overflow:auto;
   border:none;
   background-color:#f7f7f7;
   color:#4d4d4d;
+}
+
+/********HELPER STYLES********/
+/*****************************/
+.disabled-link{
+  opacity:0.5;
+  pointer-events:none;
+  cursor:default;
 }
 
 .dimmer{
