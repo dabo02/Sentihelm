@@ -5,6 +5,7 @@
   <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400,300">
   <link rel="stylesheet" type="text/css" href="stylesheets/tabs-view.css"/>
   <link rel="stylesheet" type="text/css" href="stylesheets/tipfeed-view.css"/>
+  <link rel="stylesheet" type="text/css" href="stylesheets/spinner.css"/>
   <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
   <script src="https://cdn.socket.io/socket.io-1.0.4.js"></script>
   <script src="//www.parsecdn.com/js/parse-1.2.18.min.js"></script>
@@ -12,6 +13,8 @@
   <script src="./javascript/tipfeed-ui.js"></script>
 </head>
 <body>
+  <!--HELPER ELEMENTS-->
+
   <div class="notification-modal">
     <div class="modal-title">
       <span>Contact User</span>
@@ -20,6 +23,7 @@
       </div>
     </div>
     <div class="modal-body">
+      <input id="notification-title" type="text" value=""/>
       <textarea id="notification-message" placeholder="Message to user"></textarea>
     </div>
     <div class="modal-attachment">
@@ -30,8 +34,18 @@
       Send
     </div>
   </div>
+
+  <div class="notification-alert">
+    <span>
+      An Error has occured. Message
+      can not be empty.
+    </span>
+  </div>
+
   <div class="dimmer">
   </div>
+
+  <!--PAGE CONTENT-->
   <div class="tab-bar">
     <img class="logo" src="./resources/images/sentihelm.png"/>
     <ul class="tabs">
@@ -40,6 +54,7 @@
     </ul>
   </div>
   <div class="content">
+    <button class="test-button">TEST ME</button>
     <ul id="feed">
       <!-- <li class="tip">
       <div class="tip-header">
@@ -75,7 +90,7 @@ MAP
 </div>
 </div>
 </div>
-</li> -->
+</li>  -->
 </ul>
 </div>
 </body>

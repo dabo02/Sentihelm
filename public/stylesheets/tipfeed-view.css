@@ -1,3 +1,5 @@
+/*************PAGE*************/
+/*****************************/
 .content{
   margin:0 auto;
   padding:0;
@@ -151,7 +153,7 @@
   width:40%;
   height:50%;
   background-color:#f7f7f7;
-  z-index:1000;
+  z-index:1;
   box-shadow:0.1em 0.1em 1em #4d4d4d;
 }
 .modal-title{
@@ -220,12 +222,21 @@
 .modal-body{
   height:75%;
 }
+#notification-title{
+  width:99.6%;
+  height:10%;
+  border:none;
+  border-bottom:0.1em solid #219ef9;
+  background-color:#f7f7f7;
+  color:#4d4d4d;
+  font-weight:400;
+  text-align:center;
+}
 #notification-message{
-  resize:none;
   padding:1%;
   margin:0 auto;
   width:98%;
-  height:75%;
+  height:65%;
   overflow:auto;
   border:none;
   background-color:#f7f7f7;
@@ -234,6 +245,21 @@
 
 /********HELPER STYLES********/
 /*****************************/
+.notification-alert{
+  position:absolute;
+  left:35%;
+  bottom:-20%;
+  width:30%;
+  max-height:20%;
+  background-color:#c2382e;
+  z-index:3;
+}
+.notification-alert span{
+  display:block;
+  padding:0.5em;
+  color:white;
+  text-align:center;
+}
 .disabled-link{
   opacity:0.5;
   pointer-events:none;

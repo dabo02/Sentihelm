@@ -4,10 +4,15 @@
 
 //Global var used to check if modal is active
 var modalActive = false;
+
+//Global var used to check if push notification
+//file has been selected
+var modalFileSelected = false;
+
 //Connect to server side socket
-// var socket = io.connect('http://localhost:80');
 var socket = io.connect('http://sentihelm.elasticbeanstalk.com');
-//Initialize Parse
+
+//Initialize Parse (keys are for BastaYa4.0 PROD)
 Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
 
 //Catch event when new tip arrives server-side.
@@ -18,34 +23,6 @@ socket.on('new tip', function(newTip){
   var name = tip.firstName +" "+tip.lastName;
   var crimeType = tip.crimeType;
   var crimeImage = "http://199.85.204.123/fb_images/"+tip.crimeListPosition+".png";
-  // switch(crimeType){
-  // case 'Assault':
-  //   crimeImage = "http://199.85.204.123/fb_images/0.png";
-  //   break;
-  // case 'Child Abuse':
-  //   crimeImage = "http://199.85.204.123/fb_images/1.png";
-  //   break;
-  // case 'Domestic Violence':
-  //   crimeImage = "http://199.85.204.123/fb_images/2.png";
-  //   break;
-  // case 'Drugs':
-  //   crimeImage = "http://199.85.204.123/fb_images/3.png";
-  //   break;
-  // case 'Murder':
-  //   crimeImage = "http://199.85.204.123/fb_images/4.png";
-  //   break;
-  // case 'Animal Abuse':
-  //   crimeImage = "http://199.85.204.123/fb_images/5.png";
-  //   break;
-  // case 'Robbery':
-  //   crimeImage = "http://199.85.204.123/fb_images/6.png";
-  //   break;
-  // case 'Rape':
-  //   crimeImage = "http://199.85.204.123/fb_images/7.png";
-  //   break;
-  // default:
-  //   crimeImage = "http://199.85.204.123/fb_images/8.png"
-  // }
   var phone = tip.phone;
   var userChannel = tip.channel;
   var videoUrl = tip.videoUrl;
@@ -86,38 +63,9 @@ socket.on('new tip', function(newTip){
     '-description"><span>'+crimeDescription+'</span></div></div><div '+
     'class="right"><div class="map-canvas" id="'+controlNumber+'"></div></div></div></li>';
   }
-  //Add tip to top of tip feed
-  $('#feed').prepend(tipHTML);
-  var currentTip = $('.tip').first();
-  currentTip.hide();
-  //If tip is anonymous, edit CSS and map content
-  if(anonymous){
-    $(currentTip).find('.tip-header span').css("color", "#ff6600");
-    $(currentTip).css("border","0.1em solid #ff6600");
-    var rightDiv = $(currentTip).find('.tip-body').find('.right');
-    rightDiv.html('NO LOCATION AVAILABLE');
-    rightDiv.addClass("no-location");
-  }
-  //If not anonymous, set tip to hold user channel for notifications
-  else{
-    currentTip.data("userChannel", userChannel);
-  }
-  currentTip.slideDown(750, function(){
-    //Only display map if user is not anonymous
-    if(!anonymous){
-      //Alternate method that assings unique id to each
-      //map view; might be useful when dealing with tip queue
-      // renderMap(mapId, latitude, longitude);
-      renderMap(latitude, longitude);
-      if(modalActive){
-        $('.map-canvas').css("background-color","black");
-        $('.map-canvas').css("opacity","0.5");
-      }
-    }
-  });
-  validateAttachments();
+  //Insert tip into feed
+  insertTip(tip, tipHTML);
 });
-
 
 //=========================================
 //  JQUERY
@@ -127,7 +75,8 @@ $(document).ready(function(){
   //--------------------
   //  ON PAGE LOAD
   //--------------------
-  //Hide the notification modal once page loads
+
+  //Hide the notification modal
   $('.notification-modal').hide();
 
   //--------------------
@@ -168,32 +117,78 @@ $(document).ready(function(){
   //  MODAL RELATED
   //--------------------
 
-  //Open up the modal that sends push notifications to mobile users
+  //Opens up the modal that sends push notifications to mobile users
   $('#feed').on('click', '.notification-button', function(){
-    //Note that modal is active, dim background and maps,
-    //set username on modal title and user's object ID and
-    //channel for push notifications
+    //Hide error container
+    //$('.notification-alert').hide();
+    //Set modal to active
     modalActive = true;
+    //Dim background and maps
     $('.map-canvas').css("background-color","black");
     $('.map-canvas').css("opacity","0.5");
     $('.dimmer').addClass('visible');
-    var userName = $(this).parent().parent().parent().siblings('.tip-header').find('span').text();
+    //Set user's Name on tip header
+    var tipHeader = $(this).parent().parent().parent().siblings('.tip-header');
+    var userName = tipHeader.find('span').text();
     $('.modal-title span').html('Contact '+userName);
-    var userChannel = $(this).parent().parent().parent().parent().data("userChannel");
+    //Get tip control number and user's channel and
+    //bind both to HTML element (for later use);
     var modal = $('.notification-modal');
+    var userChannel = $(this).parent().parent().parent().parent().data("userChannel");
     modal.data("userChannel",userChannel);
+    modal.data("controlNumber",controlNumber);
+    //Show control number on tip and on notification title
+    var controlNumber = tipHeader.find('.control-number').text();
+    $('#notification-title').val("Regarding Tip #"+controlNumber);
+    //Show modal
     modal.slideDown(500, function(){
       $('#notification-message').focus();
     });
   });
 
+  //When a notification attachment is selected, change color and name
+  $('#notification-att').change(function(){
+    if($(this).val()!=""){
+      modalFileSelected = true;
+      $('.modal-attachment').css("background-color","#3bc63f");
+      var fileName = $(this).val().substring(12);
+      $('.modal-attachment span').html(fileName);
+    }
+  });
+
+  $('.test-button').on('click', function(){
+    var error = $('.notification-alert');
+    error.find('span').text('Please enter a message to send to the user.');
+    error.animate({bottom:'=20%'},400,function(){
+      $('#notification-message').css("background","rgba(196, 45, 45, 0.48)");
+      $('#notification-message').focus();
+    });
+  });
+
   //Send push notification
-  //TODO Display loading icon and check if notification was sent
-  //TODO Add notification attachment
+  //TODO Check if notification was sent
   $('.modal-send').on('click', function(){
+    //Get values that will be sent/saved
     var message = $('#notification-message').val();
     var userChannel = $(this).parent().data("userChannel");
-    var userId = userChannel.substring(5);
+    //If no message was entered, display message and return
+    if(message==""){
+      var error = $('.notification-alert').find('span');
+      error.text('Please enter a message to send to the user.');
+      error.animate({bottom:'+=20%'},400,function(){
+        $('#notification-message').css("background","rgba(196, 45, 45, 0.48)");
+        $('#notification-message').focus();
+      });
+      return;
+    }
+    //Substitute "Send" with spinner
+    $(this).text('');
+    $(this).html('<div class="spinner">'+
+                    '<div class="bounce1"></div>'+
+                    '<div class="bounce2"></div>'+
+                    '<div class="bounce3"></div>'+
+                 '</div>');
+
     Parse.Push.send({
       channels: [ userChannel ],
       data: {
@@ -202,22 +197,7 @@ $(document).ready(function(){
         sound: "cheering.caf"
       }
     },
-    {
-      success: function() {
-        var PushNotification = Parse.Object.extend("PushNotifications");
-        var notification = new PushNotification();
-        notification.set("userId", userId);
-        notification.set("alert", message);
-        notification.save(null, {
-          success : function(notification){
-            closeModal();
-            console.log(notification);
-          },
-          error : function(notification, error){
-            console.log(error);
-          }
-        });
-      },
+    { success: saveNotification(message, userChannel),
       error: function(error) {
         console.log("FAILED: "+error);
       }
@@ -232,23 +212,45 @@ $(document).ready(function(){
 //  HELPER FUCTIONS
 //=========================================
 
-//Reders google map with provided coordinates
-//in the rightmost division of a tip
-function renderMap(latitude, longitude){
-  var location = new google.maps.LatLng(latitude, longitude);
-  //Might use this when building tip queue:
-  //var mapCanvas = document.getElementById(mapId);
-  var mapCanvas = $('.tip').first().find('.tip-body').find('.map-canvas')[0];
-  var mapOptions = {
-    center: location,
-    zoom: 14,
-    mapTypeId: google.maps.MapTypeId.ROADMAP
+//Insert received tip into tip feed with appropiate
+//modifications: both anonymous and non-anonymous,
+//binds data to HTML (used for push notifications),
+//renders map when needed and checks if links are
+//available
+function insertTip(tip, tipHTML){
+  //Add tip to top of tip feed
+  $('#feed').prepend(tipHTML);
+  var currentTip = $('.tip').first();
+  currentTip.hide();
+
+  //If tip is anonymous, edit CSS and map content
+  if(tip.anonymous){
+    $(currentTip).find('.tip-header span').css("color", "#ff6600");
+    $(currentTip).css("border","0.1em solid #ff6600");
+    var rightDiv = $(currentTip).find('.tip-body').find('.right');
+    rightDiv.html('NO LOCATION AVAILABLE');
+    rightDiv.addClass("no-location");
   }
-  var map = new google.maps.Map(mapCanvas, mapOptions);
-  var marker = new google.maps.Marker({
-    position: location,
-    map: map,
-    title: 'User Location'
+  else{
+    //Set tip to hold user channel for notifications
+    currentTip.data("userChannel", tip.channel);
+  }
+
+  //Show tip with animation
+  currentTip.slideDown(750, function(){
+    //Only display map if user is not anonymous
+    if(!tip.anonymous){
+      //Alternate method that assings unique id to each
+      //map view; might be useful when dealing with tip queue
+      // renderMap(controlNumber, latitude, longitude);
+      renderMap(tip.latitude, tip.longitude);
+      if(modalActive){
+        $('.map-canvas').css("background-color","black");
+        $('.map-canvas').css("opacity","0.5");
+      }
+    }
+    //Check links
+    validateAttachments();
   });
 }
 
@@ -270,13 +272,78 @@ function validateAttachments(){
   }
 }
 
-//Close push notification modal
+//Reders google map with provided coordinates
+//in the rightmost division of a tip
+function renderMap(latitude, longitude){
+  var location = new google.maps.LatLng(latitude, longitude);
+  //Might use this when building tip queue:
+  //var mapCanvas = document.getElementById(mapId);
+  var mapCanvas = $('.tip').first().find('.tip-body').find('.map-canvas')[0];
+  var mapOptions = {
+    center: location,
+    zoom: 14,
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  }
+  var map = new google.maps.Map(mapCanvas, mapOptions);
+  var marker = new google.maps.Marker({
+    position: location,
+    map: map,
+    title: 'User Location'
+  });
+}
+
+//Close push notification modal and reset all its content
 function closeModal(){
-  modalActive=false;
   $('.notification-modal').slideUp(500, function(){
+    //Remove dimmer
     $('.map-canvas').css("background-color","transparent");
     $('.map-canvas').css("opacity","1");
     $('.dimmer').removeClass('visible');
+    //Resest notification message field
     $('#notification-message').val('');
+    //Reset notification attachment and CSS
+    $('#notification-att').val('');
+    $('.modal-attachment').css("background-color","#ff6600");
+    $('.modal-attachment span').html("Attach Image or Video");
+    //Hide spinner, show send
+    $('.modal-send').html('');
+    $('.modal-send').text('Send');
+    modalActive = false;
+    modalFileSelected = false;
+  });
+}
+
+//Saves the push notification sent to Parse, along with
+//extra data for logging/extracting
+function saveNotification(message, userChannel){
+  var title = $('#notification-title').val();
+  var controlNumber = $('.modal-send').parent().data("controlNumber");
+  var userId = userChannel.substring(5);
+
+  var PushNotification = Parse.Object.extend("PushNotifications");
+  var notification = new PushNotification();
+  if(modalFileSelected){
+    var fileData = $('#notification-att')[0].files[0];
+    var attachment = new Parse.File("attachment", fileData);
+    if(fileData.type.match('image.*')){
+      notification.set("image", attachment);
+    }
+    else{
+      notification.set("video", attachment);
+    }
+  }
+  notification.set("userId", userId);
+  notification.set("tipId", controlNumber);
+  notification.set("title", title);
+  notification.set("message", message);
+
+  notification.save(null, {
+    success : function(notification){
+      closeModal();
+      console.log(notification);
+    },
+    error : function(notification, error){
+      console.log(error);
+    }
   });
 }
