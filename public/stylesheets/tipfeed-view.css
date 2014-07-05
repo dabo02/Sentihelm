@@ -246,7 +246,7 @@
 /********HELPER STYLES********/
 /*****************************/
 .notification-alert{
-  position:absolute;
+  position:fixed;
   left:35%;
   bottom:-20%;
   width:30%;

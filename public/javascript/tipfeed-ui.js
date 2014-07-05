@@ -156,15 +156,6 @@ $(document).ready(function(){
     }
   });
 
-  $('.test-button').on('click', function(){
-    var error = $('.notification-alert');
-    error.find('span').text('Please enter a message to send to the user.');
-    error.animate({bottom:'=20%'},400,function(){
-      $('#notification-message').css("background","rgba(196, 45, 45, 0.48)");
-      $('#notification-message').focus();
-    });
-  });
-
   //Send push notification
   //TODO Check if notification was sent
   $('.modal-send').on('click', function(){
@@ -173,15 +164,15 @@ $(document).ready(function(){
     var userChannel = $(this).parent().data("userChannel");
     //If no message was entered, display message and return
     if(message==""){
-      var error = $('.notification-alert').find('span');
-      error.text('Please enter a message to send to the user.');
-      error.animate({bottom:'+=20%'},400,function(){
-        $('#notification-message').css("background","rgba(196, 45, 45, 0.48)");
-        $('#notification-message').focus();
-      });
+      var error = $('.notification-alert');
+      error.find('span').text('Please enter a message to send to the user.');
+      error.animate({bottom:"20%"},600);
+      $('#notification-message').css("background","rgba(198, 45, 45, 0.28)");
+      $('#notification-message').focus();
       return;
     }
-    //Substitute "Send" with spinner
+    //Otherwise, substitute "Send" with spinner,
+    //indicating sending is in progress
     $(this).text('');
     $(this).html('<div class="spinner">'+
                     '<div class="bounce1"></div>'+
@@ -203,6 +194,9 @@ $(document).ready(function(){
       }
     });
   });
+
+  //Reset notification message field and hide notification error
+  $('#notification-message').on('keypress', resetNotificationMessage);
 
   //On click, close push notification modal
   $('.close-modal').on('click', closeModal);
@@ -292,8 +286,15 @@ function renderMap(latitude, longitude){
   });
 }
 
+//Reset notification message field and hide notification error
+function resetNotificationMessage(){
+  $('.notification-alert').animate({bottom:"-20%"});
+  $('#notification-message').css("background","#f7f7f7");
+}
+
 //Close push notification modal and reset all its content
 function closeModal(){
+  resetNotificationMessage();
   $('.notification-modal').slideUp(500, function(){
     //Remove dimmer
     $('.map-canvas').css("background-color","transparent");
