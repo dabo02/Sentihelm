@@ -17,51 +17,41 @@ Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qR
 
 //Catch event when new tip arrives server-side.
 //Extract all tip info from received JSON
-socket.on('new tip', function(newTip){
-  var tip = newTip.tip;
-  var controlNumber = tip.controlNumber;
+socket.on('new tip', function(data){
+  var tip = data.tip;
   var name = tip.firstName +" "+tip.lastName;
-  var crimeType = tip.crimeType;
   var crimeImage = "http://199.85.204.123/fb_images/"+tip.crimeListPosition+".png";
-  var phone = tip.phone;
-  var userChannel = tip.channel;
-  var videoUrl = tip.videoUrl;
-  var imageUrl = tip.imageUrl;
-  var audioUrl = tip.audioUrl;
   var crimeDescription = tip.crimeDescription;
   if(crimeDescription==undefined){
     crimeDescription="";
   }
-  var latitude = tip.latitude;
-  var longitude = tip.longitude;
-  var anonymous = tip.anonymous;
   var tipHTML;
   //Create tip HTML
-  if(anonymous){
+  if(tip.anonymous){
     tipHTML = '<li class="tip"><div class="tip-header"><span>'+'ANONYMOUS'+'</span>'+
-    '<div class="control-number anon">'+controlNumber+'</div>'+
+    '<div class="control-number anon">'+tip.controlNumber+'</div>'+
     '</div><div class="tip-body"><div class="left"><img src="'+crimeImage+'"/>'+
-    '<br><span>'+crimeType+'</span></div><div class="center">'+
-    '<div class="attachments"><a id="videoAtt" href="'+videoUrl+'"><img src="./'+
-    'resources/images/videoAtt.png"/></a><a id="imageAtt" href="'+imageUrl+'"><img' +
-    ' src="./resources/images/imageAtt.png"/></a><a id="audioAtt" href="'+audioUrl+'"><img'+
+    '<br><span>'+tip.crimeType+'</span></div><div class="center">'+
+    '<div class="attachments"><a id="videoAtt" href="'+tip.videoUrl+'"><img src="./'+
+    'resources/images/videoAtt.png"/></a><a id="imageAtt" href="'+tip.imageUrl+'"><img' +
+    ' src="./resources/images/imageAtt.png"/></a><a id="audioAtt" href="'+tip.audioUrl+'"><img'+
     ' src="./resources/images/audioAtt.png"/></a></div><div class="crime'+
     '-description"><span>'+crimeDescription+'</span></div></div><div '+
     'class="right"></div></div></li>';
   }
   else{
     tipHTML = '<li class="tip"><div class="tip-header"><span>'+name+'</span>'+
-    '<div class="control-number">'+controlNumber+'</div>'+
+    '<div class="control-number">'+tip.controlNumber+'</div>'+
     '</div>'+'<div class="tip-body"><div class="left"><img src="'+crimeImage+'"/>'+
-    '<br><span>'+crimeType+'</span><div class="contact-info">CONTACT USER\n<span '+
-    'class="contact-number">'+phone+'</span><button '+
+    '<br><span>'+tip.crimeType+'</span><div class="contact-info">CONTACT USER\n<span '+
+    'class="contact-number">'+tip.phone+'</span><button '+
     'class="notification-button">Send Notification</button></div></div><div class="center">'+
-    '<div class="attachments"><a id="videoAtt" href="'+videoUrl+'"><img src="./'+
-    'resources/images/videoAtt.png"/></a><a id="imageAtt" href="'+imageUrl+'"><img' +
-    ' src="./resources/images/imageAtt.png"/></a><a id="audioAtt" href="'+audioUrl+'"><img'+
+    '<div class="attachments"><a id="videoAtt" href="'+tip.videoUrl+'"><img src="./'+
+    'resources/images/videoAtt.png"/></a><a id="imageAtt" href="'+tip.imageUrl+'"><img' +
+    ' src="./resources/images/imageAtt.png"/></a><a id="audioAtt" href="'+tip.audioUrl+'"><img'+
     ' src="./resources/images/audioAtt.png"/></a></div><div class="crime'+
     '-description"><span>'+crimeDescription+'</span></div></div><div '+
-    'class="right"><div class="map-canvas" id="'+controlNumber+'"></div></div></div></li>';
+    'class="right"><div class="map-canvas" id="'+tip.controlNumber+'"></div></div></div></li>';
   }
   //Insert tip into feed
   insertTip(tip, tipHTML);
@@ -84,7 +74,7 @@ $(document).ready(function(){
   //--------------------
 
   //Change attachment image to hover state
-  $('#feed').on('mouseenter','a',function(){
+  $('#tip-feed').on('mouseenter','a',function(){
     var attachmentLink = $(this).attr('id');
     var attchImg = $(this).find('img');
     if(attachmentLink=='videoAtt'){
@@ -99,7 +89,7 @@ $(document).ready(function(){
   });
 
   //Change attachment image to default state
-  $('#feed').on('mouseleave','a',function(){
+  $('#tip-feed').on('mouseleave','a',function(){
     var attachmentLink = $(this).attr('id');
     var attchImg = $(this).find('img');
     if(attachmentLink=='videoAtt'){
@@ -118,28 +108,32 @@ $(document).ready(function(){
   //--------------------
 
   //Opens up the modal that sends push notifications to mobile users
-  $('#feed').on('click', '.notification-button', function(){
-    //Hide error container
-    //$('.notification-alert').hide();
+  $('#tip-feed').on('click', '.notification-button', function(){
+    //Get values
+    var selectedTip = $(this).closest('.tip');
+    var userName = selectedTip.data("userName");
+    var controlNumber = selectedTip.data("controlNumber");
+    var userChannel = selectedTip.data("userChannel");
+
     //Set modal to active
     modalActive = true;
+
     //Dim background and maps
     $('.map-canvas').css("background-color","black");
     $('.map-canvas').css("opacity","0.5");
     $('.dimmer').addClass('visible');
+
     //Set user's Name on tip header
-    var tipHeader = $(this).parent().parent().parent().siblings('.tip-header');
-    var userName = tipHeader.find('span').text();
     $('.modal-title span').html('Contact '+userName);
-    //Get tip control number and user's channel and
-    //bind both to HTML element (for later use);
+
+    //Bind data to HTML element (for later use);
     var modal = $('.notification-modal');
-    var userChannel = $(this).parent().parent().parent().parent().data("userChannel");
-    modal.data("userChannel",userChannel);
     modal.data("controlNumber",controlNumber);
+    modal.data("userChannel", userChannel);
+
     //Show control number on tip and on notification title
-    var controlNumber = tipHeader.find('.control-number').text();
     $('#notification-title').val("Regarding Tip #"+controlNumber);
+
     //Show modal
     modal.slideDown(500, function(){
       $('#notification-message').focus();
@@ -157,15 +151,11 @@ $(document).ready(function(){
   });
 
   //Send push notification
-  //TODO Check if notification was sent
   $('.modal-send').on('click', function(){
-    //Get values that will be sent/saved
-    var message = $('#notification-message').val();
-    var userChannel = $(this).parent().data("userChannel");
     //If no message was entered, display message and return
-    if(message==""){
+    if($('#notification-message').val()==""){
       var error = $('.notification-alert');
-      error.find('span').text('Please enter a message to send to the user.');
+      error.find('span').text('Please enter a message to send to the user');
       error.animate({bottom:"20%"},600);
       $('#notification-message').css("background","rgba(198, 45, 45, 0.28)");
       $('#notification-message').focus();
@@ -175,24 +165,11 @@ $(document).ready(function(){
     //indicating sending is in progress
     $(this).text('');
     $(this).html('<div class="spinner">'+
-                    '<div class="bounce1"></div>'+
-                    '<div class="bounce2"></div>'+
-                    '<div class="bounce3"></div>'+
-                 '</div>');
-
-    Parse.Push.send({
-      channels: [ userChannel ],
-      data: {
-        alert: message,
-        badge:"Increment",
-        sound: "cheering.caf"
-      }
-    },
-    { success: saveNotification(message, userChannel),
-      error: function(error) {
-        console.log("FAILED: "+error);
-      }
-    });
+    '<div class="bounce1"></div>'+
+    '<div class="bounce2"></div>'+
+    '<div class="bounce3"></div>'+
+    '</div>');
+    saveAndPushNotification($(this));
   });
 
   //Reset notification message field and hide notification error
@@ -213,7 +190,7 @@ $(document).ready(function(){
 //available
 function insertTip(tip, tipHTML){
   //Add tip to top of tip feed
-  $('#feed').prepend(tipHTML);
+  $('#tip-feed').prepend(tipHTML);
   var currentTip = $('.tip').first();
   currentTip.hide();
 
@@ -226,8 +203,10 @@ function insertTip(tip, tipHTML){
     rightDiv.addClass("no-location");
   }
   else{
-    //Set tip to hold user channel for notifications
+    //Set tip to hold data for notifications
     currentTip.data("userChannel", tip.channel);
+    currentTip.data("userName", tip.firstName+" "+tip.lastName);
+    currentTip.data("controlNumber", tip.controlNumber);
   }
 
   //Show tip with animation
@@ -236,13 +215,14 @@ function insertTip(tip, tipHTML){
     if(!tip.anonymous){
       //Alternate method that assings unique id to each
       //map view; might be useful when dealing with tip queue
-      // renderMap(controlNumber, latitude, longitude);
+      // renderMap(controlNumber, tip.latitude, tip.longitude);
       renderMap(tip.latitude, tip.longitude);
       if(modalActive){
         $('.map-canvas').css("background-color","black");
         $('.map-canvas').css("opacity","0.5");
       }
     }
+
     //Check links
     validateAttachments();
   });
@@ -288,7 +268,7 @@ function renderMap(latitude, longitude){
 
 //Reset notification message field and hide notification error
 function resetNotificationMessage(){
-  $('.notification-alert').animate({bottom:"-20%"});
+  $('.notification-alert').animate({bottom:"-6%"});
   $('#notification-message').css("background","#f7f7f7");
 }
 
@@ -300,12 +280,15 @@ function closeModal(){
     $('.map-canvas').css("background-color","transparent");
     $('.map-canvas').css("opacity","1");
     $('.dimmer').removeClass('visible');
+
     //Resest notification message field
     $('#notification-message').val('');
+
     //Reset notification attachment and CSS
     $('#notification-att').val('');
     $('.modal-attachment').css("background-color","#ff6600");
     $('.modal-attachment span').html("Attach Image or Video");
+
     //Hide spinner, show send
     $('.modal-send').html('');
     $('.modal-send').text('Send');
@@ -316,9 +299,12 @@ function closeModal(){
 
 //Saves the push notification sent to Parse, along with
 //extra data for logging/extracting
-function saveNotification(message, userChannel){
+function saveAndPushNotification(tip){
+  //Get values that will be sent/saved
   var title = $('#notification-title').val();
-  var controlNumber = $('.modal-send').parent().data("controlNumber");
+  var message = $('#notification-message').val();
+  var userChannel = tip.parent().data("userChannel");
+  var controlNumber = tip.parent().data("controlNumber");
   var userId = userChannel.substring(5);
 
   var PushNotification = Parse.Object.extend("PushNotifications");
@@ -340,11 +326,30 @@ function saveNotification(message, userChannel){
 
   notification.save(null, {
     success : function(notification){
+      var notificationId = notification.id;
+      Parse.Push.send({
+        channels: [ userChannel ],
+        data: {
+          alert: message,
+          badge: "Increment",
+          sound: "cheering.caf",
+          title: title,
+          pushId: notificationId
+        }
+      },
+      {
+        success: function(){},
+        error: function(error) {
+          console.log("FAILED: "+error);
+        }
+      });
       closeModal();
-      console.log(notification);
     },
     error : function(notification, error){
-      console.log(error);
+      var error = $('.notification-alert');
+      error.find('span').text('An error occurred. The notification could not be sent. Please try again.');
+      error.animate({bottom:"20%"},600);
+      console.log("FAILED: "+error);
     }
   });
 }
