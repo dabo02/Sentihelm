@@ -3,17 +3,20 @@
 <head>
   <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css"/>
   <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"/>
-  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="../resources/font-awesome-4.1.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800">
+  <link rel="stylesheet" type="text/css" href="../resources/font-awesome-4.1.0/css/font-awesome.min.css">
   <link rel="stylesheet" type="text/css" href="stylesheets/main_view.css"/>
   <link rel="stylesheet" type="text/css" href="stylesheets/tipfeed-view.css"/>
-  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
-  <script src="//www.parsecdn.com/js/parse-1.2.18.min.js"></script>
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+  <script type="text/javascript" src="//www.parsecdn.com/js/parse-1.2.18.min.js"></script>
   <script type="text/javascript" src="/javascript/client.socket.io-1.0.4.js"></script>
   <script type="text/javascript" src="/javascript/jquery-1.11.1.min.js"></script>
   <script type="text/javascript" src="/javascript/angular.min.js"></script>
+  <script type="text/javascript" src="/javascript/angular-route.min.js"></script>
+  <script type="text/javascript" src="/javascript/lodash-underscore.min.js"></script>
+  <script type="text/javascript" src="/javascript/angular-google-maps.min.js"></script>
+  <script type="text/javascript" src="/javascript/socket.min.js"></script>
   <script type="text/javascript" src="/javascript/sentihelm-ng.js"></script>
-  <script type="text/javascript" src="/javascript/tipfeed-ui.js"></script>
 </head>
 
 <body>
@@ -22,7 +25,11 @@
 
   <drawer></drawer>
 
-  <tip-feed></tip-feed>
+  <notification-modal></notification-modal>
+
+  <div ng-view>
+
+  </div>
 
 </body>
 

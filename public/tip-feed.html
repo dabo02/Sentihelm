@@ -1,2 +1,79 @@
-<ul id="tip-feed">
-</ul>
+<div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
+
+  <div id="tip-feed-container">
+
+    <ul id="tip-feed">
+      <li ng-class="{'orange-border':tip.anonymous}"class="tip" ng-repeat="tip in tipfeed.currentTips track by $index" ng-show="tip">
+
+        <div class="tip-header">
+          <span class="white">
+            {{tip.date}}
+          </span>
+          <span ng-class="{orange:tip.anonymous, white:!tip.anonymous}">
+            {{tip.firstName+" "+tip.lastName}}
+          </span>
+          <div ng-class="{'orange-bg':tip.anonymous}" class="control-number">
+            {{tip.controlNumber}}
+          </div>
+        </div>
+
+        <div class="tip-body">
+
+          <div class="left">
+            <img src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
+            <br>
+            <span>{{tip.crimeType}}</span>
+            <div ng-hide="tip.anonymous" class="contact-info">
+              CONTACT USER
+              <span class="contact-number">{{tip.phone}}</span>
+              <button class="notification-button">Send Notification</button>
+            </div>
+          </div>
+
+          <div class="center">
+            <div class="attachments">
+              <a id="videoAtt" class="{{tip.videoUrl}}" href="{{tip.videoUrl}}">
+                <img src="./resources/images/videoAtt.png"/>
+              </a>
+              <a id="imageAtt" class="{{tip.imageUrl}}" href="{{tip.imageUrl}}">
+                <img src="./resources/images/imageAtt.png"/>
+              </a>
+              <a id="audioAtt" class="{{tip.audioUrl}}" href="{{tip.audioUrl}}">
+                <img src="./resources/images/audioAtt.png"/>
+              </a>
+            </div>
+            <div class="crime-description">
+              <span>{{tip.crimeDescription}}</span>
+            </div>
+          </div>
+
+          <div class="right">
+            <div ng-class="{'no-location':tip.anonymous}" class="map-canvas" id="{{tip.controlNumber}}">
+              <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
+              <google-map center="tip.center" zoom="14" ng-hide="tip.anonymous">
+                <marker coords='tip.center'></marker>
+              </google-map>
+            </div>
+          </div>
+
+        </div>
+      </li>
+    </ul>
+
+  </div>
+
+  <div id="paginator-container">
+    <ul id="paginator">
+      <li id="page-previous" ng-class="{'disabled-link': tipfeed.currentPage===1}" class="paginator-control" ng-click="tipfeed.prevPage()">
+        <span class="fa fa-chevron-left fa-lg"></span>
+      </li>
+      <li ng-repeat="value in tipfeed.paginatorSet" ng-class="{'active-page': tipfeed.currentPage === value}"class="paginator-control" ng-click="tipfeed.changePage(value)">
+        {{value}}
+      </li>
+      <li id="page-next" ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}" class="paginator-control" ng-click="tipfeed.nextPage()">
+        <span class="fa fa-chevron-right fa-lg"></span>
+      </li>
+    </ul>
+  </div>
+
+</div>

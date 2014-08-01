@@ -59,12 +59,21 @@ var otKey = '44755992';
 var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
 var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
 
-//Setup socket.io to announce when client connected/disconnected
+//Array that holds all current tips
+var tipArray = [];
+
+//Setup socket.io that communicates with front end
 io.on('connect', function(socket){
-  console.log(cyan("WEB") +" : "+green("CLIENT CONNECTED\n"));
-});
-io.on('disconnect', function(socket){
-  console.log(cyan("WEB") +" : "+red("CLIENT DISCONNECTED\n"));
+
+  socket.on('request-batch', function(data){
+    var upperBound = data.upperBound;
+    var currentTips = [];
+    for(var i = upperBound-10;i<upperBound;i++){
+      currentTips.push(tipArray[i]);
+    }
+    socket.emit('respond-batch',{currentTips : currentTips, totalTipCount: tipArray.length});
+  });
+
 });
 
 //=========================================
@@ -94,6 +103,7 @@ app.post('/tips', function(request, response){
   var tip = request.body;
   var pass = tip.pass;
   if(pass=='bahamut'){
+    tipArray.unshift(tip);
     io.sockets.emit('new tip', {tip : tip});
     response.send(200);
   }
@@ -172,7 +182,7 @@ var tcpServer = net.createServer(function(socket){
   });
 });
 
-tcpServer.listen(3000, function() {
+tcpServer.listen(3030, function() {
   console.log(notice('TCP SERVER RUNNING ON PORT %s\n'), tcpServer.address().port);
 });
 

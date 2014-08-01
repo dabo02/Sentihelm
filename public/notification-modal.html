@@ -1,0 +1,19 @@
+<div class="notification-modal" ng-show="modal.active">
+  <div class="modal-title">
+    <span>Contact User</span>
+    <div class="close-modal">
+      x
+    </div>
+  </div>
+  <div class="modal-body">
+    <input id="notification-title" type="text" value=""/>
+    <textarea id="notification-message" placeholder="Message to user"></textarea>
+  </div>
+  <div class="modal-attachment">
+    <span>Attach Image or Video</span>
+    <input id="notification-att" type="file" size="10" accept="image/*,video/*">
+  </div>
+  <div class="modal-send" ng-click="modal.sendNotification()">
+    Send
+  </div>
+</div>

@@ -1,8 +1,10 @@
 <ul class="drawer" ng-style="drawer.style">
-  <li class="drawer-item" ng-repeat="item in drawer.entries" ng-click="">
-    <button class="transparent-button">
-      <span class="{{item.icon}} item-icon"></span>
-      <span class="item-name" ng-show="drawer.entriesOn">{{item.name}}</span>
-    </button>
+  <li class="drawer-item" ng-repeat="item in drawer.entries">
+    <form action="{{item.action}}">
+      <button type="submit" class="transparent-button">
+        <span class="{{item.icon}} item-icon"></span>
+        <span class="item-name" ng-show="drawer.entriesOn">{{item.name}}</span>
+      </button>
+    </form>
   </li>
 </ul>
