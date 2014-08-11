@@ -187,13 +187,12 @@
 /************MODAL************/
 /*****************************/
 
-.notification-modal{
-  position:fixed;
+/*.notification-modal{
   margin:10% auto;
   margin-left:-20%;
   left:50%;
-  width:40%;
-  height:50%;
+  width:20%;
+  height:20%;
   background-color:#f7f7f7;
   z-index:1;
   box-shadow:0.1em 0.1em 1em #4d4d4d;
@@ -283,6 +282,10 @@
   background-color:#f7f7f7;
   color:#4d4d4d;
   resize:none;
+}*/
+
+.tester-class{
+  margin:20% auto;
 }
 
 /********HELPER STYLES********/
@@ -309,14 +312,14 @@
   cursor:default;
 }
 
-.dimmer{
+/*.dimmer{
   position:fixed;
   background-color:black;
   opacity:0.5;
   width:100%;
   height:100%;
   display:none;
-}
+}*/
 
 .hidden{
   display:none;

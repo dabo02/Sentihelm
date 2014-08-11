@@ -26,7 +26,7 @@
             <div ng-hide="tip.anonymous" class="contact-info">
               CONTACT USER
               <span class="contact-number">{{tip.phone}}</span>
-              <button class="notification-button">Send Notification</button>
+              <button ng-click="tipfeed.showModal()" class="notification-button">Send Notification</button>
             </div>
           </div>
 
@@ -50,30 +50,30 @@
           <div class="right">
             <div ng-class="{'no-location':tip.anonymous}" class="map-canvas" id="{{tip.controlNumber}}">
               <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
-              <google-map center="tip.center" zoom="14" ng-hide="tip.anonymous">
-                <marker coords='tip.center'></marker>
+              <google-map center="tip.center" zoom="14" ng-hide="tip.anonymous" ng-cloak>
+                <marker coords="tip.center"></marker>
               </google-map>
-            </div>
           </div>
-
         </div>
-      </li>
-    </ul>
 
-  </div>
+      </div>
+    </li>
+  </ul>
 
-  <div id="paginator-container">
-    <ul id="paginator">
-      <li id="page-previous" ng-class="{'disabled-link': tipfeed.currentPage===1}" class="paginator-control" ng-click="tipfeed.prevPage()">
-        <span class="fa fa-chevron-left fa-lg"></span>
-      </li>
-      <li ng-repeat="value in tipfeed.paginatorSet" ng-class="{'active-page': tipfeed.currentPage === value}"class="paginator-control" ng-click="tipfeed.changePage(value)">
-        {{value}}
-      </li>
-      <li id="page-next" ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}" class="paginator-control" ng-click="tipfeed.nextPage()">
-        <span class="fa fa-chevron-right fa-lg"></span>
-      </li>
-    </ul>
-  </div>
+</div>
+
+<div id="paginator-container">
+  <ul id="paginator">
+    <li id="page-previous" ng-show="tipfeed.paginatorSet" ng-class="{'disabled-link': tipfeed.currentPage===1}" class="paginator-control" ng-click="tipfeed.prevPage()">
+      <span class="fa fa-chevron-left fa-lg"></span>
+    </li>
+    <li ng-repeat="value in tipfeed.paginatorSet" ng-class="{'active-page': tipfeed.currentPage === value}"class="paginator-control" ng-click="tipfeed.changePage(value)">
+      {{value}}
+    </li>
+    <li id="page-next" ng-show="tipfeed.paginatorSet" ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}" class="paginator-control" ng-click="tipfeed.nextPage()">
+      <span class="fa fa-chevron-right fa-lg"></span>
+    </li>
+  </ul>
+</div>
 
 </div>

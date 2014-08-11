@@ -1,5 +1,22 @@
 (function(){
-  var app = angular.module('sentihelm', ['ngRoute','btford.socket-io','google-maps']);
+  var app = angular.module('sentihelm', ['ngRoute','btford.socket-io','google-maps','ngDialog']);
+
+  //Sets up all the routes the app will handle,
+  //so as to have a one page app with deep-linking
+  app.config(['$routeProvider', function($routeProvider) {
+    $routeProvider.
+    when('/tipfeed', {
+      templateUrl: 'tip-feed.html',
+      controller: 'TipFeedController'
+    }).
+    // when('/notifications', {
+    //   templateUrl: 'notifications.html',
+    //   controller: 'NotificationsController'
+    // }).
+    otherwise({
+      redirectTo: '/tipfeed'
+    });
+  }]);
 
   //Creates an injectable socket service that
   //works just like socket.io's client library
@@ -11,21 +28,59 @@
     return socket;
   });
 
-  //Sets up all the routes the app will handle,
-  //so as to have a one page app with deep-linking
-  app.config(['$routeProvider', function($routeProvider) {
-    $routeProvider.
-    when('/tipfeed', {
-      templateUrl: 'tip-feed.html',
-      controller: 'TipFeedController'
-    }).
-    when('/notifications', {
-      templateUrl: 'notifications.html',
-      controller: 'NotificationsController'
-    }).
-    otherwise({
-      redirectTo: '/tipfeed'
+  app.factory('paginatorService', ['socket', '$rootScope', function(socket, $rootScope){
+    var paginator = {};
+    paginator.currentTips = [];
+    paginator.totalTipCount = 0;
+    paginator.currentPage = 1;
+    paginator.lastPage = 1;
+    paginator.paginatorSet = [];
+    paginator.paginatorSetSize = 0;
+    socket.emit('request-batch', {upperBound: (paginator.currentPage*10)});
+
+    socket.on('respond-batch', function(data){
+      $rootScope.$broadcast('changeTips',[data.currentTips]);
+      paginator.totalTipCount = data.totalTipCount;
+      paginator.lastPage = Math.ceil(paginator.totalTipCount/10) || 1;
+      if(paginator.currentPage===1){
+        paginator.pageSetUpdater(paginator.lastPage);
+      }
     });
+
+
+    paginator.changePage = function(newPage){
+      this.currentPage = newPage;
+      socket.emit('request-batch', {upperBound: (this.currentPage*10)});
+    };
+
+    paginator.prevPage = function(){
+      if(this.currentPage!==1){
+        if((this.currentPage-1)%10===0){
+          this.pageSetUpdater(this.lastPage);
+        }
+        this.changePage(this.currentPage-=1);
+      }
+    };
+
+    paginator.nextPage = function(){
+      if(this.currentPage!=this.lastPage){
+        if(this.currentPage%10===0){
+          this.pageSetUpdater(this.lastPage - this.currentPage);
+        }
+        this.changePage(this.currentPage+=1);
+      }
+    };
+
+    paginator.pageSetUpdater = function(value){
+      this.paginatorSet = [];
+      this.paginatorSetSize = 10 && value;
+      for(var i=0; i<this.paginatorSetSize;i++){
+        this.paginatorSet.push(this.currentPage+i);
+      }
+      $rootScope.$broadcast('paginatorSetUpdate',[paginator.paginatorSet, paginator.lastPage]);
+    }
+
+    return paginator;
   }]);
 
   //Creates the header element,
@@ -64,12 +119,12 @@
         //Drawer options with name and icon;
         //entries are off by default
         this.entries=[
-        {name:'Tip Feed', icon:'fa fa-inbox', action:'#/tipfeed'},
-        {name:'Video Streams', icon:'fa fa-video-camera', action:'#/streams'},
-        {name:'Send Notification', icon:'fa fa-send-o', action:'#/notifications'},
-        {name:'Maps', icon:'fa fa-globe', action:'#/maps'},
-        {name:'Wanted List', icon:'fa fa-warning', action:'#/wanted'},
-        {name:'Data Analysis', icon:'fa fa-bar-chart-o', action:'#/analysis'}
+          {name:'Tip Feed', icon:'fa fa-inbox', action:'#/tipfeed'},
+          {name:'Video Streams', icon:'fa fa-video-camera', action:'#/streams'},
+          {name:'Send Notification', icon:'fa fa-send-o', action:'#/notifications'},
+          {name:'Maps', icon:'fa fa-globe', action:'#/maps'},
+          {name:'Wanted List', icon:'fa fa-warning', action:'#/wanted'},
+          {name:'Data Analysis', icon:'fa fa-bar-chart-o', action:'#/analysis'}
         ];
 
         this.entriesOn = false;
@@ -93,74 +148,81 @@
     };
   });
 
-  //Creates the notification modal,
-  //along with all its functionality
-  app.directive('notificationModal', function(){
-    return{
-      restrict: 'E',
-      templateUrl:'notification-modal.html',
-
-      controller: function(){
-        this.active = false;
-        this.sendNotification = function(){
-
-        };
-      },
-
-      controllerAs: 'modal'
-    }
-  });
-
-  app.controller('TipFeedController', function(socket){
+  //Controller fot tipfeed route; presents the tip feed
+  //which lets you interact with tips
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', function($scope, socket, ngDialog, paginatorService){
     var tipfeed = this;
-    this.currentTips = [];
-    this.totalTipCount = 0;
     this.currentPage = 1;
     this.lastPage = 1;
-    this.paginatorSet = [];
-    this.paginatorSetSize = 0;
-    socket.emit('request-batch', {upperBound: (this.currentPage*10)});
+    this.paginatorSet=[];
+    // this.currentTips = [];
+    // this.totalTipCount = 0;
 
-    socket.on('respond-batch', function(data){
-      tipfeed.currentTips = data.currentTips;
-      tipfeed.totalTipCount = data.totalTipCount;
-      tipfeed.lastPage = Math.ceil(tipfeed.totalTipCount/10) || 1;
-      if(tipfeed.currentPage===1){
-        tipfeed.pageSetUpdater(tipfeed.lastPage);
-      }
+    // this.paginatorSet = [];
+    // this.paginatorSetSize = 0;
+    // socket.emit('request-batch', {upperBound: (this.currentPage*10)});
+    //
+    // socket.on('respond-batch', function(data){
+    //   tipfeed.currentTips = data.currentTips;
+    //   tipfeed.totalTipCount = data.totalTipCount;
+    //   tipfeed.lastPage = Math.ceil(tipfeed.totalTipCount/10) || 1;
+    //   if(tipfeed.currentPage===1){
+    //     tipfeed.pageSetUpdater(tipfeed.lastPage);
+    //   }
+    // });
+
+    $scope.$on('changeTips', function(event, data){
+      tipfeed.currentTips = data[0];
+    });
+
+    $scope.$on('paginatorSetUpdate', function(event, data){
+      tipfeed.paginatorSet = data[0];
+      tipfeed.lastPage = data[1];
     });
 
     this.changePage = function(newPage){
       this.currentPage = newPage;
-      socket.emit('request-batch', {upperBound: (this.currentPage*10)});
+      paginatorService.changePage(newPage);
+      // this.currentPage = newPage;
+      // socket.emit('request-batch', {upperBound: (this.currentPage*10)});
     };
 
     this.nextPage = function(){
-      if(this.currentPage!=this.lastPage){
-        if(this.currentPage%10===0){
-          this.pageSetUpdater(this.lastPage - this.currentPage);
-        }
-        this.changePage(this.currentPage+=1);
-      }
+      this.currentPage = (this.currentPage + 1) && this.lastPage;
+      paginatorService.nextPage();
+      // if(this.currentPage!=this.lastPage){
+      //   if(this.currentPage%10===0){
+      //     this.pageSetUpdater(this.lastPage - this.currentPage);
+      //   }
+      //   this.changePage(this.currentPage+=1);
+      // }
     };
 
     this.prevPage = function(){
-      if(this.currentPage!==1){
-        if((this.currentPage-1)%10===0){
-          this.pageSetUpdater(this.lastPage);
-        }
-        this.changePage(this.currentPage-=1);
-      }
+      this.currentPage = (this.currentPage - 1) || 1;
+      paginatorService.prevPage();
+      // if(this.currentPage!==1){
+      //   if((this.currentPage-1)%10===0){
+      //     this.pageSetUpdater(this.lastPage);
+      //   }
+      //   this.changePage(this.currentPage-=1);
+      // }
     };
-
-    this.pageSetUpdater = function(value){
-      this.paginatorSet = [];
-      this.paginatorSetSize = 10 && value;
-      for(var i=0; i<this.paginatorSetSize;i++){
-        this.paginatorSet.push(this.currentPage+i);
-      }
-    }
-
-  });
+    //
+    // this.pageSetUpdater = function(value){
+    //   this.paginatorSet = [];
+    //   this.paginatorSetSize = 10 && value;
+    //   for(var i=0; i<this.paginatorSetSize;i++){
+    //     this.paginatorSet.push(this.currentPage+i);
+    //   }
+    // }
+    //
+    this.showModal = function(){
+      ngDialog.open({
+        template: '../notification-modal.html',
+        className: 'ngdialog-theme-plain'
+      });
+    };
+  }]);
 
 })();
