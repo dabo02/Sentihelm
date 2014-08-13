@@ -1,13 +1,5 @@
 /*************PAGE*************/
 /*****************************/
-
-.content{
-  margin:0 auto;
-  padding:0;
-  width:75%;
-  height:70%;
-}
-
 #tip-feed-container{
   position:fixed;
   top:20%;
@@ -28,7 +20,6 @@
 
 /*************TIP*************/
 /*****************************/
-
 .tip{
   margin-bottom:3em;
   height:25em;
@@ -52,12 +43,20 @@
   display:inline-block;
   margin-top:0.5em;
 }
+.tip-date{
+  float:left;
+  margin-left:1em;
+}
+.user{
+  position:absolute;
+  left:40%;
+}
 .control-number{
   float:right;
   margin-top:0.5em;
   margin-right:1em;
   padding:0 0.2em;
-  background-color:#219ef9;
+  border:0.1em solid #219ef9;
   color:white;
 }
 
@@ -94,7 +93,7 @@
   text-decoration:none;
 }
 .notification-button{
-  margin-top:1.5em;
+  margin-top:0.5em;
   font-weight:400;
   background-color:#219fe9;
   color:white;
@@ -158,7 +157,6 @@
 
 /**********PAGINATOR***********/
 /*****************************/
-
 #paginator-container{
   position:fixed;
   top:92.5%;
@@ -186,7 +184,6 @@
 
 /************MODAL************/
 /*****************************/
-
 /*.notification-modal{
   margin:10% auto;
   margin-left:-20%;
@@ -290,7 +287,6 @@
 
 /********HELPER STYLES********/
 /*****************************/
-
 .notification-alert{
   position:fixed;
   left:35%;
@@ -342,11 +338,8 @@
 .orange{
   color:#ff6600;
 }
-.orange-bg{
-  background-color:#ff6600;
-}
 .orange-border{
-  border:0.1em solid #ff6600;
+  border-color:#ff6600;
 }
 
 .white{

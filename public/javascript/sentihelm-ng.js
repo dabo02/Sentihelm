@@ -9,10 +9,10 @@
       templateUrl: 'tip-feed.html',
       controller: 'TipFeedController'
     }).
-    // when('/notifications', {
-    //   templateUrl: 'notifications.html',
-    //   controller: 'NotificationsController'
-    // }).
+    when('/notifications', {
+      templateUrl: 'notifications.html',
+      controller: 'NotificationsController'
+    }).
     otherwise({
       redirectTo: '/tipfeed'
     });
@@ -28,59 +28,61 @@
     return socket;
   });
 
+  //Creates a paginator service which
+  //handles tip-feed pagination and
+  //updates tip- feedcontroller accordingly
   app.factory('paginatorService', ['socket', '$rootScope', function(socket, $rootScope){
     var paginator = {};
     paginator.currentTips = [];
     paginator.totalTipCount = 0;
-    paginator.currentPage = 1;
+    paginator.currentPage = 0;
     paginator.lastPage = 1;
     paginator.paginatorSet = [];
     paginator.paginatorSetSize = 0;
-    socket.emit('request-batch', {upperBound: (paginator.currentPage*10)});
+    socket.emit('request-batch', {upperBound: (10)});
 
     socket.on('respond-batch', function(data){
-      $rootScope.$broadcast('changeTips',[data.currentTips]);
+      $rootScope.$broadcast('new-batch',[data.currentTips]);
       paginator.totalTipCount = data.totalTipCount;
-      paginator.lastPage = Math.ceil(paginator.totalTipCount/10) || 1;
-      if(paginator.currentPage===1){
+      paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
+      if(paginator.currentPage===0){
         paginator.pageSetUpdater(paginator.lastPage);
       }
     });
 
-
     paginator.changePage = function(newPage){
       this.currentPage = newPage;
+      $rootScope.$broadcast('page-change',[this.currentPage]);
       socket.emit('request-batch', {upperBound: (this.currentPage*10)});
     };
 
     paginator.prevPage = function(){
-      if(this.currentPage!==1){
-        if((this.currentPage-1)%10===0){
-          this.pageSetUpdater(this.lastPage);
-        }
-        this.changePage(this.currentPage-=1);
+      if((this.currentPage-1)%10===0){
+        this.pageSetUpdater(this.lastPage, true);
       }
+      this.changePage(this.currentPage-=1);
     };
 
     paginator.nextPage = function(){
-      if(this.currentPage!=this.lastPage){
-        if(this.currentPage%10===0){
-          this.pageSetUpdater(this.lastPage - this.currentPage);
-        }
-        this.changePage(this.currentPage+=1);
+      this.currentPage = this.currentPage===0 ? this.currentPage+1 : this.currentPage;
+      if(this.currentPage%10===0){
+        this.pageSetUpdater(this.lastPage - this.currentPage, false);
       }
+      this.changePage(this.currentPage+=1);
     };
 
-    paginator.pageSetUpdater = function(value){
+    paginator.pageSetUpdater = function(setSizeLimit, previousSet){
+      var setValueLimit = previousSet ? this.currentPage-11 : this.currentPage;
       this.paginatorSet = [];
-      this.paginatorSetSize = 10 && value;
-      for(var i=0; i<this.paginatorSetSize;i++){
-        this.paginatorSet.push(this.currentPage+i);
+      this.paginatorSetSize = Math.min(10, setSizeLimit);
+      for(var i=1; i<=this.paginatorSetSize;i++){
+        this.paginatorSet.push(setValueLimit+i);
       }
-      $rootScope.$broadcast('paginatorSetUpdate',[paginator.paginatorSet, paginator.lastPage]);
+      $rootScope.$broadcast('paginator-set-update',[paginator.paginatorSet, paginator.lastPage]);
     }
 
     return paginator;
+
   }]);
 
   //Creates the header element,
@@ -148,75 +150,40 @@
     };
   });
 
-  //Controller fot tipfeed route; presents the tip feed
+  //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips
-  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', function($scope, socket, ngDialog, paginatorService){
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService',
+                                      function($scope, socket, ngDialog, paginatorService){
     var tipfeed = this;
-    this.currentPage = 1;
-    this.lastPage = 1;
-    this.paginatorSet=[];
-    // this.currentTips = [];
-    // this.totalTipCount = 0;
+    this.currentPage = paginator.currentPage;
+    this.lastPage = paginator.lastPage;
+    this.paginatorSet = paginator.paginatorSet;
 
-    // this.paginatorSet = [];
-    // this.paginatorSetSize = 0;
-    // socket.emit('request-batch', {upperBound: (this.currentPage*10)});
-    //
-    // socket.on('respond-batch', function(data){
-    //   tipfeed.currentTips = data.currentTips;
-    //   tipfeed.totalTipCount = data.totalTipCount;
-    //   tipfeed.lastPage = Math.ceil(tipfeed.totalTipCount/10) || 1;
-    //   if(tipfeed.currentPage===1){
-    //     tipfeed.pageSetUpdater(tipfeed.lastPage);
-    //   }
-    // });
-
-    $scope.$on('changeTips', function(event, data){
+    $scope.$on('new-batch', function(event, data){
       tipfeed.currentTips = data[0];
     });
 
-    $scope.$on('paginatorSetUpdate', function(event, data){
+    $scope.$on('page-change', function(event, data){
+      tipfeed.currentPage = data[0];
+    });
+
+    $scope.$on('paginator-set-update', function(event, data){
       tipfeed.paginatorSet = data[0];
       tipfeed.lastPage = data[1];
     });
 
     this.changePage = function(newPage){
-      this.currentPage = newPage;
       paginatorService.changePage(newPage);
-      // this.currentPage = newPage;
-      // socket.emit('request-batch', {upperBound: (this.currentPage*10)});
     };
 
     this.nextPage = function(){
-      this.currentPage = (this.currentPage + 1) && this.lastPage;
       paginatorService.nextPage();
-      // if(this.currentPage!=this.lastPage){
-      //   if(this.currentPage%10===0){
-      //     this.pageSetUpdater(this.lastPage - this.currentPage);
-      //   }
-      //   this.changePage(this.currentPage+=1);
-      // }
     };
 
     this.prevPage = function(){
-      this.currentPage = (this.currentPage - 1) || 1;
       paginatorService.prevPage();
-      // if(this.currentPage!==1){
-      //   if((this.currentPage-1)%10===0){
-      //     this.pageSetUpdater(this.lastPage);
-      //   }
-      //   this.changePage(this.currentPage-=1);
-      // }
     };
-    //
-    // this.pageSetUpdater = function(value){
-    //   this.paginatorSet = [];
-    //   this.paginatorSetSize = 10 && value;
-    //   for(var i=0; i<this.paginatorSetSize;i++){
-    //     this.paginatorSet.push(this.currentPage+i);
-    //   }
-    // }
-    //
+
     this.showModal = function(){
       ngDialog.open({
         template: '../notification-modal.html',
@@ -225,4 +192,7 @@
     };
   }]);
 
+  app.controller('NotificationsController', ['$scope', function($scope){
+
+  }]);
 })();
