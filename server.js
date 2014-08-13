@@ -114,11 +114,6 @@ app.get('/', function(request, response){
   response.sendfile(__dirname+'/public/index.html');
 });
 
-//Tip Feed
-app.get('/', function(request, response){
-  response.sendfile(__dirname+'/public/index.html');
-});
-
 //Base-case where page was not found, send 404 error
 app.get('*', function(request, response){
   response.send(404,"Error 404: Not Found");
