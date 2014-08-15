@@ -2,27 +2,50 @@
 
   <div id="tip-feed-container">
 
+    <!--======TIP FEED======-->
+    <!--====================-->
     <ul id="tip-feed">
       <li ng-class="{'orange-border':tip.anonymous}"class="tip" ng-repeat="tip in tipfeed.currentTips track by $index" ng-show="tip">
 
+        <!-------------------->
+        <!------TIP HEAD------>
+        <!-------------------->
         <div class="tip-header">
+
+          <!------DATE------>
           <span class="white tip-date">
             {{tip.date}}
           </span>
+
+          <!------NAME------>
           <span ng-class="{orange:tip.anonymous, white:!tip.anonymous}" class="user">
             {{tip.firstName+" "+tip.lastName}}
           </span>
+
+          <!------CONTROL NUMBER------>
           <div ng-class="{'orange-border':tip.anonymous}" class="control-number">
             {{tip.controlNumber}}
           </div>
+
         </div>
 
+        <!-------------------->
+        <!------TIP BODY------>
+        <!-------------------->
         <div class="tip-body">
 
+          <!-------LEFT DIVISION------>
+          <!-------------------------->
           <div class="left">
+
+            <!------CRIME IMAGE------>
             <img src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
             <br>
+
+            <!------CRIME TYPE------>
             <span>{{tip.crimeType}}</span>
+
+            <!------CONTACT USER INFORMATION------>
             <div ng-hide="tip.anonymous" class="contact-info">
               CONTACT USER
               <span class="contact-number">{{tip.phone}}</span>
@@ -30,8 +53,13 @@
             </div>
           </div>
 
+          <!------MID DIVISION----->
+          <!-------------------------->
           <div class="center">
+
+            <!------ATTACHMENTS------>
             <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
+
               <a id="videoAtt" class="{{tip.videoUrl}}" href="{{tip.videoUrl}}">
                 <img src="./resources/images/videoAtt.png"/>
               </a>
@@ -41,20 +69,31 @@
               <a id="audioAtt" class="{{tip.audioUrl}}" href="{{tip.audioUrl}}">
                 <img src="./resources/images/audioAtt.png"/>
               </a>
+
             </div>
+
+            <!------CRIME DESCRIPTION------>
             <div class="crime-description" ng-class="{'orange-border':tip.anonymous}">
               <span>{{tip.crimeDescription}}</span>
             </div>
           </div>
 
+          <!------RIGHT DIVISION------>
+          <!-------------------------->
           <div class="right">
+
             <div ng-class="{'no-location':tip.anonymous}" class="map-canvas" id="{{tip.controlNumber}}">
+
+              <!------ANON NO LOCATION------>
               <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
+
+              <!------GOOGLE MAP------>
               <google-map center="tip.center" zoom="14" ng-hide="tip.anonymous" ng-cloak>
                 <marker coords="tip.center"></marker>
               </google-map>
+
+            </div>
           </div>
-        </div>
 
       </div>
     </li>
@@ -62,8 +101,15 @@
 
 </div>
 
+<!---------------------------------------------->
+<!---------------------------------------------->
+
+<!--=====PAGINATOR======-->
+<!--====================-->
 <div id="paginator-container" ng-init="tipfeed.currentPage=1">
   <ul id="paginator">
+
+    <!------PREVIOUS PAGE CONTROL------>
     <li id="page-previous" class="paginator-control"
      ng-show="tipfeed.paginatorSet"
      ng-class="{'disabled-link': tipfeed.currentPage===1}"
@@ -72,6 +118,7 @@
       <span class="fa fa-chevron-left fa-lg"></span>
     </li>
 
+    <!------PAGE CONTROLS------>
     <li class="paginator-control"
      ng-repeat="value in tipfeed.paginatorSet"
      ng-class="{'active-page': tipfeed.currentPage === value}"
@@ -80,6 +127,7 @@
       {{value}}
     </li>
 
+    <!------NEXT PAGE CONTROL------>
     <li id="page-next" class="paginator-control"
      ng-show="tipfeed.paginatorSet"
      ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
