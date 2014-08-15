@@ -5,7 +5,11 @@
     <!--======TIP FEED======-->
     <!--====================-->
     <ul id="tip-feed">
-      <li ng-class="{'orange-border':tip.anonymous}"class="tip" ng-repeat="tip in tipfeed.currentTips track by $index" ng-show="tip">
+      <li  class="tip"
+      ng-repeat="tip in tipfeed.currentTips track by $index"
+      ng-show="tip"
+      ng-class="{'orange-border':tip.anonymous}"
+      >
 
         <!-------------------->
         <!------TIP HEAD------>
@@ -18,12 +22,12 @@
           </span>
 
           <!------NAME------>
-          <span ng-class="{orange:tip.anonymous, white:!tip.anonymous}" class="user">
+          <span class="user" ng-class="{orange:tip.anonymous, white:!tip.anonymous}">
             {{tip.firstName+" "+tip.lastName}}
           </span>
 
           <!------CONTROL NUMBER------>
-          <div ng-class="{'orange-border':tip.anonymous}" class="control-number">
+          <div class="control-number" ng-class="{'orange-border':tip.anonymous}">
             {{tip.controlNumber}}
           </div>
 
@@ -49,7 +53,7 @@
             <div ng-hide="tip.anonymous" class="contact-info">
               CONTACT USER
               <span class="contact-number">{{tip.phone}}</span>
-              <button ng-click="tipfeed.showModal()" class="notification-button">Send Notification</button>
+              <button class="notification-button" ng-click="tipfeed.showModal()">Send Notification</button>
             </div>
           </div>
 
@@ -95,9 +99,9 @@
             </div>
           </div>
 
-      </div>
-    </li>
-  </ul>
+        </div>
+      </li>
+    </ul>
 
 </div>
 
