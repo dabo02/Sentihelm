@@ -43,7 +43,7 @@
           <div class="left">
 
             <!------CRIME IMAGE------>
-            <img src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
+            <img ng-src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
             <br>
 
             <!------CRIME TYPE------>
@@ -53,7 +53,7 @@
             <div ng-hide="tip.anonymous" class="contact-info">
               CONTACT USER
               <span class="contact-number">{{tip.phone}}</span>
-              <button class="notification-button" ng-click="tipfeed.showModal()">Send Notification</button>
+              <button class="notification-button" ng-click="tipfeed.showDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">Send Notification</button>
             </div>
           </div>
 
@@ -100,10 +100,11 @@
           </div>
 
         </div>
+        <!-- END TIP -->
       </li>
     </ul>
 
-</div>
+  </div>
 
 <!---------------------------------------------->
 <!---------------------------------------------->

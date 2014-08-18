@@ -10,7 +10,7 @@
 
     defaults : {
       expose                   : false,     // turn on or off the expose feature
-      modal                    : true,      // Whether to cover page with modal during the tour
+      dialog                    : true,      // Whether to cover page with dialog during the tour
       tip_location             : 'bottom',  // 'top' or 'bottom' in relation to parent
       nub_position             : 'auto',    // override on a per tooltip bases
       scroll_speed             : 1500,      // Page scrolling speed in milliseconds, 0 = no scroll animation
@@ -46,7 +46,7 @@
         tip     : '<div class="joyride-tip-guide"><span class="joyride-nub"></span></div>',
         wrapper : '<div class="joyride-content-wrapper"></div>',
         button  : '<a href="#" class="small button joyride-next-tip"></a>',
-        modal   : '<div class="joyride-modal-bg"></div>',
+        dialog   : '<div class="joyride-dialog-bg"></div>',
         expose  : '<div class="joyride-expose-wrapper"></div>',
         expose_cover: '<div class="joyride-expose-cover"></div>'
       },
@@ -66,7 +66,7 @@
 
       $(this.scope)
         .off('.joyride')
-        .on('click.fndtn.joyride', '.joyride-next-tip, .joyride-modal-bg', function (e) {
+        .on('click.fndtn.joyride', '.joyride-next-tip, .joyride-dialog-bg', function (e) {
           e.preventDefault();
 
           if (this.settings.$li.next().length < 1) {
@@ -238,14 +238,14 @@
         if (this.settings.$li.length && this.settings.$target.length > 0) {
           if (init) { //run when we first start
             this.settings.pre_ride_callback(this.settings.$li.index(), this.settings.$next_tip);
-            if (this.settings.modal) {
-              this.show_modal();
+            if (this.settings.dialog) {
+              this.show_dialog();
             }
           }
 
           this.settings.pre_step_callback(this.settings.$li.index(), this.settings.$next_tip);
 
-          if (this.settings.modal && this.settings.expose) {
+          if (this.settings.dialog && this.settings.expose) {
             this.expose();
           }
 
@@ -255,7 +255,7 @@
 
           this.settings.tip_settings.tip_location_pattern = this.settings.tip_location_patterns[this.settings.tip_settings.tip_location];
 
-          // scroll if not modal
+          // scroll if not dialog
           if (!/body/i.test(this.settings.$target.selector)) {
             this.scroll_to();
           }
@@ -335,12 +335,12 @@
     },
 
     hide : function () {
-      if (this.settings.modal && this.settings.expose) {
+      if (this.settings.dialog && this.settings.expose) {
         this.un_expose();
       }
 
-      if (!this.settings.modal) {
-        $('.joyride-modal-bg').hide();
+      if (!this.settings.dialog) {
+        $('.joyride-dialog-bg').hide();
       }
 
       // Prevent scroll bouncing...wait to remove from layout
@@ -487,7 +487,7 @@
 
       } else if (this.settings.$li.length) {
 
-        this.pos_modal($nub);
+        this.pos_dialog($nub);
 
       }
 
@@ -531,7 +531,7 @@
         }
 
       } else if (this.settings.$li.length) {
-        this.pos_modal($nub);
+        this.pos_dialog($nub);
       }
 
       if (toggle) {
@@ -540,24 +540,24 @@
       }
     },
 
-    pos_modal : function ($nub) {
+    pos_dialog : function ($nub) {
       this.center();
       $nub.hide();
 
-      this.show_modal();
+      this.show_dialog();
     },
 
-    show_modal : function () {
+    show_dialog : function () {
       if (!this.settings.$next_tip.data('closed')) {
-        var joyridemodalbg =  $('.joyride-modal-bg');
-        if (joyridemodalbg.length < 1) {
-          $('body').append(this.settings.template.modal).show();
+        var joyridedialogbg =  $('.joyride-dialog-bg');
+        if (joyridedialogbg.length < 1) {
+          $('body').append(this.settings.template.dialog).show();
         }
 
         if (/pop/i.test(this.settings.tip_animation)) {
-            joyridemodalbg.show();
+            joyridedialogbg.show();
         } else {
-            joyridemodalbg.fadeIn(this.settings.tip_animation_fade_speed);
+            joyridedialogbg.fadeIn(this.settings.tip_animation_fade_speed);
         }
       }
     },
@@ -620,7 +620,7 @@
         height: el.outerHeight(true)
       });
 
-      if (this.settings.modal) this.show_modal();
+      if (this.settings.dialog) this.show_dialog();
 
       this.settings.$body.append(exposeCover);
       expose.addClass(randId);
@@ -815,13 +815,13 @@
         clearTimeout(this.settings.automate);
       }
 
-      if (this.settings.modal && this.settings.expose) {
+      if (this.settings.dialog && this.settings.expose) {
         this.un_expose();
       }
 
       this.settings.$next_tip.data('closed', true);
 
-      $('.joyride-modal-bg').hide();
+      $('.joyride-dialog-bg').hide();
       this.settings.$current_tip.hide();
 
       if (typeof abort === 'undefined' || abort === false) {
@@ -835,8 +835,8 @@
     off : function () {
       $(this.scope).off('.joyride');
       $(window).off('.joyride');
-      $('.joyride-close-tip, .joyride-next-tip, .joyride-modal-bg').off('.joyride');
-      $('.joyride-tip-guide, .joyride-modal-bg').remove();
+      $('.joyride-close-tip, .joyride-next-tip, .joyride-dialog-bg').off('.joyride');
+      $('.joyride-tip-guide, .joyride-dialog-bg').remove();
       clearTimeout(this.settings.automate);
       this.settings = {};
     },

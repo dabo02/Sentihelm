@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ngRoute','btford.socket-io','google-maps','ngDialog']);
+  var app = angular.module('sentihelm', ['ngRoute','btford.socket-io','google-maps','ngDialog','angularFileUpload']);
 
   //Sets up all the routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -11,7 +11,7 @@
     }).
     when('/notifications', {
       templateUrl: 'notifications.html',
-      controller: 'NotificationsController'
+      controller: 'GlobalNotificationsController'
     }).
     otherwise({
       redirectTo: '/tipfeed'
@@ -32,6 +32,11 @@
   //handles tip-feed pagination and
   //updates tip- feedcontroller accordingly
   app.factory('paginatorService', ['socket', '$rootScope', function(socket, $rootScope){
+
+    //Set up the paginator object
+    //Need references to current and last page,
+    //array of number of pages paginator will print
+    //and size of said array
     var paginator = {};
     paginator.currentTips = [];
     paginator.totalTipCount = 0;
@@ -39,8 +44,13 @@
     paginator.lastPage = 1;
     paginator.paginatorSet = [];
     paginator.paginatorSetSize = 0;
+
+    //Get first batch of tips
     socket.emit('request-batch', {upperBound: (10)});
 
+    //Catch socket.io event when a batch is sent
+    //Let controller know news tips arrvied; update
+    //amount of total tips in server, last page and paginator set
     socket.on('respond-batch', function(data){
       $rootScope.$broadcast('new-batch',[data.currentTips]);
       paginator.totalTipCount = data.totalTipCount;
@@ -50,12 +60,15 @@
       }
     });
 
+    //Change the page and ask server for tips present in new page;
+    //let controller know the page has changed
     paginator.changePage = function(newPage){
       this.currentPage = newPage;
       $rootScope.$broadcast('page-change',[this.currentPage]);
       socket.emit('request-batch', {upperBound: (this.currentPage*10)});
     };
 
+    //Change to previous page; update references
     paginator.prevPage = function(){
       if((this.currentPage-1)%10===0){
         this.pageSetUpdater(this.lastPage, true);
@@ -63,6 +76,7 @@
       this.changePage(this.currentPage-=1);
     };
 
+    //Change to next page; update references
     paginator.nextPage = function(){
       this.currentPage = this.currentPage===0 ? this.currentPage+1 : this.currentPage;
       if(this.currentPage%10===0){
@@ -71,13 +85,19 @@
       this.changePage(this.currentPage+=1);
     };
 
+    //Update paginator set (page numbers that will be printed, every 10 pages)
     paginator.pageSetUpdater = function(setSizeLimit, previousSet){
+
+      //If called from prevPage, gotta set startihg limit to
+      //previous 10 pages, otherwise start at current page
       var setValueLimit = previousSet ? this.currentPage-11 : this.currentPage;
       this.paginatorSet = [];
       this.paginatorSetSize = Math.min(10, setSizeLimit);
       for(var i=1; i<=this.paginatorSetSize;i++){
         this.paginatorSet.push(setValueLimit+i);
       }
+
+      //Let controller know the set has changed
       $rootScope.$broadcast('paginator-set-update',[paginator.paginatorSet, paginator.lastPage]);
     }
 
@@ -151,22 +171,28 @@
   });
 
   //Controller for tipfeed route; handles the tip feed
-  //which lets you interact with tips
+  //which lets you interact with tips, depends heavily
+  //on pagintorService
   app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService',
-                                      function($scope, socket, ngDialog, paginatorService){
+  function($scope, socket, ngDialog, paginatorService){
+    //Vars needed for pagination; paginatorSet contains
+    //number of total pages, divided by groups of 10
     var tipfeed = this;
     this.currentPage = paginator.currentPage;
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
 
+    //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
       tipfeed.currentTips = data[0];
     });
 
+    //Catch even when page changes
     $scope.$on('page-change', function(event, data){
       tipfeed.currentPage = data[0];
     });
 
+    //Catch event when page sets change (every 10 pages)
     $scope.$on('paginator-set-update', function(event, data){
       tipfeed.paginatorSet = data[0];
       tipfeed.lastPage = data[1];
@@ -184,15 +210,45 @@
       paginatorService.prevPage();
     };
 
-    this.showModal = function(){
-      ngDialog.open({
-        template: '../notification-modal.html',
-        className: 'ngdialog-theme-plain'
+    //Shows dialog that allows client to send
+    //message and attachment to a specific user
+    this.showDialog = function(firstName, lastName, controlNumber, channel){
+      //ngDialog can only handle stringified JSONs
+      var data = JSON.stringify({
+        name: firstName+" "+lastName,
+        controlNumber: controlNumber,
+        channel:channel
       });
+
+      //Open dialog and pass control to NotificationController
+      ngDialog.open({
+        template: '../notification-dialog.html',
+        controller: 'NotificationController',
+        className: 'ngdialog-theme-plain',
+        data:data
+      });
+    };
+
+  }]);
+
+  //Controller for user follow-up notification; controls the
+  //dialog that allows for message/attachment to be sent to users
+  app.controller('NotificationController', ['$scope', '$rootScope', function($scope, $rootScope){
+    //Get data from ngDialog directive
+    this.name = $scope.$parent.ngDialogData.name;
+    this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
+    this.channel = $scope.$parent.ngDialogData.channel;
+
+    //Set focus on message box once dialog pops up
+    $rootScope.$on('ngDialog.opened', function (event, $dialog) {
+      document.getElementById("notification-message").focus();
+    });
+
+    //Once a file is selected, upload to Parse
+    this.onFileSelect = function($files){
+      var file = $files[0];
+      var fileName = file.name;
     };
   }]);
 
-  app.controller('NotificationsController', ['$scope', function($scope){
-
-  }]);
 })();

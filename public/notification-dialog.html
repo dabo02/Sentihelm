@@ -1,0 +1,27 @@
+<div class="notification-dialog" ng-controller="NotificationController as notification">
+
+  <div class="dialog-title">
+    Contact <span>{{notification.name}}</span>
+  </div>
+
+  <form id="notification-form">
+
+    <div class="dialog-body">
+
+      <input id="notification-title" type="text"
+      ng-init="notification.title = 'Regarding tip #'+notification.controlNumber"
+      ng-model="notification.title"
+      />
+
+      <textarea id="notification-message" placeholder="Message to user" ng-model="notification.message"></textarea>
+    </div>
+
+    <div class="dialog-attachment" ng-file-select="notification.onFileSelect($files)" accept="image/*,video/*,audio/*">
+      Attach an image, video, or audio file
+    </div>
+
+    <button id="notification-submit" type="submit">Send</button>
+
+  </form>
+
+</div>

@@ -13,14 +13,14 @@
       animation_speed: 250,
       close_on_background_click: true,
       close_on_esc: true,
-      dismiss_modal_class: 'close-reveal-modal',
-      bg_class: 'reveal-modal-bg',
+      dismiss_dialog_class: 'close-reveal-dialog',
+      bg_class: 'reveal-dialog-bg',
       root_element: 'body',
       open: function(){},
       opened: function(){},
       close: function(){},
       closed: function(){},
-      bg : $('.reveal-modal-bg'),
+      bg : $('.reveal-dialog-bg'),
       css : {
         open : {
           'opacity': 0,
@@ -116,12 +116,12 @@
 
       // PATCH #1: fixing multiple keyup event trigger from single key press
       self.S('body').off('keyup.fndtn.reveal').on('keyup.fndtn.reveal', function ( event ) {
-        var open_modal = self.S('[' + self.attr_name() + '].open'),
-            settings = open_modal.data(self.attr_name(true) + '-init');
+        var open_dialog = self.S('[' + self.attr_name() + '].open'),
+            settings = open_dialog.data(self.attr_name(true) + '-init');
         // PATCH #2: making sure that the close event can be called only while unlocked,
         //           so that multiple keyup.fndtn.reveal events don't prevent clean closing of the reveal window.
         if ( settings && event.which === 27  && settings.close_on_esc && !self.locked) { // 27 is the keycode for the Escape key
-          self.close.call(self, open_modal);
+          self.close.call(self, open_dialog);
         }
       });
 
@@ -136,37 +136,37 @@
 
     open : function (target, ajax_settings) {
       var self = this,
-          modal;
+          dialog;
 
       if (target) {
         if (typeof target.selector !== 'undefined') {
           // Find the named node; only use the first one found, since the rest of the code assumes there's only one node
-          modal = self.S('#' + target.data(self.data_attr('reveal-id'))).first();
+          dialog = self.S('#' + target.data(self.data_attr('reveal-id'))).first();
         } else {
-          modal = self.S(this.scope);
+          dialog = self.S(this.scope);
 
           ajax_settings = target;
         }
       } else {
-        modal = self.S(this.scope);
+        dialog = self.S(this.scope);
       }
 
-      var settings = modal.data(self.attr_name(true) + '-init');
+      var settings = dialog.data(self.attr_name(true) + '-init');
       settings = settings || this.settings;
 
-      if (!modal.hasClass('open')) {
-        var open_modal = self.S('[' + self.attr_name() + '].open');
+      if (!dialog.hasClass('open')) {
+        var open_dialog = self.S('[' + self.attr_name() + '].open');
 
-        if (typeof modal.data('css-top') === 'undefined') {
-          modal.data('css-top', parseInt(modal.css('top'), 10))
-            .data('offset', this.cache_offset(modal));
+        if (typeof dialog.data('css-top') === 'undefined') {
+          dialog.data('css-top', parseInt(dialog.css('top'), 10))
+            .data('offset', this.cache_offset(dialog));
         }
 
-        this.key_up_on(modal);    // PATCH #3: turning on key up capture only when a reveal window is open
-        modal.trigger('open').trigger('open.fndtn.reveal');
+        this.key_up_on(dialog);    // PATCH #3: turning on key up capture only when a reveal window is open
+        dialog.trigger('open').trigger('open.fndtn.reveal');
 
-        if (open_modal.length < 1) {
-          this.toggle_bg(modal, true);
+        if (open_dialog.length < 1) {
+          this.toggle_bg(dialog, true);
         }
 
         if (typeof ajax_settings === 'string') {
@@ -176,11 +176,11 @@
         }
 
         if (typeof ajax_settings === 'undefined' || !ajax_settings.url) {
-          if (open_modal.length > 0) {
-            this.hide(open_modal, settings.css.close);
+          if (open_dialog.length > 0) {
+            this.hide(open_dialog, settings.css.close);
           }
 
-          this.show(modal, settings.css.open);
+          this.show(dialog, settings.css.open);
         } else {
           var old_success = typeof ajax_settings.success !== 'undefined' ? ajax_settings.success : null;
 
@@ -190,14 +190,14 @@
                 old_success(data, textStatus, jqXHR);
               }
 
-              modal.html(data);
-              self.S(modal).foundation('section', 'reflow');
-              self.S(modal).children().foundation();
+              dialog.html(data);
+              self.S(dialog).foundation('section', 'reflow');
+              self.S(dialog).children().foundation();
 
-              if (open_modal.length > 0) {
-                self.hide(open_modal, settings.css.close);
+              if (open_dialog.length > 0) {
+                self.hide(open_dialog, settings.css.close);
               }
-              self.show(modal, settings.css.open);
+              self.show(dialog, settings.css.open);
             }
           });
 
@@ -206,22 +206,22 @@
       }
     },
 
-    close : function (modal) {
-      var modal = modal && modal.length ? modal : this.S(this.scope),
-          open_modals = this.S('[' + this.attr_name() + '].open'),
-          settings = modal.data(this.attr_name(true) + '-init') || this.settings;
+    close : function (dialog) {
+      var dialog = dialog && dialog.length ? dialog : this.S(this.scope),
+          open_dialogs = this.S('[' + this.attr_name() + '].open'),
+          settings = dialog.data(this.attr_name(true) + '-init') || this.settings;
 
-      if (open_modals.length > 0) {
+      if (open_dialogs.length > 0) {
         this.locked = true;
-        this.key_up_off(modal);   // PATCH #3: turning on key up capture only when a reveal window is open
-        modal.trigger('close').trigger('close.fndtn.reveal');
-        this.toggle_bg(modal, false);
-        this.hide(open_modals, settings.css.close, settings);
+        this.key_up_off(dialog);   // PATCH #3: turning on key up capture only when a reveal window is open
+        dialog.trigger('close').trigger('close.fndtn.reveal');
+        this.toggle_bg(dialog, false);
+        this.hide(open_dialogs, settings.css.close, settings);
       }
     },
 
     close_targets : function () {
-      var base = '.' + this.settings.dismiss_modal_class;
+      var base = '.' + this.settings.dismiss_dialog_class;
 
       if (this.settings.close_on_background_click) {
         return base + ', .' + this.settings.bg_class;
@@ -230,7 +230,7 @@
       return base;
     },
 
-    toggle_bg : function (modal, state) {
+    toggle_bg : function (dialog, state) {
       if (this.S('.' + this.settings.bg_class).length === 0) {
         this.settings.bg = $('<div />', {'class': this.settings.bg_class})
           .appendTo('body').hide();
@@ -247,7 +247,7 @@
     },
 
     show : function (el, css) {
-      // is modal
+      // is dialog
       if (css) {
         var settings = el.data(this.attr_name(true) + '-init') || this.settings,
             root_element = settings.root_element;
@@ -316,7 +316,7 @@
     },
 
     hide : function (el, css) {
-      // is modal
+      // is dialog
       if (css) {
         var settings = el.data(this.attr_name(true) + '-init');
         settings = settings || this.settings;
@@ -403,10 +403,10 @@
       return str;
     },
 
-    cache_offset : function (modal) {
-      var offset = modal.show().height() + parseInt(modal.css('top'), 10);
+    cache_offset : function (dialog) {
+      var offset = dialog.show().height() + parseInt(dialog.css('top'), 10);
 
-      modal.hide();
+      dialog.hide();
 
       return offset;
     },

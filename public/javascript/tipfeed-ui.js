@@ -2,12 +2,12 @@
 //  TIP FEED UI SETUP
 //=========================================
 
-//Global var used to check if modal is active
-var modalActive = false;
+//Global var used to check if dialog is active
+var dialogActive = false;
 
 //Global var used to check if push notification
 //file has been selected
-var modalFileSelected = false;
+var dialogFileSelected = false;
 
 //Connect to server side socket
 var socket = io.connect('http://sentihelm.elasticbeanstalk.com');
@@ -66,8 +66,8 @@ $(document).ready(function(){
   //  ON PAGE LOAD
   //--------------------
 
-  //Hide the notification modal
-  $('.notification-modal').hide();
+  //Hide the notification dialog
+  $('.notification-dialog').hide();
 
   //--------------------
   //  TIP RELATED
@@ -104,10 +104,10 @@ $(document).ready(function(){
   });
 
   //--------------------
-  //  MODAL RELATED
+  //  dialog RELATED
   //--------------------
 
-  //Opens up the modal that sends push notifications to mobile users
+  //Opens up the dialog that sends push notifications to mobile users
   $('#tip-feed').on('click', '.notification-button', function(){
     //Get values
     var selectedTip = $(this).closest('.tip');
@@ -115,8 +115,8 @@ $(document).ready(function(){
     var controlNumber = selectedTip.data("controlNumber");
     var userChannel = selectedTip.data("userChannel");
 
-    //Set modal to active
-    modalActive = true;
+    //Set dialog to active
+    dialogActive = true;
 
     //Dim background and maps
     $('.map-canvas').css("background-color","black");
@@ -124,18 +124,18 @@ $(document).ready(function(){
     $('.dimmer').addClass('visible');
 
     //Set user's Name on tip header
-    $('.modal-title span').html('Contact '+userName);
+    $('.dialog-title span').html('Contact '+userName);
 
     //Bind data to HTML element (for later use);
-    var modal = $('.notification-modal');
-    modal.data("controlNumber",controlNumber);
-    modal.data("userChannel", userChannel);
+    var dialog = $('.notification-dialog');
+    dialog.data("controlNumber",controlNumber);
+    dialog.data("userChannel", userChannel);
 
     //Show control number on tip and on notification title
     $('#notification-title').val("Regarding Tip #"+controlNumber);
 
-    //Show modal
-    modal.slideDown(500, function(){
+    //Show dialog
+    dialog.slideDown(500, function(){
       $('#notification-message').focus();
     });
   });
@@ -143,15 +143,15 @@ $(document).ready(function(){
   //When a notification attachment is selected, change color and name
   $('#notification-att').change(function(){
     if($(this).val()!=""){
-      modalFileSelected = true;
-      $('.modal-attachment').css("background-color","#3bc63f");
+      dialogFileSelected = true;
+      $('.dialog-attachment').css("background-color","#3bc63f");
       var fileName = $(this).val().substring(12);
-      $('.modal-attachment span').html(fileName);
+      $('.dialog-attachment span').html(fileName);
     }
   });
 
   //Send push notification
-  $('.modal-send').on('click', function(){
+  $('.dialog-send').on('click', function(){
     //If no message was entered, display message and return
     if($('#notification-message').val()==""){
       var error = $('.notification-alert');
@@ -175,8 +175,8 @@ $(document).ready(function(){
   //Reset notification message field and hide notification error
   $('#notification-message').on('keypress', resetNotificationMessage);
 
-  //On click, close push notification modal
-  $('.close-modal').on('click', closeModal);
+  //On click, close push notification dialog
+  $('.close-dialog').on('click', closedialog);
 });
 
 //=========================================
@@ -217,7 +217,7 @@ function insertTip(tip, tipHTML){
       //map view; might be useful when dealing with tip queue
       // renderMap(controlNumber, tip.latitude, tip.longitude);
       renderMap(tip.latitude, tip.longitude);
-      if(modalActive){
+      if(dialogActive){
         $('.map-canvas').css("background-color","black");
         $('.map-canvas').css("opacity","0.5");
       }
@@ -272,10 +272,10 @@ function resetNotificationMessage(){
   $('#notification-message').css("background","#f7f7f7");
 }
 
-//Close push notification modal and reset all its content
-function closeModal(){
+//Close push notification dialog and reset all its content
+function closedialog(){
   resetNotificationMessage();
-  $('.notification-modal').slideUp(500, function(){
+  $('.notification-dialog').slideUp(500, function(){
     //Remove dimmer
     $('.map-canvas').css("background-color","transparent");
     $('.map-canvas').css("opacity","1");
@@ -286,14 +286,14 @@ function closeModal(){
 
     //Reset notification attachment and CSS
     $('#notification-att').val('');
-    $('.modal-attachment').css("background-color","#ff6600");
-    $('.modal-attachment span').html("Attach Image or Video");
+    $('.dialog-attachment').css("background-color","#ff6600");
+    $('.dialog-attachment span').html("Attach Image or Video");
 
     //Hide spinner, show send
-    $('.modal-send').html('');
-    $('.modal-send').text('Send');
-    modalActive = false;
-    modalFileSelected = false;
+    $('.dialog-send').html('');
+    $('.dialog-send').text('Send');
+    dialogActive = false;
+    dialogFileSelected = false;
   });
 }
 
@@ -309,7 +309,7 @@ function saveAndPushNotification(tip){
 
   var PushNotification = Parse.Object.extend("PushNotifications");
   var notification = new PushNotification();
-  if(modalFileSelected){
+  if(dialogFileSelected){
     var fileData = $('#notification-att')[0].files[0];
     var attachment = new Parse.File("attachment", fileData);
     if(fileData.type.match('image.*')){
@@ -343,7 +343,7 @@ function saveAndPushNotification(tip){
           console.log("FAILED: "+error);
         }
       });
-      closeModal();
+      closedialog();
     },
     error : function(notification, error){
       var error = $('.notification-alert');
