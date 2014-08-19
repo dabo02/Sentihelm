@@ -247,20 +247,12 @@
   color:white;
   text-align:center;
 }
+
 .disabled-link{
   opacity:0.5;
   pointer-events:none;
   cursor:default;
 }
-
-/*.dimmer{
-  position:fixed;
-  background-color:black;
-  opacity:0.5;
-  width:100%;
-  height:100%;
-  display:none;
-}*/
 
 .hidden{
   display:none;

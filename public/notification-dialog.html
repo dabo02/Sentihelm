@@ -16,7 +16,9 @@
       <textarea id="notification-message" placeholder="Message to user" ng-model="notification.message"></textarea>
     </div>
 
-    <div class="dialog-attachment" ng-file-select="notification.onFileSelect($files)" accept="image/*,video/*,audio/*">
+    <div class="dialog-attachment" accept="image/*,video/*,audio/*"
+    ng-file-select="notification.onFileSelect($files)" 
+    >
       Attach an image, video, or audio file
     </div>
 

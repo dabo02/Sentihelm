@@ -28,6 +28,13 @@
     return socket;
   });
 
+  app.factory('notificationService', ['$rootScope', function($rootScope){
+    var PushNotification = Parse.Object.extend("PushNotifications");
+
+    var notification = new PushNotification();
+
+  }]);
+
   //Creates a paginator service which
   //handles tip-feed pagination and
   //updates tip- feedcontroller accordingly
@@ -210,6 +217,14 @@
       paginatorService.prevPage();
     };
 
+    this.showAttachment = function(address){
+      ngDialog.open({
+        template: '<img style="width:100%, height:50%;" src='+"\""+address+"\""+'/>',
+        plain: true,
+        className: 'ngdialog-theme-plain'
+      });
+    };
+
     //Shows dialog that allows client to send
     //message and attachment to a specific user
     this.showDialog = function(firstName, lastName, controlNumber, channel){
@@ -233,14 +248,14 @@
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$scope', '$rootScope', function($scope, $rootScope){
+  app.controller('NotificationController', ['$scope', function($scope){
     //Get data from ngDialog directive
     this.name = $scope.$parent.ngDialogData.name;
     this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
     this.channel = $scope.$parent.ngDialogData.channel;
 
     //Set focus on message box once dialog pops up
-    $rootScope.$on('ngDialog.opened', function (event, $dialog) {
+    $scope.$on('ngDialog.opened', function (event, $dialog) {
       document.getElementById("notification-message").focus();
     });
 
