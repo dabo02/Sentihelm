@@ -5,8 +5,8 @@
 }
 
 .spinner > div {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   background-color:white;
   margin:0 0.1em;
   border-radius: 100%;

@@ -37,12 +37,18 @@
   //Parse notifications and provides methods to
   //save and push those notifications to different channels
   app.factory('notificationService', ['$rootScope', function($rootScope){
+
+    //Needed to create Parse notifications
     var PushNotification = Parse.Object.extend("PushNotifications");
 
     var notificationService = {};
 
+    //Array that contains channels where notifications
+    //will be sent; emptied once any notification is sent
     notificationService.channels = [];
 
+    //Creates and returns a new Parse Notification from
+    //notification data gathered from controller
     notificationService.newNotification = function(notificationData){
       var notification = new PushNotification();
       notification.set("userId", notificationData.userId);
@@ -55,18 +61,29 @@
       return notification;
     };
 
+    //Saves the Parse Notification; once successful, calls
+    //pushNotification() so notification can be sent to user,
+    //otherwise alerts controller about failure
     notificationService.saveAndPushNotification = function(notification){
+      //Try and save the notification to parse, for future viewing
       notification.save(null, {
         success: function(notification){
+          //Notification saved, now push to user
           notificationService.pushNotification(notification);
         },
         error : function(notification, error){
-          
+          //Notification could not be saved, pass control back to controller
+          //and reset channels
+          $rootScope.$broadcast('notification-error', [notification, error]);
+          notificationService.channels = [];
         }
       });
     };
 
+    //Sends the already saved notification to the user;
+    //if pushing failed, reverts save or continues as partial success
     notificationService.pushNotification = function(notification){
+      //Send notification
       Parse.Push.send({
         channels: notificationService.channels,
         data: {
@@ -78,10 +95,32 @@
         }
       },{
         success: function(){
+          //Push was successful
+          //Reset channels and alert controller know
           notificationService.channels = [];
+          $rootScope.$broadcast('notification-success',[notification]);
         },
-        error: function(){
+        error: function(error){
+          //Push was unsuccessful
+          //Try and nuke notification
+          var parentError = error;
+          notification.destroy({
+            success: function(notification){
+              //Notification was successfully deleted;
+              //Alert the controller to prompt the user
+              //to try again
+              $rootScope.$broadcast('notification-error', [notification, parentError]);
+            },
+            error: function(notification, error){
+              //Failed to delete notification
+              //Do Nothing, but alert controller
+              //to partial success
+              $rootScope.$broadcast('notification-partial-success',[notification]);
+            }
+          });
 
+          //Reset channels
+          notificationService.channels = [];
         }
       });
     };
@@ -271,13 +310,16 @@
       paginatorService.prevPage();
     };
 
-    this.showAttachment = function(address){
-      ngDialog.open({
-        template: '<img style="width:100%, height:50%;" src='+"\""+address+"\""+'/>',
-        plain: true,
-        className: 'ngdialog-theme-plain'
-      });
-    };
+    //!!!!!!!!!!!!!!!!!!!!
+    //TODO Uncomments and implement functionality
+    // this.showAttachment = function(address){
+    //   ngDialog.open({
+    //     template: '<img style="width:100%, height:50%;" src='+"\""+address+"\""+'/>',
+    //     plain: true,
+    //     className: 'ngdialog-theme-plain'
+    //   });
+    // };
+    //!!!!!!!!!!!!!!!!!!!!
 
     //Shows dialog that allows client to send
     //message and attachment to a specific user
@@ -290,12 +332,14 @@
       });
 
       //Open dialog and pass control to NotificationController
-      ngDialog.open({
+      $scope.notificationDialog = ngDialog.open({
         template: '../notification-dialog.html',
         controller: 'NotificationController',
         className: 'ngdialog-theme-plain',
         data:data
       });
+
+      var testing;
     };
 
   }]);
@@ -314,6 +358,31 @@
       document.getElementById("notification-message").focus();
     });
 
+    //Notification was successfully saved and pushed (sent)
+    $scope.$on('notification-success',function(notification){
+      $scope.closeThisDialog();
+      this.sending = false;
+    });
+
+    //Notification was saved, but not pushed
+    $scope.$on('notification-partial-success',function(notification){
+      //Right now same as success event, but might change
+      $scope.closeThisDialog();
+      this.sending = false;
+    });
+
+    //Notification either wasn't saved, or did save
+    //but push failed and error clause removed said save
+    $scope.$on('notification-error',function(notification){
+      //TODO Test this
+      $scope.notificationDialog = ngDialog.open({
+        template: '<p>An error has occurred. Please try again.</p>',
+        plain:true,
+        className: 'ngdialog-theme-plain'
+      });
+      this.sending = false;
+    });
+
     //Once a file is selected, prep file for upload to Parse
     this.onFileSelect = function($files){
       this.file = $files[0];
@@ -330,6 +399,9 @@
     };
 
     this.submitNotification = function(){
+      //Toggle sending animation
+      this.sending = true;
+
       //Set the channel where notification will be sent
       notificationService.channels.push(this.channel);
 
@@ -345,7 +417,7 @@
         notification.attachmentType = this.fileType;
       }
 
-      //Create Parse notification and send it;
+      //Create Parse notification and send it
       var parseNotification = notificationService.newNotification(notification);
       notificationService.saveAndPushNotification(parseNotification);
     };

@@ -20,10 +20,17 @@
     ng-class="{'file-selected': notificationCtrl.file.name}"
     ng-file-select="notificationCtrl.onFileSelect($files)"
     >
-    {{notificationCtrl.file.name || "Attach an image, video, or audio file"}}
+      {{notificationCtrl.file.name || "Attach an image, video, or audio file"}}
     </div>
 
-    <button id="notification-submit" type="submit" ng-click="notificationCtrl.submitNotification()">Send</button>
+  <button id="notification-submit" type="submit" ng-click="notificationCtrl.submitNotification()">
+    <span ng-hide="notificationCtrl.sending">Send</span>
+    <div class="spinner" ng-show="notificationCtrl.sending">
+      <div class="bounce1"></div>
+      <div class="bounce2"></div>
+      <div class="bounce3"></div>
+    </div>
+  </button>
 
   </form>
 
