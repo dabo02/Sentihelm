@@ -117,6 +117,9 @@
   border-right:0.1em solid #219fe9;
   text-align:center;
 }
+.attachments a{
+  text-decoration:none;
+}
 .attachments img{
   width:70px;
   margin:0.5em 2em 1em 2em;
@@ -285,4 +288,8 @@
 
 .active-page{
   color:#219ef9;
+}
+
+.file-selected{
+  background-color:#4bb612;
 }

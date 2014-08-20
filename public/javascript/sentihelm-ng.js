@@ -18,6 +18,11 @@
     });
   }]);
 
+  //Initialize values needed throughout the app
+  app.run(function(){
+    Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
+  });
+
   //Creates an injectable socket service that
   //works just like socket.io's client library
   app.factory('socket', function (socketFactory) {
@@ -28,11 +33,60 @@
     return socket;
   });
 
+  //Creates a notification service that constructs
+  //Parse notifications and provides methods to
+  //save and push those notifications to different channels
   app.factory('notificationService', ['$rootScope', function($rootScope){
     var PushNotification = Parse.Object.extend("PushNotifications");
 
-    var notification = new PushNotification();
+    var notificationService = {};
 
+    notificationService.channels = [];
+
+    notificationService.newNotification = function(notificationData){
+      var notification = new PushNotification();
+      notification.set("userId", notificationData.userId);
+      notification.set("tipId", notificationData.controlNumber);
+      notification.set("title", notificationData.title);
+      notification.set("message", notificationData.message);
+      if(notificationData.attachment){
+        notification.set(notificationData.attachmentType, notificationData.attachment);
+      }
+      return notification;
+    };
+
+    notificationService.saveAndPushNotification = function(notification){
+      notification.save(null, {
+        success: function(notification){
+          notificationService.pushNotification(notification);
+        },
+        error : function(notification, error){
+          
+        }
+      });
+    };
+
+    notificationService.pushNotification = function(notification){
+      Parse.Push.send({
+        channels: notificationService.channels,
+        data: {
+          alert: notification.message,
+          badge:"Increment",
+          sound: "cheering.caf",
+          title: notification.title,
+          pushId: notification.id
+        }
+      },{
+        success: function(){
+          notificationService.channels = [];
+        },
+        error: function(){
+
+        }
+      });
+    };
+
+    return notificationService;
   }]);
 
   //Creates a paginator service which
@@ -248,22 +302,54 @@
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$scope', function($scope){
+  app.controller('NotificationController', ['$scope', 'notificationService',function($scope, notificationService){
     //Get data from ngDialog directive
     this.name = $scope.$parent.ngDialogData.name;
     this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
     this.channel = $scope.$parent.ngDialogData.channel;
+    this.userId = this.channel.substring(5);
 
     //Set focus on message box once dialog pops up
     $scope.$on('ngDialog.opened', function (event, $dialog) {
       document.getElementById("notification-message").focus();
     });
 
-    //Once a file is selected, upload to Parse
+    //Once a file is selected, prep file for upload to Parse
     this.onFileSelect = function($files){
-      var file = $files[0];
-      var fileName = file.name;
+      this.file = $files[0];
+      if(this.file.type.match('image.*')){
+        this.fileType = "image";
+      }
+      else if(this.file.type.match('video.*')){
+        this.fileType = "video";
+      }
+      else{
+        this.fileType = "audio";
+      }
+      this.fileLabel = this.file.name
     };
+
+    this.submitNotification = function(){
+      //Set the channel where notification will be sent
+      notificationService.channels.push(this.channel);
+
+      //Prepare notification
+      var notification = {};
+      notification.userId = this.userId;
+      notification.controlNumber = this.controlNumber;
+      notification.title = this.title;
+      notification.message = this.message;
+      //If an file is present, attach it and set its type
+      if(this.file){
+        notification.attachment = new Parse.File("attachment", this.file);
+        notification.attachmentType = this.fileType;
+      }
+
+      //Create Parse notification and send it;
+      var parseNotification = notificationService.newNotification(notification);
+      notificationService.saveAndPushNotification(parseNotification);
+    };
+
   }]);
 
 })();
