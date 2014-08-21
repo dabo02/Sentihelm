@@ -57,24 +57,20 @@
             </div>
           </div>
 
-          <!------MID DIVISION----->
+          <!-------MID DIVISION------->
           <!-------------------------->
           <div class="center">
 
             <!------ATTACHMENTS------>
             <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
 
-              <!-- SECOND PART OF NG-CLASS (tip.url==='disabled-link') ONLY THERE FOR BACKWARDS COMPATABILITY -->
-              <!-- WITH PREVIOUS CLOUD CODE. !!!!!MUST REMOVE!!!!! -->
-
-              <!--TODO REMOVE SECOND || FROM ng-class TODO-->
-              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl || tip.videoUrl==='disabled-link'}" href="{{tip.videoUrl}}">
+              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" href="{{tip.videoUrl}}">
                 <img src="./resources/images/videoAtt.png"/>
               </a>
-              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl || tip.imageUrl==='disabled-link'}" href="{{tip.imageUrl}}">
+              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" href="{{tip.imageUrl}}">
                 <img src="./resources/images/imageAtt.png"/>
               </a>
-              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl || tip.audioUrl==='disabled-link'}" href="{{tip.audioUrl}}">
+              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" href="{{tip.audioUrl}}">
                 <img src="./resources/images/audioAtt.png"/>
               </a>
 
@@ -89,20 +85,6 @@
                 <img src="./resources/images/imageAtt.png"/>
               </a>
               <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachment(tip.audioUrl)">
-                <img src="./resources/images/audioAtt.png"/>
-              </a> -->
-
-              <!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
-              <!--OLD VERSION. DID NOT USE CORRECT APPROACH WHEN ENABLING/DISABLING CLASSES-->
-              <!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
-
-              <!-- <a id="videoAtt" class="{{tip.videoUrl}}" href="{{tip.videoUrl}}">
-                <img src="./resources/images/videoAtt.png"/>
-              </a>
-              <a id="imageAtt" class="{{tip.imageUrl}}" href="{{tip.imageUrl}}">
-                <img src="./resources/images/imageAtt.png"/>
-              </a>
-              <a id="audioAtt" class="{{tip.audioUrl}}" href="{{tip.audioUrl}}">
                 <img src="./resources/images/audioAtt.png"/>
               </a> -->
 
@@ -124,7 +106,7 @@
               <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
 
               <!------GOOGLE MAP------>
-              <google-map center="tip.center" zoom="14" ng-hide="tip.anonymous" ng-cloak>
+              <google-map center="tip.center" zoom="tipfeed.zoom" ng-hide="tip.anonymous" ng-cloak>
                 <marker coords="tip.center"></marker>
               </google-map>
 

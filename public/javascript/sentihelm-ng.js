@@ -20,7 +20,28 @@
 
   //Initialize values needed throughout the app
   app.run(function(){
+    //Initialize Parse
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
+  });
+
+  //All errors are contained in this constant;
+  //used with errorFactory service for easy error
+  //alerting
+  app.constant('ERROR_CODES',{
+    'NOTIF-FAILED': {
+        title: 'Push Notification Failed',
+        message: 'The notification could not be sent. '+
+                  'Please try again in a while. If the '+
+                  'error persists, contact the tech team.'
+    },
+    'NOTIF-NO-CONTENT':{
+        title: 'No Content',
+        message: 'You must write a message and/or attach a file.'
+    },
+    'NOTIF-NO-TITLE':{
+        title: 'No Title',
+        message: 'The notification must have a title.'
+    }
   });
 
   //Creates an injectable socket service that
@@ -33,23 +54,53 @@
     return socket;
   });
 
+
+  app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERROR_CODES', function(ngDialog, $rootScope,ERROR_CODES){
+
+    var errorFactory = {};
+
+    //Not being used; might use in future releases to create
+    //on-the-fly errors
+    errorFactory.newError = function(title, message){
+
+    };
+
+    errorFactory.display = function(error){
+      var parsedError = JSON.stringify(error);
+      ngDialog.open({
+        template: '../error-dialog.html',
+        controller: 'ErrorController',
+        className: 'ngdialog-theme-plain',
+        closeByDocument: false,
+        data:parsedError
+      });
+    };
+
+    errorFactory.showErrorWithCode = function(errorCode){
+      var error = ERROR_CODES[errorCode];
+      errorFactory.display(error);
+    };
+
+    return errorFactory;
+  }]);
+
   //Creates a notification service that constructs
   //Parse notifications and provides methods to
   //save and push those notifications to different channels
-  app.factory('notificationService', ['$rootScope', function($rootScope){
+  app.factory('parseNotificationService', ['$rootScope', function($rootScope){
 
     //Needed to create Parse notifications
     var PushNotification = Parse.Object.extend("PushNotifications");
 
-    var notificationService = {};
+    var parseNotificationService = {};
 
     //Array that contains channels where notifications
     //will be sent; emptied once any notification is sent
-    notificationService.channels = [];
+    parseNotificationService.channels = [];
 
     //Creates and returns a new Parse Notification from
     //notification data gathered from controller
-    notificationService.newNotification = function(notificationData){
+    parseNotificationService.newNotification = function(notificationData){
       var notification = new PushNotification();
       notification.set("userId", notificationData.userId);
       notification.set("tipId", notificationData.controlNumber);
@@ -64,28 +115,28 @@
     //Saves the Parse Notification; once successful, calls
     //pushNotification() so notification can be sent to user,
     //otherwise alerts controller about failure
-    notificationService.saveAndPushNotification = function(notification){
+    parseNotificationService.saveAndPushNotification = function(notification){
       //Try and save the notification to parse, for future viewing
       notification.save(null, {
         success: function(notification){
           //Notification saved, now push to user
-          notificationService.pushNotification(notification);
+          parseNotificationService.pushNotification(notification);
         },
         error : function(notification, error){
           //Notification could not be saved, pass control back to controller
           //and reset channels
           $rootScope.$broadcast('notification-error', [notification, error]);
-          notificationService.channels = [];
+          parseNotificationService.channels = [];
         }
       });
     };
 
     //Sends the already saved notification to the user;
     //if pushing failed, reverts save or continues as partial success
-    notificationService.pushNotification = function(notification){
+    parseNotificationService.pushNotification = function(notification){
       //Send notification
       Parse.Push.send({
-        channels: notificationService.channels,
+        channels: parseNotificationService.channels,
         data: {
           alert: notification.message,
           badge:"Increment",
@@ -96,9 +147,15 @@
       },{
         success: function(){
           //Push was successful
-          //Reset channels and alert controller know
-          notificationService.channels = [];
-          $rootScope.$broadcast('notification-success',[notification]);
+          //Reset channels and alert controller
+          parseNotificationService.channels = [];
+          // $rootScope.$broadcast('notification-success',[notification]);
+
+          //!!!
+          //TODO Test Error
+          $rootScope.$broadcast('notification-error', [notification, "error"]);
+          //!!!
+
         },
         error: function(error){
           //Push was unsuccessful
@@ -120,12 +177,12 @@
           });
 
           //Reset channels
-          notificationService.channels = [];
+          parseNotificationService.channels = [];
         }
       });
     };
 
-    return notificationService;
+    return parseNotificationService;
   }]);
 
   //Creates a paginator service which
@@ -273,14 +330,17 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on pagintorService
-  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService',
-  function($scope, socket, ngDialog, paginatorService){
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', function($scope, socket, ngDialog, paginatorService){
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
     var tipfeed = this;
     this.currentPage = paginator.currentPage;
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
+
+    //Needed for google-map directive
+    //(wont take an int, has to be property)
+    this.zoom = 14;
 
     //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
@@ -298,20 +358,24 @@
       tipfeed.lastPage = data[1];
     });
 
+    //Change page to passed value
     this.changePage = function(newPage){
       paginatorService.changePage(newPage);
     };
 
+    //Change to next page
     this.nextPage = function(){
       paginatorService.nextPage();
     };
 
+
+    //Change to previous page
     this.prevPage = function(){
       paginatorService.prevPage();
     };
 
     //!!!!!!!!!!!!!!!!!!!!
-    //TODO Uncomments and implement functionality
+    //TODO Uncomment and implement functionality
     // this.showAttachment = function(address){
     //   ngDialog.open({
     //     template: '<img style="width:100%, height:50%;" src='+"\""+address+"\""+'/>',
@@ -336,22 +400,23 @@
         template: '../notification-dialog.html',
         controller: 'NotificationController',
         className: 'ngdialog-theme-plain',
+        closeByDocument: false,
         data:data
       });
-
-      var testing;
     };
 
   }]);
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$scope', 'notificationService',function($scope, notificationService){
+  app.controller('NotificationController', ['$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($scope, parseNotificationService, ngDialog, errorFactory){
     //Get data from ngDialog directive
     this.name = $scope.$parent.ngDialogData.name;
     this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
     this.channel = $scope.$parent.ngDialogData.channel;
     this.userId = this.channel.substring(5);
+    this.sending = false;
+    var notificationCtrl = this;
 
     //Set focus on message box once dialog pops up
     $scope.$on('ngDialog.opened', function (event, $dialog) {
@@ -360,27 +425,26 @@
 
     //Notification was successfully saved and pushed (sent)
     $scope.$on('notification-success',function(notification){
+      notificationCtrl.sending = false;
+      $scope.$apply();
       $scope.closeThisDialog();
-      this.sending = false;
     });
 
     //Notification was saved, but not pushed
     $scope.$on('notification-partial-success',function(notification){
       //Right now same as success event, but might change
+      notificationCtrl.sending = false;
+      $scope.$apply();
       $scope.closeThisDialog();
-      this.sending = false;
     });
 
     //Notification either wasn't saved, or did save
     //but push failed and error clause removed said save
     $scope.$on('notification-error',function(notification){
-      //TODO Test this
-      $scope.notificationDialog = ngDialog.open({
-        template: '<p>An error has occurred. Please try again.</p>',
-        plain:true,
-        className: 'ngdialog-theme-plain'
-      });
-      this.sending = false;
+      //TODO ERROR MODULE
+      errorFactory.showErrorWithCode('NOTIF-FAILED');
+      notificationCtrl.sending = false;
+      $scope.$apply();
     });
 
     //Once a file is selected, prep file for upload to Parse
@@ -398,12 +462,25 @@
       this.fileLabel = this.file.name
     };
 
+    //Send the notification to the user
     this.submitNotification = function(){
+
+      //If no title, show appropiate error and ignore
+      if(!this.title){
+        errorFactory.showErrorWithCode('NOTIF-NO-TITLE');
+        return;
+      }
+      //If no message or attachment, show appropiate error and ignore
+      if(!this.message && !this.file){
+        errorFactory.showErrorWithCode('NOTIF-NO-CONTENT');
+        return;
+      }
+
       //Toggle sending animation
       this.sending = true;
 
       //Set the channel where notification will be sent
-      notificationService.channels.push(this.channel);
+      parseNotificationService.channels.push(this.channel);
 
       //Prepare notification
       var notification = {};
@@ -411,17 +488,24 @@
       notification.controlNumber = this.controlNumber;
       notification.title = this.title;
       notification.message = this.message;
-      //If an file is present, attach it and set its type
+      //If a file is present, attach it and set its type
       if(this.file){
         notification.attachment = new Parse.File("attachment", this.file);
         notification.attachmentType = this.fileType;
       }
 
       //Create Parse notification and send it
-      var parseNotification = notificationService.newNotification(notification);
-      notificationService.saveAndPushNotification(parseNotification);
+      var parseNotification = parseNotificationService.newNotification(notification);
+      parseNotificationService.saveAndPushNotification(parseNotification);
     };
 
+  }]);
+
+  //Controller for error dialog which is reusable throughout the
+  //app; decoupled from everything else
+  app.controller('ErrorController', ['$scope', function($scope){
+    this.title = $scope.$parent.ngDialogData.title;
+    this.message = $scope.$parent.ngDialogData.message;
   }]);
 
 })();
