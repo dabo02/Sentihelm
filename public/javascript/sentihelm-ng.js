@@ -65,6 +65,7 @@
 
     };
 
+    //Display passed error via ngDialog service
     errorFactory.display = function(error){
       var parsedError = JSON.stringify(error);
       ngDialog.open({
@@ -76,6 +77,7 @@
       });
     };
 
+    //Show pre-made, constant errors with display function
     errorFactory.showErrorWithCode = function(errorCode){
       var error = ERROR_CODES[errorCode];
       errorFactory.display(error);
