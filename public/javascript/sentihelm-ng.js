@@ -329,7 +329,7 @@
 
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
-  //on pagintorService
+  //on paginatorService
   app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', function($scope, socket, ngDialog, paginatorService){
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -338,9 +338,6 @@
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
 
-    //Needed for google-map directive
-    //(wont take an int, has to be property)
-    this.zoom = 14;
 
     //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
@@ -507,5 +504,23 @@
     this.title = $scope.$parent.ngDialogData.title;
     this.message = $scope.$parent.ngDialogData.message;
   }]);
+
+  //Controller for the google-map on the tipfee
+  app.controller('mapCtrl', function($scope) {
+    //markerCenter will be different variable from the tip.center
+    var markerCenter = null;
+    $scope.map = {zoom: 14};
+    $scope.map.getCenter = function(point) {
+      if(point == undefined) {return undefined;}
+
+      //Set the coordinate only one time.
+      if(markerCenter == null){
+        //create new object with the same coordinates. (avoid reference)
+        markerCenter = JSON.parse(JSON.stringify(point));
+      }
+
+      return markerCenter;
+    }
+  });
 
 })();
