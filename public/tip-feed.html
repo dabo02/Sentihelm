@@ -98,15 +98,15 @@
 
           <!------RIGHT DIVISION------>
           <!-------------------------->
-          <div class="right" ng-controller="mapCtrl">
+          <div class="right" ng-controller="GoogleMapController as mapCtrl">
             <div ng-class="{'no-location':tip.anonymous}" class="map-canvas" id="{{tip.controlNumber}}">
 
               <!------ANON NO LOCATION------>
               <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
 
               <!------GOOGLE MAP------>
-              <google-map center="tip.center" zoom="map.zoom" draggable="true" ng-hide="tip.anonymous" ng-cloak>
-                <marker  coords="map.getCenter(tip.center)"></marker>
+              <google-map center="tip.center" zoom="mapCtrl.zoom" draggable="true" ng-hide="tip.anonymous" ng-cloak>
+                <marker  coords="mapCtrl.getCenter(tip.center)"></marker>
               </google-map>
 
             </div>

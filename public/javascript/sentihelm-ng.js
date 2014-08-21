@@ -507,22 +507,23 @@
     this.message = $scope.$parent.ngDialogData.message;
   }]);
 
-  //Controller for the google-map on the tipfee
-  app.controller('mapCtrl', function($scope) {
-    //markerCenter will be different variable from the tip.center
+  //Controller for the google-map on the tipfeed
+  app.controller('GoogleMapController', ['$scope', function($scope) {
+    //markerCenter will be different from tip.center
     var markerCenter = null;
-    $scope.map = {zoom: 14};
-    $scope.map.getCenter = function(point) {
-      if(point == undefined) {return undefined;}
+    this.zoom = 14;
 
+    this.getCenter = function(point) {
+      if(point===undefined){
+        return point;
+      }
       //Set the coordinate only one time.
-      if(markerCenter == null){
-        //create new object with the same coordinates. (avoid reference)
+      if(markerCenter===null){
+        //Create new object with the same coordinates (avoid reference)
         markerCenter = JSON.parse(JSON.stringify(point));
       }
-
       return markerCenter;
-    }
-  });
+    };
+  }]);
 
 })();
