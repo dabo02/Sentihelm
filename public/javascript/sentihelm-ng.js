@@ -63,7 +63,7 @@
     //Not being used; might use in future releases to create
     //on-the-fly errors
     errorFactory.newError = function(title, message){
-
+      //TODO
     };
 
     //Display passed error via ngDialog service
@@ -73,6 +73,7 @@
         template: '../error-dialog.html',
         className: 'ngdialog-theme-plain',
         closeByDocument: false,
+        closeByEscape:false,
         data:parsedError
       });
     };
@@ -151,13 +152,7 @@
           //Push was successful
           //Reset channels and alert controller
           parseNotificationService.channels = [];
-          // $rootScope.$broadcast('notification-success',[notification]);
-
-          //!!!
-          //TODO Test Error
-          $rootScope.$broadcast('notification-error', [notification, "error"]);
-          //!!!
-
+          $rootScope.$broadcast('notification-success',[notification]);
         },
         error: function(error){
           //Push was unsuccessful
@@ -414,6 +409,8 @@
     var markerCenter = null;
     this.zoom = 14;
 
+    //Returns a duplicate of the center coordinates,
+    //for map marker (not a reference to original center)
     this.getCenter = function(point) {
       if(point===undefined){
         return point;
