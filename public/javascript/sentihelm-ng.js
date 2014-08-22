@@ -6,12 +6,10 @@
   app.config(['$routeProvider', function($routeProvider) {
     $routeProvider.
     when('/tipfeed', {
-      templateUrl: 'tip-feed.html',
-      controller: 'TipFeedController'
+      templateUrl: 'tip-feed.html'
     }).
     when('/notifications', {
-      templateUrl: 'notifications.html',
-      controller: 'GlobalNotificationsController'
+      templateUrl: 'notifications.html'
     }).
     otherwise({
       redirectTo: '/tipfeed'
@@ -54,7 +52,10 @@
     return socket;
   });
 
-
+  //Creates an error delivering service that can
+  //be called anywhere in the app, be it with
+  //pre-made errors fount in ERROR_CODES constant
+  //or newly created errors via methods offered
   app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERROR_CODES', function(ngDialog, $rootScope,ERROR_CODES){
 
     var errorFactory = {};
@@ -70,7 +71,6 @@
       var parsedError = JSON.stringify(error);
       ngDialog.open({
         template: '../error-dialog.html',
-        controller: 'ErrorController',
         className: 'ngdialog-theme-plain',
         closeByDocument: false,
         data:parsedError
@@ -333,6 +333,7 @@
   //which lets you interact with tips, depends heavily
   //on paginatorService
   app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', function($scope, socket, ngDialog, paginatorService){
+
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
     var tipfeed = this;
@@ -387,6 +388,7 @@
     //Shows dialog that allows client to send
     //message and attachment to a specific user
     this.showDialog = function(firstName, lastName, controlNumber, channel){
+      console.log("CALLED ME");
       //ngDialog can only handle stringified JSONs
       var data = JSON.stringify({
         name: firstName+" "+lastName,
@@ -397,7 +399,6 @@
       //Open dialog and pass control to NotificationController
       $scope.notificationDialog = ngDialog.open({
         template: '../notification-dialog.html',
-        controller: 'NotificationController',
         className: 'ngdialog-theme-plain',
         closeByDocument: false,
         data:data
@@ -406,9 +407,30 @@
 
   }]);
 
+  //Controller for Google map in each tip
+  app.controller('GoogleMapController', ['$scope', function($scope) {
+
+    //markerCenter will be different from tip.center
+    var markerCenter = null;
+    this.zoom = 14;
+
+    this.getCenter = function(point) {
+      if(point===undefined){
+        return point;
+      }
+      //Set the coordinate only one time.
+      if(markerCenter===null){
+        //Create new object with the same coordinates (avoid reference)
+        markerCenter = JSON.parse(JSON.stringify(point));
+      }
+      return markerCenter;
+    };
+  }]);
+
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
   app.controller('NotificationController', ['$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($scope, parseNotificationService, ngDialog, errorFactory){
+
     //Get data from ngDialog directive
     this.name = $scope.$parent.ngDialogData.name;
     this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -440,7 +462,6 @@
     //Notification either wasn't saved, or did save
     //but push failed and error clause removed said save
     $scope.$on('notification-error',function(notification){
-      //TODO ERROR MODULE
       errorFactory.showErrorWithCode('NOTIF-FAILED');
       notificationCtrl.sending = false;
       $scope.$apply();
@@ -448,7 +469,10 @@
 
     //Once a file is selected, prep file for upload to Parse
     this.onFileSelect = function($files){
+      //Fetch file
       this.file = $files[0];
+
+      //Set file type
       if(this.file.type.match('image.*')){
         this.fileType = "image";
       }
@@ -458,6 +482,7 @@
       else{
         this.fileType = "audio";
       }
+      //Set file name
       this.fileLabel = this.file.name
     };
 
@@ -505,25 +530,6 @@
   app.controller('ErrorController', ['$scope', function($scope){
     this.title = $scope.$parent.ngDialogData.title;
     this.message = $scope.$parent.ngDialogData.message;
-  }]);
-
-  //Controller for the google-map on the tipfeed
-  app.controller('GoogleMapController', ['$scope', function($scope) {
-    //markerCenter will be different from tip.center
-    var markerCenter = null;
-    this.zoom = 14;
-
-    this.getCenter = function(point) {
-      if(point===undefined){
-        return point;
-      }
-      //Set the coordinate only one time.
-      if(markerCenter===null){
-        //Create new object with the same coordinates (avoid reference)
-        markerCenter = JSON.parse(JSON.stringify(point));
-      }
-      return markerCenter;
-    };
   }]);
 
 })();
