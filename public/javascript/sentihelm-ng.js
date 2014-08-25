@@ -1,4 +1,5 @@
 (function(){
+  // Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
   var app = angular.module('sentihelm', ['ngRoute','btford.socket-io','google-maps','ngDialog','angularFileUpload']);
 
   //Sets up all the routes the app will handle,
@@ -147,7 +148,8 @@
           title: notification.title,
           pushId: notification.id
         }
-      },{
+      },
+      {
         success: function(){
           //Push was successful
           //Reset channels and alert controller
@@ -383,7 +385,7 @@
     //Shows dialog that allows client to send
     //message and attachment to a specific user
     this.showDialog = function(firstName, lastName, controlNumber, channel){
-      console.log("CALLED ME");
+
       //ngDialog can only handle stringified JSONs
       var data = JSON.stringify({
         name: firstName+" "+lastName,
@@ -403,6 +405,7 @@
   }]);
 
   //Controller for Google map in each tip
+  //Assigns map center and crime location/position
   app.controller('GoogleMapController', ['$scope', function($scope) {
 
     //markerCenter will be different from tip.center
@@ -518,6 +521,7 @@
       //Create Parse notification and send it
       var parseNotification = parseNotificationService.newNotification(notification);
       parseNotificationService.saveAndPushNotification(parseNotification);
+      // parseNotificationService.pushNotification(parseNotification);
     };
 
   }]);
