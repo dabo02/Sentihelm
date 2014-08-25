@@ -105,8 +105,8 @@
               <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
 
               <!------GOOGLE MAP------>
-              <google-map center="mapCtrl.getCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-hide="tip.anonymous" ng-cloak>
-                <marker  coords="mapCtrl.getCenter(tip.center)"></marker>
+              <google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-if="!tip.anonymous" ng-cloak>
+                <marker  coords="mapCtrl.getMarkerPosition(tip.center)"></marker>
               </google-map>
 
             </div>

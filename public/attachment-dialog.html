@@ -3,7 +3,7 @@
   <img ng-show="attachCtrl.attachType === 'IMG'" ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}}  class="attachment-dialog">
 
   <!-- TODO Support different formats?-->
-  <video ng-show="attachCtrl.attachType === 'VID'" width="415" controls>
+  <video ng-show="attachCtrl.attachType === 'VID'" width="800" controls>
     <source ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="video/mp4">
   </video>
 

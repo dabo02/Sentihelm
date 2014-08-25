@@ -398,7 +398,7 @@
       //Open dialog and pass control to AttachmentController
       ngDialog.open({
         template: '../attachment-dialog.html',
-        className: 'ngdialog-theme-plain',
+        className: 'ngdialog-attachment',
         data:data
       });
     };
@@ -416,26 +416,45 @@
   //Controller for Google map in each tip
   app.controller('GoogleMapController', function() {
 
-    //markerCenter will be different from tip.center
-    var markerCenter = null;
+    //This position variables will store the position
+    //data so that the tip.center variable remain unchanged.
+    var markerPosition = {latitude: 0, longitude: 0};
+    var mapCenter = {latitude: 0, longitude: 0};
     this.zoom = 14;
 
-    //Returns a duplicate of the center coordinates,
-    //for map marker (not a reference to original center)
-    this.getCenter = function(point) {
+    //Checks if the marker coordinates have changed
+    //and returns the correct position.
+    this.getMarkerPosition = function(point) {
+
       if(point===undefined){
-        return point;
+        return markerPosition;
       }
-      //Set the coordinate only one time.
-      if(markerCenter===null || markerCenter.latitude !== point.latitude
-                             || markerCenter.longitude !== point.longitude) {
-        this.zoom = 14; //Reset the zoom when changing between pages
-        //Create new object with the same coordinates (to avoid reference)
-        markerCenter = JSON.parse(JSON.stringify(point));
+      //Change the position if necessary.
+      if(markerPosition.latitude !== point.latitude || markerPosition.longitude !== point.longitude) {
+        this.zoom = 14;
+        markerPosition.latitude = point.latitude;
+        markerPosition.longitude = point.longitude;
       }
-      return markerCenter;
+
+      return markerPosition;
     };
 
+    //Checks if the map center coordinates have changed
+    // and returns the correct position.
+    this.getMapCenter = function(point) {
+
+      if(point===undefined){
+        return mapCenter;
+      }
+      // Change the coords if necessary.
+      if (mapCenter.latitude !== point.latitude || mapCenter.longitude !== point.longitude) {
+        this.zoom = 14;
+        mapCenter.latitude = point.latitude;
+        mapCenter.longitude = point.longitude;
+      }
+
+      return mapCenter;
+    };
   });
 
   //Controller for user follow-up notification; controls the
