@@ -62,9 +62,9 @@
           <div class="center">
 
             <!------ATTACHMENTS------>
-            <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
+            <div class="attachments" ng-class="{'orange-border':tip.anonymous}" ng-controller="AttachmentController as attachmentCtrl">
 
-              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" href="{{tip.videoUrl}}">
+              <!-- <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" href="{{tip.videoUrl}}">
                 <img src="./resources/images/videoAtt.png"/>
               </a>
               <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" href="{{tip.imageUrl}}">
@@ -72,21 +72,21 @@
               </a>
               <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" href="{{tip.audioUrl}}">
                 <img src="./resources/images/audioAtt.png"/>
-              </a>
+              </a> -->
 
               <!--===========================================================================-->
               <!--===IDEAL APPROACH: HAVE A METHOD CALLED THAT SHOWS ATTACHMENTS IN DIALOG===-->
               <!--===========================================================================-->
 
-              <!-- <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" ng-click="tipfeed.showAttachment(tip.videoUrl)">
+              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" ng-click="tipfeed.showAttachment(tip.videoUrl, 'VID')">
                 <img src="./resources/images/videoAtt.png"/>
               </a>
-              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" ng-click="tipfeed.showAttachment(tip.imageUrl)">
+              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" ng-click="tipfeed.showAttachment(tip.imageUrl, 'IMG')">
                 <img src="./resources/images/imageAtt.png"/>
               </a>
-              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachment(tip.audioUrl)">
+              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachment(tip.audioUrl, 'AUDIO')">
                 <img src="./resources/images/audioAtt.png"/>
-              </a> -->
+              </a>
 
             </div>
 
@@ -105,7 +105,7 @@
               <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
 
               <!------GOOGLE MAP------>
-              <google-map center="tip.center" zoom="mapCtrl.zoom" draggable="true" ng-hide="tip.anonymous" ng-cloak>
+              <google-map center="mapCtrl.getCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-hide="tip.anonymous" ng-cloak>
                 <marker  coords="mapCtrl.getCenter(tip.center)"></marker>
               </google-map>
 
