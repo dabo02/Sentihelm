@@ -124,6 +124,10 @@
   width:70px;
   margin:0.5em 2em 1em 2em;
 }
+
+.attachment-dialog {
+  width: 415;
+}
 .crime-description{
   width:99.5%;
   height:74.5%;

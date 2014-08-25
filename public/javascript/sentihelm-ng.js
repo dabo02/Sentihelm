@@ -369,17 +369,6 @@
       paginatorService.prevPage();
     };
 
-    //!!!!!!!!!!!!!!!!!!!!
-    //TODO Uncomment and implement functionality
-    // this.showAttachment = function(address){
-    //   ngDialog.open({
-    //     template: '<img style="width:100%, height:50%;" src='+"\""+address+"\""+'/>',
-    //     plain: true,
-    //     className: 'ngdialog-theme-plain'
-    //   });
-    // };
-    //!!!!!!!!!!!!!!!!!!!!
-
     //Shows dialog that allows client to send
     //message and attachment to a specific user
     this.showDialog = function(firstName, lastName, controlNumber, channel){
@@ -400,10 +389,33 @@
       });
     };
 
+    this.showAttachment = function(address, type) {
+      //ngDialog can only handle stringified JSONs
+      var data = JSON.stringify({
+        address:address,
+        attachmentType:type
+      });
+
+      ngDialog.open({
+        template: '../attachment-dialog.html',
+        className: 'ngdialog-theme-plain',
+        data:data
+      });
+    };
+  }]);
+
+  //Controller for the tip's attachments. Must display video and images, and play sounds.
+  app.controller('AttachmentController', ['$scope', 'ngDialog', '$sce', function($scope, ngDialog, $sce){
+    //Needed so that attachment-dialog.html can open the media files from parse.
+    $scope.trustAsResourceUrl = $sce.trustAsResourceUrl;
+    if($scope.ngDialogData !== undefined) {
+      this.address = $scope.ngDialogData.address;
+      this.attachType = $scope.ngDialogData.attachmentType;
+    }
   }]);
 
   //Controller for Google map in each tip
-  app.controller('GoogleMapController', ['$scope', function($scope) {
+  app.controller('GoogleMapController', function() {
 
     //markerCenter will be different from tip.center
     var markerCenter = null;
@@ -416,13 +428,16 @@
         return point;
       }
       //Set the coordinate only one time.
-      if(markerCenter===null){
-        //Create new object with the same coordinates (avoid reference)
+      if(markerCenter===null || markerCenter.latitude !== point.latitude
+                             || markerCenter.longitude !== point.longitude) {
+        this.zoom = 14; //Reset the zoom when changing between pages
+        //Create new object with the same coordinates (to avoid reference)
         markerCenter = JSON.parse(JSON.stringify(point));
       }
       return markerCenter;
     };
-  }]);
+
+  });
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
