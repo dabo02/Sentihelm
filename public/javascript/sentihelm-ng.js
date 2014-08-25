@@ -372,7 +372,6 @@
     //Shows dialog that allows client to send
     //message and attachment to a specific user
     this.showDialog = function(firstName, lastName, controlNumber, channel){
-      console.log("CALLED ME");
       //ngDialog can only handle stringified JSONs
       var data = JSON.stringify({
         name: firstName+" "+lastName,
@@ -396,6 +395,7 @@
         attachmentType:type
       });
 
+      //Open dialog and pass control to AttachmentController
       ngDialog.open({
         template: '../attachment-dialog.html',
         className: 'ngdialog-theme-plain',
@@ -404,14 +404,13 @@
     };
   }]);
 
-  //Controller for the tip's attachments. Must display video and images, and play sounds.
+  //Controller for the tip's attachments; must display
+  //video and images, and play audio files
   app.controller('AttachmentController', ['$scope', 'ngDialog', '$sce', function($scope, ngDialog, $sce){
     //Needed so that attachment-dialog.html can open the media files from parse.
-    $scope.trustAsResourceUrl = $sce.trustAsResourceUrl;
-    if($scope.ngDialogData !== undefined) {
-      this.address = $scope.ngDialogData.address;
-      this.attachType = $scope.ngDialogData.attachmentType;
-    }
+    this.trustAsResourceUrl = $sce.trustAsResourceUrl;
+    this.address = $scope.$parent.ngDialogData.address;
+    this.attachType = $scope.$parent.ngDialogData.attachmentType;
   }]);
 
   //Controller for Google map in each tip

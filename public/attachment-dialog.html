@@ -1,17 +1,17 @@
 <div  ng-controller="AttachmentController as attachCtrl">
 
-  <img ng-show="attachCtrl.attachType === 'IMG'" ng-src={{trustAsResourceUrl(attachCtrl.address)}}  class="attachment-dialog">
+  <img ng-show="attachCtrl.attachType === 'IMG'" ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}}  class="attachment-dialog">
 
   <!-- TODO Support different formats?-->
   <video ng-show="attachCtrl.attachType === 'VID'" width="415" controls>
-    <source ng-src={{trustAsResourceUrl(attachCtrl.address)}} type="video/mp4">
+    <source ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="video/mp4">
   </video>
 
   <!-- TODO Make this work! Support different formats? iPhone is .caf, android is mpg4. -->
   <audio ng-show="attachCtrl.attachType === 'AUDIO'" controls>
-    <source  ng-src={{trustAsResourceUrl(attachCtrl.address)}} type="audio/mpg4">
-    <source  ng-src={{trustAsResourceUrl(attachCtrl.address)}} type="audio/3gpp">
-    <source  ng-src={{trustAsResourceUrl(attachCtrl.address)}} type="audio/caf">
+    <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/mpg4">
+    <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/3gpp">
+    <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/caf">
     Your browser does not support this audio format.
   </audio>
 

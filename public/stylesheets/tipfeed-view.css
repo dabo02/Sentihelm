@@ -123,8 +123,8 @@
 .attachments img{
   width:70px;
   margin:0.5em 2em 1em 2em;
+  cursor:pointer;
 }
-
 .attachment-dialog {
   width: 415;
 }
