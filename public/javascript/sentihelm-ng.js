@@ -448,7 +448,6 @@
       }
       // Change the coords if necessary.
       if (mapCenter.latitude !== point.latitude || mapCenter.longitude !== point.longitude) {
-        this.zoom = 14;
         mapCenter.latitude = point.latitude;
         mapCenter.longitude = point.longitude;
       }
