@@ -126,7 +126,7 @@
   cursor:pointer;
 }
 .attachment-dialog {
-  width: 415;
+  width: 100% ;
 }
 .crime-description{
   width:99.5%;
