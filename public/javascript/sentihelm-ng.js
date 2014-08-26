@@ -27,20 +27,93 @@
   //alerting
   app.constant('ERROR_CODES',{
     'NOTIF-FAILED': {
-        title: 'Push Notification Failed',
-        message: 'The notification could not be sent. '+
-                  'Please try again in a while. If the '+
-                  'error persists, contact the tech team.'
+      title: 'Push Notification Failed',
+      message: 'The notification could not be sent. '+
+      'Please try again in a while. If the '+
+      'error persists, contact the tech team.'
     },
     'NOTIF-NO-CONTENT':{
-        title: 'No Content',
-        message: 'You must write a message and/or attach a file.'
+      title: 'No Content',
+      message: 'You must write a message and/or attach a file.'
     },
     'NOTIF-NO-TITLE':{
-        title: 'No Title',
-        message: 'The notification must have a title.'
+      title: 'No Title',
+      message: 'The notification must have a title.'
     }
   });
+
+  //Autorhization events for log in functionality
+  app.constant('AUTH_EVENTS', {
+    loginSuccess: 'auth-login-success',
+    loginFailed: 'auth-login-failed',
+    logoutSuccess: 'auth-logout-success',
+    sessionTimeout: 'auth-session-timeout',
+    notAuthenticated: 'auth-not-authenticated',
+    notAuthorized: 'auth-not-authorized'
+  });
+
+  //User roles for authorization/authentication and
+  //content control
+  app.constant('USER_ROLES', {
+    all: '*',
+    user: 'user',
+    admin: 'admin'
+  });
+
+  //Creates a session service that can create
+  //and destroy a session which manages (logged in) users
+  app.factory('Session', function(){
+    //Create a session object, along with id, userId and role
+    this.create = function (sessionId, userId, userRole) {
+      this.id = sessionId;
+      this.userId = userId;
+      this.userRole = userRole;
+    };
+
+    //Destroy current session object
+    this.destroy = function () {
+      this.id = null;
+      this.userId = null;
+      this.userRole = null;
+    };
+
+    return this;
+  });
+
+  //Creates a service that manages login and
+  //authentication functionality; manages current session
+  app.factory('authenticator', ['$http', 'Session', function($http, Session){
+    var authenticator = {};
+
+    authenticator.login = function(credentials){
+      return
+      $http.post('/login', credentials)
+      .then(
+        function(result){
+          //successful
+          //create and set Session
+        },
+        function(){
+          //failed
+        }
+      );
+    };
+
+    authenticator.isAuthenticated = function () {
+      return !!Session.userId;
+    };
+
+    authenticator.isAuthorized = function (authorizedRoles) {
+      if (!angular.isArray(authorizedRoles)) {
+        authorizedRoles = [authorizedRoles];
+      }
+
+      return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
+    };
+
+    return authenticator;
+
+  }]);
 
   //Creates an injectable socket service that
   //works just like socket.io's client library
@@ -428,119 +501,118 @@
       }
       //Set the coordinate only one time.
       if(markerCenter===null || markerCenter.latitude !== point.latitude
-                             || markerCenter.longitude !== point.longitude) {
-        this.zoom = 14; //Reset the zoom when changing between pages
-        //Create new object with the same coordinates (to avoid reference)
-        markerCenter = JSON.parse(JSON.stringify(point));
-      }
-      return markerCenter;
-    };
-
-  });
-
-  //Controller for user follow-up notification; controls the
-  //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($scope, parseNotificationService, ngDialog, errorFactory){
-
-    //Get data from ngDialog directive
-    this.name = $scope.$parent.ngDialogData.name;
-    this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
-    this.channel = $scope.$parent.ngDialogData.channel;
-    this.userId = this.channel.substring(5);
-    this.sending = false;
-    var notificationCtrl = this;
-
-    //Set focus on message box once dialog pops up
-    $scope.$on('ngDialog.opened', function (event, $dialog) {
-      document.getElementById("notification-message").focus();
+        || markerCenter.longitude !== point.longitude) {
+          this.zoom = 14; //Reset the zoom when changing between pages
+          //Create new object with the same coordinates (to avoid reference)
+          markerCenter = JSON.parse(JSON.stringify(point));
+        }
+        return markerCenter;
+      };
     });
 
-    //Notification was successfully saved and pushed (sent)
-    $scope.$on('notification-success',function(notification){
-      notificationCtrl.sending = false;
-      $scope.$apply();
-      $scope.closeThisDialog();
-    });
+    //Controller for user follow-up notification; controls the
+    //dialog that allows for message/attachment to be sent to users
+    app.controller('NotificationController', ['$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($scope, parseNotificationService, ngDialog, errorFactory){
 
-    //Notification was saved, but not pushed
-    $scope.$on('notification-partial-success',function(notification){
-      //Right now same as success event, but might change
-      notificationCtrl.sending = false;
-      $scope.$apply();
-      $scope.closeThisDialog();
-    });
+      //Get data from ngDialog directive
+      this.name = $scope.$parent.ngDialogData.name;
+      this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
+      this.channel = $scope.$parent.ngDialogData.channel;
+      this.userId = this.channel.substring(5);
+      this.sending = false;
+      var notificationCtrl = this;
 
-    //Notification either wasn't saved, or did save
-    //but push failed and error clause removed said save
-    $scope.$on('notification-error',function(notification){
-      errorFactory.showErrorWithCode('NOTIF-FAILED');
-      notificationCtrl.sending = false;
-      $scope.$apply();
-    });
+      //Set focus on message box once dialog pops up
+      $scope.$on('ngDialog.opened', function (event, $dialog) {
+        document.getElementById("notification-message").focus();
+      });
 
-    //Once a file is selected, prep file for upload to Parse
-    this.onFileSelect = function($files){
-      //Fetch file
-      this.file = $files[0];
+      //Notification was successfully saved and pushed (sent)
+      $scope.$on('notification-success',function(notification){
+        notificationCtrl.sending = false;
+        $scope.$apply();
+        $scope.closeThisDialog();
+      });
 
-      //Set file type
-      if(this.file.type.match('image.*')){
-        this.fileType = "image";
-      }
-      else if(this.file.type.match('video.*')){
-        this.fileType = "video";
-      }
-      else{
-        this.fileType = "audio";
-      }
-      //Set file name
-      this.fileLabel = this.file.name
-    };
+      //Notification was saved, but not pushed
+      $scope.$on('notification-partial-success',function(notification){
+        //Right now same as success event, but might change
+        notificationCtrl.sending = false;
+        $scope.$apply();
+        $scope.closeThisDialog();
+      });
 
-    //Send the notification to the user
-    this.submitNotification = function(){
+      //Notification either wasn't saved, or did save
+      //but push failed and error clause removed said save
+      $scope.$on('notification-error',function(notification){
+        errorFactory.showErrorWithCode('NOTIF-FAILED');
+        notificationCtrl.sending = false;
+        $scope.$apply();
+      });
 
-      //If no title, show appropiate error and ignore
-      if(!this.title){
-        errorFactory.showErrorWithCode('NOTIF-NO-TITLE');
-        return;
-      }
-      //If no message or attachment, show appropiate error and ignore
-      if(!this.message && !this.file){
-        errorFactory.showErrorWithCode('NOTIF-NO-CONTENT');
-        return;
-      }
+      //Once a file is selected, prep file for upload to Parse
+      this.onFileSelect = function($files){
+        //Fetch file
+        this.file = $files[0];
 
-      //Toggle sending animation
-      this.sending = true;
+        //Set file type
+        if(this.file.type.match('image.*')){
+          this.fileType = "image";
+        }
+        else if(this.file.type.match('video.*')){
+          this.fileType = "video";
+        }
+        else{
+          this.fileType = "audio";
+        }
+        //Set file name
+        this.fileLabel = this.file.name
+      };
 
-      //Set the channel where notification will be sent
-      parseNotificationService.channels.push(this.channel);
+      //Send the notification to the user
+      this.submitNotification = function(){
 
-      //Prepare notification
-      var notification = {};
-      notification.userId = this.userId;
-      notification.controlNumber = this.controlNumber;
-      notification.title = this.title;
-      notification.message = this.message;
-      //If a file is present, attach it and set its type
-      if(this.file){
-        notification.attachment = new Parse.File("attachment", this.file);
-        notification.attachmentType = this.fileType;
-      }
+        //If no title, show appropiate error and ignore
+        if(!this.title){
+          errorFactory.showErrorWithCode('NOTIF-NO-TITLE');
+          return;
+        }
+        //If no message or attachment, show appropiate error and ignore
+        if(!this.message && !this.file){
+          errorFactory.showErrorWithCode('NOTIF-NO-CONTENT');
+          return;
+        }
 
-      //Create Parse notification and send it
-      var parseNotification = parseNotificationService.newNotification(notification);
-      parseNotificationService.saveAndPushNotification(parseNotification);
-    };
+        //Toggle sending animation
+        this.sending = true;
 
-  }]);
+        //Set the channel where notification will be sent
+        parseNotificationService.channels.push(this.channel);
 
-  //Controller for error dialog which is reusable throughout the
-  //app; decoupled from everything else
-  app.controller('ErrorController', ['$scope', function($scope){
-    this.title = $scope.$parent.ngDialogData.title;
-    this.message = $scope.$parent.ngDialogData.message;
-  }]);
+        //Prepare notification
+        var notification = {};
+        notification.userId = this.userId;
+        notification.controlNumber = this.controlNumber;
+        notification.title = this.title;
+        notification.message = this.message;
+        //If a file is present, attach it and set its type
+        if(this.file){
+          notification.attachment = new Parse.File("attachment", this.file);
+          notification.attachmentType = this.fileType;
+        }
 
-})();
+        //Create Parse notification and send it
+        var parseNotification = parseNotificationService.newNotification(notification);
+        parseNotificationService.saveAndPushNotification(parseNotification);
+      };
+
+    }]);
+
+    //Controller for error dialog which is reusable throughout the
+    //app; decoupled from everything else
+    app.controller('ErrorController', ['$scope', function($scope){
+      this.title = $scope.$parent.ngDialogData.title;
+      this.message = $scope.$parent.ngDialogData.message;
+    }]);
+
+  })();
