@@ -106,3 +106,10 @@ button:focus{
 .center-icon{
   margin-left:16.5%;
 }
+
+.closed-drawer{
+  width:3%;
+}
+.opened-drawer{
+  width:15%;
+}

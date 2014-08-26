@@ -1,18 +1,18 @@
-<div>
+<div ng-controller="DrawerController as drawer">
 
   <div style="height:10%;">
     <!--DUMMY ELEMENT.MATCHES DRAWER & HEADER HEIGHT-->
   </div>
 
-  <ul class="drawer" ng-style="drawer.style">
+  <ul class="drawer" ng-class="{'closed-drawer':!drawer.isOn, 'opened-drawer':drawer.isOn}">
 
     <li ng-class="{'bright-blue':drawer.current===item.name}" class="drawer-item" ng-repeat="item in drawer.entries">
 
       <a ui-sref="{{item.state}}" ng-click="drawer.current=item.name">
 
-          <span class="{{item.icon}} item-icon" ng-class="{'center-icon':!drawer.entriesOn}"></span>
+          <span class="{{item.icon}} item-icon" ng-class="{'center-icon':!drawer.isOn}"></span>
 
-          <span class="item-name" ng-show="drawer.entriesOn">{{item.name}}</span>
+          <span class="item-name" ng-show="drawer.isOn">{{item.name}}</span>
 
       </a>
 

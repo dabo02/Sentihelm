@@ -3,7 +3,7 @@
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
-  app.config(function($stateProvider, $urlRouterProvider) {
+  app.config(['$stateProvider','$urlRouterProvider', 'USER_ROLES', function($stateProvider, $urlRouterProvider, USER_ROLES){
 
     // For any unmatched url, redirect to /tipfeed
     $urlRouterProvider.otherwise("/tipfeed");
@@ -20,7 +20,7 @@
       url:"/global-notifications",
       templateUrl:"/global-notifications.html"
     });
-  });
+  }]);
 
   //Initialize values needed throughout the app
   app.run(function(){
@@ -333,71 +333,11 @@
 
   }]);
 
-  //Creates the header element,
-  //along with all its functionality
-  app.directive('header', ['$rootScope', function(){
-    return{
-      restrict:'E',
-      templateUrl:'header.html',
-
-      controller: function($rootScope){
-        //Icon for drawer button and page logo
-        this.drawerOn = false;
-        this.drawerButton = 'fa fa-reorder fa-lg';
-        this.logo = '../resources/images/sentihelm.png';
-
-        //Emits event that toggles the drawer directive's view;
-        //toggles a boolean value that checks when drawer is active
-        this.toggleDrawer = function(){
-          $rootScope.$broadcast('toggleDrawer',[this.drawerOn]);
-          this.drawerOn=!this.drawerOn;
-        }
-      },
-
-      controllerAs:'header'
-    };
-  }]);
-
-  //Creates the drawer element,
-  //along with all its functionality
-  app.directive('drawer', function(){
-    return{
-      restrict:'E',
-      templateUrl:'drawer.html',
-
-      controller: function($scope){
-        //Drawer options with name and icon;
-        //entries are off by default
-        this.entries=[
-          {name:'Tip Feed', icon:'fa fa-inbox', state:'tipfeed'},
-          {name:'Video Streams', icon:'fa fa-video-camera', state:'streams'},
-          {name:'Send Notification', icon:'fa fa-send-o', state:'global-notifications'},
-          {name:'Maps', icon:'fa fa-globe', state:'maps'},
-          {name:'Wanted List', icon:'fa fa-warning', state:'wanted'},
-          {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'analysis'}
-        ];
-
-        this.entriesOn = false;
-
-        //Shows/hides drawer on toggled drawer event
-        //(emitted from the header directive)
-        var drawer = this;
-        $scope.$on('toggleDrawer', function(event, drawerOn){
-          if(drawerOn[0]){
-            drawer.entriesOn = false;
-            drawer.style={'width':'3%'};
-          }
-          else{
-            drawer.entriesOn = true;
-            drawer.style={'width':'15%'};
-          }
-        });
-      },
-
-      controllerAs: 'drawer'
-    };
-  });
-
+  //Controller which assigns to its $scope
+  //all controls necessary for session control
+  //and login functionality; created at body tag
+  //so all other $scopes can inherit from
+  //its $scope
   app.controller('SessionController', ['$scope','USER_ROLES','authenticator',function($scope, USER_ROLES, authenticator){
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
@@ -406,6 +346,43 @@
     $scope.setCurrentUser = function (user) {
       $scope.currentUser = user;
     };
+
+  }]);
+
+  //Controller for the header; contains a button
+  //that triggers drawer element when clicked
+  app.controller('HeaderController', ['$rootScope', function($rootScope){
+    //Emits event that toggles the drawer directive's view;
+    //toggles a boolean value that checks when drawer is active
+    this.toggleDrawer = function(){
+      $rootScope.$broadcast('toggleDrawer',[this.drawerOn]);
+      this.drawerOn=!this.drawerOn;
+    };
+  }]);
+
+  //Controller for the drawer, which hides/shows
+  //on button click contains navigation options
+  app.controller('DrawerController', ['$scope', function($scope){
+    //The drawer is hidden by default
+    this.isOn = false;
+
+    //Drawer options with name and icon;
+    //entries are off by default
+    this.entries=[
+      {name:'Tip Feed', icon:'fa fa-inbox', state:'tipfeed'},
+      {name:'Video Streams', icon:'fa fa-video-camera', state:'streams'},
+      {name:'Send Notification', icon:'fa fa-send-o', state:'global-notifications'},
+      {name:'Maps', icon:'fa fa-globe', state:'maps'},
+      {name:'Wanted List', icon:'fa fa-warning', state:'wanted'},
+      {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'analysis'}
+    ];
+
+    //Shows/hides drawer on toggled drawer event
+    //(emitted from the header directive)
+    var drawer = this;
+    $scope.$on('toggleDrawer', function(event){
+      drawer.isOn = !drawer.isOn;
+    });
 
   }]);
 

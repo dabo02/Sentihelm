@@ -1,5 +1,5 @@
-<div class="header">
-  <button id="drawer-button" class="{{header.drawerButton}} transparent-button" ng-click="header.toggleDrawer()">
+<div class="header" ng-controller="HeaderController as header">
+  <button id="drawer-button" class="fa fa-reorder fa-lg transparent-button" ng-click="header.toggleDrawer()">
   </button>
-  <img class="logo" ng-src="{{header.logo}}"/>
+  <img class="logo" ng-src="../resources/images/sentihelm.png"/>
 </div>
