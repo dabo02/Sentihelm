@@ -17,6 +17,9 @@
   height:auto;
   list-style-type:none;
 }
+a:visited{
+  color:none;
+}
 
 /*************TIP*************/
 /*****************************/

@@ -1,20 +1,31 @@
 (function(){
-  var app = angular.module('sentihelm', ['ngRoute','btford.socket-io','google-maps','ngDialog','angularFileUpload']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps','ngDialog','angularFileUpload']);
 
-  //Sets up all the routes the app will handle,
+  //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
-  app.config(['$routeProvider', function($routeProvider) {
-    $routeProvider.
-    when('/tipfeed', {
-      templateUrl: 'tip-feed.html'
-    }).
-    when('/notifications', {
-      templateUrl: 'notifications.html'
-    }).
-    otherwise({
-      redirectTo: '/tipfeed'
+  app.config(function($stateProvider, $urlRouterProvider) {
+
+    // For any unmatched url, redirect to /tipfeed
+    $urlRouterProvider.otherwise("/tipfeed");
+
+    $stateProvider
+    //Tipfeed endpoint/url
+    .state('tipfeed',{
+      url:"/tipfeed",
+      templateUrl:"/tipfeed.html"
+    })
+
+    .state('maps',{
+      url:"/maps",
+      templateUrl:"/global-notifications.html"
+    })
+
+    //Global notifications endpoint/url
+    .state('global-notifications',{
+      url:"/global-notifications",
+      templateUrl:"/global-notifications.html"
     });
-  }]);
+  });
 
   //Initialize values needed throughout the app
   app.run(function(){
@@ -86,17 +97,12 @@
     var authenticator = {};
 
     authenticator.login = function(credentials){
-      return
-      $http.post('/login', credentials)
-      .then(
-        function(result){
-          //successful
-          //create and set Session
-        },
-        function(){
-          //failed
-        }
-      );
+      var request = $http.post('/login', credentials);
+      return request.then(function(result){
+        //login was successful
+        Session.create(result.id, result.user.id, result.user.role);
+        return result.user;
+      });
     };
 
     authenticator.isAuthenticated = function () {
@@ -368,12 +374,12 @@
         //Drawer options with name and icon;
         //entries are off by default
         this.entries=[
-          {name:'Tip Feed', icon:'fa fa-inbox', action:'#/tipfeed'},
-          {name:'Video Streams', icon:'fa fa-video-camera', action:'#/streams'},
-          {name:'Send Notification', icon:'fa fa-send-o', action:'#/notifications'},
-          {name:'Maps', icon:'fa fa-globe', action:'#/maps'},
-          {name:'Wanted List', icon:'fa fa-warning', action:'#/wanted'},
-          {name:'Data Analysis', icon:'fa fa-bar-chart-o', action:'#/analysis'}
+          {name:'Tip Feed', icon:'fa fa-inbox', state:'tipfeed'},
+          {name:'Video Streams', icon:'fa fa-video-camera', state:'streams'},
+          {name:'Send Notification', icon:'fa fa-send-o', state:'global-notifications'},
+          {name:'Maps', icon:'fa fa-globe', state:'maps'},
+          {name:'Wanted List', icon:'fa fa-warning', state:'wanted'},
+          {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'analysis'}
         ];
 
         this.entriesOn = false;
@@ -396,6 +402,17 @@
       controllerAs: 'drawer'
     };
   });
+
+  app.controller('SessionController', ['$scope','USER_ROLES','authenticator',function($scope, USER_ROLES, authenticator){
+    $scope.currentUser = null;
+    $scope.userRoles = USER_ROLES;
+    $scope.isAuthorized = authenticator.isAuthorized;
+
+    $scope.setCurrentUser = function (user) {
+      $scope.currentUser = user;
+    };
+
+  }]);
 
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
@@ -530,115 +547,115 @@
     };
   });
 
-    //Controller for user follow-up notification; controls the
-    //dialog that allows for message/attachment to be sent to users
-    app.controller('NotificationController', ['$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($scope, parseNotificationService, ngDialog, errorFactory){
+  //Controller for user follow-up notification; controls the
+  //dialog that allows for message/attachment to be sent to users
+  app.controller('NotificationController', ['$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($scope, parseNotificationService, ngDialog, errorFactory){
 
-      //Get data from ngDialog directive
-      this.name = $scope.$parent.ngDialogData.name;
-      this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
-      this.channel = $scope.$parent.ngDialogData.channel;
-      this.userId = this.channel.substring(5);
-      this.sending = false;
-      var notificationCtrl = this;
+    //Get data from ngDialog directive
+    this.name = $scope.$parent.ngDialogData.name;
+    this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
+    this.channel = $scope.$parent.ngDialogData.channel;
+    this.userId = this.channel.substring(5);
+    this.sending = false;
+    var notificationCtrl = this;
 
-      //Set focus on message box once dialog pops up
-      $scope.$on('ngDialog.opened', function (event, $dialog) {
-        document.getElementById("notification-message").focus();
-      });
+    //Set focus on message box once dialog pops up
+    $scope.$on('ngDialog.opened', function (event, $dialog) {
+      document.getElementById("notification-message").focus();
+    });
 
-      //Notification was successfully saved and pushed (sent)
-      $scope.$on('notification-success',function(notification){
-        notificationCtrl.sending = false;
-        $scope.$apply();
-        $scope.closeThisDialog();
-      });
+    //Notification was successfully saved and pushed (sent)
+    $scope.$on('notification-success',function(notification){
+      notificationCtrl.sending = false;
+      $scope.$apply();
+      $scope.closeThisDialog();
+    });
 
-      //Notification was saved, but not pushed
-      $scope.$on('notification-partial-success',function(notification){
-        //Right now same as success event, but might change
-        notificationCtrl.sending = false;
-        $scope.$apply();
-        $scope.closeThisDialog();
-      });
+    //Notification was saved, but not pushed
+    $scope.$on('notification-partial-success',function(notification){
+      //Right now same as success event, but might change
+      notificationCtrl.sending = false;
+      $scope.$apply();
+      $scope.closeThisDialog();
+    });
 
-      //Notification either wasn't saved, or did save
-      //but push failed and error clause removed said save
-      $scope.$on('notification-error',function(notification){
-        errorFactory.showErrorWithCode('NOTIF-FAILED');
-        notificationCtrl.sending = false;
-        $scope.$apply();
-      });
+    //Notification either wasn't saved, or did save
+    //but push failed and error clause removed said save
+    $scope.$on('notification-error',function(notification){
+      errorFactory.showErrorWithCode('NOTIF-FAILED');
+      notificationCtrl.sending = false;
+      $scope.$apply();
+    });
 
-      //Once a file is selected, prep file for upload to Parse
-      this.onFileSelect = function($files){
-        //Fetch file
-        this.file = $files[0];
+    //Once a file is selected, prep file for upload to Parse
+    this.onFileSelect = function($files){
+      //Fetch file
+      this.file = $files[0];
 
-        //Set file type
-        if(this.file.type.match('image.*')){
-          this.fileType = "image";
-        }
-        else if(this.file.type.match('video.*')){
-          this.fileType = "video";
-        }
-        else{
-          this.fileType = "audio";
-        }
-        //Set file name
-        this.fileLabel = this.file.name
-      };
+      //Set file type
+      if(this.file.type.match('image.*')){
+        this.fileType = "image";
+      }
+      else if(this.file.type.match('video.*')){
+        this.fileType = "video";
+      }
+      else{
+        this.fileType = "audio";
+      }
+      //Set file name
+      this.fileLabel = this.file.name
+    };
 
-      //Send the notification to the user
-      this.submitNotification = function(){
+    //Send the notification to the user
+    this.submitNotification = function(){
 
-        //If no title, show appropiate error and ignore
-        if(!this.title){
-          errorFactory.showErrorWithCode('NOTIF-NO-TITLE');
-          return;
-        }
-        //If no message or attachment, show appropiate error and ignore
-        if(!this.message && !this.file){
-          errorFactory.showErrorWithCode('NOTIF-NO-CONTENT');
-          return;
-        }
+      //If no title, show appropiate error and ignore
+      if(!this.title){
+        errorFactory.showErrorWithCode('NOTIF-NO-TITLE');
+        return;
+      }
+      //If no message or attachment, show appropiate error and ignore
+      if(!this.message && !this.file){
+        errorFactory.showErrorWithCode('NOTIF-NO-CONTENT');
+        return;
+      }
 
-        //Toggle sending animation
-        this.sending = true;
+      //Toggle sending animation
+      this.sending = true;
 
-        //Set the channel where notification will be sent
-        parseNotificationService.channels.push(this.channel);
+      //Set the channel where notification will be sent
+      parseNotificationService.channels.push(this.channel);
 
-        //Prepare notification
-        var notification = {};
-        notification.userId = this.userId;
-        notification.controlNumber = this.controlNumber;
-        notification.title = this.title;
-        notification.message = this.message;
-        //If a file is present, attach it and set its type
-        if(this.file){
-          notification.attachment = new Parse.File("attachment", this.file);
-          notification.attachmentType = this.fileType;
-        }
+      //Prepare notification
+      var notification = {};
+      notification.userId = this.userId;
+      notification.controlNumber = this.controlNumber;
+      notification.title = this.title;
+      notification.message = this.message;
+      //If a file is present, attach it and set its type
+      if(this.file){
+        notification.attachment = new Parse.File("attachment", this.file);
+        notification.attachmentType = this.fileType;
+      }
 
-        //Create Parse notification and send it
-        var parseNotification = parseNotificationService.newNotification(notification);
-        parseNotificationService.saveAndPushNotification(parseNotification);
-      };
+      //Create Parse notification and send it
+      var parseNotification = parseNotificationService.newNotification(notification);
+      parseNotificationService.saveAndPushNotification(parseNotification);
+    };
 
-    }]);
+  }]);
 
-    //Controller for error dialog which is reusable throughout the
-    //app; decoupled from everything else
-    app.controller('ErrorController', ['$scope', function($scope){
-      this.title = $scope.$parent.ngDialogData.title;
-      this.message = $scope.$parent.ngDialogData.message;
+  //Controller for error dialog which is reusable throughout the
+  //app; decoupled from everything else
+  app.controller('ErrorController', ['$scope', function($scope){
+    this.title = $scope.$parent.ngDialogData.title;
+    this.message = $scope.$parent.ngDialogData.message;
 
-      //Set focus on message box once error dialog closes
-      $scope.$on('ngDialog.closed', function (event, $dialog) {
-        document.getElementById("notification-message").focus();
-      });
+    //Set focus on message box once error dialog closes
+    $scope.$on('ngDialog.closed', function (event, $dialog) {
+      document.getElementById("notification-message").focus();
+    });
 
-    }]);
+  }]);
 
-  })();
+})();

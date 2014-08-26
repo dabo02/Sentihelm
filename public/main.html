@@ -18,22 +18,22 @@
   <script type="text/javascript" src="/javascript/jquery-1.11.1.min.js"></script>
   <script type="text/javascript" src="/javascript/angular-file-upload-shim.min.js"></script>
   <script type="text/javascript" src="/javascript/angular.min.js"></script>
-  <script type="text/javascript" src="/javascript/angular-route.min.js"></script>
   <script type="text/javascript" src="/javascript/lodash-underscore.min.js"></script>
   <script type="text/javascript" src="/javascript/angular-google-maps.min.js"></script>
   <script type="text/javascript" src="/javascript/socket.min.js"></script>
   <script type="text/javascript" src="/javascript/ngDialog.min.js"></script>
   <script type="text/javascript" src="/javascript/angular-file-upload.min.js"></script>
+  <script type="text/javascript" src="/javascript/angular-ui-router.min.js"></script>
   <script type="text/javascript" src="/javascript/sentihelm-ng.js"></script>
 </head>
 
-<body>
+<body ng-controller="SessionController">
 
   <header></header>
 
   <drawer></drawer>
 
-  <div ng-view>
+  <div ui-view>
 
   </div>
 

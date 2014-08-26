@@ -20,6 +20,10 @@ body{
   background-color:#f7f7f7;
 }
 
+a{
+  text-decoration:none;
+}
+
 /************HEADER************/
 /*****************************/
 .header{
@@ -37,7 +41,7 @@ body{
 #drawer-button{
   position:absolute;
   top:40%;
-  left:3%;
+  left:.35%;
   color:#f7f7f7;
 }
 #drawer-button:hover,
@@ -65,6 +69,7 @@ body{
   color:#f7f7f7;
   cursor:pointer;
 }
+.drawer-item a,
 .drawer-item span{
   color:inherit;
 }
@@ -96,4 +101,8 @@ button:focus{
 
 .bright-blue{
   color:#219ef9;
+}
+
+.center-icon{
+  margin-left:16.5%;
 }
