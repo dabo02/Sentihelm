@@ -486,7 +486,8 @@
     this.attachType = $scope.$parent.ngDialogData.attachmentType;
   }]);
 
-  //Controller for Google map in each tip
+  //Controller for Google map in each tip;
+  //sets map center and crime position in map
   app.controller('GoogleMapController', function() {
 
     //markerCenter will be different from tip.center
@@ -500,14 +501,13 @@
         return point;
       }
       //Set the coordinate only one time.
-      if(markerCenter===null || markerCenter.latitude !== point.latitude
-        || markerCenter.longitude !== point.longitude) {
+      if(markerCenter===null || markerCenter.latitude !== point.latitude || markerCenter.longitude !== point.longitude) {
           this.zoom = 14; //Reset the zoom when changing between pages
           //Create new object with the same coordinates (to avoid reference)
           markerCenter = JSON.parse(JSON.stringify(point));
         }
         return markerCenter;
-      };
+    };
     });
 
     //Controller for user follow-up notification; controls the
