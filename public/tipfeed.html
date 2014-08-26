@@ -1,0 +1,161 @@
+<div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
+
+  <div id="tip-feed-container">
+
+    <!--======TIP FEED======-->
+    <!--====================-->
+    <ul id="tip-feed">
+      <li  class="tip"
+      ng-repeat="tip in tipfeed.currentTips track by $index"
+      ng-show="tip"
+      ng-class="{'orange-border':tip.anonymous}"
+      >
+
+        <!-------------------->
+        <!------TIP HEAD------>
+        <!-------------------->
+        <div class="tip-header">
+
+          <!------DATE------>
+          <span class="white tip-date">
+            {{tip.date}}
+          </span>
+
+          <!------NAME------>
+          <span class="user" ng-class="{orange:tip.anonymous, white:!tip.anonymous}">
+            {{tip.firstName+" "+tip.lastName}}
+          </span>
+
+          <!------CONTROL NUMBER------>
+          <div class="control-number" ng-class="{'orange-border':tip.anonymous}">
+            {{tip.controlNumber}}
+          </div>
+
+        </div>
+
+        <!-------------------->
+        <!------TIP BODY------>
+        <!-------------------->
+        <div class="tip-body">
+
+          <!-------LEFT DIVISION------>
+          <!-------------------------->
+          <div class="left">
+
+            <!------CRIME IMAGE------>
+            <img ng-src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
+            <br>
+
+            <!------CRIME TYPE------>
+            <span>{{tip.crimeType}}</span>
+
+            <!------CONTACT USER INFORMATION------>
+            <div ng-hide="tip.anonymous" class="contact-info">
+              CONTACT USER<br>
+              <span class="contact-number">{{tip.phone}}</span>
+              <button class="notification-button" ng-click="tipfeed.showDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">Send Notification</button>
+            </div>
+          </div>
+
+          <!-------MID DIVISION------->
+          <!-------------------------->
+          <div class="center">
+
+            <!------ATTACHMENTS------>
+            <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
+
+              <!--===========================================================================-->
+              <!--=======FALLBACK APPROACH: OPENS ATTACHMENTS IN SEPARETE TAB/WINDOW=========-->
+              <!--===========================================================================-->
+
+              <!-- <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" href="{{tip.videoUrl}}">
+                <img src="./resources/images/videoAtt.png"/>
+              </a>
+              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" href="{{tip.imageUrl}}">
+                <img src="./resources/images/imageAtt.png"/>
+              </a>
+              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" href="{{tip.audioUrl}}">
+                <img src="./resources/images/audioAtt.png"/>
+              </a> -->
+
+              <!--===========================================================================-->
+              <!--===IDEAL APPROACH: HAVE A METHOD CALLED THAT SHOWS ATTACHMENTS IN DIALOG===-->
+              <!--===========================================================================-->
+
+              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" ng-click="tipfeed.showAttachment(tip.videoUrl, 'VID')">
+                <img src="./resources/images/videoAtt.png"/>
+              </a>
+              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" ng-click="tipfeed.showAttachment(tip.imageUrl, 'IMG')">
+                <img src="./resources/images/imageAtt.png"/>
+              </a>
+              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachment(tip.audioUrl, 'AUDIO')">
+                <img src="./resources/images/audioAtt.png"/>
+              </a>
+
+            </div>
+
+            <!------CRIME DESCRIPTION------>
+            <div class="crime-description" ng-class="{'orange-border':tip.anonymous}">
+              <span>{{tip.crimeDescription}}</span>
+            </div>
+          </div>
+
+          <!------RIGHT DIVISION------>
+          <!-------------------------->
+          <div class="right" ng-controller="GoogleMapController as mapCtrl">
+            <div ng-class="{'no-location':tip.anonymous}" class="map-canvas" id="{{tip.controlNumber}}">
+
+              <!------ANON NO LOCATION------>
+              <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
+
+              <!------GOOGLE MAP------>
+              <google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-if="!tip.anonymous" ng-cloak>
+                <marker  coords="mapCtrl.getMarkerPosition(tip.center)"></marker>
+              </google-map>
+
+            </div>
+          </div>
+
+        </div>
+        <!-- END TIP -->
+      </li>
+    </ul>
+
+  </div>
+
+<!--=====PAGINATOR======-->
+<!--====================-->
+<div id="paginator-container" ng-init="tipfeed.currentPage=1">
+  <ul id="paginator">
+
+    <!------PREVIOUS PAGE CONTROL------>
+    <li id="page-previous" class="paginator-control"
+     ng-show="tipfeed.paginatorSet"
+     ng-class="{'disabled-link': tipfeed.currentPage===1}"
+     ng-click="tipfeed.prevPage()"
+     >
+      <span class="fa fa-chevron-left fa-lg"></span>
+    </li>
+
+    <!------PAGE CONTROLS------>
+    <li class="paginator-control"
+     ng-repeat="value in tipfeed.paginatorSet"
+     ng-class="{'active-page': tipfeed.currentPage === value}"
+     ng-click="tipfeed.changePage(value)"
+     >
+      {{value}}
+    </li>
+
+    <!------NEXT PAGE CONTROL------>
+    <li id="page-next" class="paginator-control"
+     ng-show="tipfeed.paginatorSet"
+     ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
+     ng-click="tipfeed.nextPage()"
+     >
+      <span class="fa fa-chevron-right fa-lg"></span>
+    </li>
+
+  </ul>
+</div>
+
+</div>

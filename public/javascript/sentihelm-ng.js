@@ -15,11 +15,6 @@
       templateUrl:"/tipfeed.html"
     })
 
-    .state('maps',{
-      url:"/maps",
-      templateUrl:"/global-notifications.html"
-    })
-
     //Global notifications endpoint/url
     .state('global-notifications',{
       url:"/global-notifications",
