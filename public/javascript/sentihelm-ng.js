@@ -505,7 +505,7 @@
           this.zoom = 14; //Reset the zoom when changing between pages
           //Create new object with the same coordinates (to avoid reference)
           markerCenter = JSON.parse(JSON.stringify(point));
-        }
+      }
         return markerCenter;
     };
     });
