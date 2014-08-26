@@ -12,7 +12,10 @@
     //Tipfeed endpoint/url
     .state('tipfeed',{
       url:"/tipfeed",
-      templateUrl:"/tipfeed.html"
+      templateUrl:"/tipfeed.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      }
     })
 
     //Global notifications endpoint/url
@@ -23,10 +26,27 @@
   }]);
 
   //Initialize values needed throughout the app
-  app.run(function(){
+  app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', function(){
     //Initialize Parse
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
-  });
+
+    //Check for user autherization every time page loads
+    $rootScope.$on('$stateChangeStart', function (event, next) {
+      var authorizedRoles = next.data.authorizedRoles;
+      if (!authenticator.isAuthorized(authorizedRoles)) {
+        event.preventDefault();
+        if (authenticator.isAuthenticated()) {
+          //User does not have access to content
+          $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+        }
+        else {
+          //User is not logged in
+          $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+        }
+      }
+    });
+
+  }]);
 
   //All errors are contained in this constant;
   //used with errorFactory service for easy error
