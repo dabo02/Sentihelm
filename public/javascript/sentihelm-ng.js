@@ -71,7 +71,7 @@
       var parsedError = JSON.stringify(error);
       ngDialog.open({
         template: '../error-dialog.html',
-        className: 'ngdialog-theme-plain',
+        className: 'ngdialog-error',
         closeByDocument: false,
         closeByEscape:false,
         data:parsedError
@@ -559,6 +559,11 @@
   app.controller('ErrorController', ['$scope', function($scope){
     this.title = $scope.$parent.ngDialogData.title;
     this.message = $scope.$parent.ngDialogData.message;
+    
+    //Set focus on message box once error dialog closes
+    $scope.$on('ngDialog.closed', function (event, $dialog) {
+      document.getElementById("notification-message").focus();
+    });
   }]);
 
 })();
