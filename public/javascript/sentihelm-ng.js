@@ -457,10 +457,13 @@
         attachmentType:type
       });
 
+      var showClose = type !== 'AUDIO';
+
       //Open dialog and pass control to AttachmentController
       ngDialog.open({
         template: '../attachment-dialog.html',
         className: 'ngdialog-attachment',
+        showClose: showClose,
         data:data
       });
     };
