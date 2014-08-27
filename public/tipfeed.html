@@ -53,7 +53,7 @@
             <div ng-hide="tip.anonymous" class="contact-info">
               CONTACT USER<br>
               <span class="contact-number">{{tip.phone}}</span>
-              <button class="notification-button" ng-click="tipfeed.showDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">Send Notification</button>
+              <button class="notification-button" ng-click="tipfeed.showNotificationDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">Send Notification</button>
             </div>
           </div>
 
@@ -82,13 +82,13 @@
               <!--===IDEAL APPROACH: HAVE A METHOD CALLED THAT SHOWS ATTACHMENTS IN DIALOG===-->
               <!--===========================================================================-->
 
-              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" ng-click="tipfeed.showAttachment(tip.videoUrl, 'VID')">
+              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" ng-click="tipfeed.showAttachmentDialog(tip.videoUrl, 'VID')">
                 <img src="./resources/images/videoAtt.png"/>
               </a>
-              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" ng-click="tipfeed.showAttachment(tip.imageUrl, 'IMG')">
+              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" ng-click="tipfeed.showAttachmentDialog(tip.imageUrl, 'IMG')">
                 <img src="./resources/images/imageAtt.png"/>
               </a>
-              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachment(tip.audioUrl, 'AUDIO')">
+              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachmentDialog(tip.audioUrl, 'AUDIO')">
                 <img src="./resources/images/audioAtt.png"/>
               </a>
 

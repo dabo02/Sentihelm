@@ -25,33 +25,28 @@
     });
   }]);
 
-  app.run(function(){
+  //Initialize values needed throughout the app
+  app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', function($rootScope, AUTH_EVENTS, authenticator){
     //Initialize Parse
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
-  });
 
-  // //Initialize values needed throughout the app
-  // app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', function(){
-  //   //Initialize Parse
-  //   Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
-  //
-  //   //Check for user autherization every time page loads
-  //   $rootScope.$on('$stateChangeStart', function (event, next) {
-  //     var authorizedRoles = next.data.authorizedRoles;
-  //     if (!authenticator.isAuthorized(authorizedRoles)) {
-  //       event.preventDefault();
-  //       if (authenticator.isAuthenticated()) {
-  //         //User does not have access to content
-  //         $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-  //       }
-  //       else {
-  //         //User is not logged in
-  //         $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-  //       }
-  //     }
-  //   });
-  //
-  // }]);
+    //Check for user autherization every time page loads
+    // $rootScope.$on('$stateChangeStart', function (event, next) {
+    //   var authorizedRoles = next.data.authorizedRoles;
+    //   if (!authenticator.isAuthorized(authorizedRoles)) {
+    //     // event.preventDefault();
+    //     if (authenticator.isAuthenticated()) {
+    //       //User does not have access to content
+    //       $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+    //     }
+    //     else {
+    //       //User is not logged in
+    //       $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+    //     }
+    //   }
+    // });
+
+  }]);
 
   //All errors are contained in this constant;
   //used with errorFactory service for easy error
@@ -298,8 +293,8 @@
     paginator.paginatorSet = [];
     paginator.paginatorSetSize = 0;
 
-    //Get first batch of tips
-    socket.emit('request-batch', {upperBound: (10)});
+    // //Get first batch of tips
+    // socket.emit('request-batch', {upperBound: (10)});
 
     //Catch socket.io event when a batch is sent
     //Let controller know news tips arrvied; update
@@ -312,6 +307,12 @@
         paginator.pageSetUpdater(paginator.lastPage);
       }
     });
+
+    //Called when tipfeed loads, be it on
+    //refresh or navigating to it again
+    paginator.initializeFeed = function(){
+      socket.emit('request-batch', {upperBound: (10)});
+    }
 
     //Change the page and ask server for tips present in new page;
     //let controller know the page has changed
@@ -391,6 +392,11 @@
     //The drawer is hidden by default
     this.isOn = false;
 
+    //TODO TESTING
+    //this.count = 1;
+    //TODO TESTING
+
+
     //Drawer options with name and icon;
     //entries are off by default
     this.entries=[
@@ -423,6 +429,8 @@
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
 
+    //Get tips on page load/refresh
+    paginatorService.initializeFeed();
 
     //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
@@ -458,7 +466,7 @@
 
     //Shows dialog that allows client to send
     //message and attachment to a specific user
-    this.showDialog = function(firstName, lastName, controlNumber, channel){
+    this.showNotificationDialog = function(firstName, lastName, controlNumber, channel){
       //ngDialog can only handle stringified JSONs
       var data = JSON.stringify({
         name: firstName+" "+lastName,
@@ -475,7 +483,7 @@
       });
     };
 
-    this.showAttachment = function(address, type) {
+    this.showAttachmentDialog = function(address, type) {
       //ngDialog can only handle stringified JSONs
       var data = JSON.stringify({
         address:address,

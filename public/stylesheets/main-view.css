@@ -111,5 +111,14 @@ button:focus{
   width:3%;
 }
 .opened-drawer{
-  width:15%;
+  width:12%;
+}
+
+.tip-counter{
+  color:white;
+  background-color:#219ef9;
+  border-radius:50%;
+  text-align:center;
+  font-size:0.9em;
+  font-weight:400;
 }
