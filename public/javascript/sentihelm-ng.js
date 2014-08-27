@@ -213,11 +213,17 @@
 
   //Creates a notification service that constructs
   //Parse notifications and provides methods to
-  //save and push those notifications to different channels
+  //save and push those notifications, while associating
+  //said notification with corresponding tip;
+  //can push to different channels
   app.factory('parseNotificationService', ['$rootScope', function($rootScope){
 
-    //Needed to create Parse notifications
+    //Needed to save Parse notifications to
+    //the PushNotifications class in Parse
     var PushNotification = Parse.Object.extend("PushNotifications");
+
+    //TODO TESTING
+    var TipReport = Parse.Object.extend("TipReport");
 
     var parseNotificationService = {};
 
@@ -239,15 +245,19 @@
       return notification;
     };
 
-    //Saves the Parse Notification; once successful, calls
-    //pushNotification() so notification can be sent to user,
-    //otherwise alerts controller about failure
+
+
+    //Saves and Pushes the Parse Notification by calling other methods
+    //in chain; it first saves the notification, then calls
+    //associateNotificationWithTip(), which in turn calls pushNotification();
+    //if anything fails, the error is broadcast throughout the app
     parseNotificationService.saveAndPushNotification = function(notification){
-      //Try and save the notification to parse, for future viewing
+      //Try and save the notification to Parse, for future viewing
       notification.save(null, {
         success: function(notification){
-          //Notification saved, now push to user
-          parseNotificationService.pushNotification(notification);
+          //Notification saved, now save to corresponding tip attribute
+          //(associate)
+          parseNotificationService.associateNotificationWithTip(notification);
         },
         error : function(notification, error){
           //Notification could not be saved, pass control back to controller
@@ -257,9 +267,46 @@
         }
       });
     };
+    //Associates already saved notification by inserting
+    //it into it's corresponding tips followUpNotifications
+    //attribute; if associating failes, tries to delete
+    //notification and alerts controller
+    parseNotificationService.associateNotificationWithTip = function(notification){
+      //Get tip id from notification
+      var tipId = notification.get("tipId");
 
-    //Sends the already saved notification to the user;
-    //if pushing failed, reverts save or continues as partial success
+      //Find the tip to which the notification
+      //will be saved
+      var tipQuery = new Parse.Query(TipReport);
+      tipQuery.equalTo("objectId", tipId);
+      tipQuery.find({
+        success: function(results){
+          //Found the tip; append the notification to the array and
+          //save everything (including notification to it's own table)
+          var tip = results[0];
+          tip.add("followUpNotifications", notification);
+          tip.save(null, {
+            success: function(tip){
+              //Successfully saved tip & notification;
+              //proceed to push notificatino to user
+              parseNotificationService.pushNotification(notification);
+            },
+            error: function(tip, error){
+              parseNotificationService.deleteSavedNotification(notification, error);
+              parseNotificationService.channels = [];
+            }
+          })
+        },
+        error: function(error){
+          parseNotificationService.deleteSavedNotification(notification, error);
+          parseNotificationService.channels = [];
+        }
+      });
+
+    };
+
+    //Sends the already saved  and associated notification to the user;
+    //if pushing failed, tries to revert save or continues as partial success
     parseNotificationService.pushNotification = function(notification){
       //Send notification
       Parse.Push.send({
@@ -281,24 +328,43 @@
         error: function(error){
           //Push was unsuccessful
           //Try and nuke notification
-          var parentError = error;
-          notification.destroy({
-            success: function(notification){
-              //Notification was successfully deleted;
-              //Alert the controller to prompt the user
-              //to try again
-              $rootScope.$broadcast('notification-error', [notification, parentError]);
-            },
-            error: function(notification, error){
-              //Failed to delete notification
-              //Do Nothing, but alert controller
-              //to partial success
-              $rootScope.$broadcast('notification-partial-success',[notification]);
-            }
-          });
+          parseNotificationService.deleteSavedNotification(notification, error);
+          // var parentError = error;
+          // notification.destroy({
+          //   success: function(notification){
+          //     //Notification was successfully deleted;
+          //     //Alert the controller to prompt the user
+          //     //to try again
+          //     $rootScope.$broadcast('notification-error', [notification, parentError]);
+          //   },
+          //   error: function(notification, error){
+          //     //Failed to delete notification
+          //     //Do Nothing, but alert controller
+          //     //to partial success
+          //     $rootScope.$broadcast('notification-partial-success',[notification]);
+          //   }
+          // });
 
           //Reset channels
           parseNotificationService.channels = [];
+        }
+      });
+    };
+
+    parseNotificationService.deleteSavedNotification = function(notification, passedError){
+      var parentError = passedError;
+      notification.destroy({
+        success: function(notification){
+          //Notification was successfully deleted;
+          //Alert the controller to prompt the user
+          //to try again
+          $rootScope.$broadcast('notification-error', [notification, parentError]);
+        },
+        error: function(notification, error){
+          //Failed to delete notification
+          //Do Nothing, but alert controller
+          //to partial success
+          $rootScope.$broadcast('notification-partial-success',[notification]);
         }
       });
     };
@@ -322,7 +388,6 @@
     paginator.lastPage = 1;
     paginator.paginatorSet = [];
     paginator.paginatorSetSize = 0;
-    paginator.initializingFeed = true;
 
     //Catch socket.io event when a batch is sent
     //Let controller know news tips arrvied; update
@@ -554,9 +619,9 @@
       // This marker is 20 pixels wide by 32 pixels tall.
       scaledSize: new google.maps.Size(25, 39),
       // The origin for this image is 0,0.
-      origin: new google.maps.Point(markerPosition.latitude,markerPosition.longitude),
+      origin: new google.maps.Point(0,0),
       // The anchor for this image is the base of the flagpole at 0,32.
-      anchor: new google.maps.Point(markerPosition.latitude,markerPosition.longitude)
+      anchor: new google.maps.Point(12.5,39)
     };
 
     //Checks if the marker coordinates have changed

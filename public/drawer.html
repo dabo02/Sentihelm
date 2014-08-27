@@ -10,7 +10,7 @@
 
       <a ui-sref="{{item.state}}" ng-click="drawer.current=item.name">
 
-          <div class="{{item.icon}} item-icon" ng-class="{'center-icon':!drawer.isOn}">
+          <span class="{{item.icon}} item-icon" ng-class="{'center-icon':!drawer.isOn}">
 
             <!--====TIP COUNTER THAT WILL KEEP TAB ON HOW MANY TIPS HAVE ARRIVED SERVER SIDE======>
 
@@ -22,7 +22,7 @@
 
             <!--================================================================================-->
 
-          </div>
+          </span>
 
           <span class="item-name" ng-show="drawer.isOn">{{item.name}}</span>
 
