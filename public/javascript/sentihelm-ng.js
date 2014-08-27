@@ -26,47 +26,31 @@
   }]);
 
   //Initialize values needed throughout the app
-  app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', function($rootScope, AUTH_EVENTS, authenticator){
+  app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', function($rootScope, AUTH_EVENTS, authenticator, errorFactory){
     //Initialize Parse
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
 
     //Check for user autherization every time page loads
-    // $rootScope.$on('$stateChangeStart', function (event, next) {
-    //   var authorizedRoles = next.data.authorizedRoles;
-    //   if (!authenticator.isAuthorized(authorizedRoles)) {
-    //     // event.preventDefault();
-    //     if (authenticator.isAuthenticated()) {
-    //       //User does not have access to content
-    //       $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-    //     }
-    //     else {
-    //       //User is not logged in
-    //       $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-    //     }
-    //   }
-    // });
+    $rootScope.$on('$stateChangeStart', function (event, next) {
+      var authorizedRoles = next.data.authorizedRoles;
+      if (!authenticator.isAuthorized(authorizedRoles)) {
+        event.preventDefault();
+        if (authenticator.isAuthenticated()) {
+          //User does not have access to content
+          $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+          errorFactory.showError('NO-AUTH');
+        }
+        else {
+          //User is not logged in
+          $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+          //TODO
+          //LoginDiaog (Factory) should go here, not error
+          errorFactory.showError('NO-SESSION');
+        }
+      }
+    });
 
   }]);
-
-  //All errors are contained in this constant;
-  //used with errorFactory service for easy error
-  //alerting
-  app.constant('ERROR_CODES',{
-    'NOTIF-FAILED': {
-      title: 'Push Notification Failed',
-      message: 'The notification could not be sent. '+
-      'Please try again in a while. If the '+
-      'error persists, contact the tech team.'
-    },
-    'NOTIF-NO-CONTENT':{
-      title: 'No Content',
-      message: 'You must write a message and/or attach a file.'
-    },
-    'NOTIF-NO-TITLE':{
-      title: 'No Title',
-      message: 'The notification must have a title.'
-    }
-  });
 
   //Autorhization events for log in functionality
   app.constant('AUTH_EVENTS', {
@@ -84,6 +68,58 @@
     all: '*',
     user: 'user',
     admin: 'admin'
+  });
+
+  //All errors are contained in this constant;
+  //used with errorFactory service for easy error
+  //alerting
+  app.constant('ERRORS',{
+    'NOTIF-FAILED': {
+      title: 'Push Notification Failed',
+      message: 'The notification could not be sent. '+
+      'Please try again in a while. If the '+
+      'error persists, contact the tech team.',
+      code: 'NOTIF-FAILED',
+      onClose: function(){
+        //Do nothing
+        return;
+      }
+    },
+    'NOTIF-NO-CONTENT':{
+      title: 'No Content',
+      message: 'You must write a message and/or attach a file.',
+      code: 'NOTIF-NO-CONTENT',
+      onClose: function(){
+        document.getElementById("notification-message").focus();
+      }
+    },
+    'NOTIF-NO-TITLE':{
+      title: 'No Title',
+      message: 'The notification must have a title.',
+      code: 'NOTIF-NO-TITLE',
+      onClose: function(){
+        document.getElementById("notification-title").focus();
+      }
+    },
+    'NO-SESSION':{
+      title: 'You Are Not Logged In',
+      message: 'You need to log in order to use the dashboard.',
+      code: 'NO-SESSION',
+      onClose: function(){
+        //Do nothing
+        return;
+      }
+    },
+    'NO-AUTH':{
+      title: 'You do Not Have Access to This Page',
+      message: 'Your access level does not allow you to view this page.'+
+               'If you believe this is an error, contact your dashboard administrator.',
+      code: 'NO-AUTH',
+      onClose: function(){
+        //Do nothing
+        return;
+      }
+    }
   });
 
   //Creates a session service that can create
@@ -150,32 +186,26 @@
   //be called anywhere in the app, be it with
   //pre-made errors fount in ERROR_CODES constant
   //or newly created errors via methods offered
-  app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERROR_CODES', function(ngDialog, $rootScope,ERROR_CODES){
+  app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERRORS', function(ngDialog, $rootScope, ERRORS){
 
     var errorFactory = {};
 
     //Not being used; might use in future releases to create
     //on-the-fly errors
-    errorFactory.newError = function(title, message){
-      //TODO
+    errorFactory.newError = function(title, message, onClose){
+      //Error creation would go here
     };
 
-    //Display passed error via ngDialog service
-    errorFactory.display = function(error){
-      var parsedError = JSON.stringify(error);
+    //Show pre-made, constant errors with display function
+    errorFactory.showError = function(errorCode){
+      var error = JSON.stringify({errorCode:errorCode});
       ngDialog.open({
         template: '../error-dialog.html',
         className: 'ngdialog-error',
         closeByDocument: false,
         closeByEscape:false,
-        data:parsedError
+        data:error
       });
-    };
-
-    //Show pre-made, constant errors with display function
-    errorFactory.showErrorWithCode = function(errorCode){
-      var error = ERROR_CODES[errorCode];
-      errorFactory.display(error);
     };
 
     return errorFactory;
@@ -605,7 +635,7 @@
     //Notification either wasn't saved, or did save
     //but push failed and error clause removed said save
     $scope.$on('notification-error',function(notification){
-      errorFactory.showErrorWithCode('NOTIF-FAILED');
+      errorFactory.showError('NOTIF-FAILED');
       notificationCtrl.sending = false;
       $scope.$apply();
     });
@@ -634,12 +664,12 @@
 
       //If no title, show appropiate error and ignore
       if(!this.title){
-        errorFactory.showErrorWithCode('NOTIF-NO-TITLE');
+        errorFactory.showError('NOTIF-NO-TITLE');
         return;
       }
       //If no message or attachment, show appropiate error and ignore
       if(!this.message && !this.file){
-        errorFactory.showErrorWithCode('NOTIF-NO-CONTENT');
+        errorFactory.showError('NOTIF-NO-CONTENT');
         return;
       }
 
@@ -670,13 +700,15 @@
 
   //Controller for error dialog which is reusable throughout the
   //app; decoupled from everything else
-  app.controller('ErrorController', ['$scope', function($scope){
-    this.title = $scope.$parent.ngDialogData.title;
-    this.message = $scope.$parent.ngDialogData.message;
+  app.controller('ErrorController', ['$scope', 'ERRORS', function($scope, ERRORS){
+    //Set controller title and message
+    var error = ERRORS[$scope.$parent.ngDialogData.errorCode];
+    this.title = error.title;
+    this.message = error.message;
 
     //Set focus on message box once error dialog closes
     $scope.$on('ngDialog.closed', function (event, $dialog) {
-      document.getElementById("notification-message").focus();
+      error.onClose();
     });
 
   }]);
