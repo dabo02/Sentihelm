@@ -565,6 +565,8 @@
       });
     };
 
+    //Shows dialog that contains attachment which
+    //triggered it; video, image or audio
     this.showAttachmentDialog = function(address, type) {
       //ngDialog can only handle stringified JSONs
       var data = JSON.stringify({
@@ -657,6 +659,7 @@
     this.userId = this.channel.substring(5);
     this.sending = false;
     var notificationCtrl = this;
+    var thisDialog = $scope.$parent.notificationDialog;
 
     //Set focus on message box once dialog pops up
     $scope.$on('ngDialog.opened', function (event, $dialog) {
