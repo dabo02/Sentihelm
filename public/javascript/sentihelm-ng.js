@@ -34,7 +34,7 @@
     $rootScope.$on('$stateChangeStart', function (event, next) {
       var authorizedRoles = next.data.authorizedRoles;
       if (!authenticator.isAuthorized(authorizedRoles)) {
-        event.preventDefault();
+        // event.preventDefault();
         if (authenticator.isAuthenticated()) {
           //User does not have access to content
           $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
@@ -324,9 +324,6 @@
     paginator.paginatorSetSize = 0;
     paginator.initializingFeed = true;
 
-    // //Get first batch of tips
-    // socket.emit('request-batch', {upperBound: (10)});
-
     //Catch socket.io event when a batch is sent
     //Let controller know news tips arrvied; update
     //amount of total tips in server, last page and paginator set
@@ -334,19 +331,15 @@
       $rootScope.$broadcast('new-batch',[data.currentTips]);
       paginator.totalTipCount = data.totalTipCount;
       paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
-      if(paginator.initializingFeed){
+      if(paginator.currentPage===0){
         paginator.pageSetUpdater(paginator.lastPage, false);
-        paginator.initializingFeed = false;
       }
     });
 
     //Called when tipfeed loads, be it on
     //refresh or navigating to it again
     paginator.initializeFeed = function(){
-      paginator.initializingFeed = true;
-      if(paginator.currentPage !== 0) {
-        paginator.currentPage = 0;
-      }
+      paginator.currentPage = 0;
       socket.emit('request-batch', {upperBound: (10)});
     }
 
