@@ -269,10 +269,10 @@
       Parse.Push.send({
         channels: parseNotificationService.channels,
         data: {
-          alert: notification.message,
+          alert: notification.attributes.message,
           badge:"Increment",
           sound: "cheering.caf",
-          title: notification.title,
+          title: notification.attributes.title,
           pushId: notification.id
         }
       },{
