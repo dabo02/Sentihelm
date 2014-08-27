@@ -83,13 +83,13 @@
               <!--===========================================================================-->
 
               <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" ng-click="tipfeed.showAttachmentDialog(tip.videoUrl, 'VID')">
-                <img src="./resources/images/videoAtt.png"/>
+                <img src="./resources/images/videoAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
               </a>
               <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" ng-click="tipfeed.showAttachmentDialog(tip.imageUrl, 'IMG')">
-                <img src="./resources/images/imageAtt.png"/>
+                <img src="./resources/images/imageAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
               </a>
               <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachmentDialog(tip.audioUrl, 'AUDIO')">
-                <img src="./resources/images/audioAtt.png"/>
+                <img src="./resources/images/audioAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
               </a>
 
             </div>

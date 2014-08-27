@@ -127,6 +127,7 @@ a:visited{
   width:70px;
   margin:0.5em 2em 1em 2em;
   cursor:pointer;
+  border-radius:50%;
 }
 .attachment-dialog {
   width: 100% ;
@@ -290,6 +291,13 @@ a:visited{
 }
 .orange-border{
   border-color:#ff6600;
+}
+.orange-background{
+  background-color:#ff6600;
+}
+
+.blue-background{
+  background-color:#2193f9;
 }
 
 .white{
