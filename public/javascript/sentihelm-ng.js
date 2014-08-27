@@ -292,6 +292,7 @@
     paginator.lastPage = 1;
     paginator.paginatorSet = [];
     paginator.paginatorSetSize = 0;
+    paginator.initializingFeed = true;
 
     // //Get first batch of tips
     // socket.emit('request-batch', {upperBound: (10)});
@@ -303,14 +304,19 @@
       $rootScope.$broadcast('new-batch',[data.currentTips]);
       paginator.totalTipCount = data.totalTipCount;
       paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
-      if(paginator.currentPage===0){
-        paginator.pageSetUpdater(paginator.lastPage);
+      if(paginator.initializingFeed){
+        paginator.pageSetUpdater(paginator.lastPage, false);
+        paginator.initializingFeed = false;
       }
     });
 
     //Called when tipfeed loads, be it on
     //refresh or navigating to it again
     paginator.initializeFeed = function(){
+      paginator.initializingFeed = true;
+      if(paginator.currentPage !== 0) {
+        paginator.currentPage = 0;
+      }
       socket.emit('request-batch', {upperBound: (10)});
     }
 
@@ -520,6 +526,15 @@
     var markerPosition = {latitude: 0, longitude: 0};
     var mapCenter = {latitude: 0, longitude: 0};
     this.zoom = 14;
+    this.icon = {
+      url: 'resources/images/custom-marker.png',
+      // This marker is 20 pixels wide by 32 pixels tall.
+      scaledSize: new google.maps.Size(25, 39),
+      // The origin for this image is 0,0.
+      origin: new google.maps.Point(markerPosition.latitude,markerPosition.longitude),
+      // The anchor for this image is the base of the flagpole at 0,32.
+      anchor: new google.maps.Point(markerPosition.latitude,markerPosition.longitude)
+    };
 
     //Checks if the marker coordinates have changed
     //and returns the correct position.

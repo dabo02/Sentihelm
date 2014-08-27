@@ -110,7 +110,7 @@
 
               <!------GOOGLE MAP------>
               <google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-if="!tip.anonymous" ng-cloak>
-                <marker coords="mapCtrl.getMarkerPosition(tip.center)" icon="'resources/images/custom-marker.png'"></marker>
+                <marker coords="mapCtrl.getMarkerPosition(tip.center)" icon="mapCtrl.icon"></marker>
               </google-map>
 
             </div>
