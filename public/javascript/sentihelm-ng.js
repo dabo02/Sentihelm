@@ -222,9 +222,6 @@
     //the PushNotifications class in Parse
     var PushNotification = Parse.Object.extend("PushNotifications");
 
-    //TODO TESTING
-    var TipReport = Parse.Object.extend("TipReport");
-
     var parseNotificationService = {};
 
     //Array that contains channels where notifications
@@ -245,8 +242,6 @@
       return notification;
     };
 
-
-
     //Saves and Pushes the Parse Notification by calling other methods
     //in chain; it first saves the notification, then calls
     //associateNotificationWithTip(), which in turn calls pushNotification();
@@ -255,9 +250,8 @@
       //Try and save the notification to Parse, for future viewing
       notification.save(null, {
         success: function(notification){
-          //Notification saved, now save to corresponding tip attribute
-          //(associate)
-          parseNotificationService.associateNotificationWithTip(notification);
+          //Notification saved, now push it to channels
+          parseNotificationService.pushNotification(notification);
         },
         error : function(notification, error){
           //Notification could not be saved, pass control back to controller
@@ -267,46 +261,9 @@
         }
       });
     };
-    //Associates already saved notification by inserting
-    //it into it's corresponding tips followUpNotifications
-    //attribute; if associating failes, tries to delete
-    //notification and alerts controller
-    parseNotificationService.associateNotificationWithTip = function(notification){
-      //Get tip id from notification
-      var tipId = notification.get("tipId");
 
-      //Find the tip to which the notification
-      //will be saved
-      var tipQuery = new Parse.Query(TipReport);
-      tipQuery.equalTo("objectId", tipId);
-      tipQuery.find({
-        success: function(results){
-          //Found the tip; append the notification to the array and
-          //save everything (including notification to it's own table)
-          var tip = results[0];
-          tip.add("followUpNotifications", notification);
-          tip.save(null, {
-            success: function(tip){
-              //Successfully saved tip & notification;
-              //proceed to push notificatino to user
-              parseNotificationService.pushNotification(notification);
-            },
-            error: function(tip, error){
-              parseNotificationService.deleteSavedNotification(notification, error);
-              parseNotificationService.channels = [];
-            }
-          })
-        },
-        error: function(error){
-          parseNotificationService.deleteSavedNotification(notification, error);
-          parseNotificationService.channels = [];
-        }
-      });
-
-    };
-
-    //Sends the already saved  and associated notification to the user;
-    //if pushing failed, tries to revert save or continues as partial success
+    //Sends the already saved notification to the user; if pushing
+    //failed, tries to revert save or continues as partial success
     parseNotificationService.pushNotification = function(notification){
       //Send notification
       Parse.Push.send({
@@ -323,34 +280,22 @@
           //Push was successful
           //Reset channels and alert controller
           parseNotificationService.channels = [];
-          $rootScope.$broadcast('notification-success',[notification]);
+          $rootScope.$broadcast('notification-success', [notification]);
         },
         error: function(error){
           //Push was unsuccessful
           //Try and nuke notification
           parseNotificationService.deleteSavedNotification(notification, error);
-          // var parentError = error;
-          // notification.destroy({
-          //   success: function(notification){
-          //     //Notification was successfully deleted;
-          //     //Alert the controller to prompt the user
-          //     //to try again
-          //     $rootScope.$broadcast('notification-error', [notification, parentError]);
-          //   },
-          //   error: function(notification, error){
-          //     //Failed to delete notification
-          //     //Do Nothing, but alert controller
-          //     //to partial success
-          //     $rootScope.$broadcast('notification-partial-success',[notification]);
-          //   }
-          // });
 
           //Reset channels
           parseNotificationService.channels = [];
         }
       });
+
     };
 
+    //Delete saved notification; broadcast notification sent error
+    //or partial success, depending on if it was deleted or not
     parseNotificationService.deleteSavedNotification = function(notification, passedError){
       var parentError = passedError;
       notification.destroy({
@@ -368,6 +313,49 @@
         }
       });
     };
+
+    /**NOT BEING USED, BUT MIGHT BE IN THE FUTURE IF WE WANT
+    TO ASSOCIATE NOTIFICATION WITH TIP BEFORE PUSHING**/
+
+    // //Associates already saved notification by inserting
+    // //it into it's corresponding tips followUpNotifications
+    // //attribute; if associating failes, tries to delete
+    // //notification and alerts controller
+    // parseNotificationService.associateNotificationWithTip = function(notification){
+    //   var TipReport = Parse.Object.extend("TipReport");
+    //
+    //   //Get tip id from notification
+    //   var tipId = notification.get("tipId");
+    //
+    //   //Find the tip to which the notification
+    //   //will be saved
+    //   var tipQuery = new Parse.Query(TipReport);
+    //   tipQuery.equalTo("objectId", tipId);
+    //   tipQuery.find({
+    //     success: function(results){
+    //       //Found the tip; append the notification to the array and
+    //       //save everything (including notification to it's own table)
+    //       var tip = results[0];
+    //       tip.add("followUpNotifications", notification);
+    //       tip.save(null, {
+    //         success: function(tip){
+    //           //Successfully saved tip & notification;
+    //           //proceed to push notificatino to user
+    //           parseNotificationService.pushNotification(notification);
+    //         },
+    //         error: function(tip, error){
+    //           parseNotificationService.deleteSavedNotification(notification, error);
+    //           parseNotificationService.channels = [];
+    //         }
+    //       })
+    //     },
+    //     error: function(error){
+    //       parseNotificationService.deleteSavedNotification(notification, error);
+    //       parseNotificationService.channels = [];
+    //     }
+    //   });
+    //
+    // };
 
     return parseNotificationService;
   }]);
