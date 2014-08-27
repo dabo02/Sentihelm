@@ -52,6 +52,24 @@
 
   }]);
 
+  //Autorhization events for log in functionality
+  app.constant('AUTH_EVENTS', {
+    loginSuccess: 'auth-login-success',
+    loginFailed: 'auth-login-failed',
+    logoutSuccess: 'auth-logout-success',
+    sessionTimeout: 'auth-session-timeout',
+    notAuthenticated: 'auth-not-authenticated',
+    notAuthorized: 'auth-not-authorized'
+  });
+
+  //User roles for authorization/authentication and
+  //content control
+  app.constant('USER_ROLES', {
+    all: '*',
+    user: 'user',
+    admin: 'admin'
+  });
+
   //All errors are contained in this constant;
   //used with errorFactory service for easy error
   //alerting
@@ -102,24 +120,6 @@
         return;
       }
     }
-  });
-
-  //Autorhization events for log in functionality
-  app.constant('AUTH_EVENTS', {
-    loginSuccess: 'auth-login-success',
-    loginFailed: 'auth-login-failed',
-    logoutSuccess: 'auth-logout-success',
-    sessionTimeout: 'auth-session-timeout',
-    notAuthenticated: 'auth-not-authenticated',
-    notAuthorized: 'auth-not-authorized'
-  });
-
-  //User roles for authorization/authentication and
-  //content control
-  app.constant('USER_ROLES', {
-    all: '*',
-    user: 'user',
-    admin: 'admin'
   });
 
   //Creates a session service that can create
@@ -193,7 +193,7 @@
     //Not being used; might use in future releases to create
     //on-the-fly errors
     errorFactory.newError = function(title, message, onClose){
-
+      //Error creation would go here
     };
 
     //Show pre-made, constant errors with display function
