@@ -6,30 +6,32 @@
 
   <ul class="drawer" ng-class="{'closed-drawer':!drawer.isOn, 'opened-drawer':drawer.isOn}">
 
-    <li ng-class="{'bright-blue':drawer.current===item.name}" class="drawer-item" ng-repeat="item in drawer.entries">
+    <li class="drawer-item" ng-repeat="item in drawer.entries" ng-class="{'bright-blue':drawer.current===item.name}">
 
-      <a ui-sref="{{item.state}}" ng-click="drawer.current=item.name">
+      <form action="{{item.state}}" ng-submit="drawer.current=item.name">
 
-          <span class="{{item.icon}} item-icon" ng-class="{'center-icon':!drawer.isOn}">
+        <button type="submit" class="transparent-button">
 
-            <!--====TIP COUNTER THAT WILL KEEP TAB ON HOW MANY TIPS HAVE ARRIVED SERVER SIDE======>
-
-
-              <div class="tip-counter" ng-show="item.icon==='fa fa-inbox'">
-                {{drawer.count}}
-              </div>
-
-
-            <!--================================================================================-->
-
-          </span>
+          <span class="{{item.icon}} item-icon"></span>
 
           <span class="item-name" ng-show="drawer.isOn">{{item.name}}</span>
 
-      </a>
+        </button>
+
+      </form>
 
     </li>
-
+    
   </ul>
+
+  <!--====TIP COUNTER THAT WILL KEEP TAB ON HOW MANY TIPS HAVE ARRIVED SERVER SIDE======>
+
+
+  <div class="tip-counter" ng-show="item.icon==='fa fa-inbox'">
+    {{drawer.count}}
+  </div>
+
+
+  <!--================================================================================-->
 
 </div>

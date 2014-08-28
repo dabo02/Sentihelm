@@ -583,12 +583,12 @@
     //Drawer options with name and icon;
     //entries are off by default
     this.entries=[
-      {name:'Tip Feed', icon:'fa fa-inbox', state:'tipfeed'},
-      {name:'Video Streams', icon:'fa fa-video-camera', state:'streams'},
-      {name:'Send Notification', icon:'fa fa-send-o', state:'global-notifications'},
-      {name:'Maps', icon:'fa fa-globe', state:'maps'},
-      {name:'Wanted List', icon:'fa fa-warning', state:'wanted'},
-      {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'analysis'}
+      {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
+      {name:'Video Streams', icon:'fa fa-video-camera', state:'#/streams'},
+      {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
+      {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
+      {name:'Wanted List', icon:'fa fa-warning', state:'#/wanted'},
+      {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
     ];
 
     //Shows/hides drawer on toggled drawer event
