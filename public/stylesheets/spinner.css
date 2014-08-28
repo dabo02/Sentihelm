@@ -1,3 +1,5 @@
+/***********SPINNER***********/
+/*****************************/
 .spinner {
   margin:0 auto;
   width: 100px;
@@ -16,6 +18,10 @@
   /* Prevent first frame from flickering when animation starts */
   -webkit-animation-fill-mode: both;
   animation-fill-mode: both;
+}
+
+.spinner > div.charcoal-spinner{
+  background-color:#4d4d4d;
 }
 
 .spinner .bounce1 {

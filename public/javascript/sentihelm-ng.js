@@ -34,7 +34,10 @@
     $rootScope.$on('$stateChangeStart', function (event, next) {
       var authorizedRoles = next.data.authorizedRoles;
       if (!authenticator.isAuthorized(authorizedRoles)) {
+        //Stop page from loading
         event.preventDefault();
+
+        //Check if user can access this page
         if (authenticator.isAuthenticated()) {
           //User does not have access to content
           $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
@@ -80,6 +83,30 @@
   //used with errorFactory service for easy error
   //alerting
   app.constant('ERRORS',{
+    'LOGIN-101':{
+      title: 'Invalid Login Parameters',
+      message: 'The email or password you entered is incorrect',
+      code:'LOGIN-101',
+      onClose: function(){
+        document.getElementById("login-dialog-username").focus();
+      }
+    },
+    'LOGIN-NO-USERID':{
+      title: 'No UserId',
+      message: 'You must provide a login ID',
+      code:'LOGIN-NO-USERID',
+      onClose: function(){
+        document.getElementById("login-dialog-username").focus();
+      }
+    },
+    'LOGIN-NO-PASS':{
+      title: 'No Password',
+      message: 'You must provide a password',
+      code:'LOGIN-NO-PASS',
+      onClose: function(){
+        document.getElementById("login-dialog-password").focus();
+      }
+    },
     'NOTIF-FAILED': {
       title: 'Push Notification Failed',
       message: 'The notification could not be sent. '+
@@ -114,7 +141,7 @@
       onClose: function(){
         //Do nothing
         return;
-      }
+      },
     },
     'NO-AUTH':{
       title: 'You do Not Have Access to This Page',
@@ -151,34 +178,26 @@
   //Creates a service that manages login and
   //authentication functionality; manages current session
   app.factory('authenticator', ['$http', 'Session', function($http, Session){
+
     var authenticator = {};
 
     authenticator.login = function(credentials){
-      var request = $http.post('/login', credentials);
-      return request.then(
-        function(result){
-          //TODO Add other needed parameters for session management
-          //TODO such as session id fetched from user table, etc
-          //login was successful
-          Session.create(result.id, result.user.id, result.user.role);
-          return result.user;
-        },
-        function(error){
-          //login failed
-          return error;
-        }
-      );
+      return $http.post('/login', credentials);
     };
 
     authenticator.isAuthenticated = function () {
+      //Return true if userId is set; false otherwise
       return !!Session.userId;
     };
 
     authenticator.isAuthorized = function (authorizedRoles) {
+      //Get roles; if not an array, make one(for when string is passed)
       if (!angular.isArray(authorizedRoles)) {
         authorizedRoles = [authorizedRoles];
       }
 
+      //Check if user is authenticated and if his role(s)
+      //is in the authorized roles for this specific page
       return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
     };
 
@@ -204,8 +223,8 @@
 
     var errorFactory = {};
 
-    //Collection of active errors
-    errorFactory.activeErrors = [];
+    //Denotes if an error is showing on screen
+    errorFactory.errorIsActive = false;
 
     //Not being used; might use in future releases to create
     //on-the-fly errors
@@ -215,18 +234,20 @@
 
     //Show pre-made, constant errors with display function
     errorFactory.showError = function(errorCode){
-      var error = JSON.stringify({errorCode:errorCode});
-      var errorDialog = ngDialog.open({
-        template: '../error-dialog.html',
-        className: 'ngdialog-error',
-        closeByDocument: false,
-        closeByEscape:false,
-        showClose: false,
-        data:error
-      });
+      if(!errorFactory.errorIsActive){
+        var error = JSON.stringify({errorCode:errorCode});
+        var errorDialog = ngDialog.open({
+          template: '../error-dialog.html',
+          className: 'ngdialog-error',
+          closeByDocument: false,
+          closeByEscape:false,
+          showClose: false,
+          data:error
+        });
 
-      //Add error to active errors stack/list
-      errorFactory.activeErrors.push({id:errorDialog.id, code:errorCode});
+        //Note that error is showing on screen
+        errorFactory.errorIsActive = true;
+      }
     };
 
     return errorFactory;
@@ -478,24 +499,57 @@
 
   }]);
 
+  //Controller for login dialog and login
+  //landing page
+  app.controller('LoginController', ['$scope', 'authenticator', 'errorFactory', function($scope, authenticator, errorFactory){
 
-  app.controller('LoginController', ['$scope', 'authenticator', function($scope, authenticator){
-
+    //Credentials that will be passed to the authenticator service
     this.credentials = {
       username: '',
       password: ''
     };
 
+    //Boolean for Spinner (loading) CSS
+    this.submitting = false;
+
+    //Checks to see if username and password are entered;
+    //if not, throws appropiate errors, otherwise
+    //proceeds to try and login; if login fails, shows
+    //corresponding error
     this.login = function(){
+      //No username/id entered, throw error
+      if(!this.credentials.username){
+        errorFactory.showError('LOGIN-NO-USERID');
+        return;
+      }
+      //No password entered, throw error
+      if(!this.credentials.password){
+        errorFactory.showError('LOGIN-NO-PASS');
+        return;
+      }
+
+      //Trying to log in; show spinner (loading icon)
+      this.submitting = true;
+
+      //Try and log in
       authenticator.login(this.credentials).then(
         function(user){
           //Login was successful
-          $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+          // $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
           $scope.setCurrentUser(user);
+
+          //Stop Spinner, and refresh $scope
+          this.submitting = false;
+          $scope.$apply();
         },
         function(error){
           //Login failed
-          $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
+          // $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
+          errorFactory.showError('LOGIN-'+error.data.code);
+
+          //Stop Spinner, and refresh $scope
+          this.submitting = false;
+          $scope.$apply();
         }
       );
     };
@@ -556,6 +610,11 @@
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
 
+    //Notification and Attachment dialogs are
+    //off by default
+    this.notificationDialogIsOn = false;
+    this.attachmentDialogIsOn = false;
+
     //Get tips on page load/refresh
     paginatorService.initializeFeed();
 
@@ -573,6 +632,16 @@
     $scope.$on('paginator-set-update', function(event, data){
       tipfeed.paginatorSet = data[0];
       tipfeed.lastPage = data[1];
+    });
+
+    //Note that notification dialog is off
+    $scope.$on('notification-dialog-closed', function(event, data){
+      tipfeed.notificationDialogIsOn = false;
+    });
+
+    //Note that attachment dialog is off
+    $scope.$on('attachment-dialog-closed', function(event, data){
+      tipfeed.attachmentDialogIsOn = false;
     });
 
     //Change page to passed value
@@ -594,54 +663,78 @@
     //Shows dialog that allows client to send
     //message and attachment to a specific user
     this.showNotificationDialog = function(firstName, lastName, controlNumber, channel){
-      //ngDialog can only handle stringified JSONs
-      var data = JSON.stringify({
-        name: firstName+" "+lastName,
-        controlNumber: controlNumber,
-        channel:channel
-      });
+      //Only show dialog if it, and attachmentDialog,
+      //are not showing
+      if(!this.notificationDialogIsOn && !this.attachmentDialogIsOn){
+        //ngDialog can only handle stringified JSONs
+        var data = JSON.stringify({
+          name: firstName+" "+lastName,
+          controlNumber: controlNumber,
+          channel:channel
+        });
 
-      //Open dialog, and add it to the $scope
-      //so it can identify itself once open
-      $scope.notificationDialog = ngDialog.open({
-        template: '../notification-dialog.html',
-        className: 'ngdialog-theme-plain',
-        closeByDocument: false,
-        closeByEscape: false,
-        scope: $scope,
-        data:data
-      });
 
+        //Open dialog, and add it to the $scope
+        //so it can identify itself once open
+        $scope.notificationDialog = ngDialog.open({
+          template: '../notification-dialog.html',
+          className: 'ngdialog-theme-plain',
+          closeByDocument: false,
+          closeByEscape: false,
+          scope: $scope,
+          data:data
+        });
+
+        //NotificationDialog is now showing
+        this.notificationDialogIsOn = true;
+      }
     };
 
     //Shows dialog that contains attachment which
     //triggered it; video, image or audio
     this.showAttachmentDialog = function(address, type) {
-      //ngDialog can only handle stringified JSONs
-      var data = JSON.stringify({
-        address:address,
-        attachmentType:type
-      });
+      //Only show dialog if it, and notificationDialog,
+      //are not showing
+      if(!this.notificationDialogIsOn && !this.attachmentDialogIsOn){
+        //ngDialog can only handle stringified JSONs
+        var data = JSON.stringify({
+          address:address,
+          attachmentType:type
+        });
 
-      var showClose = type !== 'AUDIO';
+        var showClose = type !== 'AUDIO';
 
-      //Open dialog and pass control to AttachmentController
-      ngDialog.open({
-        template: '../attachment-dialog.html',
-        className: 'ngdialog-attachment',
-        showClose: showClose,
-        data:data
-      });
+        //Open dialog and pass control to AttachmentController
+        $scope.attachmentDialog = ngDialog.open({
+          template: '../attachment-dialog.html',
+          className: 'ngdialog-attachment',
+          showClose: showClose,
+          scope: $scope,
+          data:data
+        });
+
+        //Attachment dialog is now showing
+        this.attachmentDialogIsOn = true;
+      }
     };
+
   }]);
 
   //Controller for the tip's attachments; must display
   //video and images, and play audio files
-  app.controller('AttachmentController', ['$scope', 'ngDialog', '$sce', function($scope, ngDialog, $sce){
+  app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce', function($scope, $rootScope, ngDialog, $sce){
     //Needed so that attachment-dialog.html can open the media files from parse.
     this.trustAsResourceUrl = $sce.trustAsResourceUrl;
     this.address = $scope.$parent.ngDialogData.address;
     this.attachType = $scope.$parent.ngDialogData.attachmentType;
+    var thisDialogId = $scope.$parent.attachmentDialog.id;
+
+    //Let TipFeed controller know this dialog turned off
+    $scope.$on('ngDialog.closed', function (event, $dialog) {
+      if(thisDialogId===$dialog.attr('id')){
+        $rootScope.$broadcast('attachment-dialog-closed');
+      }
+    });
   }]);
 
   //Controller for Google map in each tip;
@@ -699,8 +792,7 @@
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($scope, parseNotificationService, ngDialog, errorFactory){
-
+  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
     //Get data from ngDialog directive
     this.name = $scope.$parent.ngDialogData.name;
     this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -714,6 +806,13 @@
     $scope.$on('ngDialog.opened', function (event, $dialog) {
       if(thisDialogId===$dialog.attr('id')){
         document.getElementById("notification-message").focus();
+      }
+    });
+
+    //Let TipFeed controller know this dialog turned off
+    $scope.$on('ngDialog.closed', function (event, $dialog) {
+      if(thisDialogId===$dialog.attr('id')){
+        $rootScope.$broadcast('notification-dialog-closed');
       }
     });
 
@@ -808,14 +907,10 @@
 
     //Set focus on message box once error dialog closes
     $scope.$on('ngDialog.closed', function (event, $dialog) {
-      //Get top-level error from active errors
-      var currentError = errorFactory.activeErrors[errorFactory.activeErrors.length-1];
-      if(currentError.id===$dialog.attr('id')){
-        //Execute top-level error's wrap-up function
-        error.onClose();
-        //Remove this, now closed error, from active errors
-        errorFactory.activeErrors.pop();
-      }
+      //Execute error's wrap-up function
+      error.onClose();
+      //Let errorFactory know that error is no longer active
+      errorFactory.errorIsActive = false;
     });
 
   }]);
