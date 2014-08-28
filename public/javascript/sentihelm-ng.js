@@ -26,7 +26,7 @@
   }]);
 
   //Initialize values needed throughout the app
-  app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', function($rootScope, AUTH_EVENTS, authenticator, errorFactory){
+  app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog', function($rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
     //Initialize Parse
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
 
@@ -34,7 +34,7 @@
     $rootScope.$on('$stateChangeStart', function (event, next) {
       var authorizedRoles = next.data.authorizedRoles;
       if (!authenticator.isAuthorized(authorizedRoles)) {
-        // event.preventDefault();
+        event.preventDefault();
         if (authenticator.isAuthenticated()) {
           //User does not have access to content
           $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
@@ -43,9 +43,15 @@
         else {
           //User is not logged in
           $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-          //TODO
-          //LoginDiaog (Factory) should go here, not error
-          errorFactory.showError('NO-SESSION');
+
+          //Present login dialog for user to log in
+          ngDialog.open({
+            template: '../login-dialog.html',
+            className: 'ngdialog-theme-plain',
+            closeByDocument: false,
+            closeByEscape:false,
+            showClose: false
+          });
         }
       }
     });
@@ -149,11 +155,19 @@
 
     authenticator.login = function(credentials){
       var request = $http.post('/login', credentials);
-      return request.then(function(result){
-        //login was successful
-        Session.create(result.id, result.user.id, result.user.role);
-        return result.user;
-      });
+      return request.then(
+        function(result){
+          //TODO Add other needed parameters for session management
+          //TODO such as session id fetched from user table, etc
+          //login was successful
+          Session.create(result.id, result.user.id, result.user.role);
+          return result.user;
+        },
+        function(error){
+          //login failed
+          return error;
+        }
+      );
     };
 
     authenticator.isAuthenticated = function () {
@@ -460,6 +474,30 @@
 
     $scope.setCurrentUser = function (user) {
       $scope.currentUser = user;
+    };
+
+  }]);
+
+
+  app.controller('LoginController', ['$scope', 'authenticator', function($scope, authenticator){
+
+    this.credentials = {
+      username: '',
+      password: ''
+    };
+
+    this.login = function(){
+      authenticator.login(this.credentials).then(
+        function(user){
+          //Login was successful
+          $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+          $scope.setCurrentUser(user);
+        },
+        function(error){
+          //Login failed
+          $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
+        }
+      );
     };
 
   }]);
