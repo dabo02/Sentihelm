@@ -85,10 +85,10 @@
         return;
       }
     },
-    'NOTIF-NO-CONTENT':{
+    'NOTIF-NO-MESSAGE':{
       title: 'No Content',
-      message: 'You must write a message and/or attach a file.',
-      code: 'NOTIF-NO-CONTENT',
+      message: 'The notification must contain a message.',
+      code: 'NOTIF-NO-MESSAGE',
       onClose: function(){
         document.getElementById("notification-message").focus();
       }
@@ -190,6 +190,9 @@
 
     var errorFactory = {};
 
+    //Collection of active errors
+    errorFactory.activeErrors = [];
+
     //Not being used; might use in future releases to create
     //on-the-fly errors
     errorFactory.newError = function(title, message, onClose){
@@ -199,13 +202,17 @@
     //Show pre-made, constant errors with display function
     errorFactory.showError = function(errorCode){
       var error = JSON.stringify({errorCode:errorCode});
-      ngDialog.open({
+      var errorDialog = ngDialog.open({
         template: '../error-dialog.html',
         className: 'ngdialog-error',
         closeByDocument: false,
         closeByEscape:false,
+        showClose: false,
         data:error
       });
+
+      //Add error to active errors stack/list
+      errorFactory.activeErrors.push({id:errorDialog.id, code:errorCode});
     };
 
     return errorFactory;
@@ -556,13 +563,17 @@
         channel:channel
       });
 
-      //Open dialog and pass control to NotificationController
+      //Open dialog, and add it to the $scope
+      //so it can identify itself once open
       $scope.notificationDialog = ngDialog.open({
         template: '../notification-dialog.html',
         className: 'ngdialog-theme-plain',
         closeByDocument: false,
+        closeByEscape: false,
+        scope: $scope,
         data:data
       });
+
     };
 
     //Shows dialog that contains attachment which
@@ -659,11 +670,13 @@
     this.userId = this.channel.substring(5);
     this.sending = false;
     var notificationCtrl = this;
-    var thisDialog = $scope.$parent.notificationDialog;
+    var thisDialogId = $scope.$parent.notificationDialog.id;
 
     //Set focus on message box once dialog pops up
     $scope.$on('ngDialog.opened', function (event, $dialog) {
-      document.getElementById("notification-message").focus();
+      if(thisDialogId===$dialog.attr('id')){
+        document.getElementById("notification-message").focus();
+      }
     });
 
     //Notification was successfully saved and pushed (sent)
@@ -717,8 +730,8 @@
         return;
       }
       //If no message or attachment, show appropiate error and ignore
-      if(!this.message && !this.file){
-        errorFactory.showError('NOTIF-NO-CONTENT');
+      if(!this.message){
+        errorFactory.showError('NOTIF-NO-MESSAGE');
         return;
       }
 
@@ -749,7 +762,7 @@
 
   //Controller for error dialog which is reusable throughout the
   //app; decoupled from everything else
-  app.controller('ErrorController', ['$scope', 'ERRORS', function($scope, ERRORS){
+  app.controller('ErrorController', ['$scope', 'ERRORS', 'errorFactory', function($scope, ERRORS, errorFactory){
     //Set controller title and message
     var error = ERRORS[$scope.$parent.ngDialogData.errorCode];
     this.title = error.title;
@@ -757,7 +770,14 @@
 
     //Set focus on message box once error dialog closes
     $scope.$on('ngDialog.closed', function (event, $dialog) {
-      error.onClose();
+      //Get top-level error from active errors
+      var currentError = errorFactory.activeErrors[errorFactory.activeErrors.length-1];
+      if(currentError.id===$dialog.attr('id')){
+        //Execute top-level error's wrap-up function
+        error.onClose();
+        //Remove this, now closed error, from active errors
+        errorFactory.activeErrors.pop();
+      }
     });
 
   }]);
