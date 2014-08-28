@@ -83,16 +83,14 @@ io.on('connect', function(socket){
 //Login handler
 app.post('/login', function(request, response){
   //TODO Sanitize user input
-  var username = request.body.username;
+  var userId = request.body.userId;
   var password = request.body.password;
-  Parse.User.logIn(username, password, {
+  Parse.User.logIn(userId, password, {
     success: function(user) {
-      var firstName = user.get('firstName');
-      var lastName = user.get('lastName');
+      //Prep user for front end
       response.send(200, user);
     },
     error: function(user, error) {
-      console.log(cyan("WEB")+" : "+red("ERROR "+error.code+": "+error.message)+"\n");
       response.send(400,error);
     }
   });
@@ -220,6 +218,7 @@ function finalizeConnection(client){
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
+  
   //Create a new object which will contain needed info
   //for front end app
   var connection = {};

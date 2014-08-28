@@ -1,24 +1,31 @@
 <div ng-controller="LoginController as loginCtrl">
 
-  <span>Login</span>
+  <span id="login-dialog-title">Login</span>
 
-  <form ng-submit="loginCtrl.login()">
+  <form class="login-dialog-form" ng-submit="loginCtrl.login()">
 
-      <div>
+      <div class="login-dialog-input-container">
 
-        <label>User ID</label>
-        <input type="text" ng-model="loginCtrl.credentials.username"/>
+        <label class="login-dialog-label">User ID</label>
+        <input type="text" id="login-dialog-username" ng-model="loginCtrl.credentials.username"/>
 
         <br>
 
-        <label>Password</label>
-        <input type="password" ng-model="loginCtrl.credentials.password"/>
+        <label class="login-dialog-label">Password</label>
+        <input type="password" id="login-dialog-password" ng-model="loginCtrl.credentials.password"/>
 
         <br>
 
       </div>
 
-      <button type="submit">Submit</button>
+      <button type="submit" id="login-dialog-submit">
+        <span ng-hide="loginCtrl.submitting">Send</span>
+        <div class="spinner" ng-show="loginCtrl.submitting">
+          <div class="bounce1 charcoal-spinner"></div>
+          <div class="bounce2 charcoal-spinner"></div>
+          <div class="bounce3 charcoal-spinner"></div>
+        </div>
+      </button>
 
   </form>
 

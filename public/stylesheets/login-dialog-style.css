@@ -1,14 +1,20 @@
+#login-dialog-title{
+  display:block;
+  text-align:center;
+  font-size:1.5em;
+  font-weight:400;
+}
 
-form{
+.login-dialog-form{
   width:100%;
 }
 
-form div{
+.login-dialog-input-container{
   width:70%;
   margin:auto;
 }
 
-label{
+.login-dialog-label{
   display:inline-block;
   float:left;
   width:5em;
@@ -16,19 +22,13 @@ label{
   margin-top:1em;
 }
 
-input{
+#login-dialog-username,
+#login-dialog-password{
   display:inline-block;
   margin-top:1em;
 }
 
-button{
+#login-dialog-submit{
   width:100%;
   margin-top:1em;
-}
-
-span{
-  display:block;
-  text-align:center;
-  font-size:1.5em;
-  font-weight:400;
 }
