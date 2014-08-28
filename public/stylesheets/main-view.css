@@ -63,24 +63,29 @@ a{
   list-style-type:none;
 }
 .drawer-item{
-  padding:0.5em;
-  height:5%;
+  padding:0;
+  height:7.18%;
   border-top:0.1em solid #f7f7f7;
   color:#f7f7f7;
   cursor:pointer;
+  margin bottom:20em;
+  text-align:center;
 }
-.drawer-item a,
-.drawer-item span{
-  color:inherit;
+.drawer span{
+
 }
+/*.drawer-item form, .drawer-item button{
+  width:100%;
+  height:100%;
+}*/
 .drawer-item:hover,
 .drawer-item:active{
   color:#219ef9;
 }
 .item-icon{
   float:left;
-  margin-top:0.5em;
-  color:#f7f7f7;
+  color:inherit;
+  margin-left:8px;
 }
 .item-name{
   display:block;
@@ -104,6 +109,7 @@ button:focus{
 }
 
 .center-icon{
+  /*margin-left:8px;*/
   margin-left:16.5%;
 }
 
