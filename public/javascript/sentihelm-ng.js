@@ -31,30 +31,30 @@
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
 
     //Check for user autherization every time page loads
-    // $rootScope.$on('$stateChangeStart', function (event, next) {
-    //   var authorizedRoles = next.data.authorizedRoles;
-    //   if (!authenticator.isAuthorized(authorizedRoles)) {
-    //     // event.preventDefault();
-    //     if (authenticator.isAuthenticated()) {
-    //       //User does not have access to content
-    //       $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-    //       errorFactory.showError('NO-AUTH');
-    //     }
-    //     else {
-    //       //User is not logged in
-    //       $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-    //
-    //       //Present login dialog for user to log in
-    //       ngDialog.open({
-    //         template: '../login-dialog.html',
-    //         className: 'ngdialog-theme-plain',
-    //         closeByDocument: false,
-    //         closeByEscape:false,
-    //         showClose: false
-    //       });
-    //     }
-    //   }
-    // });
+    $rootScope.$on('$stateChangeStart', function (event, next) {
+      var authorizedRoles = next.data.authorizedRoles;
+      if (!authenticator.isAuthorized(authorizedRoles)) {
+        event.preventDefault();
+        if (authenticator.isAuthenticated()) {
+          //User does not have access to content
+          $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+          errorFactory.showError('NO-AUTH');
+        }
+        else {
+          //User is not logged in
+          $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+
+          //Present login dialog for user to log in
+          ngDialog.open({
+            template: '../login-dialog.html',
+            className: 'ngdialog-theme-plain',
+            closeByDocument: false,
+            closeByEscape:false,
+            showClose: false
+          });
+        }
+      }
+    });
 
   }]);
 
@@ -527,12 +527,12 @@
     //Drawer options with name and icon;
     //entries are off by default
     this.entries=[
-      {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
-      {name:'Video Streams', icon:'fa fa-video-camera', state:'#/streams'},
-      {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
-      {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
-      {name:'Wanted List', icon:'fa fa-warning', state:'#/wanted'},
-      {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
+      {name:'Tip Feed', icon:'fa fa-inbox', state:'tipfeed'},
+      {name:'Video Streams', icon:'fa fa-video-camera', state:'streams'},
+      {name:'Send Notification', icon:'fa fa-send-o', state:'global-notifications'},
+      {name:'Maps', icon:'fa fa-globe', state:'maps'},
+      {name:'Wanted List', icon:'fa fa-warning', state:'wanted'},
+      {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'analysis'}
     ];
 
     //Shows/hides drawer on toggled drawer event
@@ -656,11 +656,11 @@
     this.icon = {
       url: 'resources/images/custom-marker.png',
       // This marker is 20 pixels wide by 32 pixels tall.
-      scaledSize: new google.maps.Size(25, 42),
+      scaledSize: new google.maps.Size(25, 39),
       // The origin for this image is 0,0.
       origin: new google.maps.Point(0,0),
       // The anchor for this image is the base of the flagpole at 0,32.
-      anchor: new google.maps.Point(12.5,42)
+      anchor: new google.maps.Point(12.5,39)
     };
 
     //Checks if the marker coordinates have changed
