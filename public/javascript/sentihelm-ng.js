@@ -503,6 +503,8 @@
   //landing page
   app.controller('LoginController', ['$scope', 'authenticator', 'errorFactory', function($scope, authenticator, errorFactory){
 
+    var loginCtrl = this;
+
     //Credentials that will be passed to the authenticator service
     this.credentials = {
       username: '',
@@ -517,6 +519,7 @@
     //proceeds to try and login; if login fails, shows
     //corresponding error
     this.login = function(){
+
       //No username/id entered, throw error
       if(!this.credentials.username){
         errorFactory.showError('LOGIN-NO-USERID');
@@ -547,9 +550,8 @@
           // $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
           errorFactory.showError('LOGIN-'+error.data.code);
 
-          //Stop Spinner, and refresh $scope
-          this.submitting = false;
-          $scope.$apply();
+          //Stop Spinner
+          loginCtrl.submitting = false;
         }
       );
     };
