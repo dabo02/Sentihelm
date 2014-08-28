@@ -63,13 +63,21 @@ a{
   list-style-type:none;
 }
 .drawer-item{
-  padding:0.5em;
-  height:5%;
+  padding:0;
+  height:7%;
   border-top:0.1em solid #f7f7f7;
   color:#f7f7f7;
   cursor:pointer;
 }
-.drawer-item a,
+.drawer-item form{
+  height:100%;
+  text-align:center;
+}
+.drawer-item button{
+  height:100%;
+  width:100%;
+  padding:0;
+}
 .drawer-item span{
   color:inherit;
 }
@@ -80,6 +88,7 @@ a{
 .item-icon{
   float:left;
   margin-top:0.5em;
+  margin-left:0.8em;
   color:#f7f7f7;
 }
 .item-name{
@@ -111,7 +120,7 @@ button:focus{
   width:3%;
 }
 .opened-drawer{
-  width:12%;
+  width:13.5%;
 }
 
 .tip-counter{
