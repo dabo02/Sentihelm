@@ -35,9 +35,13 @@ var notice = clc.magentaBright;
 var maroon = clc.red;
 
 //Set up parse.
-var APP_ID="MpDMbPnCATUEf4FvXV1IwTX6Fq9G5tE6UWjlbNdO";
-var JS_KEY="0Q5ibbPcsYPyOfuslRGwKWvE6YDKiBmX23yjnqQy";
+var APP_ID="Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE";
+var JS_KEY="021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk";
 Parse.initialize(APP_ID, JS_KEY);
+
+//Set up Parse classes for queries
+var TipReport = Parse.Object.extend("TipReport");
+var Sequence = Parse.Object.extend("Sequence");
 
 //Create an non-overriding log file and feed it
 //to an express logger with default settings
@@ -65,13 +69,56 @@ var tipArray = [];
 //Setup socket.io that communicates with front end
 io.on('connect', function(socket){
 
+  //Front-end requested a new batch of tips;
+  //get query data and fetch
   socket.on('request-batch', function(data){
-    var upperBound = data.upperBound;
-    var currentTips = [];
-    for(var i = upperBound-10;i<upperBound;i++){
-      currentTips.push(tipArray[i]);
-    }
-    socket.emit('respond-batch',{currentTips : currentTips, totalTipCount: tipArray.length});
+    //Get filtering values: by clientId, date
+    //and tips after or before given date
+    var clientId = data.clientId
+    var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
+    var isAfterDate = data.isAfterDate;
+
+    //Create query
+    var tipQuery = new Parse.Query(TipReport);
+
+    //Filter by clientId
+    tipQuery.equalTo('clientId', {
+      __type: "Pointer",
+      className: "Client",
+      objectId: clientId
+    });
+
+    //Filter by date (before or after given date)
+    isAfterDate ? tipQuery.greaterThanOrEqualTo("createdAt", date) :
+                  tipQuery.lessThanOrEqualTo("createdAt", date);
+
+    //Execute query
+    tipQuery.find({
+      success: function(tips){
+
+        //Check total tip count for client
+        var countQuery = new Parse.Query(Sequence);
+        countQuery.get(clientId,{
+          success: function(sequence){
+            //Count was successful, emit an event
+            //with both tips and total tip count
+            socket.emit('respond-batch', {currentTips : tips, totalTipCount : sequence.count});
+          },
+          error: function(error){
+            //Count failed, emit response error
+            //along with error object
+            socket.emit('respond-error', {error: error});
+          }
+        });
+
+      },
+      error: function(error){
+        //Tip fetching failed, emit response error
+        //along with error object
+        socket.emit('respond-error', {error: error});
+      }
+    });
+
   });
 
 });
@@ -87,7 +134,7 @@ app.post('/login', function(request, response){
   var password = request.body.password;
   Parse.User.logIn(userId, password, {
     success: function(user) {
-      //Prep user for front end
+      //TODO Prep user for front end
       response.send(200, user);
     },
     error: function(user, error) {
@@ -96,16 +143,27 @@ app.post('/login', function(request, response){
   });
 });
 
-//Recieve tips from Parse
-app.post('/tips', function(request, response){
+//Recieve new-tip event form Parse,
+//and pass it along to front-end
+app.post('/new-tip', function(request, response){
   var tip = request.body;
   var pass = tip.pass;
   if(pass=='bahamut'){
-    tipArray.unshift(tip);
-    io.sockets.emit('new tip', {tip : tip});
+    io.sockets.emit('new-tip', {tip : tip});
     response.send(200);
   }
 });
+
+// //Recieve tips from Parse
+// app.post('/tips', function(request, response){
+//   var tip = request.body;
+//   var pass = tip.pass;
+//   if(pass=='bahamut'){
+//     tipArray.unshift(tip);
+//     io.sockets.emit('new tip', {tip : tip});
+//     response.send(200);
+//   }
+// });
 
 //Landing/login page
 app.get('/', function(request, response){
@@ -218,7 +276,7 @@ function finalizeConnection(client){
     expireTime :(new Date().getTime()/1000)+(3600),
     data : client.username
   });
-  
+
   //Create a new object which will contain needed info
   //for front end app
   var connection = {};

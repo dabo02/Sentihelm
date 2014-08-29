@@ -35,7 +35,7 @@
       var authorizedRoles = next.data.authorizedRoles;
       if (!authenticator.isAuthorized(authorizedRoles)) {
         //Stop page from loading
-        event.preventDefault();
+        // event.preventDefault();
 
         //Check if user can access this page
         if (authenticator.isAuthenticated()) {
@@ -48,13 +48,13 @@
           $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
 
           //Present login dialog for user to log in
-          ngDialog.open({
-            template: '../login-dialog.html',
-            className: 'ngdialog-theme-plain',
-            closeByDocument: false,
-            closeByEscape:false,
-            showClose: false
-          });
+          // ngDialog.open({
+          //   template: '../login-dialog.html',
+          //   className: 'ngdialog-theme-plain',
+          //   closeByDocument: false,
+          //   closeByEscape:false,
+          //   showClose: false
+          // });
         }
       }
     });
@@ -146,7 +146,7 @@
     'NO-AUTH':{
       title: 'You do Not Have Access to This Page',
       message: 'Your access level does not allow you to view this page.'+
-               'If you believe this is an error, contact your dashboard administrator.',
+      'If you believe this is an error, contact your dashboard administrator.',
       code: 'NO-AUTH',
       onClose: function(){
         //Do nothing
@@ -208,7 +208,9 @@
   //Creates an injectable socket service that
   //works just like socket.io's client library
   app.factory('socket', function (socketFactory) {
-    var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+    // var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+    var ioSocket = io.connect('http://localhost:80');
+
     socket = socketFactory({
       ioSocket: ioSocket
     });
@@ -423,6 +425,7 @@
     //Let controller know news tips arrvied; update
     //amount of total tips in server, last page and paginator set
     socket.on('respond-batch', function(data){
+      //TODO CHECK
       $rootScope.$broadcast('new-batch',[data.currentTips]);
       paginator.totalTipCount = data.totalTipCount;
       paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
@@ -431,11 +434,68 @@
       }
     });
 
+    //Catch socket.io event when a tip request
+    //failed; manage error accordingly with
+    //errorFactory service
+    socket.on('respond-error', function(data){
+      var error = data.error;
+      //TODO MANAGE ERROR
+    });
+
     //Called when tipfeed loads, be it on
     //refresh or navigating to it again
     paginator.initializeFeed = function(){
+      //TODO Set Client Id
       paginator.currentPage = 0;
-      socket.emit('request-batch', {upperBound: (10)});
+      socket.emit('request-batch', {
+        clientId: user,
+        isAfterDate: false
+      });
+
+      //TODO QUERY TIPS FROM PARSE
+
+      // var Client = Parse.Object.extend("Client");
+      // var clientQuery = new Parse.Query(Client);
+      // clientQuery.get('YgYS51sK0D',{
+      //   success: function(user){
+      //     var TipReport = Parse.Object.extend("TipReport");
+      //     var query = new Parse.Query(TipReport);
+      //     query.equalTo("clientId", {
+      //       __type: "Pointer",
+      //       className: "Client",
+      //       objectId: "YgYS51sK0D"
+      //     });
+      //     query.find({
+      //       success: function(results) {
+      //      //Check total tip count for client
+      //      var countQuery = new Parse.Query(Sequence);
+      //      countQuery.equalTo("clientId", clientId);
+      //      countQuery.find({
+      //        success: function(countResults){
+      //          var count = countResults[0].count;
+      //          //Count was successful, emit an event
+      //          //with both tips and total tip count
+      //          socket.emit('respond-batch', {currentTips : tips, totalTipCount : count});
+      //        },
+      //        error: function(error){
+      //          //Count failed, emit response error
+      //          //along with error object
+      //          socket.emit('respond-error', {error: error});
+      //        }
+      //      });
+      //    },
+      //    error: function(error){
+      //      //Tip fetching failed, emit response error
+      //      //along with error object
+      //      socket.emit('respond-error', {error: error});
+      //    }
+      //       });
+      //
+      //   },
+      //   error: function(error){
+      //     var x = error;
+      //   }
+      // });
     }
 
     //Change the page and ask server for tips present in new page;
@@ -501,7 +561,7 @@
 
   //Controller for login dialog and login
   //landing page
-  app.controller('LoginController', ['$scope', 'authenticator', 'errorFactory', function($scope, authenticator, errorFactory){
+  app.controller('LoginController', ['$scope', 'authenticator', 'Session', 'errorFactory', function($scope, authenticator, Session, errorFactory){
 
     var loginCtrl = this;
 
@@ -537,20 +597,16 @@
       //Try and log in
       authenticator.login(this.credentials).then(
         function(user){
-          //Login was successful
-          // $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+          //Login was successful, create Session
+          //and stop spinner
+          //TODO
+          // Session.create(user.objectId, user.user.id, res.user.role);
           $scope.setCurrentUser(user);
-
-          //Stop Spinner, and refresh $scope
-          this.submitting = false;
-          $scope.$apply();
+          loginCtrl.submitting = false;
         },
         function(error){
-          //Login failed
-          // $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
+          //Login failed; //Stop Spinner
           errorFactory.showError('LOGIN-'+error.data.code);
-
-          //Stop Spinner
           loginCtrl.submitting = false;
         }
       );
@@ -907,7 +963,11 @@
     this.title = error.title;
     this.message = error.message;
 
-    //Set focus on message box once error dialog closes
+    $scope.$on('ngDialog.opened', function (event, $dialog) {
+      //Set focus on error confirm button
+      document.getElementById("confirm-error-button").focus();
+    });
+
     $scope.$on('ngDialog.closed', function (event, $dialog) {
       //Execute error's wrap-up function
       error.onClose();
