@@ -21,7 +21,10 @@
     //Global notifications endpoint/url
     .state('global-notifications',{
       url:"/global-notifications",
-      templateUrl:"/global-notifications.html"
+      templateUrl:"/global-notifications.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      }
     });
   }]);
 
@@ -35,8 +38,7 @@
       var authorizedRoles = next.data.authorizedRoles;
       if (!authenticator.isAuthorized(authorizedRoles)) {
         //Stop page from loading
-        // event.preventDefault();
-
+        event.preventDefault();
         //Check if user can access this page
         if (authenticator.isAuthenticated()) {
           //User does not have access to content
@@ -46,15 +48,15 @@
         else {
           //User is not logged in
           $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-
           //Present login dialog for user to log in
-          // ngDialog.open({
-          //   template: '../login-dialog.html',
-          //   className: 'ngdialog-theme-plain',
-          //   closeByDocument: false,
-          //   closeByEscape:false,
-          //   showClose: false
-          // });
+          ngDialog.open({
+            template: '../login-dialog.html',
+            className: 'ngdialog-theme-plain',
+            closeByDocument: false,
+            closeByEscape:false,
+            showClose: false,
+            scope: $rootScope
+          });
         }
       }
     });
@@ -75,7 +77,7 @@
   //content control
   app.constant('USER_ROLES', {
     all: '*',
-    user: 'user',
+    user: 'manager',
     admin: 'admin'
   });
 
@@ -157,12 +159,24 @@
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
-  app.factory('Session', function(){
+  app.factory('Session',['$window', function($window, $rootScope){
+
+    // //Try and get currentUser
+    // try{
+    //   //User is saved as a JSON, parse it
+    //   this.currentUser = JSON.parse($window.sessionStorage['user']);
+    // }
+    // catch(error){
+    //   //User is already an object
+    //   this.currentUser = $window.sessionStorage['user'];
+    // }
+
     //Create a session object, along with id, userId and role
-    this.create = function (sessionId, userId, userRole) {
+    this.create = function (sessionId, userId, userRole, clientId) {
       this.id = sessionId;
       this.userId = userId;
       this.userRole = userRole;
+      this.clientId = clientId;
     };
 
     //Destroy current session object
@@ -170,10 +184,17 @@
       this.id = null;
       this.userId = null;
       this.userRole = null;
+      this.clientId = null;
     };
 
+    // //Stand in functionality for SessionController
+    // this.setCurrentUser = function(user){
+    //   this.currentUser = user;
+    //   $window.sessionStorage["user"] = JSON.stringify(user);
+    // }
+
     return this;
-  });
+  }]);
 
   //Creates a service that manages login and
   //authentication functionality; manages current session
@@ -187,7 +208,7 @@
 
     authenticator.isAuthenticated = function () {
       //Return true if userId is set; false otherwise
-      return !!Session.userId;
+      return !!Session.currentUser;
     };
 
     authenticator.isAuthorized = function (authorizedRoles) {
@@ -407,7 +428,7 @@
   //Creates a paginator service which
   //handles tip-feed pagination and
   //updates tip- feedcontroller accordingly
-  app.factory('paginatorService', ['socket', '$rootScope', function(socket, $rootScope){
+  app.factory('paginatorService', ['socket', '$rootScope', 'Session', function(socket, $rootScope, Session){
 
     //Set up the paginator object
     //Need references to current and last page,
@@ -448,7 +469,7 @@
       //TODO Set Client Id
       paginator.currentPage = 0;
       socket.emit('request-batch', {
-        clientId: user,
+        clientId: Session.clientId,
         isAfterDate: false
       });
 
@@ -543,12 +564,15 @@
 
   }]);
 
+  //TODO TODO TODO TODO MIGHT NOT USE TODO TODO TODO TODO
   //Controller which assigns to its $scope
   //all controls necessary for session control
   //and login functionality; created at body tag
   //so all other $scopes can inherit from
   //its $scope
-  app.controller('SessionController', ['$scope','USER_ROLES','authenticator',function($scope, USER_ROLES, authenticator){
+  app.controller('SessionController', ['$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
+  function($scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
+
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
     $scope.isAuthorized = authenticator.isAuthorized;
@@ -557,17 +581,22 @@
       $scope.currentUser = user;
     };
 
+    // $scope.$on(AUTH_EVENTS.loginSuccess, function(){
+    //   $scope.currentUser = Session.currentUser;
+    // });
+
   }]);
 
   //Controller for login dialog and login
   //landing page
-  app.controller('LoginController', ['$scope', 'authenticator', 'Session', 'errorFactory', function($scope, authenticator, Session, errorFactory){
+  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state',
+  function($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state){
 
     var loginCtrl = this;
 
     //Credentials that will be passed to the authenticator service
     this.credentials = {
-      username: '',
+      userId: '',
       password: ''
     };
 
@@ -581,7 +610,7 @@
     this.login = function(){
 
       //No username/id entered, throw error
-      if(!this.credentials.username){
+      if(!this.credentials.userId){
         errorFactory.showError('LOGIN-NO-USERID');
         return;
       }
@@ -600,9 +629,12 @@
           //Login was successful, create Session
           //and stop spinner
           //TODO
-          // Session.create(user.objectId, user.user.id, res.user.role);
-          $scope.setCurrentUser(user);
+          Session.create(0, user.objectId, user.role, user.clientId);
+          Session.setCurrentUser(user);
           loginCtrl.submitting = false;
+          $scope.$parent.setCurrentUser(user);
+          // $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+          $scope.closeThisDialog();
         },
         function(error){
           //Login failed; //Stop Spinner
@@ -659,7 +691,8 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
-  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', function($scope, socket, ngDialog, paginatorService){
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService',
+  function($scope, socket, ngDialog, paginatorService){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -780,7 +813,8 @@
 
   //Controller for the tip's attachments; must display
   //video and images, and play audio files
-  app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce', function($scope, $rootScope, ngDialog, $sce){
+  app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce',
+  function($scope, $rootScope, ngDialog, $sce){
     //Needed so that attachment-dialog.html can open the media files from parse.
     this.trustAsResourceUrl = $sce.trustAsResourceUrl;
     this.address = $scope.$parent.ngDialogData.address;
@@ -850,7 +884,8 @@
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
+  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
+  function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
     //Get data from ngDialog directive
     this.name = $scope.$parent.ngDialogData.name;
     this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -957,7 +992,8 @@
 
   //Controller for error dialog which is reusable throughout the
   //app; decoupled from everything else
-  app.controller('ErrorController', ['$scope', 'ERRORS', 'errorFactory', function($scope, ERRORS, errorFactory){
+  app.controller('ErrorController', ['$scope', 'ERRORS', 'errorFactory',
+  function($scope, ERRORS, errorFactory){
     //Set controller title and message
     var error = ERRORS[$scope.$parent.ngDialogData.errorCode];
     this.title = error.title;
