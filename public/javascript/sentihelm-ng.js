@@ -15,6 +15,18 @@
       templateUrl:"/tipfeed.html",
       data: {
         authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Destiny Service
+        loginService: 'Destiny',
+
+        // Receives the Destiny service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(loginService) {
+          console.log("Hello resolve 1!");
+          return loginService.checkUserStatus(this.data.authorizedRoles);
+        }
       }
     })
 
@@ -24,42 +36,75 @@
       templateUrl:"/global-notifications.html",
       data: {
         authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Destiny Service
+        loginService: 'Destiny',
+
+        // Receives the Destiny service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(loginService) {
+          console.log("Hello resolve 1!");
+          return loginService.checkUserStatus(this.data.authorizedRoles);
+        }
       }
     });
   }]);
 
+
+  // Cannot access the $scope service from here. Moved global user to $rootScope
+  // to be able to check if the user is already logged in.
+  app.factory("Destiny", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
+                  function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
+
+    //Destroy current session object
+    this.checkUserStatus = function (authorizedRoles) {
+      console.log("Inside Destiny Service.");
+
+       // TODO TODO TODO     Check if user is already logged in.    TODO TODO TODO
+       if(!$rootScope.currentUser) {
+        console.log("Inside Destiny Service: User not found.");
+
+        // var authorizedRoles = [USER_ROLES.admin, USER_ROLES.user];
+        if (!authenticator.isAuthorized(authorizedRoles)) {
+          //Stop page from loading. Not needed if used in the resolve
+          // event.preventDefault();
+          //Check if user can access this page
+          if (authenticator.isAuthenticated()) {
+            //User does not have access to content
+            // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+            errorFactory.showError('NO-AUTH');
+          }
+          else {
+            //User is not logged in
+            $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+            //Present login dialog for user to log in
+            var dialog = ngDialog.open({
+              template: '../login-dialog.html',
+              className: 'ngdialog-theme-plain',
+              closeByDocument: false,
+              closeByEscape:false,
+              showClose: false,
+              scope: $rootScope
+            });
+
+            return dialog.closePromise;
+          }
+        }
+
+      }
+    };
+
+    return this;
+
+  }]);
+
   //Initialize values needed throughout the app
   app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog', function($rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
+
     //Initialize Parse
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
-
-    //Check for user autherization every time page loads
-    $rootScope.$on('$stateChangeStart', function (event, next) {
-      var authorizedRoles = next.data.authorizedRoles;
-      if (!authenticator.isAuthorized(authorizedRoles)) {
-        //Stop page from loading
-        event.preventDefault();
-        //Check if user can access this page
-        if (authenticator.isAuthenticated()) {
-          //User does not have access to content
-          $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-          errorFactory.showError('NO-AUTH');
-        }
-        else {
-          //User is not logged in
-          $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-          //Present login dialog for user to log in
-          ngDialog.open({
-            template: '../login-dialog.html',
-            className: 'ngdialog-theme-plain',
-            closeByDocument: false,
-            closeByEscape:false,
-            showClose: false,
-            scope: $rootScope
-          });
-        }
-      }
-    });
 
   }]);
 
@@ -159,7 +204,7 @@
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
-  app.factory('Session',['$window', function($window, $rootScope){
+  app.factory('Session',['$window', '$rootScope', function($window, $rootScope){
 
     // //Try and get currentUser
     // try{
@@ -187,11 +232,13 @@
       this.clientId = null;
     };
 
-    // //Stand in functionality for SessionController
-    // this.setCurrentUser = function(user){
-    //   this.currentUser = user;
-    //   $window.sessionStorage["user"] = JSON.stringify(user);
-    // }
+    //Stand in functionality for SessionController
+    // Maybe this can be deleted...
+    this.setCurrentUser = function(user){
+      // this.currentUser = user;
+      $rootScope.setCurrentUser(user);
+      // $window.sessionStorage["user"] = JSON.stringify(user);
+    }
 
     return this;
   }]);
@@ -229,8 +276,8 @@
   //Creates an injectable socket service that
   //works just like socket.io's client library
   app.factory('socket', function (socketFactory) {
-    // var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-    var ioSocket = io.connect('http://localhost:80');
+    var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+    // var ioSocket = io.connect('http://localhost:80');
 
     socket = socketFactory({
       ioSocket: ioSocket
@@ -468,10 +515,11 @@
     paginator.initializeFeed = function(){
       //TODO Set Client Id
       paginator.currentPage = 0;
-      socket.emit('request-batch', {
-        clientId: Session.clientId,
-        isAfterDate: false
-      });
+      // socket.emit('request-batch', {
+      //   clientId: Session.clientId,
+      //   isAfterDate: false
+      // });
+      socket.emit('request-batch', {upperBound: (10)});
 
       //TODO QUERY TIPS FROM PARSE
 
@@ -570,15 +618,17 @@
   //and login functionality; created at body tag
   //so all other $scopes can inherit from
   //its $scope
-  app.controller('SessionController', ['$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
-  function($scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
+  app.controller('SessionController', ['$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
+  function($rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
 
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
     $scope.isAuthorized = authenticator.isAuthorized;
 
-    $scope.setCurrentUser = function (user) {
+    this.helloWorld = function () {console.log('Hello');};
+    $rootScope.setCurrentUser = function (user) {
       $scope.currentUser = user;
+      $rootScope.currentUser = user;
     };
 
     // $scope.$on(AUTH_EVENTS.loginSuccess, function(){
@@ -589,8 +639,8 @@
 
   //Controller for login dialog and login
   //landing page
-  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state',
-  function($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state){
+  app.controller('LoginController', ['$state', '$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state',
+  function($state, $rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state){
 
     var loginCtrl = this;
 
@@ -630,11 +680,12 @@
           //and stop spinner
           //TODO
           Session.create(0, user.objectId, user.role, user.clientId);
-          Session.setCurrentUser(user);
+          $rootScope.setCurrentUser(user);
           loginCtrl.submitting = false;
-          $scope.$parent.setCurrentUser(user);
+          // $scope.$parent.setCurrentUser(user);
           // $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
           $scope.closeThisDialog();
+
         },
         function(error){
           //Login failed; //Stop Spinner

@@ -61,6 +61,8 @@ a{
   background-color:#4d4d4d;
   overflow:auto;
   list-style-type:none;
+  z-index: 1;
+
 }
 .drawer-item{
   padding:0;
@@ -95,6 +97,7 @@ a{
   display:block;
   margin:0.2em 0 0 2em;
   white-space:nowrap;
+  float:left;
 }
 
 /********HELPER STYLES*********/
@@ -130,4 +133,10 @@ button:focus{
   text-align:center;
   font-size:0.9em;
   font-weight:400;
+}
+
+.maps-page {
+  width:97%;
+  height:100%;
+  float:right;
 }

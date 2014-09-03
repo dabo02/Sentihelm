@@ -1,19 +1,47 @@
 <div  ng-controller="AttachmentController as attachCtrl" align="center">
 
-  <img ng-show="attachCtrl.attachType === 'IMG'" ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}}  class="attachment-dialog">
 
-  <!-- TODO Support different formats?-->
-  <video ng-show="attachCtrl.attachType === 'VID'" width="100%" controls>
-    <source ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="video/mp4">
-  </video>
+  <div ng-show="attachCtrl.attachType === 'IMG'">
 
-  <!-- TODO Make this work! Support different formats? iPhone is .caf, android is mpg4. -->
+    <img ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}}  class="attachment-dialog">
+
+  </div>
+
+
+  <div ng-show="attachCtrl.attachType === 'VID'">
+
+    <video width="100%" controls>
+
+      <source ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="video/mp4">
+
+    </video>
+    <br>
+    <a ng-href={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} download>
+
+      <button type="button" name="Download")>Download</button>
+
+    </a>
+
+  </div>
+
+
   <div ng-show="attachCtrl.attachType === 'AUDIO'">
+
     <audio controls>
+
       <!-- <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/aac"> -->
       <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/mpeg">
       <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/gpp">
       Your browser does not support this audio format.
     </audio>
+
+    <br>
+    <a ng-href={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} download>
+
+      <button type="button" name="Download")>Download</button>
+
+    </a>
+
   </div>
+
 </div>
