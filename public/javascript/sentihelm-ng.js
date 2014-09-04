@@ -45,27 +45,25 @@
         // executes the login dialog if needed and waits for the dialog
         // to close before loading the state.
         authenticate: function(loginService) {
-          console.log("Hello resolve 1!");
           return loginService.checkUserStatus(this.data.authorizedRoles);
         }
       }
     });
   }]);
 
-
   // Cannot access the $scope service from here. Moved global user to $rootScope
   // to be able to check if the user is already logged in.
-  // TODO Rename this or merge with Session service
+  // TODO Rename this or merge with Session service. Reallocate code.
   app.factory("Destiny", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
                   function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
     //Destroy current session object
     this.checkUserStatus = function (authorizedRoles) {
 
-      // Check if user
+      //Check if user can access this page/state
       if (!authenticator.isAuthorized(authorizedRoles)) {
 
-        //Check if user can access this page
+        //Check if user is logged in
         if (authenticator.isAuthenticated()) {
 
           //User does not have access to content
@@ -94,9 +92,29 @@
           // Return the promise of the login dialog so that the resolve can use
           // this promise and wait until the dialog is closed before loading the
           // corresponding state
-          return loginDialog.closePromise;
+          return loginDialog.closePromise.then(function (data) {
+
+            // User is now logged in, check for authorization
+            if (!authenticator.isAuthorized(authorizedRoles)) {
+
+              //User does not have access to content
+              // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+              errorFactory.showError('NO-AUTH');
+
+              // Return a promise rejection so that the state stops from loading
+              return Promise.reject("Recently logged in user is not authorized");
+
+            }
+
+            // Resolve the promise. Proceed to load the state.
+            return Promise.resolve("Recently logged in user is authorized to view the page.");
+				  });
         }
       }
+
+      // Resolve the promise. Proceed to load the state.
+      return Promise.resolve("User is already logged in and authorized to view the page");
+
     };
 
     return this;
