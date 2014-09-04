@@ -17,6 +17,7 @@
         authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
       },
       resolve: {
+
         // Reads the Destiny Service
         loginService: 'Destiny',
 
@@ -24,7 +25,6 @@
         // executes the login dialog if needed and waits for the dialog
         // to close before loading the state.
         authenticate: function(loginService) {
-          console.log("Hello resolve 1!");
           return loginService.checkUserStatus(this.data.authorizedRoles);
         }
       }
@@ -35,7 +35,7 @@
       url:"/global-notifications",
       templateUrl:"/global-notifications.html",
       data: {
-        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+        authorizedRoles: [USER_ROLES.admin]
       },
       resolve: {
         // Reads the Destiny Service
@@ -55,44 +55,47 @@
 
   // Cannot access the $scope service from here. Moved global user to $rootScope
   // to be able to check if the user is already logged in.
+  // TODO Rename this or merge with Session service
   app.factory("Destiny", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
                   function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
     //Destroy current session object
     this.checkUserStatus = function (authorizedRoles) {
-      console.log("Inside Destiny Service.");
 
-       // TODO TODO TODO     Check if user is already logged in.    TODO TODO TODO
-       if(!$rootScope.currentUser) {
-        console.log("Inside Destiny Service: User not found.");
+      // Check if user
+      if (!authenticator.isAuthorized(authorizedRoles)) {
 
-        // var authorizedRoles = [USER_ROLES.admin, USER_ROLES.user];
-        if (!authenticator.isAuthorized(authorizedRoles)) {
-          //Stop page from loading. Not needed if used in the resolve
-          // event.preventDefault();
-          //Check if user can access this page
-          if (authenticator.isAuthenticated()) {
-            //User does not have access to content
-            // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-            errorFactory.showError('NO-AUTH');
-          }
-          else {
-            //User is not logged in
-            $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-            //Present login dialog for user to log in
-            var dialog = ngDialog.open({
-              template: '../login-dialog.html',
-              className: 'ngdialog-theme-plain',
-              closeByDocument: false,
-              closeByEscape:false,
-              showClose: false,
-              scope: $rootScope
-            });
+        //Check if user can access this page
+        if (authenticator.isAuthenticated()) {
 
-            return dialog.closePromise;
-          }
+          //User does not have access to content
+          // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+          errorFactory.showError('NO-AUTH');
+
+          // Return a promise rejection so that the state stops from loading
+          return Promise.reject("No AUTH");
         }
+        else {
 
+          //User is not logged in
+          $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+
+          //Present login dialog for user to log in
+          var loginDialog = ngDialog.open({
+            template: '../login-dialog.html',
+            className: 'ngdialog-theme-plain',
+            closeByDocument: false,
+            closeByEscape:false,
+            showClose: false,
+            scope: $rootScope
+          });
+
+          // TODO Improve the following documentation:
+          // Return the promise of the login dialog so that the resolve can use
+          // this promise and wait until the dialog is closed before loading the
+          // corresponding state
+          return loginDialog.closePromise;
+        }
       }
     };
 
@@ -192,7 +195,7 @@
     },
     'NO-AUTH':{
       title: 'You do Not Have Access to This Page',
-      message: 'Your access level does not allow you to view this page.'+
+      message: 'Your access level does not allow you to view this page. '+
       'If you believe this is an error, contact your dashboard administrator.',
       code: 'NO-AUTH',
       onClose: function(){
@@ -232,14 +235,6 @@
       this.clientId = null;
     };
 
-    //Stand in functionality for SessionController
-    // Maybe this can be deleted...
-    this.setCurrentUser = function(user){
-      // this.currentUser = user;
-      $rootScope.setCurrentUser(user);
-      // $window.sessionStorage["user"] = JSON.stringify(user);
-    }
-
     return this;
   }]);
 
@@ -255,7 +250,7 @@
 
     authenticator.isAuthenticated = function () {
       //Return true if userId is set; false otherwise
-      return !!Session.currentUser;
+      return !!Session.userId;
     };
 
     authenticator.isAuthorized = function (authorizedRoles) {
@@ -619,16 +614,14 @@
   //so all other $scopes can inherit from
   //its $scope
   app.controller('SessionController', ['$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
-  function($rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
+                                 function($rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
 
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
     $scope.isAuthorized = authenticator.isAuthorized;
 
-    this.helloWorld = function () {console.log('Hello');};
     $rootScope.setCurrentUser = function (user) {
       $scope.currentUser = user;
-      $rootScope.currentUser = user;
     };
 
     // $scope.$on(AUTH_EVENTS.loginSuccess, function(){
@@ -679,7 +672,8 @@
           //Login was successful, create Session
           //and stop spinner
           //TODO
-          Session.create(0, user.objectId, user.role, user.clientId);
+          var userClientId = JSON.parse(JSON.stringify(user.data.homeClient)).objectId;
+          Session.create(0, user.data.objectId, user.data.role, userClientId);
           $rootScope.setCurrentUser(user);
           loginCtrl.submitting = false;
           // $scope.$parent.setCurrentUser(user);
