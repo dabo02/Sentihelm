@@ -41,7 +41,7 @@ Parse.initialize(APP_ID, JS_KEY);
 
 //Set up Parse classes for queries
 var TipReport = Parse.Object.extend("TipReport");
-var Sequence = Parse.Object.extend("Sequence");
+var Client = Parse.Object.extend("Client");
 
 //Create an non-overriding log file and feed it
 //to an express logger with default settings
@@ -89,20 +89,23 @@ io.on('connect', function(socket){
     });
 
     //Filter by date (before or after given date)
-    isAfterDate ? tipQuery.greaterThanOrEqualTo("createdAt", date) :
-                  tipQuery.lessThanOrEqualTo("createdAt", date);
+    isAfterDate ? tipQuery.greaterThan("createdAt", date) :
+                  tipQuery.lessThan("createdAt", date);
+
+    tipQuery.descending("createdAt");
 
     //Execute query
     tipQuery.find({
       success: function(tips){
 
         //Check total tip count for client
-        var countQuery = new Parse.Query(Sequence);
+        var countQuery = new Parse.Query(Client);
         countQuery.get(clientId,{
-          success: function(sequence){
+          success: function(client){
             //Count was successful, emit an event
             //with both tips and total tip count
-            socket.emit('respond-batch', {currentTips : tips, totalTipCount : sequence.count});
+            var totalTipCount = JSON.parse(JSON.stringify(client)).totalTipCount
+            socket.emit('respond-batch', {currentTips : tips, totalTipCount : totalTipCount});
           },
           error: function(error){
             //Count failed, emit response error

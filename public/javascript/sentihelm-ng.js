@@ -35,7 +35,7 @@
       url:"/global-notifications",
       templateUrl:"/global-notifications.html",
       data: {
-        authorizedRoles: [USER_ROLES.admin]
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
       },
       resolve: {
         // Reads the Destiny Service
@@ -289,8 +289,8 @@
   //Creates an injectable socket service that
   //works just like socket.io's client library
   app.factory('socket', function (socketFactory) {
-    var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-    // var ioSocket = io.connect('http://localhost:80');
+    // var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+    var ioSocket = io.connect('http://localhost:80');
 
     socket = socketFactory({
       ioSocket: ioSocket
@@ -507,12 +507,18 @@
     //amount of total tips in server, last page and paginator set
     socket.on('respond-batch', function(data){
       //TODO CHECK
+
       $rootScope.$broadcast('new-batch',[data.currentTips]);
       paginator.totalTipCount = data.totalTipCount;
       paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
       if(paginator.currentPage===0){
         paginator.pageSetUpdater(paginator.lastPage, false);
       }
+
+      paginator.firstTipInArrayDate = data.currentTips[0].createdAt;
+      paginator.lastTipInArrayDate = data.currentTips[data.currentTips.length-1].createdAt;
+
+
     });
 
     //Catch socket.io event when a tip request
@@ -528,11 +534,13 @@
     paginator.initializeFeed = function(){
       //TODO Set Client Id
       paginator.currentPage = 0;
-      // socket.emit('request-batch', {
-      //   clientId: Session.clientId,
-      //   isAfterDate: false
-      // });
-      socket.emit('request-batch', {upperBound: (10)});
+      socket.emit('request-batch', {
+        clientId: Session.clientId,
+        isAfterDate: false
+      });
+
+      // for server on sentihelm.blabla.com
+      // socket.emit('request-batch', {upperBound: (10)});
 
       //TODO QUERY TIPS FROM PARSE
 
@@ -585,13 +593,23 @@
     paginator.changePage = function(newPage){
       this.currentPage = newPage;
       $rootScope.$broadcast('page-change',[this.currentPage]);
-      socket.emit('request-batch', {upperBound: (this.currentPage*10)});
+      // socket.emit('request-batch', {upperBound: (this.currentPage*10)});
     };
 
     //Change to previous page; update references
     paginator.prevPage = function(){
       if((this.currentPage-1)%10===0){
+
+        // Request previous 100 tips!!! ---------------------------
+        socket.emit('request-batch', {
+          clientId: Session.clientId,
+          lastTipDate: paginator.firstTipInArrayDate,
+          isAfterDate: true
+        });
+
         this.pageSetUpdater(this.lastPage, true);
+
+
       }
       this.changePage(this.currentPage-=1);
     };
@@ -600,7 +618,16 @@
     paginator.nextPage = function(){
       this.currentPage = this.currentPage===0 ? this.currentPage+1 : this.currentPage;
       if(this.currentPage%10===0){
+
+        // Request next 100 tips here ------------------------
+        socket.emit('request-batch', {
+          clientId: Session.clientId,
+          lastTipDate: paginator.lastTipInArrayDate,
+          isAfterDate: false
+        });
+
         this.pageSetUpdater(this.lastPage - this.currentPage, false);
+
       }
       this.changePage(this.currentPage+=1);
     };
@@ -774,12 +801,25 @@
 
     //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
-      tipfeed.currentTips = data[0];
+      tipfeed.bigTipsArray = JSON.parse(JSON.stringify(data[0]));
+
+      var pageIndex = (tipfeed.currentPage)%10 === 0? 10: (tipfeed.currentPage)%10;
+
+      var start = pageIndex*10-10;
+      var end = start + 10;
+      tipfeed.currentTips = tipfeed.bigTipsArray.slice(start, end);
+
     });
 
     //Catch even when page changes
     $scope.$on('page-change', function(event, data){
       tipfeed.currentPage = data[0];
+
+      var pageIndex = (tipfeed.currentPage)%10 === 0? 10: (tipfeed.currentPage)%10;
+      var start = pageIndex*10-10;
+      var end = start + 10;
+      tipfeed.currentTips = tipfeed.bigTipsArray.slice(start, end);
+
     });
 
     //Catch event when page sets change (every 10 pages)
