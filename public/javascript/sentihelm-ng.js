@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps','ngDialog','angularFileUpload']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps','ngDialog','angularFileUpload', 'angularSpinner']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -57,8 +57,9 @@
   app.factory("Destiny", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
                   function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
+    var Destiny =  {};
     //Destroy current session object
-    this.checkUserStatus = function (authorizedRoles) {
+    Destiny.checkUserStatus = function (authorizedRoles) {
 
       //Check if user can access this page/state
       if (!authenticator.isAuthorized(authorizedRoles)) {
@@ -92,23 +93,24 @@
           // Return the promise of the login dialog so that the resolve can use
           // this promise and wait until the dialog is closed before loading the
           // corresponding state
-          return loginDialog.closePromise.then(function (data) {
+          return loginDialog.closePromise.then(
+            function () {
 
-            // User is now logged in, check for authorization
-            if (!authenticator.isAuthorized(authorizedRoles)) {
+              // User is now logged in, check for authorization
+              if (!authenticator.isAuthorized(authorizedRoles)) {
 
-              //User does not have access to content
-              // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-              errorFactory.showError('NO-AUTH');
+                //User does not have access to content
+                // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+                errorFactory.showError('NO-AUTH');
 
-              // Return a promise rejection so that the state stops from loading
-              return Promise.reject("Recently logged in user is not authorized");
+                // Return a promise rejection so that the state stops from loading
+                return Promise.reject("Recently logged in user is not authorized");
 
-            }
+              }
 
-            // Resolve the promise. Proceed to load the state.
-            return Promise.resolve("Recently logged in user is authorized to view the page.");
-				  });
+              // Resolve the promise. Proceed to load the state.
+              return Promise.resolve("Recently logged in user is authorized to view the page.");
+  				});
         }
       }
 
@@ -117,7 +119,7 @@
 
     };
 
-    return this;
+    return Destiny;
 
   }]);
 
@@ -495,7 +497,6 @@
     //array of number of pages paginator will print
     //and size of said array
     var paginator = {};
-    paginator.currentTips = [];
     paginator.totalTipCount = 0;
     paginator.currentPage = 0;
     paginator.lastPage = 1;
@@ -518,7 +519,6 @@
       paginator.firstTipInArrayDate = data.currentTips[0].createdAt;
       paginator.lastTipInArrayDate = data.currentTips[data.currentTips.length-1].createdAt;
 
-
     });
 
     //Catch socket.io event when a tip request
@@ -539,53 +539,8 @@
         isAfterDate: false
       });
 
-      // for server on sentihelm.blabla.com
+      // for server currently on sentihelm.blabla.com
       // socket.emit('request-batch', {upperBound: (10)});
-
-      //TODO QUERY TIPS FROM PARSE
-
-      // var Client = Parse.Object.extend("Client");
-      // var clientQuery = new Parse.Query(Client);
-      // clientQuery.get('YgYS51sK0D',{
-      //   success: function(user){
-      //     var TipReport = Parse.Object.extend("TipReport");
-      //     var query = new Parse.Query(TipReport);
-      //     query.equalTo("clientId", {
-      //       __type: "Pointer",
-      //       className: "Client",
-      //       objectId: "YgYS51sK0D"
-      //     });
-      //     query.find({
-      //       success: function(results) {
-      //      //Check total tip count for client
-      //      var countQuery = new Parse.Query(Sequence);
-      //      countQuery.equalTo("clientId", clientId);
-      //      countQuery.find({
-      //        success: function(countResults){
-      //          var count = countResults[0].count;
-      //          //Count was successful, emit an event
-      //          //with both tips and total tip count
-      //          socket.emit('respond-batch', {currentTips : tips, totalTipCount : count});
-      //        },
-      //        error: function(error){
-      //          //Count failed, emit response error
-      //          //along with error object
-      //          socket.emit('respond-error', {error: error});
-      //        }
-      //      });
-      //    },
-      //    error: function(error){
-      //      //Tip fetching failed, emit response error
-      //      //along with error object
-      //      socket.emit('respond-error', {error: error});
-      //    }
-      //       });
-      //
-      //   },
-      //   error: function(error){
-      //     var x = error;
-      //   }
-      // });
     }
 
     //Change the page and ask server for tips present in new page;
@@ -600,15 +555,16 @@
     paginator.prevPage = function(){
       if((this.currentPage-1)%10===0){
 
+
         // Request previous 100 tips!!! ---------------------------
         socket.emit('request-batch', {
           clientId: Session.clientId,
           lastTipDate: paginator.firstTipInArrayDate,
           isAfterDate: true
         });
+        $rootScope.$broadcast('discard-current-tips',[]);
 
         this.pageSetUpdater(this.lastPage, true);
-
 
       }
       this.changePage(this.currentPage-=1);
@@ -625,9 +581,9 @@
           lastTipDate: paginator.lastTipInArrayDate,
           isAfterDate: false
         });
+        $rootScope.$broadcast('discard-current-tips',[]);
 
         this.pageSetUpdater(this.lastPage - this.currentPage, false);
-
       }
       this.changePage(this.currentPage+=1);
     };
@@ -658,8 +614,8 @@
   //and login functionality; created at body tag
   //so all other $scopes can inherit from
   //its $scope
-  app.controller('SessionController', ['$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
-                                 function($rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
+  app.controller('SessionController', ['usSpinnerService', '$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
+                                 function(usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
 
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
@@ -781,8 +737,9 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
-  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService',
-  function($scope, socket, ngDialog, paginatorService){
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService',
+
+  function($scope, socket, ngDialog, paginatorService, usSpinnerService){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -801,7 +758,10 @@
 
     //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
-      tipfeed.bigTipsArray = JSON.parse(JSON.stringify(data[0]));
+
+      usSpinnerService.stop('loading-tips-spinner');
+
+      tipfeed.bigTipsArray = data[0];
 
       var pageIndex = (tipfeed.currentPage)%10 === 0? 10: (tipfeed.currentPage)%10;
 
@@ -818,14 +778,23 @@
       var pageIndex = (tipfeed.currentPage)%10 === 0? 10: (tipfeed.currentPage)%10;
       var start = pageIndex*10-10;
       var end = start + 10;
-      tipfeed.currentTips = tipfeed.bigTipsArray.slice(start, end);
 
+      // If we are receiving a new batch of tips, ignore this
+      if(!!tipfeed.bigTipsArray) {
+        tipfeed.currentTips = tipfeed.bigTipsArray.slice(start, end);
+      }
     });
 
     //Catch event when page sets change (every 10 pages)
     $scope.$on('paginator-set-update', function(event, data){
       tipfeed.paginatorSet = data[0];
       tipfeed.lastPage = data[1];
+    });
+
+    $scope.$on('discard-current-tips', function(){
+      tipfeed.bigTipsArray = undefined;
+      tipfeed.currentTips = undefined;
+      usSpinnerService.spin('loading-tips-spinner');
     });
 
     //Note that notification dialog is off
