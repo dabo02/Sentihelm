@@ -92,27 +92,81 @@ io.on('connect', function(socket){
     isAfterDate ? tipQuery.greaterThan("createdAt", date) :
                   tipQuery.lessThan("createdAt", date);
 
-    tipQuery.descending("createdAt");
+    //Receive dates from newest to oldest. If isAfterDate
+    //is true, receive tips from oldest to newest, then
+    //manually reverse the array order. We need to this
+    //to be able to always receive the 100 tips closest to
+    //the given date.
+    if (!isAfterDate) {
+      tipQuery.descending("createdAt");
+    }
+
+    // Tell parse to include the user and client objects
+    // instead of just passing the pointers.
+    tipQuery.include('user');
+    tipQuery.include('clientId');
 
     //Execute query
     tipQuery.find({
       success: function(tips){
 
-        //Check total tip count for client
-        var countQuery = new Parse.Query(Client);
-        countQuery.get(clientId,{
-          success: function(client){
-            //Count was successful, emit an event
-            //with both tips and total tip count
-            var totalTipCount = JSON.parse(JSON.stringify(client)).totalTipCount
-            socket.emit('respond-batch', {currentTips : tips, totalTipCount : totalTipCount});
-          },
-          error: function(error){
-            //Count failed, emit response error
-            //along with error object
-            socket.emit('respond-error', {error: error});
+        console.log(tips.length + " tips found.");
+        //Reverse the array if the tips are in ascending
+        //order(oldest to newest)
+        if (isAfterDate) {
+          tips.reverse();
+        }
+
+        //Loop over the array to prepare the tip objects
+        //for the front end
+        for(var i = 0; i < tips.length; i++) {
+          //Get the user from the tip. This works
+          //because we are using tipQuery.include('user').
+          //It doesn't need to reconnect to the database
+          //to retreive the user that submitted the tip.
+          var tipUser = tips[i].get('user');
+
+          //Get the client object from the first tip. To be
+          //able to get the total tip count later on (all
+          //tips have the same client).
+          if(i===0) {
+            var clientObj = tips[i].get('clientId');
           }
-        });
+
+          //Convert tip from Parse to Javascript object form
+          tips[i] = JSON.parse(JSON.stringify(tips[i]));
+
+          // If not anonymous tip, get user information
+          if(!!tipUser) {
+            tips[i].firstName = tipUser.attributes.firstName;
+            tips[i].lastName = tipUser.attributes.lastName;
+            tips[i].phone = tipUser.attributes.phoneNumber;
+            tips[i].anonymous = false;
+            tips[i].channel = "user_" + tipUser.id;
+          }
+          else {
+            //Set tip to anonymous if the user was not found
+            tips[i].firstName = "ANONYMOUS";
+            tips[i].lastName = "";
+            tips[i].anonymous = true;
+          }
+
+          //Prepare tip object with the values needed in 
+          //the front end
+          tips[i].center = {latitude: tips[i].latitude, longitude: tips[i].longitude};
+          tips[i].controlNumber = tips[i].objectId;
+          tips[i].date = (new Date(tips[i].createdAt)).toString();
+
+          // Copy media url if available.
+          !!tips[i].attachmentVideo? tips[i].videoUrl = tips[i].attachmentVideo.url: null;
+          !!tips[i].attachmentAudio? tips[i].audioUrl = tips[i].attachmentAudio.url: null;
+          !!tips[i].attachmentPhoto? tips[i].imageUrl = tips[i].attachmentPhoto.url: null;
+
+        }
+
+        console.log(clientObj.attributes.totalTipCount + ' total tip count for the client.\n');
+        //Send the tips to the front end
+        socket.emit('respond-batch', {currentTips : tips, totalTipCount : clientObj.attributes.totalTipCount});
 
       },
       error: function(error){
