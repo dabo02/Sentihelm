@@ -57,8 +57,9 @@
   app.factory("Destiny", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
                   function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
-    //Destroy current session object
-    this.checkUserStatus = function (authorizedRoles) {
+    var destiny = {};
+    //Check is user is logged in/authorized
+    destiny.checkUserStatus = function (authorizedRoles) {
 
       //Check if user can access this page/state
       if (!authenticator.isAuthorized(authorizedRoles)) {
@@ -67,18 +68,14 @@
         if (authenticator.isAuthenticated()) {
 
           //User does not have access to content
-          // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
           errorFactory.showError('NO-AUTH');
 
-          // Return a promise rejection so that the state stops from loading
-          return Promise.reject("No AUTH");
+          // Return a promise rejection so that the state will not load
+          return Promise.reject("User does not have access to this page");
         }
         else {
-
-          //User is not logged in
-          $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-
-          //Present login dialog for user to log in
+          //User is not logged in; present login
+          //dialog so user can log in
           var loginDialog = ngDialog.open({
             template: '../login-dialog.html',
             className: 'ngdialog-theme-plain',
@@ -92,33 +89,29 @@
           // Return the promise of the login dialog so that the resolve can use
           // this promise and wait until the dialog is closed before loading the
           // corresponding state
-          return loginDialog.closePromise.then(function (data) {
+          return loginDialog.closePromise.then(function(){
 
-            // User is now logged in, check for authorization
+            //User is now logged in; check if he has access to this page
             if (!authenticator.isAuthorized(authorizedRoles)) {
 
               //User does not have access to content
-              // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
               errorFactory.showError('NO-AUTH');
 
-              // Return a promise rejection so that the state stops from loading
-              return Promise.reject("Recently logged in user is not authorized");
-
+              //Return a promise rejection so that the state stops from loading
+              return Promise.reject("User has logged in, but does not have access to this page");
             }
 
-            // Resolve the promise. Proceed to load the state.
-            return Promise.resolve("Recently logged in user is authorized to view the page.");
+            //Resolve the promise, proceed to load the state.
+            return Promise.resolve("User has been granted access to this page");
 				  });
         }
       }
 
       // Resolve the promise. Proceed to load the state.
-      return Promise.resolve("User is already logged in and authorized to view the page");
-
+      return Promise.resolve("User is already logged in and has access to this page");
     };
 
-    return this;
-
+    return destiny;
   }]);
 
   //Initialize values needed throughout the app
@@ -209,7 +202,7 @@
       onClose: function(){
         //Do nothing
         return;
-      },
+      }
     },
     'NO-AUTH':{
       title: 'You do Not Have Access to This Page',
@@ -225,7 +218,7 @@
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
-  app.factory('Session',['$window', '$rootScope', function($window, $rootScope){
+  app.service('Session',['$window', '$rootScope', function($window, $rootScope){
 
     // //Try and get currentUser
     // try{
@@ -283,7 +276,6 @@
     };
 
     return authenticator;
-
   }]);
 
   //Creates an injectable socket service that
@@ -677,8 +669,8 @@
 
   //Controller for login dialog and login
   //landing page
-  app.controller('LoginController', ['$state', '$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state',
-  function($state, $rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state){
+  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state',
+  function($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state){
 
     var loginCtrl = this;
 
