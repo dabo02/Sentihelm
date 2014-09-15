@@ -120,13 +120,14 @@ io.on('connect', function(socket){
         //Loop over the array to prepare the tip objects
         //for the front end
         for(var i = 0; i < tips.length; i++) {
+
           //Get the user from the tip. This works
           //because we are using tipQuery.include('user').
           //It doesn't need to reconnect to the database
           //to retreive the user that submitted the tip.
           var tipUser = tips[i].get('user');
 
-          //Get the client object from the first tip. To be
+          //Get the client object from the first tip to be
           //able to get the total tip count later on (all
           //tips have the same client).
           if(i===0) {
@@ -151,16 +152,18 @@ io.on('connect', function(socket){
             tips[i].anonymous = true;
           }
 
-          //Prepare tip object with the values needed in 
+          //Prepare tip object with the values needed in
           //the front end
           tips[i].center = {latitude: tips[i].latitude, longitude: tips[i].longitude};
           tips[i].controlNumber = tips[i].objectId;
-          tips[i].date = (new Date(tips[i].createdAt)).toString();
+          var temp = (new Date(tips[i].createdAt));
+          temp = temp.toDateString() + ' - ' + temp.toLocaleTimeString();
+          tips[i].date = temp;
 
           // Copy media url if available.
-          !!tips[i].attachmentVideo? tips[i].videoUrl = tips[i].attachmentVideo.url: null;
-          !!tips[i].attachmentAudio? tips[i].audioUrl = tips[i].attachmentAudio.url: null;
-          !!tips[i].attachmentPhoto? tips[i].imageUrl = tips[i].attachmentPhoto.url: null;
+          !!tips[i].attachmentVideo? tips[i].videoUrl = tips[i].attachmentVideo.url: undefined;
+          !!tips[i].attachmentAudio? tips[i].audioUrl = tips[i].attachmentAudio.url: undefined;
+          !!tips[i].attachmentPhoto? tips[i].imageUrl = tips[i].attachmentPhoto.url: undefined;
 
         }
 

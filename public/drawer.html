@@ -6,9 +6,9 @@
 
   <ul class="drawer" ng-class="{'closed-drawer':!drawer.isOn, 'opened-drawer':drawer.isOn}">
 
-    <li class="drawer-item" ng-repeat="item in drawer.entries" ng-class="{'bright-blue':drawer.current===item.name}">
+    <li class="drawer-item" ng-repeat="item in drawer.entries" ng-class="{'bright-blue':drawer.getCurrentState()===item.name}">
 
-      <form action="{{item.state}}" ng-submit="drawer.current=item.name">
+      <form action="{{item.state}}">
 
         <button type="submit" class="transparent-button">
 
@@ -21,7 +21,7 @@
       </form>
 
     </li>
-    
+
   </ul>
 
   <!--====TIP COUNTER THAT WILL KEEP TAB ON HOW MANY TIPS HAVE ARRIVED SERVER SIDE======>

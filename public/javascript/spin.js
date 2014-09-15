@@ -151,8 +151,8 @@
     opacity: 1/4,         // Opacity of the lines
     fps: 20,              // Frames per second when using setTimeout()
     zIndex: 2e9,          // Use a high z-index by default
-    className: 'spinner', // CSS class to assign to the element
-    top: '50%',           // center vertically
+    // className: 'spinner', // CSS class to assign to the element
+    top: '40%',           // center vertically
     left: '50%',          // center horizontally
     position: 'absolute'  // element position
   }
@@ -184,7 +184,7 @@
         left: o.left,
         top: o.top
       })
-        
+
       if (target) {
         target.insertBefore(el, target.firstChild||null)
       }

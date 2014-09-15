@@ -17,7 +17,6 @@
         authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
       },
       resolve: {
-
         // Reads the Destiny Service
         loginService: 'Destiny',
 
@@ -25,7 +24,7 @@
         // executes the login dialog if needed and waits for the dialog
         // to close before loading the state.
         authenticate: function(loginService) {
-          return loginService.checkUserStatus(this.data.authorizedRoles);
+          return loginService.checkUserStatus(this.data.authorizedRoles, "Tip Feed");
         }
       }
     })
@@ -35,7 +34,7 @@
       url:"/global-notifications",
       templateUrl:"/global-notifications.html",
       data: {
-        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+        authorizedRoles: [USER_ROLES.admin]
       },
       resolve: {
         // Reads the Destiny Service
@@ -45,7 +44,7 @@
         // executes the login dialog if needed and waits for the dialog
         // to close before loading the state.
         authenticate: function(loginService) {
-          return loginService.checkUserStatus(this.data.authorizedRoles);
+          return loginService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
         }
       }
     });
@@ -59,7 +58,7 @@
 
     var Destiny =  {};
     //Destroy current session object
-    Destiny.checkUserStatus = function (authorizedRoles) {
+    Destiny.checkUserStatus = function (authorizedRoles, stateName) {
 
       //Check if user can access this page/state
       if (!authenticator.isAuthorized(authorizedRoles)) {
@@ -108,12 +107,15 @@
 
               }
 
+              $rootScope.setCurrentState(stateName);
+
               // Resolve the promise. Proceed to load the state.
               return Promise.resolve("Recently logged in user is authorized to view the page.");
   				});
         }
       }
 
+      $rootScope.setCurrentState(stateName);
       // Resolve the promise. Proceed to load the state.
       return Promise.resolve("User is already logged in and authorized to view the page");
 
@@ -621,9 +623,15 @@
     $scope.userRoles = USER_ROLES;
     $scope.isAuthorized = authenticator.isAuthorized;
 
+    $rootScope.currentState = "Tip Feed"
+
     $rootScope.setCurrentUser = function (user) {
       $scope.currentUser = user;
     };
+
+    $rootScope.setCurrentState = function (state) {
+      $rootScope.currentState = state;
+    }
 
     // $scope.$on(AUTH_EVENTS.loginSuccess, function(){
     //   $scope.currentUser = Session.currentUser;
@@ -705,7 +713,8 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', function($scope){
+  app.controller('DrawerController', ['$scope', '$rootScope', function($scope, $rootScope) {
+
     //The drawer is hidden by default
     this.isOn = false;
 
@@ -717,7 +726,7 @@
     //Drawer options with name and icon;
     //entries are off by default
     this.entries=[
-      {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
+      {name:'Tip Feed', icon:'fa fa-inbox', state:'/tipfeed'},
       {name:'Video Streams', icon:'fa fa-video-camera', state:'#/streams'},
       {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
       {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
@@ -731,6 +740,10 @@
     $scope.$on('toggleDrawer', function(event){
       drawer.isOn = !drawer.isOn;
     });
+
+    drawer.getCurrentState = function() {
+      return $rootScope.currentState;
+    }
 
   }]);
 
