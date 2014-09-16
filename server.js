@@ -169,13 +169,13 @@ io.on('connect', function(socket){
 
         console.log(clientObj.attributes.totalTipCount + ' total tip count for the client.\n');
         //Send the tips to the front end
-        socket.emit('respond-batch', {currentTips : tips, totalTipCount : clientObj.attributes.totalTipCount});
+        socket.emit('response-batch', {tips : tips, totalTipCount : clientObj.attributes.totalTipCount});
 
       },
       error: function(error){
         //Tip fetching failed, emit response error
         //along with error object
-        socket.emit('respond-error', {error: error});
+        socket.emit('response-error', {error: error});
       }
     });
 

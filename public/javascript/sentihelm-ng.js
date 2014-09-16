@@ -17,14 +17,14 @@
         authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
       },
       resolve: {
-        // Reads the Destiny Service
-        loginService: 'Destiny',
+        // Reads the Routing Service
+        routingService: 'RoutingService',
 
-        // Receives the Destiny service, checks if user is logged in,
+        // Receives the Routing Service, checks if user is logged in,
         // executes the login dialog if needed and waits for the dialog
         // to close before loading the state.
-        authenticate: function(loginService) {
-          return loginService.checkUserStatus(this.data.authorizedRoles, "Tip Feed");
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Tip Feed");
         }
       }
     })
@@ -34,17 +34,17 @@
       url:"/global-notifications",
       templateUrl:"/global-notifications.html",
       data: {
-        authorizedRoles: [USER_ROLES.admin]
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
       },
       resolve: {
-        // Reads the Destiny Service
-        loginService: 'Destiny',
+        // Reads the Routing Service
+        routingService: 'RoutingService',
 
-        // Receives the Destiny service, checks if user is logged in,
+        // Receives the Routing Service, checks if user is logged in,
         // executes the login dialog if needed and waits for the dialog
         // to close before loading the state.
-        authenticate: function(loginService) {
-          return loginService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
         }
       }
     });
@@ -53,12 +53,12 @@
   // Cannot access the $scope service from here. Moved global user to $rootScope
   // to be able to check if the user is already logged in.
   // TODO Rename this or merge with Session service. Reallocate code.
-  app.factory("Destiny", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
+  app.factory("RoutingService", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
                   function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
-    var Destiny =  {};
-    //Destroy current session object
-    Destiny.checkUserStatus = function (authorizedRoles, stateName) {
+    var RoutingService =  {};
+
+    RoutingService.checkUserStatus = function (authorizedRoles, stateName) {
 
       //Check if user can access this page/state
       if (!authenticator.isAuthorized(authorizedRoles)) {
@@ -67,16 +67,16 @@
         if (authenticator.isAuthenticated()) {
 
           //User does not have access to content
-          // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+          //TODO $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
           errorFactory.showError('NO-AUTH');
 
-          // Return a promise rejection so that the state stops from loading
-          return Promise.reject("No AUTH");
+          //Return a promise rejection so that the state stops from loading
+          return Promise.reject('NO-AUTH');
         }
         else {
 
           //User is not logged in
-          $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+          //TODO $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
 
           //Present login dialog for user to log in
           var loginDialog = ngDialog.open({
@@ -88,14 +88,12 @@
             scope: $rootScope
           });
 
-          // TODO Improve the following documentation:
-          // Return the promise of the login dialog so that the resolve can use
-          // this promise and wait until the dialog is closed before loading the
-          // corresponding state
-          return loginDialog.closePromise.then(
-            function () {
-
-              // User is now logged in, check for authorization
+          //TODO Improve the following documentation:
+          //Return the promise of the login dialog so that the resolve can use
+          //this promise and wait until the dialog is closed before loading the
+          //corresponding state
+          return loginDialog.closePromise.then(function(){
+              //User is now logged in, check for authorization
               if (!authenticator.isAuthorized(authorizedRoles)) {
 
                 //User does not have access to content
@@ -103,35 +101,32 @@
                 errorFactory.showError('NO-AUTH');
 
                 // Return a promise rejection so that the state stops from loading
+                //TODO Change reject String
                 return Promise.reject("Recently logged in user is not authorized");
-
               }
 
-              $rootScope.setCurrentState(stateName);
-
-              // Resolve the promise. Proceed to load the state.
+              //Resolve the promise, proceed to load
+              //the state and change active state in drawer
+              $rootScope.$broadcast('state-change', [stateName]);
               return Promise.resolve("Recently logged in user is authorized to view the page.");
   				});
         }
       }
 
-      $rootScope.setCurrentState(stateName);
-      // Resolve the promise. Proceed to load the state.
+      //Resolve the promise, proceed to load
+      //the state and change active state in drawer
+      $rootScope.$broadcast('state-change', [stateName]);
       return Promise.resolve("User is already logged in and authorized to view the page");
-
     };
 
-    return Destiny;
-
+    return RoutingService;
   }]);
 
   //Initialize values needed throughout the app
-  app.run(['$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog', function($rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
-
+  app.run(function(){
     //Initialize Parse
     Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
-
-  }]);
+  });
 
   //Autorhization events for log in functionality
   app.constant('AUTH_EVENTS', {
@@ -287,7 +282,6 @@
     };
 
     return authenticator;
-
   }]);
 
   //Creates an injectable socket service that
@@ -500,106 +494,107 @@
     //and size of said array
     var paginator = {};
     paginator.totalTipCount = 0;
-    paginator.currentPage = 0;
+    paginator.currentPage = 1;
     paginator.lastPage = 1;
     paginator.paginatorSet = [];
     paginator.paginatorSetSize = 0;
+    paginator.tips;
 
     //Catch socket.io event when a batch is sent
-    //Let controller know news tips arrvied; update
-    //amount of total tips in server, last page and paginator set
-    socket.on('respond-batch', function(data){
-      //TODO CHECK
-
-      $rootScope.$broadcast('new-batch',[data.currentTips]);
+    //Let controller know news tips arrived; update
+    //amount of total tips in server, last page, first
+    //and last tip dates and paginator set
+    socket.on('response-batch', function(data){
+      paginator.tips = data.tips;
       paginator.totalTipCount = data.totalTipCount;
       paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
-      if(paginator.currentPage===0){
+      paginator.firstTipDateInArray = data.tips[0].createdAt;
+      paginator.lastTipDateInArray = data.tips[data.tips.length-1].createdAt;
+      if(paginator.currentPage===1){
         paginator.pageSetUpdater(paginator.lastPage, false);
       }
-
-      paginator.firstTipInArrayDate = data.currentTips[0].createdAt;
-      paginator.lastTipInArrayDate = data.currentTips[data.currentTips.length-1].createdAt;
-
+      paginator.changePage(paginator.currentPage);
     });
+
 
     //Catch socket.io event when a tip request
     //failed; manage error accordingly with
     //errorFactory service
-    socket.on('respond-error', function(data){
+    socket.on('response-error', function(data){
       var error = data.error;
       //TODO MANAGE ERROR
     });
 
     //Called when tipfeed loads, be it on
-    //refresh or navigating to it again
+    //refresh or navigating to it again;
+    //initiliazes tip feed for current client
     paginator.initializeFeed = function(){
-      //TODO Set Client Id
-      paginator.currentPage = 0;
       socket.emit('request-batch', {
         clientId: Session.clientId,
         isAfterDate: false
       });
-
-      // for server currently on sentihelm.blabla.com
-      // socket.emit('request-batch', {upperBound: (10)});
     }
 
     //Change the page and ask server for tips present in new page;
     //let controller know the page has changed
     paginator.changePage = function(newPage){
       this.currentPage = newPage;
-      $rootScope.$broadcast('page-change',[this.currentPage]);
-      // socket.emit('request-batch', {upperBound: (this.currentPage*10)});
+      var pageIndex = (this.currentPage)%10 === 0? 10 : (this.currentPage)%10;
+      var start = pageIndex*10-10;
+      var end = start + 10;
+      var currentTips = this.tips.slice(start, end);
+      $rootScope.$broadcast('new-batch', [currentTips, paginator.currentPage]);
     };
 
     //Change to previous page; update references
     paginator.prevPage = function(){
-      if((this.currentPage-1)%10===0){
-
-
-        // Request previous 100 tips!!! ---------------------------
+      --this.currentPage;
+      if(this.currentPage%10===0){
+        //Request previous 100 tips
         socket.emit('request-batch', {
           clientId: Session.clientId,
-          lastTipDate: paginator.firstTipInArrayDate,
+          lastTipDate: paginator.firstTipDateInArray,
           isAfterDate: true
         });
+
+        //Discard current shown tips and update paginator
         $rootScope.$broadcast('discard-current-tips',[]);
-
         this.pageSetUpdater(this.lastPage, true);
-
       }
-      this.changePage(this.currentPage-=1);
+      else{
+        this.changePage(this.currentPage);
+      }
     };
 
     //Change to next page; update references
     paginator.nextPage = function(){
-      this.currentPage = this.currentPage===0 ? this.currentPage+1 : this.currentPage;
       if(this.currentPage%10===0){
-
-        // Request next 100 tips here ------------------------
+        // Request next 100 tips
         socket.emit('request-batch', {
           clientId: Session.clientId,
-          lastTipDate: paginator.lastTipInArrayDate,
+          lastTipDate: paginator.lastTipDateInArray,
           isAfterDate: false
         });
-        $rootScope.$broadcast('discard-current-tips',[]);
 
-        this.pageSetUpdater(this.lastPage - this.currentPage, false);
+        //Discard current shown tips and update paginator
+        $rootScope.$broadcast('discard-current-tips',[]);
+        this.pageSetUpdater(this.lastPage - this.currentPage++, false);
       }
-      this.changePage(this.currentPage+=1);
+      else{
+        this.changePage(++this.currentPage);
+      }
     };
 
-    //Update paginator set (page numbers that will be printed, every 10 pages)
+    //Update paginator set (page numbers that will be printed every 10 pages)
     paginator.pageSetUpdater = function(setSizeLimit, previousSet){
 
-      //If called from prevPage, gotta set startihg limit to
+      //If called from prevPage, gotta set starting limit to
       //previous 10 pages, otherwise start at current page
-      var setValueLimit = previousSet ? this.currentPage-11 : this.currentPage;
+      var setStartValue = previousSet ? this.currentPage-9 : this.currentPage;
       this.paginatorSet = [];
       this.paginatorSetSize = Math.min(10, setSizeLimit);
-      for(var i=1; i<=this.paginatorSetSize;i++){
-        this.paginatorSet.push(setValueLimit+i);
+      for(var i=0; i<this.paginatorSetSize;i++){
+        this.paginatorSet.push(setStartValue+i);
       }
 
       //Let controller know the set has changed
@@ -607,7 +602,6 @@
     }
 
     return paginator;
-
   }]);
 
   //TODO TODO TODO TODO MIGHT NOT USE TODO TODO TODO TODO
@@ -623,20 +617,13 @@
     $scope.userRoles = USER_ROLES;
     $scope.isAuthorized = authenticator.isAuthorized;
 
-    $rootScope.currentState = "Tip Feed"
-
     $rootScope.setCurrentUser = function (user) {
       $scope.currentUser = user;
     };
 
-    $rootScope.setCurrentState = function (state) {
-      $rootScope.currentState = state;
-    }
-
     // $scope.$on(AUTH_EVENTS.loginSuccess, function(){
     //   $scope.currentUser = Session.currentUser;
     // });
-
   }]);
 
   //Controller for login dialog and login
@@ -706,7 +693,7 @@
     //Emits event that toggles the drawer directive's view;
     //toggles a boolean value that checks when drawer is active
     this.toggleDrawer = function(){
-      $rootScope.$broadcast('toggleDrawer',[this.drawerOn]);
+      $rootScope.$broadcast('toggle-drawer',[this.drawerOn]);
       this.drawerOn=!this.drawerOn;
     };
   }]);
@@ -714,19 +701,18 @@
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
   app.controller('DrawerController', ['$scope', '$rootScope', function($scope, $rootScope) {
+    var drawer = this;
 
     //The drawer is hidden by default
     this.isOn = false;
 
-    //TODO TESTING
-    //this.count = 1;
-    //TODO TESTING
-
+    //Current active state
+    this.currentState = 'Tip Feed';
 
     //Drawer options with name and icon;
     //entries are off by default
     this.entries=[
-      {name:'Tip Feed', icon:'fa fa-inbox', state:'/tipfeed'},
+      {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
       {name:'Video Streams', icon:'fa fa-video-camera', state:'#/streams'},
       {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
       {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
@@ -736,33 +722,32 @@
 
     //Shows/hides drawer on toggled drawer event
     //(emitted from the header directive)
-    var drawer = this;
-    $scope.$on('toggleDrawer', function(event){
+    $scope.$on('toggle-drawer', function(event){
       drawer.isOn = !drawer.isOn;
     });
 
-    drawer.getCurrentState = function() {
-      return $rootScope.currentState;
-    }
-
+    //Change active state in drawer (blue text color)
+    $scope.$on('state-change', function(event, data){
+      drawer.currentState = data[0];
+    });
   }]);
 
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
   app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService',
-
   function($scope, socket, ngDialog, paginatorService, usSpinnerService){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
     var tipfeed = this;
+    this.currentTips = [];
     this.currentPage = paginator.currentPage;
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
 
-    //Notification and Attachment dialogs are
-    //off by default
+    //Notification and Attachment
+    //dialogs are off by default
     this.notificationDialogIsOn = false;
     this.attachmentDialogIsOn = false;
 
@@ -771,31 +756,12 @@
 
     //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
-
+      //Stop spinner
       usSpinnerService.stop('loading-tips-spinner');
-
-      tipfeed.bigTipsArray = data[0];
-
-      var pageIndex = (tipfeed.currentPage)%10 === 0? 10: (tipfeed.currentPage)%10;
-
-      var start = pageIndex*10-10;
-      var end = start + 10;
-      tipfeed.currentTips = tipfeed.bigTipsArray.slice(start, end);
-
-    });
-
-    //Catch even when page changes
-    $scope.$on('page-change', function(event, data){
-      tipfeed.currentPage = data[0];
-
-      var pageIndex = (tipfeed.currentPage)%10 === 0? 10: (tipfeed.currentPage)%10;
-      var start = pageIndex*10-10;
-      var end = start + 10;
-
-      // If we are receiving a new batch of tips, ignore this
-      if(!!tipfeed.bigTipsArray) {
-        tipfeed.currentTips = tipfeed.bigTipsArray.slice(start, end);
-      }
+      //Change current tips being displayed
+      //and current page
+      tipfeed.currentTips = data[0];
+      tipfeed.currentPage = data[1];
     });
 
     //Catch event when page sets change (every 10 pages)
@@ -804,9 +770,10 @@
       tipfeed.lastPage = data[1];
     });
 
+    //Catch event when paginator Service is fetching
+    //new tips; discard current shown tips
     $scope.$on('discard-current-tips', function(){
-      tipfeed.bigTipsArray = undefined;
-      tipfeed.currentTips = undefined;
+      tipfeed.currentTips = [];
       usSpinnerService.spin('loading-tips-spinner');
     });
 
@@ -849,7 +816,6 @@
           channel:channel
         });
 
-
         //Open dialog, and add it to the $scope
         //so it can identify itself once open
         $scope.notificationDialog = ngDialog.open({
@@ -878,6 +844,8 @@
           attachmentType:type
         });
 
+        //If attachment is an audio file,
+        //don't show close control (X)
         var showClose = type !== 'AUDIO';
 
         //Open dialog and pass control to AttachmentController

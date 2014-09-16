@@ -6,7 +6,7 @@
 
   <ul class="drawer" ng-class="{'closed-drawer':!drawer.isOn, 'opened-drawer':drawer.isOn}">
 
-    <li class="drawer-item" ng-repeat="item in drawer.entries" ng-class="{'bright-blue':drawer.getCurrentState()===item.name}">
+    <li class="drawer-item" ng-repeat="item in drawer.entries" ng-class="{'bright-blue':drawer.currentState===item.name}">
 
       <form action="{{item.state}}">
 
