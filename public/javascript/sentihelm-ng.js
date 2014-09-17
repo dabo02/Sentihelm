@@ -56,9 +56,9 @@
   app.factory("RoutingService", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
                   function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
-    var RoutingService =  {};
+    var routingService =  {};
 
-    RoutingService.checkUserStatus = function (authorizedRoles, stateName) {
+    routingService.checkUserStatus = function (authorizedRoles, stateName) {
 
       //Check if user can access this page/state
       if (!authenticator.isAuthorized(authorizedRoles)) {
@@ -119,7 +119,7 @@
       return Promise.resolve("User is already logged in and authorized to view the page");
     };
 
-    return RoutingService;
+    return routingService;
   }]);
 
   //Initialize values needed throughout the app
@@ -224,8 +224,9 @@
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
-  app.factory('Session',['$window', '$rootScope', function($window, $rootScope){
+  app.factory('Session',['$window', '$rootScope', 'AUTH_EVENTS', function($window, $rootScope, AUTH_EVENTS){
 
+    var session = {};
     // //Try and get currentUser
     // try{
     //   //User is saved as a JSON, parse it
@@ -237,27 +238,62 @@
     // }
 
     //Create a session object, along with id, userId and role
-    this.create = function (sessionId, userId, userRole, clientId) {
-      this.id = sessionId;
-      this.userId = userId;
-      this.userRole = userRole;
-      this.clientId = clientId;
+    session.create = function (sessionId, userId, userRole, clientId) {
+      session.id = sessionId;
+      session.userId = userId;
+      session.userRole = userRole;
+      session.clientId = clientId;
     };
 
     //Destroy current session object
-    this.destroy = function () {
-      this.id = null;
-      this.userId = null;
-      this.userRole = null;
-      this.clientId = null;
+    session.destroy = function () {
+      session.id = null;
+      session.userId = null;
+      session.userRole = null;
+      session.clientId = null;
     };
 
-    return this;
+    session.store = function(user){
+
+      var userObj = {};
+      for (var property in user.data) {
+        if (user.data.hasOwnProperty(property)) {
+          userObj[property] = user.data[property];
+        }
+      }
+
+      var sessionObj = {};
+      sessionObj.id = session.id;
+      sessionObj.userId = session.userId;
+      sessionObj.userRole = session.userRole;
+      sessionObj.clientId = session.clientId;
+
+      $window.sessionStorage['session'] = JSON.stringify(sessionObj);
+      $window.sessionStorage['user'] = JSON.stringify(userObj);
+    }
+
+    session.restoreSession = function(){
+      var storedSession = $window.sessionStorage['session'];
+      var storedUser = $window.sessionStorage['user'];
+
+      if(!!storedSession && !!storedUser) {
+        storedSession = JSON.parse(storedSession);
+        storedUser = JSON.parse(storedUser);
+        session.id = storedSession.id;
+        session.userId = storedSession.userId;
+        session.userRole = storedSession.userRole;
+        session.clientId = storedSession.clientId;
+
+        $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser]);
+      }
+    }
+
+    return session;
   }]);
 
   //Creates a service that manages login and
   //authentication functionality; manages current session
-  app.factory('authenticator', ['$http', 'Session', function($http, Session){
+  app.factory('authenticator', ['$http', 'Session', '$window', function($http, Session, $window){
 
     var authenticator = {};
 
@@ -266,8 +302,14 @@
     };
 
     authenticator.isAuthenticated = function () {
+      Session.restoreSession();
+
       //Return true if userId is set; false otherwise
       return !!Session.userId;
+
+      // $window.sessionStorage['session'] = this;
+      // $window.sessionStorage['user'] = user;
+      // return !!$window.sessionStorage['user'];
     };
 
     authenticator.isAuthorized = function (authorizedRoles) {
@@ -276,9 +318,18 @@
         authorizedRoles = [authorizedRoles];
       }
 
+      return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
+
       //Check if user is authenticated and if his role(s)
       //is in the authorized roles for this specific page
-      return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
+      // if(!!$window.sessionStorage.user) {
+      //   // console.log(JSON.parse($window.sessionStorage.user));
+      //   var temp = JSON.parse($window.sessionStorage['user']);
+      //   return (this.isAuthenticated() && authorizedRoles.indexOf(temp.role) !== -1);
+      // }
+      // else {
+      //   return false;
+      // }
     };
 
     return authenticator;
@@ -437,6 +488,31 @@
       });
     };
 
+
+    //TODO
+    //TODO
+    //TODO
+    //Testing Global Notifications
+    parseNotificationService.testGlobalNotifications = function(){
+      Parse.Push.send({
+        channels: ['homeClient_YgYS51sK0D'],
+        data: {
+          alert: 'Testing Global Notifications',
+          badge:"Increment",
+          sound: "cheering.caf",
+          title: 'GLOBAL NOTIFICATION TEST'
+       }
+      },{
+        success: function(){
+          console.log("SUCCESS");
+        },
+        error: function(error){
+          console.log("FAILED - "+error.code+": "+error.message);
+        }
+      });
+    };
+
+
     /**NOT BEING USED, BUT MIGHT BE IN THE FUTURE IF WE WANT
     TO ASSOCIATE NOTIFICATION WITH TIP BEFORE PUSHING**/
 
@@ -505,15 +581,22 @@
     //amount of total tips in server, last page, first
     //and last tip dates and paginator set
     socket.on('response-batch', function(data){
-      paginator.tips = data.tips;
-      paginator.totalTipCount = data.totalTipCount;
-      paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
-      paginator.firstTipDateInArray = data.tips[0].createdAt;
-      paginator.lastTipDateInArray = data.tips[data.tips.length-1].createdAt;
-      if(paginator.currentPage===1){
-        paginator.pageSetUpdater(paginator.lastPage, false);
+      if(!!data.totalTipCount){
+        paginator.tips = data.tips;
+        paginator.totalTipCount = data.totalTipCount;
+        paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
+        paginator.firstTipDateInArray = data.tips[0].createdAt;
+        paginator.lastTipDateInArray = data.tips[data.tips.length-1].createdAt;
+        if(paginator.currentPage===1){
+          paginator.pageSetUpdater(paginator.lastPage, false);
+        }
+        paginator.changePage(paginator.currentPage);
       }
-      paginator.changePage(paginator.currentPage);
+      else{
+        $rootScope.$broadcast('no-tips');
+      }
+
+      $rootScope.$broadcast('hide-spinner');
     });
 
 
@@ -604,26 +687,26 @@
     return paginator;
   }]);
 
-  //TODO TODO TODO TODO MIGHT NOT USE TODO TODO TODO TODO
   //Controller which assigns to its $scope
-  //all controls necessary for session control
-  //and login functionality; created at body tag
-  //so all other $scopes can inherit from
-  //its $scope
-  app.controller('SessionController', ['usSpinnerService', '$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
+  //all controls necessary for user management;
+  //created at body tag so all other $scopes can
+  //inherit from its $scope
+  app.controller('ApplicationController', ['usSpinnerService', '$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
                                  function(usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
-
+    var controllerScope = $scope;
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
     $scope.isAuthorized = authenticator.isAuthorized;
 
-    $rootScope.setCurrentUser = function (user) {
+    //TODO
+    $scope.setCurrentUser = function (user) {
       $scope.currentUser = user;
     };
 
-    // $scope.$on(AUTH_EVENTS.loginSuccess, function(){
-    //   $scope.currentUser = Session.currentUser;
-    // });
+    //TODO
+    $scope.$on(AUTH_EVENTS.loginSuccess, function(event, data){
+        controllerScope.setCurrentUser(data[0]);
+    });
   }]);
 
   //Controller for login dialog and login
@@ -666,14 +749,11 @@
       authenticator.login(this.credentials).then(
         function(user){
           //Login was successful, create Session
-          //and stop spinner
-          //TODO
           var userClientId = JSON.parse(JSON.stringify(user.data.homeClient)).objectId;
           Session.create(0, user.data.objectId, user.data.role, userClientId);
-          $rootScope.setCurrentUser(user);
+          Session.store(user);
+          $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user]);
           loginCtrl.submitting = false;
-          // $scope.$parent.setCurrentUser(user);
-          // $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
           $scope.closeThisDialog();
 
         },
@@ -732,6 +812,16 @@
     });
   }]);
 
+
+  //TODO
+  //TODO
+  //TODO
+  app.controller('GlobalNotificationsController', ['parseNotificationService', function(parseNotificationService){
+    this.testNotification = function(){
+      parseNotificationService.testGlobalNotifications();
+    };
+  }]);
+
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
@@ -741,6 +831,7 @@
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
     var tipfeed = this;
+    this.tipsAvailable = true;
     this.currentTips = [];
     this.currentPage = paginator.currentPage;
     this.lastPage = paginator.lastPage;
@@ -754,10 +845,19 @@
     //Get tips on page load/refresh
     paginatorService.initializeFeed();
 
+    //No tips available; hide paginator and
+    //feed and display appropiate text
+    $scope.$on('no-tips', function(event){
+      tipfeed.tipsAvailable = false;
+    });
+
+    //Stop tipfeed spinner
+    $scope.$on('hide-spinner', function(event){
+      usSpinnerService.stop('loading-tips-spinner');
+    });
+
     //Catch event when paginator has new tips
     $scope.$on('new-batch', function(event, data){
-      //Stop spinner
-      usSpinnerService.stop('loading-tips-spinner');
       //Change current tips being displayed
       //and current page
       tipfeed.currentTips = data[0];
@@ -922,7 +1022,7 @@
     // and returns the correct position.
     this.getMapCenter = function(point) {
 
-      if(point===undefined){
+      if(point===undefined || point.latitude===undefined || point.longitude===undefined){
         return mapCenter;
       }
       // Change the coords if necessary.

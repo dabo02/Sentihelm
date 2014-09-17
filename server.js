@@ -92,25 +92,30 @@ io.on('connect', function(socket){
     isAfterDate ? tipQuery.greaterThan("createdAt", date) :
                   tipQuery.lessThan("createdAt", date);
 
-    //Receive dates from newest to oldest. If isAfterDate
-    //is true, receive tips from oldest to newest, then
-    //manually reverse the array order. We need to this
-    //to be able to always receive the 100 tips closest to
-    //the given date.
+    //If isAfterDate is false, query tips before said date in
+    //descending order (newest to oldest, earliest date first);
+    //otherwise, query tips after date in ascending order, but
+    //reverse final results array or tips will be incorrectly
+    //displayed from oldest to newest (tips in page 1 will be tips
+    //corresponding to page 10, and vice versa)
     if (!isAfterDate) {
       tipQuery.descending("createdAt");
     }
 
-    // Tell parse to include the user and client objects
-    // instead of just passing the pointers.
+    //Tell parse to include the user and client objects
+    //instead of just passing the pointers.
     tipQuery.include('user');
     tipQuery.include('clientId');
 
     //Execute query
     tipQuery.find({
       success: function(tips){
+        var totalTips = 0;
 
-        console.log(tips.length + " tips found.");
+        //TODO REMOVE
+        //Log how many tips have been found
+          console.log(tips.length + " tips found.");
+
         //Reverse the array if the tips are in ascending
         //order(oldest to newest)
         if (isAfterDate) {
@@ -131,13 +136,13 @@ io.on('connect', function(socket){
           //able to get the total tip count later on (all
           //tips have the same client).
           if(i===0) {
-            var clientObj = tips[i].get('clientId');
+            totalTips = tips[i].get('clientId').attributes.totalTipCount;
           }
 
-          //Convert tip from Parse to Javascript object form
+          //Convert tip from Parse to Javascript object
           tips[i] = JSON.parse(JSON.stringify(tips[i]));
 
-          // If not anonymous tip, get user information
+          //If not an anonymous tip, get user information
           if(!!tipUser) {
             tips[i].firstName = tipUser.attributes.firstName;
             tips[i].lastName = tipUser.attributes.lastName;
@@ -153,23 +158,23 @@ io.on('connect', function(socket){
           }
 
           //Prepare tip object with the values needed in
-          //the front end
-          tips[i].center = {latitude: tips[i].latitude, longitude: tips[i].longitude};
+          //the front end; coordinates for map, tip control
+          //number, and formatted date
+          tips[i].center = {latitude: tips[i].crimePositionLatitude, longitude: tips[i].crimePositionLongitude};
           tips[i].controlNumber = tips[i].objectId;
-          var temp = (new Date(tips[i].createdAt));
-          temp = temp.toDateString() + ' - ' + temp.toLocaleTimeString();
-          tips[i].date = temp;
+          var tempDate = (new Date(tips[i].createdAt));
+          tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
+          tips[i].date = tempDate;
 
-          // Copy media url if available.
-          !!tips[i].attachmentVideo? tips[i].videoUrl = tips[i].attachmentVideo.url: undefined;
-          !!tips[i].attachmentAudio? tips[i].audioUrl = tips[i].attachmentAudio.url: undefined;
-          !!tips[i].attachmentPhoto? tips[i].imageUrl = tips[i].attachmentPhoto.url: undefined;
-
+          // //Copy media url if available.
+          // !!tips[i].attachmentVideo? tips[i].videoUrl = tips[i].attachmentVideo.url: undefined;
+          // !!tips[i].attachmentAudio? tips[i].audioUrl = tips[i].attachmentAudio.url: undefined;
+          // !!tips[i].attachmentPhoto? tips[i].imageUrl = tips[i].attachmentPhoto.url: undefined;
         }
 
-        console.log(clientObj.attributes.totalTipCount + ' total tip count for the client.\n');
+        console.log('Total tips for client: '+totalTips);
         //Send the tips to the front end
-        socket.emit('response-batch', {tips : tips, totalTipCount : clientObj.attributes.totalTipCount});
+        socket.emit('response-batch', {tips : tips, totalTipCount : totalTips});
 
       },
       error: function(error){

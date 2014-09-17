@@ -2,10 +2,15 @@
 
   <div id="tip-feed-container">
 
-    <span us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-tips-spinner" spinner-start-active="1"></span>
-    <!--======TIP FEED======  #ff6600 -->
+    <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
+
+
+    <!--======SPINNER (LOADING)======-->
+    <span ng-if='tipfeed.tipsAvailable' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-tips-spinner" spinner-start-active="1"></span>
+
+    <!--======TIP FEED======-->
     <!--====================-->
-    <ul id="tip-feed">
+    <ul id="tip-feed" ng-if='tipfeed.tipsAvailable'>
       <li  class="tip"
       ng-repeat="tip in tipfeed.currentTips track by $index"
       ng-show="tip"
@@ -65,31 +70,13 @@
             <!------ATTACHMENTS------>
             <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
 
-              <!--===========================================================================-->
-              <!--=======FALLBACK APPROACH: OPENS ATTACHMENTS IN SEPARETE TAB/WINDOW=========-->
-              <!--===========================================================================-->
-
-              <!-- <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" href="{{tip.videoUrl}}">
-                <img src="./resources/images/videoAtt.png"/>
-              </a>
-              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" href="{{tip.imageUrl}}">
-                <img src="./resources/images/imageAtt.png"/>
-              </a>
-              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" href="{{tip.audioUrl}}">
-                <img src="./resources/images/audioAtt.png"/>
-              </a> -->
-
-              <!--===========================================================================-->
-              <!--===IDEAL APPROACH: HAVE A METHOD CALLED THAT SHOWS ATTACHMENTS IN DIALOG===-->
-              <!--===========================================================================-->
-
-              <a id="videoAtt" ng-class="{'disabled-link': !tip.videoUrl}" ng-click="tipfeed.showAttachmentDialog(tip.videoUrl, 'VID')">
+              <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentVideo.url, 'VID')">
                 <img src="./resources/images/videoAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
               </a>
-              <a id="imageAtt" ng-class="{'disabled-link': !tip.imageUrl}" ng-click="tipfeed.showAttachmentDialog(tip.imageUrl, 'IMG')">
+              <a id="imageAtt" ng-class="{'disabled-link': !tip.attachmentPhoto.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentPhoto.url, 'IMG')">
                 <img src="./resources/images/imageAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
               </a>
-              <a id="audioAtt" ng-class="{'disabled-link': !tip.audioUrl}" ng-click="tipfeed.showAttachmentDialog(tip.audioUrl, 'AUDIO')">
+              <a id="audioAtt" ng-class="{'disabled-link': !tip.attachmentAudio.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentAudio.url, 'AUDIO')">
                 <img src="./resources/images/audioAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
               </a>
 
@@ -104,14 +91,15 @@
           <!------RIGHT DIVISION------>
           <!-------------------------->
           <div class="right" ng-controller="GoogleMapController as mapCtrl">
-            <div ng-class="{'no-location':tip.anonymous}" class="map-canvas" id="{{tip.controlNumber}}">
+            <div class="map-canvas" id="{{tip.controlNumber}}">
 
-              <!------ANON NO LOCATION------>
-              <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span>
+              <!--!!!!! MAP WILL ALWAYS BE SHOWN; OLD VERSION WHERE MAP WAS NOT SHOWN DISPLAYED THIS TEXT !!!!!-->
+                  <!------ANON NO LOCATION------>
+                  <!-- <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span> -->
 
               <!------GOOGLE MAP------>
-              <google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-if="!tip.anonymous" ng-cloak>
-                <marker coords="mapCtrl.getMarkerPosition(tip.center)" icon="mapCtrl.icon"></marker>
+              <google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+                <marker coords="mapCtrl.getMarkerPosition(tip.center)"></marker>
               </google-map>
 
             </div>
