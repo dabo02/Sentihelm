@@ -107,7 +107,8 @@
 
               //Resolve the promise, proceed to load
               //the state and change active state in drawer
-              $rootScope.$broadcast('state-change', [stateName]);
+              $rootScope.currentState = stateName;
+              $rootScope.$broadcast('state-change');
               return Promise.resolve("Recently logged in user is authorized to view the page.");
   				});
         }
@@ -115,7 +116,8 @@
 
       //Resolve the promise, proceed to load
       //the state and change active state in drawer
-      $rootScope.$broadcast('state-change', [stateName]);
+      $rootScope.currentState = stateName;
+      $rootScope.$broadcast('state-change');
       return Promise.resolve("User is already logged in and authorized to view the page");
     };
 
@@ -787,7 +789,7 @@
     this.isOn = false;
 
     //Current active state
-    this.currentState = 'Tip Feed';
+    this.currentState = $rootScope.currentState;
 
     //Drawer options with name and icon;
     //entries are off by default
@@ -807,8 +809,8 @@
     });
 
     //Change active state in drawer (blue text color)
-    $scope.$on('state-change', function(event, data){
-      drawer.currentState = data[0];
+    $scope.$on('state-change', function(event){
+      drawer.currentState = $rootScope.currentState;
     });
   }]);
 
@@ -991,15 +993,6 @@
     var markerPosition = {latitude: 0, longitude: 0};
     var mapCenter = {latitude: 0, longitude: 0};
     this.zoom = 14;
-    this.icon = {
-      url: 'resources/images/custom-marker.png',
-      // This marker is 20 pixels wide by 32 pixels tall.
-      scaledSize: new google.maps.Size(25, 39),
-      // The origin for this image is 0,0.
-      origin: new google.maps.Point(0,0),
-      // The anchor for this image is the base of the flagpole at 0,32.
-      anchor: new google.maps.Point(12.5,39)
-    };
 
     //Checks if the marker coordinates have changed
     //and returns the correct position.
