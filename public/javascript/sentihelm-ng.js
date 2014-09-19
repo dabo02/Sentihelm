@@ -50,80 +50,6 @@
     });
   }]);
 
-  // Cannot access the $scope service from here. Moved global user to $rootScope
-  // to be able to check if the user is already logged in.
-  // TODO Rename this or merge with Session service. Reallocate code.
-  app.factory("RoutingService", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
-                  function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
-
-    var routingService =  {};
-
-    routingService.checkUserStatus = function (authorizedRoles, stateName) {
-
-      //Check if user can access this page/state
-      if (!authenticator.isAuthorized(authorizedRoles)) {
-
-        //Check if user is logged in
-        if (authenticator.isAuthenticated()) {
-
-          //User does not have access to content
-          //TODO $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-          errorFactory.showError('NO-AUTH');
-
-          //Return a promise rejection so that the state stops from loading
-          return Promise.reject('NO-AUTH');
-        }
-        else {
-
-          //User is not logged in
-          //TODO $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
-
-          //Present login dialog for user to log in
-          var loginDialog = ngDialog.open({
-            template: '../login-dialog.html',
-            className: 'ngdialog-theme-plain',
-            closeByDocument: false,
-            closeByEscape:false,
-            showClose: false,
-            scope: $rootScope
-          });
-
-          //TODO Improve the following documentation:
-          //Return the promise of the login dialog so that the resolve can use
-          //this promise and wait until the dialog is closed before loading the
-          //corresponding state
-          return loginDialog.closePromise.then(function(){
-              //User is now logged in, check for authorization
-              if (!authenticator.isAuthorized(authorizedRoles)) {
-
-                //User does not have access to content
-                // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-                errorFactory.showError('NO-AUTH');
-
-                // Return a promise rejection so that the state stops from loading
-                //TODO Change reject String
-                return Promise.reject("Recently logged in user is not authorized");
-              }
-
-              //Resolve the promise, proceed to load
-              //the state and change active state in drawer
-              $rootScope.currentState = stateName;
-              $rootScope.$broadcast('state-change');
-              return Promise.resolve("Recently logged in user is authorized to view the page.");
-  				});
-        }
-      }
-
-      //Resolve the promise, proceed to load
-      //the state and change active state in drawer
-      $rootScope.currentState = stateName;
-      $rootScope.$broadcast('state-change');
-      return Promise.resolve("User is already logged in and authorized to view the page");
-    };
-
-    return routingService;
-  }]);
-
   //Initialize values needed throughout the app
   app.run(function(){
     //Initialize Parse
@@ -223,6 +149,80 @@
       }
     }
   });
+
+  //Creates a routing service which is passed to ui-router
+  //to check if user is logged in and/or has access to the
+  //current route; returns a Promise
+  app.factory("RoutingService", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
+                  function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
+
+    var routingService =  {};
+
+    routingService.checkUserStatus = function (authorizedRoles, stateName) {
+
+      //Check if user can access this page/state
+      if (!authenticator.isAuthorized(authorizedRoles)) {
+
+        //Check if user is logged in
+        if (authenticator.isAuthenticated()) {
+
+          //User does not have access to content
+          //TODO $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+          errorFactory.showError('NO-AUTH');
+
+          //Return a promise rejection so that the state stops from loading
+          return Promise.reject('NO-AUTH');
+        }
+        else {
+
+          //User is not logged in
+          //TODO $rootScope.$broadcast(AUTH_EVENTS.notAuthenticated);
+
+          //Present login dialog for user to log in
+          var loginDialog = ngDialog.open({
+            template: '../login-dialog.html',
+            className: 'ngdialog-theme-plain',
+            closeByDocument: false,
+            closeByEscape:false,
+            showClose: false,
+            scope: $rootScope
+          });
+
+          //TODO Improve the following documentation:
+          //Return the promise of the login dialog so that the resolve can use
+          //this promise and wait until the dialog is closed before loading the
+          //corresponding state
+          return loginDialog.closePromise.then(function(){
+              //User is now logged in, check for authorization
+              if (!authenticator.isAuthorized(authorizedRoles)) {
+
+                //User does not have access to content
+                // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+                errorFactory.showError('NO-AUTH');
+
+                // Return a promise rejection so that the state stops from loading
+                //TODO Change reject String
+                return Promise.reject("Recently logged in user is not authorized");
+              }
+
+              //Resolve the promise, proceed to load
+              //the state and change active state in drawer
+              $rootScope.currentState = stateName;
+              $rootScope.$broadcast('state-change');
+              return Promise.resolve("Recently logged in user is authorized to view the page.");
+          });
+        }
+      }
+
+      //Resolve the promise, proceed to load
+      //the state and change active state in drawer
+      $rootScope.currentState = stateName;
+      $rootScope.$broadcast('state-change');
+      return Promise.resolve("User is already logged in and authorized to view the page");
+    };
+
+    return routingService;
+  }]);
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
@@ -814,9 +814,6 @@
     });
   }]);
 
-
-  //TODO
-  //TODO
   //TODO
   app.controller('GlobalNotificationsController', ['parseNotificationService', function(parseNotificationService){
     this.testNotification = function(){
@@ -993,6 +990,15 @@
     var markerPosition = {latitude: 0, longitude: 0};
     var mapCenter = {latitude: 0, longitude: 0};
     this.zoom = 14;
+    this.icon = {
+      url: 'resources/images/custom-marker.png',
+      // This marker is 20 pixels wide by 32 pixels tall.
+      scaledSize: new google.maps.Size(25, 39),
+      // The origin for this image is 0,0.
+      origin: new google.maps.Point(0,0),
+      // The anchor for this image is the base of the flagpole at 0,32.
+      anchor: new google.maps.Point(12.5,39)
+    };
 
     //Checks if the marker coordinates have changed
     //and returns the correct position.

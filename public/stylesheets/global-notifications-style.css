@@ -1,6 +1,6 @@
 /*************PAGE*************/
 /*****************************/
-#notifications-container{
+#global-notifications-container{
   position:fixed;
   top:20%;
   left:17.5%;
@@ -8,5 +8,4 @@
   height:70%;
   overflow-y:auto;
   text-align:center;
-  background-color:red;
 }
