@@ -818,10 +818,27 @@
   }]);
 
   //TODO
-  app.controller('GlobalNotificationsController', ['parseNotificationService', function(parseNotificationService){
-    this.testNotification = function(){
-      parseNotificationService.testGlobalNotifications();
+  app.controller('GlobalNotificationsController', ['$scope', 'parseNotificationService', function($scope, parseNotificationService){
+
+    //Once a file is selected, prep file for upload to Parse
+    this.onFileSelect = function($files){
+      //Fetch file
+      this.file = $files[0];
+
+      //Set file type
+      if(this.file.type.match('image.*')){
+        this.fileType = "image";
+      }
+      else if(this.file.type.match('video.*')){
+        this.fileType = "video";
+      }
+      else{
+        this.fileType = "audio";
+      }
+      //Set file name
+      this.fileLabel = this.file.name
     };
+
   }]);
 
   //Controller for tipfeed route; handles the tip feed
