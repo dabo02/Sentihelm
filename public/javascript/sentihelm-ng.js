@@ -567,16 +567,7 @@
   app.factory('paginatorService', ['socket', '$rootScope', 'Session', function(socket, $rootScope, Session){
 
     //Set up the paginator object
-    //Need references to current and last page,
-    //array of number of pages paginator will print
-    //and size of said array
     var paginator = {};
-    paginator.totalTipCount = 0;
-    paginator.currentPage = 1;
-    paginator.lastPage = 1;
-    paginator.paginatorSet = [];
-    paginator.paginatorSetSize = 0;
-    paginator.tips;
 
     //Catch socket.io event when a batch is sent
     //Let controller know news tips arrived; update
@@ -614,6 +605,18 @@
     //refresh or navigating to it again;
     //initiliazes tip feed for current client
     paginator.initializeFeed = function(){
+
+      //Need references to current and last page,
+      //array of number of pages paginator will print
+      //and size of said array
+      paginator.totalTipCount = 0;
+      paginator.currentPage = 1;
+      paginator.lastPage = 1;
+      paginator.paginatorSet = [];
+      paginator.paginatorSetSize = 0;
+      paginator.tips;
+
+      //Request tips
       socket.emit('request-batch', {
         clientId: Session.clientId,
         isAfterDate: false
