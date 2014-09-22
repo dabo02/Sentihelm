@@ -11,7 +11,9 @@
     <!--======TIP FEED======-->
     <!--====================-->
     <ul id="tip-feed" ng-if='tipfeed.tipsAvailable'>
+      <!--ANCHOR MARKER FOR SCROLLING TO TOP WHEN PAGE CHANGES-->
       <a id="top"></a>
+
       <li  class="tip"
       ng-repeat="tip in tipfeed.currentTips track by $index"
       ng-show="tip"
