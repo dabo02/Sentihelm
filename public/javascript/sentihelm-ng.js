@@ -824,8 +824,8 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
-  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService',
-  function($scope, socket, ngDialog, paginatorService, usSpinnerService){
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
+  function($scope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -835,6 +835,10 @@
     this.currentPage = paginator.currentPage;
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
+
+    //Set scroll position to top
+    //when pages change
+    $location.hash('top');
 
     //Notification and Attachment
     //dialogs are off by default
@@ -886,20 +890,26 @@
       tipfeed.attachmentDialogIsOn = false;
     });
 
-    //Change page to passed value
+    //Change page to passed value;
+    //scroll to top
     this.changePage = function(newPage){
       paginatorService.changePage(newPage);
+      $anchorScroll();
     };
 
-    //Change to next page
+    //Change to next page;
+    //scroll to top
     this.nextPage = function(){
       paginatorService.nextPage();
+      $anchorScroll();
     };
 
 
-    //Change to previous page
+    //Change to previous page;
+    //scroll to top
     this.prevPage = function(){
       paginatorService.prevPage();
+      $anchorScroll();
     };
 
     //Shows dialog that allows client to send
