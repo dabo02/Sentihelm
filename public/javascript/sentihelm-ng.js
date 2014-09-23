@@ -255,12 +255,19 @@
       session.clientId = null;
     };
 
-    session.store = function(user){
+    session.store = function(user, client){
 
       var userObj = {};
-      for (var property in user.data) {
-        if (user.data.hasOwnProperty(property)) {
-          userObj[property] = user.data[property];
+      for (var property in user) {
+        if (user.hasOwnProperty(property)) {
+          userObj[property] = user[property];
+        }
+      }
+
+      var clientObj = {};
+      for (var property in client) {
+        if (client.hasOwnProperty(property)) {
+          clientObj[property] = client[property];
         }
       }
 
@@ -272,11 +279,13 @@
 
       $window.sessionStorage['session'] = JSON.stringify(sessionObj);
       $window.sessionStorage['user'] = JSON.stringify(userObj);
+      $window.sessionStorage['user'] = JSON.stringify(clientObj);
     }
 
     session.restoreSession = function(){
       var storedSession = $window.sessionStorage['session'];
       var storedUser = $window.sessionStorage['user'];
+      var storedUser = $window.sessionStorage['client'];
 
       if(!!storedSession && !!storedUser) {
         storedSession = JSON.parse(storedSession);
@@ -709,8 +718,14 @@
     };
 
     //TODO
+    $scope.setCurrentClient = function (client) {
+      $scope.currentClient = client;
+    };
+
+    //TODO
     $scope.$on(AUTH_EVENTS.loginSuccess, function(event, data){
         controllerScope.setCurrentUser(data[0]);
+        controllerScope.setCurrentClient(data[1]);
     });
   }]);
 
@@ -752,12 +767,13 @@
 
       //Try and log in
       authenticator.login(this.credentials).then(
-        function(user){
+        function(response){
+          var user = response.data[0];
+          var client = response.data[1];
           //Login was successful, create Session
-          var userClientId = JSON.parse(JSON.stringify(user.data.homeClient)).objectId;
-          Session.create(0, user.data.objectId, user.data.role, userClientId);
-          Session.store(user);
-          $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user]);
+          Session.create(0, user.objectId, user.role, client.objectId);
+          Session.store(user, client);
+          $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client]);
           loginCtrl.submitting = false;
           $scope.closeThisDialog();
 
@@ -819,6 +835,8 @@
 
   //TODO
   app.controller('GlobalNotificationsController', ['$scope', 'parseNotificationService', function($scope, parseNotificationService){
+
+    this.regions = $scope.currentClient.zipcodes;
 
     //Once a file is selected, prep file for upload to Parse
     this.onFileSelect = function($files){

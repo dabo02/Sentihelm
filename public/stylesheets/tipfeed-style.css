@@ -115,7 +115,7 @@ a:visited{
   float:left;
 }
 .attachments{
-  height:25%;
+  height:28%;
   border-left:0.1em solid #219fe9;
   border-right:0.1em solid #219fe9;
   text-align:center;
@@ -133,8 +133,7 @@ a:visited{
   width: 100%;
 }
 .crime-description{
-  width:99.5%;
-  height:74.5%;
+  height:72%;
   overflow:auto;
   word-wrap:break-word;
   background-color:#f7f7f7;
