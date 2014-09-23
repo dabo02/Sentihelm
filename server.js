@@ -199,8 +199,21 @@ app.post('/login', function(request, response){
   var password = request.body.password;
   Parse.User.logIn(userId, password, {
     success: function(user) {
-      //TODO Prep user for front end
-      response.send(200, user);
+      //Get Client to which user belongs to
+      var clientQuery = new Parse.Query(Client);
+      clientQuery.get(user.attributes.homeClient.id, {
+        success: function(client){
+          var answer = [];
+          answer.push(user);
+          answer.push(client);
+          // user.attributes.homeClient = client;
+          response.send(200, answer);
+        },
+        error: function(object, error){
+          response.send(400,error);
+        }
+      });
+      // response.send(200, user);
     },
     error: function(user, error) {
       response.send(400,error);
