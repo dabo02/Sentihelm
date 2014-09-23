@@ -129,6 +129,22 @@
         document.getElementById("notification-title").focus();
       }
     },
+    'GLOBAL-NOTIF-NO-MESSAGE':{
+      title: 'No Content',
+      message: 'The notification must contain a message.',
+      code: 'NOTIF-NO-MESSAGE',
+      onClose: function(){
+        document.getElementById("global-notification-body").focus();
+      }
+    },
+    'GLOBAL-NOTIF-NO-TITLE':{
+      title: 'No Title',
+      message: 'The notification must have a title.',
+      code: 'NOTIF-NO-TITLE',
+      onClose: function(){
+        document.getElementById("global-notification-title").focus();
+      }
+    },
     'NO-SESSION':{
       title: 'You Are Not Logged In',
       message: 'You need to log in order to use the dashboard.',
@@ -279,23 +295,24 @@
 
       $window.sessionStorage['session'] = JSON.stringify(sessionObj);
       $window.sessionStorage['user'] = JSON.stringify(userObj);
-      $window.sessionStorage['user'] = JSON.stringify(clientObj);
+      $window.sessionStorage['client'] = JSON.stringify(clientObj);
     }
 
     session.restoreSession = function(){
       var storedSession = $window.sessionStorage['session'];
       var storedUser = $window.sessionStorage['user'];
-      var storedUser = $window.sessionStorage['client'];
+      var storedClient = $window.sessionStorage['client'];
 
-      if(!!storedSession && !!storedUser) {
+      if(!!storedSession && !!storedUser && !!storedClient) {
         storedSession = JSON.parse(storedSession);
         storedUser = JSON.parse(storedUser);
+        storedClient = JSON.parse(storedClient);
         session.id = storedSession.id;
         session.userId = storedSession.userId;
         session.userRole = storedSession.userRole;
         session.clientId = storedSession.clientId;
 
-        $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser]);
+        $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser, storedClient]);
       }
     }
 
@@ -415,10 +432,24 @@
 
     //Creates and returns a new Parse Notification from
     //notification data gathered from controller
-    parseNotificationService.newNotification = function(notificationData){
+    parseNotificationService.newFollowUpNotification = function(notificationData){
       var notification = new PushNotification();
       notification.set("userId", notificationData.userId);
       notification.set("tipId", notificationData.controlNumber);
+      notification.set("title", notificationData.title);
+      notification.set("message", notificationData.message);
+      if(notificationData.attachment){
+        notification.set(notificationData.attachmentType, notificationData.attachment);
+      }
+      return notification;
+    };
+
+    //Creates and returns a new Parse Notification from
+    //notification data gathered from controller
+    parseNotificationService.newGlobalNotification = function(notificationData){
+      var notification = new PushNotification();
+      // notification.set("userId", notificationData.userId);
+      // notification.set("tipId", notificationData.controlNumber);
       notification.set("title", notificationData.title);
       notification.set("message", notificationData.message);
       if(notificationData.attachment){
@@ -833,32 +864,6 @@
     });
   }]);
 
-  //TODO
-  app.controller('GlobalNotificationsController', ['$scope', 'parseNotificationService', function($scope, parseNotificationService){
-
-    this.regions = $scope.currentClient.zipcodes;
-
-    //Once a file is selected, prep file for upload to Parse
-    this.onFileSelect = function($files){
-      //Fetch file
-      this.file = $files[0];
-
-      //Set file type
-      if(this.file.type.match('image.*')){
-        this.fileType = "image";
-      }
-      else if(this.file.type.match('video.*')){
-        this.fileType = "video";
-      }
-      else{
-        this.fileType = "audio";
-      }
-      //Set file name
-      this.fileLabel = this.file.name
-    };
-
-  }]);
-
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
@@ -1166,7 +1171,7 @@
       }
 
       //Toggle sending animation
-      this.sending = true;
+      // this.sending = true;
 
       //Set the channel where notification will be sent
       parseNotificationService.channels.push(this.channel);
@@ -1184,8 +1189,105 @@
       }
 
       //Create Parse notification and send it
-      var parseNotification = parseNotificationService.newNotification(notification);
+      var parseNotification = parseNotificationService.newFollowUpNotification(notification);
       parseNotificationService.saveAndPushNotification(parseNotification);
+
+    };
+
+  }]);
+
+  //Controller for user follow-up notification; controls the
+  //dialog that allows for message/attachment to be sent to users
+  app.controller('GlobalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
+  function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
+
+    // this.sending = false;
+    this.regions = $scope.currentClient.zipCodes;
+    var notificationCtrl = this;
+
+    this.allZipCodes = true;
+    this.checkboxes = [];
+    for (var i = 0; i < this.regions.length; i++) {
+      this.checkboxes[i] = false;
+    }
+
+    //Notification was successfully saved and pushed (sent)
+    $scope.$on('notification-success',function(notification){
+      notificationCtrl.sending = false;
+      $scope.$apply();
+    });
+
+    //Notification was saved, but not pushed
+    $scope.$on('notification-partial-success',function(notification){
+      //Right now same as success event, but might change
+      notificationCtrl.sending = false;
+      $scope.$apply();
+    });
+
+    //Notification either wasn't saved, or did save
+    //but push failed and error clause removed said save
+    $scope.$on('notification-error',function(notification){
+      errorFactory.showError('NOTIF-FAILED');
+      notificationCtrl.sending = false;
+      $scope.$apply();
+    });
+
+    //Once a file is selected, prep file for upload to Parse
+    this.onFileSelect = function($files){
+      //Fetch file
+      this.file = $files[0];
+
+      //Set file type
+      if(this.file.type.match('image.*')){
+        this.fileType = "image";
+      }
+      else if(this.file.type.match('video.*')){
+        this.fileType = "video";
+      }
+      else{
+        this.fileType = "audio";
+      }
+      //Set file name
+      this.fileLabel = this.file.name
+    };
+
+    //Send the notification to the user
+    this.submitNotification = function(){
+
+      //If no title, show appropiate error and ignore
+      if(!this.title){
+        errorFactory.showError('GLOBAL-NOTIF-NO-TITLE');
+        return;
+      }
+      //If no message or attachment, show appropiate error and ignore
+      if(!this.message){
+        errorFactory.showError('GLOBAL-NOTIF-NO-MESSAGE');
+        return;
+      }
+
+      //Toggle sending animation
+      // this.sending = true;
+
+      for (var i = 0; i < this.regions.length; i++) {
+        if (this.allZipCodes || this.checkboxes[i]) {
+          parseNotificationService.channels.push($scope.$parent.currentClient.objectId+'_'+this.regions[i]);
+        }
+      }
+
+      //Prepare notification
+      var notification = {};
+      notification.title = this.title;
+      notification.message = this.message;
+      //If a file is present, attach it and set its type
+      if(this.file){
+        notification.attachment = new Parse.File("attachment", this.file);
+        notification.attachmentType = this.fileType;
+      }
+
+      //Create Parse notification and send it
+      var parseNotification = parseNotificationService.newGlobalNotification(notification);
+      parseNotificationService.saveAndPushNotification(parseNotification);
+
     };
 
   }]);
