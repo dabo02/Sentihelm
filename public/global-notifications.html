@@ -1,6 +1,5 @@
-<div id="global-notifications-container" ng-controller="GlobalNotificationsController as globalNotifCtrl">
-  <!-- <button ng-click="globalNotifCtrl.testNotification()">Test Notification</button>
-  This is the notifications view. -->
+<div id="global-notifications-container" ng-controller="GlobalNotificationController as globalNotifCtrl">
+  <!-- This is the notifications view. -->
   <div class="container-fluid">
 
     <div class="row">
@@ -15,23 +14,22 @@
         <form class="form-horizontal" role="form">
 
           <div class="row">
-            <div class="form-group">
+            <div>
               <label for="global-notification-title" class="control-label"></label>
               <div class="col-md-6 col-md-offset-3">
-                <input type="text" class="form-control text-center" id="global-notification-title" placeholder="Set a Title">
+                <input type="text" class="form-control text-center" id="global-notification-title" ng-model="globalNotifCtrl.title" placeholder="Set a Title">
               </div>
             </div>
           </div>
 
           <div class="row">
-            <div class="form-group">
+            <div>
               <label for="global-notification-body"></label>
               <div class="col-md-6 col-md-offset-3">
-                <textarea style="resize:none" class="form-control" rows="4" placeholder="Message"></textarea>
+                <textarea id="global-notification-body" style="resize:none" class="form-control" rows="4" placeholder="Message" ng-model="globalNotifCtrl.message"></textarea>
               </div>
             </div>
           </div>
-
 
           <div class="row">
             <div class="btn col-md-6 col-md-offset-3"
@@ -43,22 +41,38 @@
             </div>
           </div>
 
+          <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" ng-model="globalNotifCtrl.allZipCodes"> All Zip Codes
+                </label>
+              </div>
+            </div>
+          </div>
 
           <div class="row" ng-repeat="region in globalNotifCtrl.regions track by $index">
-            <div class="form-group">
-              <div class="col-md-3 col-md-offset-4">
-                <div class="checkbox">
-                  <label>
-                    <input type="checkbox"> {{region}}
-                  </label>
-                </div>
+            <div class="col-md-4 col-md-offset-4">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" ng-model="globalNotifCtrl.checkboxes[$index]" ng-disabled="globalNotifCtrl.allZipCodes"> {{region}}
+                </label>
               </div>
             </div>
           </div>
 
         </form>
-
       </div>
     </div>
+
+    <button id="global-notification-submit" type="submit" ng-click="globalNotifCtrl.submitNotification()">
+     <span>Send</span>
+      <!-- <div class="spinner" ng-show="globalNotifCtrl.sending">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div> -->
+    </button>
+
   </div>
 </div>
