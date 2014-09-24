@@ -1,5 +1,6 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps','ngDialog','angularFileUpload', 'angularSpinner']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps',
+  'ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -48,6 +49,14 @@
         }
       }
     });
+  }]);
+
+  app.config(['snapRemoteProvider', function(snapRemoteProvider){
+    snapRemoteProvider.globalOptions = {
+      disable: 'right',
+      touchToDrag: false
+      // ... others options
+    };
   }]);
 
   //Initialize values needed throughout the app
@@ -154,7 +163,7 @@
   //to check if user is logged in and/or has access to the
   //current route; returns a Promise
   app.factory("RoutingService", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
-                  function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
+  function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
     var routingService =  {};
 
@@ -193,23 +202,23 @@
           //this promise and wait until the dialog is closed before loading the
           //corresponding state
           return loginDialog.closePromise.then(function(){
-              //User is now logged in, check for authorization
-              if (!authenticator.isAuthorized(authorizedRoles)) {
+            //User is now logged in, check for authorization
+            if (!authenticator.isAuthorized(authorizedRoles)) {
 
-                //User does not have access to content
-                // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-                errorFactory.showError('NO-AUTH');
+              //User does not have access to content
+              // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+              errorFactory.showError('NO-AUTH');
 
-                // Return a promise rejection so that the state stops from loading
-                //TODO Change reject String
-                return Promise.reject("Recently logged in user is not authorized");
-              }
+              // Return a promise rejection so that the state stops from loading
+              //TODO Change reject String
+              return Promise.reject("Recently logged in user is not authorized");
+            }
 
-              //Resolve the promise, proceed to load
-              //the state and change active state in drawer
-              $rootScope.currentState = stateName;
-              $rootScope.$broadcast('state-change');
-              return Promise.resolve("Recently logged in user is authorized to view the page.");
+            //Resolve the promise, proceed to load
+            //the state and change active state in drawer
+            $rootScope.currentState = stateName;
+            $rootScope.$broadcast('state-change');
+            return Promise.resolve("Recently logged in user is authorized to view the page.");
           });
         }
       }
@@ -279,23 +288,24 @@
 
       $window.sessionStorage['session'] = JSON.stringify(sessionObj);
       $window.sessionStorage['user'] = JSON.stringify(userObj);
-      $window.sessionStorage['user'] = JSON.stringify(clientObj);
+      $window.sessionStorage['client'] = JSON.stringify(clientObj);
     }
 
     session.restoreSession = function(){
       var storedSession = $window.sessionStorage['session'];
       var storedUser = $window.sessionStorage['user'];
-      var storedUser = $window.sessionStorage['client'];
+      var storedClient = $window.sessionStorage['client'];
 
-      if(!!storedSession && !!storedUser) {
+      if(!!storedSession && !!storedUser && !!storedClient){
         storedSession = JSON.parse(storedSession);
         storedUser = JSON.parse(storedUser);
+        storedClient = JSON.parse(storedClient);
         session.id = storedSession.id;
         session.userId = storedSession.userId;
         session.userRole = storedSession.userRole;
         session.clientId = storedSession.clientId;
 
-        $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser]);
+        $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser, storedClient]);
       }
     }
 
@@ -512,7 +522,7 @@
           badge:"Increment",
           sound: "cheering.caf",
           title: 'GLOBAL NOTIFICATION TEST'
-       }
+        }
       },{
         success: function(){
           console.log("SUCCESS");
@@ -706,7 +716,7 @@
   //created at body tag so all other $scopes can
   //inherit from its $scope
   app.controller('ApplicationController', ['usSpinnerService', '$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
-                                 function(usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
+  function(usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
     var controllerScope = $scope;
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
@@ -724,8 +734,8 @@
 
     //TODO
     $scope.$on(AUTH_EVENTS.loginSuccess, function(event, data){
-        controllerScope.setCurrentUser(data[0]);
-        controllerScope.setCurrentClient(data[1]);
+      controllerScope.setCurrentUser(data[0]);
+      controllerScope.setCurrentClient(data[1]);
     });
   }]);
 
@@ -790,18 +800,22 @@
 
   //Controller for the header; contains a button
   //that triggers drawer element when clicked
-  app.controller('HeaderController', ['$rootScope', function($rootScope){
-    //Emits event that toggles the drawer directive's view;
-    //toggles a boolean value that checks when drawer is active
-    this.toggleDrawer = function(){
-      $rootScope.$broadcast('toggle-drawer',[this.drawerOn]);
-      this.drawerOn=!this.drawerOn;
+  app.controller('HeaderController', ['$rootScope', 'snapRemote', function($rootScope, snapRemote){
+    this.openDrawer = function(){
+      snapRemote.open("left");
     };
+
+    // //Emits event that toggles the drawer directive's view;
+    // //toggles a boolean value that checks when drawer is active
+    // this.toggleDrawer = function(){
+    //   $rootScope.$broadcast('toggle-drawer',[this.drawerOn]);
+    //   this.drawerOn=!this.drawerOn;
+    // };
   }]);
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', function($scope, $rootScope) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', function($scope, $rootScope, snapRemote) {
     var drawer = this;
 
     //The drawer is hidden by default
@@ -821,11 +835,16 @@
       {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
     ];
 
-    //Shows/hides drawer on toggled drawer event
-    //(emitted from the header directive)
-    $scope.$on('toggle-drawer', function(event){
-      drawer.isOn = !drawer.isOn;
-    });
+    this.closeDrawer = function(){
+      snapRemote.close();
+    };
+
+    //
+    // //Shows/hides drawer on toggled drawer event
+    // //(emitted from the header directive)
+    // $scope.$on('toggle-drawer', function(event){
+    //   drawer.isOn = !drawer.isOn;
+    // });
 
     //Change active state in drawer (blue text color)
     $scope.$on('state-change', function(event){
@@ -836,7 +855,8 @@
   //TODO
   app.controller('GlobalNotificationsController', ['$scope', 'parseNotificationService', function($scope, parseNotificationService){
 
-    this.regions = $scope.currentClient.zipcodes;
+    this.regions = $scope.currentClient.zipcodes
+    ;
 
     //Once a file is selected, prep file for upload to Parse
     this.onFileSelect = function($files){

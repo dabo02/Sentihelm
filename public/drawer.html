@@ -1,37 +1,75 @@
-<div ng-controller="DrawerController as drawer" ng-if="$parent.currentUser">
+<div class="dark-gray-bg"
+  ng-controller="DrawerController as drawerCtrl"
+  ng-if="$parent.currentUser"
+  ng-mouseleave="drawerCtrl.closeDrawer()"
+  snap-drawer
+>
 
-  <div style="height:10%;">
-    <!--DUMMY ELEMENT.MATCHES DRAWER & HEADER HEIGHT-->
-  </div>
+<ul class="list-group dark-gray-bg drawer-list" role="menu">
 
-  <ul class="drawer" ng-class="{'closed-drawer':!drawer.isOn, 'opened-drawer':drawer.isOn}">
+  <li class="list-group-item dark-gray-bg drawer-item" ng-repeat="item in drawerCtrl.entries">
 
-    <li class="drawer-item" ng-repeat="item in drawer.entries" ng-class="{'bright-blue':drawer.currentState===item.name}">
+    <!-- <a role="menuitem" tab-index="-1" href="#">
+      <span class="{{item.icon}} item-icon"></span>
 
-      <form action="{{item.state}}">
+      <h4>{{item.name}}</h4>
+    </a> -->
 
-        <button type="submit" class="transparent-button">
+    <form action="{{item.state}}">
 
-          <span class="{{item.icon}} item-icon"></span>
+      <button type="submit" class="transparent-button">
 
-          <span class="item-name" ng-show="drawer.isOn">{{item.name}}</span>
+        <span class="{{item.icon}} item-icon white"></span>
 
-        </button>
+        <span class="white">{{item.name}}</span>
 
-      </form>
+      </button>
 
-    </li>
+    </form>
 
-  </ul>
+  </li>
 
-  <!--====TIP COUNTER THAT WILL KEEP TAB ON HOW MANY TIPS HAVE ARRIVED SERVER SIDE======>
-
-
-  <div class="tip-counter" ng-show="item.icon==='fa fa-inbox'">
-    {{drawer.count}}
-  </div>
-
-
-  <!--================================================================================-->
+</ul>
 
 </div>
+
+
+
+<!--<div ng-controller="DrawerController as drawer" ng-if="$parent.currentUser">
+
+<div style="height:10%;">
+
+
+</div>
+
+<ul class="drawer" ng-class="{'closed-drawer':!drawer.isOn, 'opened-drawer':drawer.isOn}">
+
+<li class="drawer-item" ng-repeat="item in drawer.entries" ng-class="{'bright-blue':drawer.currentState===item.name}">
+
+<form action="{{item.state}}">
+
+<button type="submit" class="transparent-button">
+
+<span class="{{item.icon}} item-icon"></span>
+
+<span class="item-name" ng-show="drawer.isOn">{{item.name}}</span>
+
+</button>
+
+</form>
+
+</li>
+
+</ul>
+
+<!--====TIP COUNTER THAT WILL KEEP TAB ON HOW MANY TIPS HAVE ARRIVED SERVER SIDE======>
+
+
+<div class="tip-counter" ng-show="item.icon==='fa fa-inbox'">
+{{drawer.count}}
+</div>
+
+
+<!--================================================================================-->
+
+<!--</div>-->

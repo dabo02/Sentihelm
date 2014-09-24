@@ -1,0 +1,90 @@
+/**=============**/
+/**    PAGE     **/
+/**=============**/
+body{
+  font-family:'Open Sans';
+  font-weight:300;
+}
+
+.snap-content{
+  background-color:#ffffff;
+}
+
+/**=============**/
+/**   HEADER    **/
+/**=============**/
+img.logo{
+  height:7.5%;
+  margin:0.5em auto;
+}
+
+#drawer-button{
+  position:absolute;
+  top:40%;
+  left:1%;
+  color:#f7f7f7;
+}
+#drawer-button:hover,
+#drawer-button:active{
+  color:#219ef9;
+}
+
+/**=============**/
+/**   DRAWER    **/
+/**=============**/
+
+.drawer-item{
+  border:none;
+  border-top:1px solid #ddd;
+  border-radius:0;
+}
+.drawer-item:first-child{
+  border:none;
+}
+
+/**===============**/
+/** HELPER STYLES **/
+/**===============**/
+.transparent-button{
+  background-color:transparent;
+  border:none;
+}
+
+button:focus{
+  outline:0;
+}
+
+.disabled-link{
+  opacity:0.5;
+  pointer-events:none;
+  cursor:default;
+}
+
+
+/**=============**/
+/**   COLORS    **/
+/**=============**/
+.dark-gray-bg{
+  background-color:#4d4d4d;
+}
+
+.white{
+  color:#ffffff;
+}
+
+.light-blue{
+  color:#219ef9;
+}
+.light-blue-bg{
+  background-color:#219ef9;
+}
+
+.orange{
+  color:#ff6600;
+}
+.orange-border{
+  border-color:#ff6600;
+}
+.orange-bg{
+  background-color:#ff6600;
+}

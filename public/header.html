@@ -1,8 +1,13 @@
-<div class="header" ng-controller="HeaderController as header">
-  <button id="drawer-button" class="fa fa-reorder fa-lg transparent-button"
-  ng-show="$parent.currentUser"
-  ng-click="header.toggleDrawer()"
-  >
-  </button>
-  <img class="logo" ng-src="../resources/images/sentihelm.png"/>
+<div id="header" ng-controller="HeaderController as headerCtrl">
+  <nav class="navbar navbar-fixed-top dark-gray-bg" role="navigation">
+    <div class="container">
+        <button id="drawer-button" class="fa fa-reorder fa-2x transparent-button"
+          ng-show="$parent.currentUser"
+          ng-click="headerCtrl.openDrawer()"
+          snap-toggle="left"
+        >
+        </button>
+        <img class="img-responsive logo" ng-src="../resources/images/sentihelm.png"/>
+    </div>
+  </nav>
 </div>

@@ -74,13 +74,13 @@
             <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
 
               <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentVideo.url, 'VID')">
-                <img src="./resources/images/videoAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
+                <img src="./resources/images/videoAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
               </a>
               <a id="imageAtt" ng-class="{'disabled-link': !tip.attachmentPhoto.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentPhoto.url, 'IMG')">
-                <img src="./resources/images/imageAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
+                <img src="./resources/images/imageAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
               </a>
               <a id="audioAtt" ng-class="{'disabled-link': !tip.attachmentAudio.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentAudio.url, 'AUDIO')">
-                <img src="./resources/images/audioAtt.png" ng-class="{'orange-background':tip.anonymous, 'blue-background':!tip.anonymous}"/>
+                <img src="./resources/images/audioAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
               </a>
 
             </div>
@@ -122,27 +122,27 @@
 
     <!------PREVIOUS PAGE CONTROL------>
     <li id="page-previous" class="paginator-control"
-     ng-show="tipfeed.paginatorSet"
-     ng-class="{'disabled-link': tipfeed.currentPage===1}"
-     ng-click="tipfeed.prevPage()"
+       ng-show="tipfeed.paginatorSet"
+       ng-class="{'disabled-link': tipfeed.currentPage===1}"
+       ng-click="tipfeed.prevPage()"
      >
       <span class="fa fa-chevron-left fa-lg"></span>
     </li>
 
     <!------PAGE CONTROLS------>
     <li class="paginator-control"
-     ng-repeat="value in tipfeed.paginatorSet"
-     ng-class="{'active-page': tipfeed.currentPage === value}"
-     ng-click="tipfeed.changePage(value)"
+       ng-repeat="value in tipfeed.paginatorSet"
+       ng-class="{'light-blue': tipfeed.currentPage === value}"
+       ng-click="tipfeed.changePage(value)"
      >
       {{value}}
     </li>
 
     <!------NEXT PAGE CONTROL------>
     <li id="page-next" class="paginator-control"
-     ng-show="tipfeed.paginatorSet"
-     ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
-     ng-click="tipfeed.nextPage()"
+       ng-show="tipfeed.paginatorSet"
+       ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
+       ng-click="tipfeed.nextPage()"
      >
       <span class="fa fa-chevron-right fa-lg"></span>
     </li>

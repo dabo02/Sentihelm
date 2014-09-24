@@ -17,9 +17,9 @@
   height:auto;
   list-style-type:none;
 }
-a:visited{
+/*a:visited{
   color:none;
-}
+}*/
 
 /*************TIP*************/
 /*****************************/
@@ -245,67 +245,6 @@ a:visited{
 
 /********HELPER STYLES********/
 /*****************************/
-.notification-alert{
-  position:fixed;
-  left:35%;
-  bottom:-3%;
-  width:30%;
-  max-height:20%;
-  background-color:#c2382e;
-  z-index:3;
-}
-.notification-alert span{
-  display:block;
-  padding:0.5em;
-  color:white;
-  text-align:center;
-}
-
-.disabled-link{
-  opacity:0.5;
-  pointer-events:none;
-  cursor:default;
-}
-
-.hidden{
-  display:none;
-  visibility:hidden;
-}
-
-.visible{
-  display:block;
-  visibility:visible;
-}
-
-.no-location{
-  position:relative;
-  top:45%;
-  font-weight:400;
-  color:#ff6600;
-  text-align:center;
-}
-
-.orange{
-  color:#ff6600;
-}
-.orange-border{
-  border-color:#ff6600;
-}
-.orange-background{
-  background-color:#ff6600;
-}
-
-.blue-background{
-  background-color:#2193f9;
-}
-
-.white{
-  color:#ffffff;
-}
-
-.active-page{
-  color:#219ef9;
-}
 
 .file-selected{
   background-color:#4bb612;
