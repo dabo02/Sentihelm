@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps','ngDialog','angularFileUpload', 'angularSpinner']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps','ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -48,6 +48,16 @@
         }
       }
     });
+  }]);
+
+  //Sets up the options for snapRemote, which is
+  //the snap.js instance that allows for a slidable
+  //drawer
+  app.config(['snapRemoteProvider', function(snapRemoteProvider){
+    snapRemoteProvider.globalOptions = {
+      disable: 'right',
+      touchToDrag: true
+    };
   }]);
 
   //Initialize values needed throughout the app
@@ -170,7 +180,7 @@
   //to check if user is logged in and/or has access to the
   //current route; returns a Promise
   app.factory("RoutingService", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
-                  function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
+  function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
     var routingService =  {};
 
@@ -209,23 +219,23 @@
           //this promise and wait until the dialog is closed before loading the
           //corresponding state
           return loginDialog.closePromise.then(function(){
-              //User is now logged in, check for authorization
-              if (!authenticator.isAuthorized(authorizedRoles)) {
+            //User is now logged in, check for authorization
+            if (!authenticator.isAuthorized(authorizedRoles)) {
 
-                //User does not have access to content
-                // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
-                errorFactory.showError('NO-AUTH');
+              //User does not have access to content
+              // $rootScope.$broadcast(AUTH_EVENTS.notAuthorized);
+              errorFactory.showError('NO-AUTH');
 
-                // Return a promise rejection so that the state stops from loading
-                //TODO Change reject String
-                return Promise.reject("Recently logged in user is not authorized");
-              }
+              // Return a promise rejection so that the state stops from loading
+              //TODO Change reject String
+              return Promise.reject("Recently logged in user is not authorized");
+            }
 
-              //Resolve the promise, proceed to load
-              //the state and change active state in drawer
-              $rootScope.currentState = stateName;
-              $rootScope.$broadcast('state-change');
-              return Promise.resolve("Recently logged in user is authorized to view the page.");
+            //Resolve the promise, proceed to load
+            //the state and change active state in drawer
+            $rootScope.currentState = stateName;
+            $rootScope.$broadcast('state-change');
+            return Promise.resolve("Recently logged in user is authorized to view the page.");
           });
         }
       }
@@ -543,7 +553,7 @@
           badge:"Increment",
           sound: "cheering.caf",
           title: 'GLOBAL NOTIFICATION TEST'
-       }
+        }
       },{
         success: function(){
           console.log("SUCCESS");
@@ -737,7 +747,7 @@
   //created at body tag so all other $scopes can
   //inherit from its $scope
   app.controller('ApplicationController', ['usSpinnerService', '$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
-                                 function(usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
+  function(usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
     var controllerScope = $scope;
     $scope.currentUser = null;
     $scope.userRoles = USER_ROLES;
@@ -755,8 +765,8 @@
 
     //TODO
     $scope.$on(AUTH_EVENTS.loginSuccess, function(event, data){
-        controllerScope.setCurrentUser(data[0]);
-        controllerScope.setCurrentClient(data[1]);
+      controllerScope.setCurrentUser(data[0]);
+      controllerScope.setCurrentClient(data[1]);
     });
   }]);
 
@@ -821,22 +831,19 @@
 
   //Controller for the header; contains a button
   //that triggers drawer element when clicked
-  app.controller('HeaderController', ['$rootScope', function($rootScope){
-    //Emits event that toggles the drawer directive's view;
-    //toggles a boolean value that checks when drawer is active
-    this.toggleDrawer = function(){
-      $rootScope.$broadcast('toggle-drawer',[this.drawerOn]);
-      this.drawerOn=!this.drawerOn;
+  app.controller('HeaderController', ['snapRemote', function(snapRemote){
+
+    //Reveals (opens) the drawer by sliding
+    //snap-content (main page view) to the right
+    this.openDrawer = function(){
+      snapRemote.open("left");
     };
   }]);
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', function($scope, $rootScope) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', function($scope, $rootScope, snapRemote) {
     var drawer = this;
-
-    //The drawer is hidden by default
-    this.isOn = false;
 
     //Current active state
     this.currentState = $rootScope.currentState;
@@ -852,11 +859,11 @@
       {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
     ];
 
-    //Shows/hides drawer on toggled drawer event
-    //(emitted from the header directive)
-    $scope.$on('toggle-drawer', function(event){
-      drawer.isOn = !drawer.isOn;
-    });
+    //Hides (closes) the drawer by sliding
+    //snap-content (main page view) back to the left
+    this.closeDrawer = function(){
+      snapRemote.close();
+    };
 
     //Change active state in drawer (blue text color)
     $scope.$on('state-change', function(event){
