@@ -47,6 +47,24 @@
           return routingService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
         }
       }
+    })
+    .state('most-wanted',{
+      url:"/most-wanted",
+      templateUrl:"/most-wanted.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Wanted List");
+        }
+      }
     });
   }]);
 
@@ -142,7 +160,7 @@
     'GLOBAL-NOTIF-NO-MESSAGE':{
       title: 'No Content',
       message: 'The notification must contain a message.',
-      code: 'NOTIF-NO-MESSAGE',
+      code: 'GLOBAL-NOTIF-NO-MESSAGE',
       onClose: function(){
         document.getElementById("global-notification-body").focus();
       }
@@ -150,9 +168,18 @@
     'GLOBAL-NOTIF-NO-TITLE':{
       title: 'No Title',
       message: 'The notification must have a title.',
-      code: 'NOTIF-NO-TITLE',
+      code: 'GLOBAL-NOTIF-NO-TITLE',
       onClose: function(){
         document.getElementById("global-notification-title").focus();
+      }
+    },
+    'GLOBAL-NOTIF-NO-ZIPCODE':{
+      title: 'No Zip Codes',
+      message: 'You must select at least one zip code',
+      code: 'GLOBAL-NOTIF-NO-ZIPCODE',
+      onClose: function(){
+        //Do nothing
+        return;
       }
     },
     'NO-SESSION':{
@@ -855,7 +882,7 @@
       {name:'Video Streams', icon:'fa fa-video-camera', state:'#/streams'},
       {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
       {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
-      {name:'Wanted List', icon:'fa fa-warning', state:'#/wanted'},
+      {name:'Wanted List', icon:'fa fa-warning', state:'#/most-wanted'},
       {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
     ];
 
@@ -1275,10 +1302,20 @@
       //Toggle sending animation
       // this.sending = true;
 
-      for (var i = 0; i < this.regions.length; i++) {
-        if (this.allZipCodes || this.checkboxes[i]) {
-          parseNotificationService.channels.push($scope.$parent.currentClient.objectId+'_'+this.regions[i]);
+      if (this.allZipCodes) {
+        parseNotificationService.channels.push($scope.$parent.currentClient.objectId);
+      }
+      else {
+        for (var i = 0; i < this.regions.length; i++) {
+          if (this.checkboxes[i]) {
+            parseNotificationService.channels.push($scope.$parent.currentClient.objectId+'_'+this.regions[i]);
+          }
         }
+      }
+
+      if (parseNotificationService.channels.length == 0) {
+        errorFactory.showError('GLOBAL-NOTIF-NO-ZIPCODE');
+        return;
       }
 
       //Prepare notification
@@ -1322,4 +1359,80 @@
 
   }]);
 
+  //Service for receiving the most-wanted list from parse,
+  //and storing the new most-wanted bla bla bla
+  app.factory("MostWantedService", ['Session', '$rootScope',
+  function(Session, $rootScope){
+
+    var mostWantedService =  {};
+    var mostWantedArray = [];
+
+    mostWantedService.fetchMostWantedList = function() {
+
+      //Request and receive the most wanted list
+      // var clientId = Session.clientId;
+      var Client = Parse.Object.extend("Client");
+      var clientQuery = new Parse.Query(Client);
+      clientQuery.include('mostWantedList');
+      clientQuery.get(Session.clientId, {
+        success: function(client){
+          mostWantedArray = client.get('mostWantedList');
+          $rootScope.$broadcast('MostWantedList', mostWantedArray);
+
+        },
+        error: function(object, error){
+          console.log("Error fetching most-wanted list.");
+        }
+      });
+
+      return mostWantedArray;
+    };
+
+    mostWantedService.saveNewMostWanted = function(person) {
+      return;
+    };
+
+    return mostWantedService;
+  }]);
+
+  //Controller for the Most-Wanted state
+  app.controller('MostWantedController', ['MostWantedService', '$scope',
+  function(MostWantedService, $scope){
+
+    //Object for the new most-wanted person
+    var MostWantedCtrl = this;
+    this.person = {};
+    this.wantedArray = [];
+    MostWantedService.fetchMostWantedList();
+
+    //Once a file is selected, prep file for upload to Parse
+    //Used for attaching files to a most-wanted person
+    this.onFileSelect = function($files){
+      //Fetch file
+      this.person.file = $files[0];
+
+      //Set file type
+      if(this.person.file.type.match('image.*')){
+        this.person.fileType = "image";
+      }
+      else if(this.file.type.match('video.*')){
+        this.person.fileType = "video";
+      }
+      else{
+        this.person.fileType = "audio";
+      }
+      //Set file name
+      this.person.fileLabel = this.person.file.name
+    };
+
+    this.submit = function() {
+      MostWantedService.saveNewMostWanted(this.person);
+    };
+
+    $scope.$on('MostWantedList', function(event, data){
+      MostWantedCtrl.wantedArray = data;
+      $scope.$apply();
+    });
+
+  }]);
 })();
