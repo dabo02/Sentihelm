@@ -60,12 +60,25 @@ button:focus{
   cursor:default;
 }
 
+.vertical-center {
+  min-height: 100%;  /* Fallback for browsers that dont support vh unit */
+  min-height: 100vh;
+  margin:0;
+  display: flex;
+  align-items: center;
+}
 
+input.strong{
+  font-weight:700;
+}
 /**=============**/
 /**   COLORS    **/
 /**=============**/
 .dark-gray-bg{
   background-color:#4d4d4d;
+}
+.dark-gray{
+  color:#4d4d4d;
 }
 
 .white{

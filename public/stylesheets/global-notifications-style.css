@@ -1,8 +1,8 @@
 /*************PAGE*************/
 /*****************************/
 #global-notifications-container{
-  position:fixed;
-  top:20%;
+  /*position:fixed;
+  top:20%;*/
   left:17.5%;
   width:65%;
   height:70%;
