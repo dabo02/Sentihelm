@@ -1,78 +1,52 @@
-<div id="global-notifications-container" ng-controller="GlobalNotificationController as globalNotifCtrl">
-  <!-- This is the notifications view. -->
-  <div class="container-fluid">
+<div class="jumbotron vertical-center">
+  <div class="container">
 
-    <div class="row">
-      <div class="col-md-6 col-md-offset-3">
-        <h2>Send A Notification</h2>
+    <h3 class="text-center">Send A Notification</h3>
+    <form class="form-horizontal" role="form">
+
+      <div class="form-group">
+        <label class="sr-only"></label>
+        <div class="col-md-6 col-md-offset-3">
+          <input type="text" class="form-control text-center" id="global-notification-title" placeholder="Title"/>
+        </div>
       </div>
-    </div>
 
-    <div class="row">
-      <div class="col-md-12">
-
-        <form class="form-horizontal" role="form">
-
-          <div class="row">
-            <div>
-              <label for="global-notification-title" class="control-label"></label>
-              <div class="col-md-6 col-md-offset-3">
-                <input type="text" class="form-control text-center" id="global-notification-title" ng-model="globalNotifCtrl.title" placeholder="Set a Title">
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label for="global-notification-body"></label>
-              <div class="col-md-6 col-md-offset-3">
-                <textarea id="global-notification-body" style="resize:none" class="form-control" rows="4" placeholder="Message" ng-model="globalNotifCtrl.message"></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="btn col-md-6 col-md-offset-3"
-            accept="image/*,video/*,audio/*"
-            ng-class="{'btn-primary': !globalNotifCtrl.file.name, 'btn-success': globalNotifCtrl.file.name}"
-            ng-file-select="globalNotifCtrl.onFileSelect($files)"
-            >
-              {{globalNotifCtrl.file.name || "Attach an image, video, or audio file"}}
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-4 col-md-offset-4">
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox" ng-model="globalNotifCtrl.allZipCodes"> All Zip Codes
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <div class="row" ng-repeat="region in globalNotifCtrl.regions track by $index">
-            <div class="col-md-4 col-md-offset-4">
-              <div class="checkbox">
-                <label>
-                  <input type="checkbox" ng-model="globalNotifCtrl.checkboxes[$index]" ng-disabled="globalNotifCtrl.allZipCodes"> {{region}}
-                </label>
-              </div>
-            </div>
-          </div>
-
-        </form>
+      <div class="form-group">
+        <label class="sr-only"></label>
+        <div class="col-md-6 col-md-offset-3">
+          <textarea style="resize:none" class="form-control" rows="4" id="global-notification-body" placeholder="Message"></textarea>
+        </div>
       </div>
-    </div>
 
-    <button id="global-notification-submit" type="submit" ng-click="globalNotifCtrl.submitNotification()">
-     <span>Send</span>
-      <!-- <div class="spinner" ng-show="globalNotifCtrl.sending">
-        <div class="bounce1"></div>
-        <div class="bounce2"></div>
-        <div class="bounce3"></div>
-      </div> -->
-    </button>
+      <div class="form-group">
+        <div class="col-md-6 col-md-offset-3">
+          <div type="button" class="btn btn-default btn-block dark-gray-bg white">File Goes Here</div>
+        </div>
+      </div>
 
+      <div class="form-group">
+        <div class="col-md-6 col-md-offset-3">
+          <div class="panel panel-info">
+
+            <div class="panel-heading">
+              <label class="checkbox-inline text-center">
+                <input type="checkbox" ng-model="check" value="region1">San Juan
+              </label>
+            </div>
+
+            <ul ng-show="check" class="list-group">
+              <li class="list-group-item">00983</li>
+              <li class="list-group-item">00920</li>
+              <li class="list-group-item">00987</li>
+              <li class="list-group-item">00976</li>
+              <li class="list-group-item">00934</li>
+            </ul>
+
+          </div>
+        </div>
+
+      </div>
+
+    </form>
   </div>
 </div>

@@ -73,8 +73,8 @@
   //drawer
   app.config(['snapRemoteProvider', function(snapRemoteProvider){
     snapRemoteProvider.globalOptions = {
-      disable: 'right',
-      touchToDrag: true
+      disable:'right',
+      touchToDrag: false
     };
   }]);
 
