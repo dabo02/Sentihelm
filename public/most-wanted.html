@@ -1,111 +1,104 @@
-<!-- <div id="global-notifications-container" ng-controller="GlobalNotificationController as globalNotifCtrl">
-This is the notifications view.
-<div class="container-fluid">
+<div class="jumbotron vertical-center" ng-controller="MostWantedController as mostWantedCtrl">
+  <div id="tip-feed-container">
+  <div class="container">
+    <!-- <ul class="list-group" style="list-style-type:none">
+      <li class="list-group" ng-repeat="wantedPerson in mostWantedCtrl.wantedArray track by $index"> -->
+        <form class="form-horizontal" role="form" ng-repeat="wantedPerson in mostWantedCtrl.wantedArray track by $index">
 
-<div class="row">
-<div class="col-md-6 col-md-offset-3">
-<h2>Beware!</h2>
-<h4>There's bad people out there.</h4>
-</div>
-</div>
+          <div class="col-md-3">
+          </div>
 
-</div>
-</div> -->
+          <div class="col-md-2 no-padding" ng-file-select="mostWantedCtrl.onFileSelect($files, $index)">
+            <a class="thumbnail no-margin no-border">
+              <img ng-src="{{wantedPerson.attributes.photoUrl || wantedPerson.attributes.photo._url || './resources/images/no-profile-pic.png'}}" alt="...">
+            </a>
+          </div>
 
-<div id="most-wanted-container" ng-controller="MostWantedController as mostWantedCtrl">
+          <div class="form-group">
+            <br><br><br>
+            <label for="name" class="col-md-1 control-label">Name</label>
+            <div class="col-md-3">
+              <input type="text" class="form-control" placeholder="Name" ng-model="wantedPerson.attributes.name" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+            <br><br><br>
+            <label for="alias" class="col-md-1 control-label">Alias</label>
+            <div class="col-md-3">
+              <input class="form-control" placeholder="Alias" ng-model="wantedPerson.attributes.alias"  ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+          </div>
 
-  <ul>
-    <li ng-repeat="wantedPerson in mostWantedCtrl.wantedArray track by $index">
+          <div class="form-group">
+            <label for="birthdate" class="col-md-3 control-label">Birthdate</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Birthdate" ng-model="wantedPerson.attributes.birthdate"  ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+            <label for="age" class="col-md-2 control-label">Age</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Age" ng-model="wantedPerson.attributes.age" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+          </div>
 
-      <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <label for="eyeColor" class="col-md-3 control-label">Eye Color</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Eye Color" ng-model="wantedPerson.attributes.eyeColor" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+            <label for="hairColor" class="col-md-2 control-label">Hair Color</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Hair Color" ng-model="wantedPerson.attributes.hairColor" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="height" class="col-md-3 control-label">Height</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Height" ng-model="wantedPerson.attributes.height" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+            <label for="weight" class="col-md-2 control-label">Weight</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Weight" ng-model="wantedPerson.attributes.weight" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="race" class="col-md-3 control-label">Race</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Race" ng-model="wantedPerson.attributes.race" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+            <label for="characteristics" class="col-md-2 control-label">Characteristics</label>
+            <div class="col-md-2">
+              <input class="form-control" placeholder="Characteristics" ng-model="wantedPerson.attributes.characteristics" ng-change="mostWantedCtrl.onChange($index)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="summary" class="col-md-3 control-label">Summary</label>
+            <div class="col-md-6">
+              <textarea style="resize:none" class="form-control" rows="4" id="global-notification-body" placeholder="Message" ng-model="wantedPerson.attributes.summary" ng-change="mostWantedCtrl.onChange($index)"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class=" col-md-offset-5 col-md-1">
+              <button type="submit" class="btn btn-success" style="width:100%;"ng-disabled="!mostWantedCtrl.editedPeopleIndices[$index]" ng-click="mostWantedCtrl.save($index)">Save</button>
+            </div>
+            <div class="col-md-1">
+              <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.delete($index)" ng-disabled="mostWantedCtrl.disableNewButton && $index === (mostWantedCtrl.wantedArray.length-1)">Delete</button>
+            </div>
+          </div>
+
+          <div class="form-group col-md-12 dark-gray-bg"> </div>
+
+        </form>
+
         <div class="form-group">
-          <label for="name" class="col-md-offset-2 col-sm-2 control-label">Name</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Name" ng-model="wantedPerson.attributes.name">
+          <div class="col-md-4 col-md-offset-4">
+            <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.add()" ng-disabled="mostWantedCtrl.disableNewButton">Add new wanted</button>
           </div>
         </div>
+      <!-- </li>
 
-        <div class="form-group">
-          <label for="alias" class="col-md-offset-2 col-md-2 control-label">Alias</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Alias" ng-model="mostWantedCtrl.person.alias">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="age" class="col-md-offset-2 col-md-2 control-label">Age</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Age" ng-model="mostWantedCtrl.person.age">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="eyeColor" class="col-md-offset-2 col-md-2 control-label">Eye Color</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Eye Color" ng-model="mostWantedCtrl.person.eyeColor">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="hairColor" class="col-md-offset-2 col-md-2 control-label">Hair Color</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Hair Color" ng-model="mostWantedCtrl.person.hairColor">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="height" class="col-md-offset-2 col-md-2 control-label">Height</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Height" ng-model="mostWantedCtrl.person.height">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="weight" class="col-md-offset-2 col-md-2 control-label">Weight</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Weight" ng-model="mostWantedCtrl.person.weight">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="race" class="col-md-offset-2 col-md-2 control-label">Race</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Race" ng-model="mostWantedCtrl.person.race">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="characteristics" class="col-md-offset-2 col-md-2 control-label">Characteristics</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Characteristics" ng-model="mostWantedCtrl.person.characteristics">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="summary" class="col-md-offset-2 col-md-2 control-label">Summary</label>
-          <div class="col-md-4">
-            <input class="form-control" placeholder="Summary" ng-model="mostWantedCtrl.person.summary">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="btn col-md-4 col-md-offset-4"
-          accept="image/*,video/*,audio/*"
-          ng-class="{'btn-primary': !mostWantedCtrl.person.file.name, 'btn-success': mostWantedCtrl.person.file.name}"
-          ng-file-select="mostWantedCtrl.onFileSelect($files)"
-          >
-            {{mostWantedCtrl.person.file.name || "Attach an image, video, or audio file"}}
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="col-md-12">
-            <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.submit()">Submit</button>
-          </div>
-        </div>
-        <span>{{mostWantedCtrl.person}}</span>
-        <span ng-show="mostWantedCtrl.wantedArray.length>0">{{mostWantedCtrl.wantedArray[0].attributes.name}}</span>
-      </form>
-    </li>
-
-  </ul>
+    </ul> -->
+    </div>
+  </div>
 </div>
