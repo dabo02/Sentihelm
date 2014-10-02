@@ -778,6 +778,173 @@
     return paginator;
   }]);
 
+  //Service to read uploaded images as url
+  app.factory("fileReader", ['$q', '$log', function ($q, $log) {
+        var onLoad = function(reader, deferred, scope) {
+            return function () {
+                scope.$apply(function () {
+                    deferred.resolve(reader.result);
+                });
+            };
+        };
+
+        var onError = function (reader, deferred, scope) {
+            return function () {
+                scope.$apply(function () {
+                    deferred.reject(reader.result);
+                });
+            };
+        };
+
+        var onProgress = function(reader, scope) {
+            return function (event) {
+                scope.$broadcast("fileProgress",
+                    {
+                        total: event.total,
+                        loaded: event.loaded
+                    });
+            };
+        };
+
+        var getReader = function(deferred, scope) {
+            var reader = new FileReader();
+            reader.onload = onLoad(reader, deferred, scope);
+            reader.onerror = onError(reader, deferred, scope);
+            reader.onprogress = onProgress(reader, scope);
+            return reader;
+        };
+
+        var readAsDataURL = function (file, scope) {
+            var deferred = $q.defer();
+
+            var reader = getReader(deferred, scope);
+            reader.readAsDataURL(file);
+
+            return deferred.promise;
+        };
+
+        return {
+            readAsDataUrl: readAsDataURL
+        };
+    }]);
+
+  //Service for managing the most wanted list. It can save, add
+  //or delete most wanted people to/from Parse
+  app.factory("MostWantedService", ['Session', '$rootScope', 'errorFactory',
+  function(Session, $rootScope, errorFactory){
+    var mostWantedService =  {};
+    var mostWantedArray = [];
+    var clientParseObj;
+
+    //Request must wanted list from Parse
+    mostWantedService.fetchMostWantedList = function() {
+
+      //Request and receive the most wanted list
+      // var clientId = Session.clientId;
+      var Client = Parse.Object.extend("Client");
+      var clientQuery = new Parse.Query(Client);
+      clientQuery.include('mostWantedList');
+      clientQuery.get(Session.clientId, {
+        success: function(client){
+          clientParseObj = client;
+          mostWantedArray = client.get('mostWantedList');
+          $rootScope.$broadcast('MostWantedList', mostWantedArray);
+        },
+        error: function(object, error){
+          console.log("Error fetching most-wanted list.");
+        }
+      });
+
+      return mostWantedArray;
+    };
+
+    //Save one most wanted person, whether
+    //it is a new one or an old one
+    mostWantedService.saveMostWanted = function(person, index) {
+
+      if (!person.attributes.name){
+        //TODO show 'must have a name' error MOST-WANTED-NO-DATA
+        errorFactory.showError('MOST-WANTED-NO-NAME');
+        return;
+      }
+
+      var wantedPerson;
+      if (index < 0) {
+        var MostWanted = Parse.Object.extend("MostWanted");
+        wantedPerson = new MostWanted();
+      }
+      else{
+        wantedPerson = mostWantedArray[index];
+      }
+      wantedPerson.set("age", person.attributes.age);
+      wantedPerson.set("alias", person.attributes.alias);
+      wantedPerson.set("birthdate", person.attributes.birthdate);
+      wantedPerson.set("characteristics", person.attributes.characteristics);
+      wantedPerson.set("eyeColor", person.attributes.eyeColor);
+      wantedPerson.set("hairColor", person.attributes.hairColor);
+      wantedPerson.set("height", person.attributes.height);
+      wantedPerson.set("name", person.attributes.name);
+      wantedPerson.set("race", person.attributes.race);
+      wantedPerson.set("summary", person.attributes.summary);
+      wantedPerson.set("weight", person.attributes.weight);
+      wantedPerson.set("photo", person.attributes.photo);
+
+      wantedPerson.save(null, {
+        success: function(wantedPerson) {
+          // Execute any logic that should take place after the object is saved.
+          // alert('New object created with objectId: ' + wantedPerson.id);
+
+          //Add the wanted person to the array in the client object
+          //and save in parse
+          if(index < 0) {
+            clientParseObj.add("mostWantedList", {
+              __type: "Pointer",
+              className: "MostWanted",
+              objectId: wantedPerson.id
+            });
+            clientParseObj.save();
+            mostWantedArray.push(wantedPerson);
+            $rootScope.$broadcast('MostWantedList', mostWantedArray);
+          }
+          else {
+            clientParseObj.save();
+            $rootScope.$broadcast('UpdateMostWanted', [mostWantedArray[index], index]);
+          }
+        },
+        error: function(wantedPerson, error) {
+          // Execute any logic that should take place if the save fails.
+          // error is a Parse.Error with an error code and message.
+          alert('Failed to create new object, with error code: ' + error.message);
+        }
+      });
+
+      return;
+    };
+
+    //Delete a most wanted from parse
+    mostWantedService.deleteMostWanted = function(index){
+      var wantedPerson = mostWantedArray[index];
+      return wantedPerson.destroy({
+        success: function(deletedPerson) {
+          //Do something with the deleted object?
+          clientParseObj.remove("mostWantedList", {
+            __type: "Pointer",
+            className: "MostWanted",
+            objectId: deletedPerson.id
+          });
+          clientParseObj.save();
+          mostWantedArray.splice(index, 1);
+        },
+        error: function(object, error) {
+          //Delete failed, do something about it?
+          alert("Explotó esto!!!");
+        }
+      });
+    };
+
+    return mostWantedService;
+  }]);
+
   //Controller which assigns to its $scope
   //all controls necessary for user management;
   //created at body tag so all other $scopes can
@@ -1366,175 +1533,6 @@
       errorFactory.errorIsActive = false;
     });
 
-  }]);
-
-  //Service to read uploaded images as url
-  app.factory("fileReader", ['$q', '$log', function ($q, $log) {
-
-        var onLoad = function(reader, deferred, scope) {
-            return function () {
-                scope.$apply(function () {
-                    deferred.resolve(reader.result);
-                });
-            };
-        };
-
-        var onError = function (reader, deferred, scope) {
-            return function () {
-                scope.$apply(function () {
-                    deferred.reject(reader.result);
-                });
-            };
-        };
-
-        var onProgress = function(reader, scope) {
-            return function (event) {
-                scope.$broadcast("fileProgress",
-                    {
-                        total: event.total,
-                        loaded: event.loaded
-                    });
-            };
-        };
-
-        var getReader = function(deferred, scope) {
-            var reader = new FileReader();
-            reader.onload = onLoad(reader, deferred, scope);
-            reader.onerror = onError(reader, deferred, scope);
-            reader.onprogress = onProgress(reader, scope);
-            return reader;
-        };
-
-        var readAsDataURL = function (file, scope) {
-            var deferred = $q.defer();
-
-            var reader = getReader(deferred, scope);
-            reader.readAsDataURL(file);
-
-            return deferred.promise;
-        };
-
-        return {
-            readAsDataUrl: readAsDataURL
-        };
-    }]);
-
-  //Service for managing the most wanted list. It can save, add
-  //or delete most wanted people to/from Parse
-  app.factory("MostWantedService", ['Session', '$rootScope', 'errorFactory',
-  function(Session, $rootScope, errorFactory){
-
-    var mostWantedService =  {};
-    var mostWantedArray = [];
-    var clientParseObj;
-
-    //Request must wanted list from Parse
-    mostWantedService.fetchMostWantedList = function() {
-
-      //Request and receive the most wanted list
-      // var clientId = Session.clientId;
-      var Client = Parse.Object.extend("Client");
-      var clientQuery = new Parse.Query(Client);
-      clientQuery.include('mostWantedList');
-      clientQuery.get(Session.clientId, {
-        success: function(client){
-          clientParseObj = client;
-          mostWantedArray = client.get('mostWantedList');
-          $rootScope.$broadcast('MostWantedList', mostWantedArray);
-        },
-        error: function(object, error){
-          console.log("Error fetching most-wanted list.");
-        }
-      });
-
-      return mostWantedArray;
-    };
-
-    //Save one most wanted person, whether
-    //it is a new one or an old one
-    mostWantedService.saveMostWanted = function(person, index) {
-
-      if (!person.attributes.name){
-        //TODO show 'must have a name' error MOST-WANTED-NO-DATA
-        errorFactory.showError('MOST-WANTED-NO-NAME');
-        return;
-      }
-
-      var wantedPerson;
-      if (index < 0) {
-        var MostWanted = Parse.Object.extend("MostWanted");
-        wantedPerson = new MostWanted();
-      }
-      else{
-        wantedPerson = mostWantedArray[index];
-      }
-      wantedPerson.set("age", person.attributes.age);
-      wantedPerson.set("alias", person.attributes.alias);
-      wantedPerson.set("birthdate", person.attributes.birthdate);
-      wantedPerson.set("characteristics", person.attributes.characteristics);
-      wantedPerson.set("eyeColor", person.attributes.eyeColor);
-      wantedPerson.set("hairColor", person.attributes.hairColor);
-      wantedPerson.set("height", person.attributes.height);
-      wantedPerson.set("name", person.attributes.name);
-      wantedPerson.set("race", person.attributes.race);
-      wantedPerson.set("summary", person.attributes.summary);
-      wantedPerson.set("weight", person.attributes.weight);
-      wantedPerson.set("photo", person.attributes.photo);
-
-      wantedPerson.save(null, {
-        success: function(wantedPerson) {
-          // Execute any logic that should take place after the object is saved.
-          // alert('New object created with objectId: ' + wantedPerson.id);
-
-          //Add the wanted person to the array in the client object
-          //and save in parse
-          if(index < 0) {
-            clientParseObj.add("mostWantedList", {
-              __type: "Pointer",
-              className: "MostWanted",
-              objectId: wantedPerson.id
-            });
-            clientParseObj.save();
-            mostWantedArray.push(wantedPerson);
-            $rootScope.$broadcast('MostWantedList', mostWantedArray);
-          }
-          else {
-            clientParseObj.save();
-            $rootScope.$broadcast('UpdateMostWanted', [mostWantedArray[index], index]);
-          }
-        },
-        error: function(wantedPerson, error) {
-          // Execute any logic that should take place if the save fails.
-          // error is a Parse.Error with an error code and message.
-          alert('Failed to create new object, with error code: ' + error.message);
-        }
-      });
-
-      return;
-    };
-
-    //Delete a most wanted from parse
-    mostWantedService.deleteMostWanted = function(index){
-      var wantedPerson = mostWantedArray[index];
-      return wantedPerson.destroy({
-        success: function(deletedPerson) {
-          //Do something with the deleted object?
-          clientParseObj.remove("mostWantedList", {
-            __type: "Pointer",
-            className: "MostWanted",
-            objectId: deletedPerson.id
-          });
-          clientParseObj.save();
-          mostWantedArray.splice(index, 1);
-        },
-        error: function(object, error) {
-          //Delete failed, do something about it?
-          alert("Explotó esto!!!");
-        }
-      });
-    };
-
-    return mostWantedService;
   }]);
 
   //Controller for the Most-Wanted state
