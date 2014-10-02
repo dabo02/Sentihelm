@@ -47,6 +47,25 @@
           return routingService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
         }
       }
+    })
+
+    .state('most-wanted',{
+      url:"/most-wanted",
+      templateUrl:"/most-wanted.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
+        }
+      }
     });
   }]);
 
@@ -255,30 +274,26 @@
   app.factory('Session',['$window', '$rootScope', 'AUTH_EVENTS', function($window, $rootScope, AUTH_EVENTS){
 
     var session = {};
-    // //Try and get currentUser
-    // try{
-    //   //User is saved as a JSON, parse it
-    //   this.currentUser = JSON.parse($window.sessionStorage['user']);
-    // }
-    // catch(error){
-    //   //User is already an object
-    //   this.currentUser = $window.sessionStorage['user'];
-    // }
 
     //Create a session object, along with id, userId and role
-    session.create = function (sessionId, userId, userRole, clientId) {
-      session.id = sessionId;
+    session.create = function (userId, userRole, clientId, regions) {
       session.userId = userId;
       session.userRole = userRole;
       session.clientId = clientId;
+      session.regions = regions;
     };
 
     //Destroy current session object
     session.destroy = function () {
-      session.id = null;
       session.userId = null;
       session.userRole = null;
       session.clientId = null;
+      session.regions = null;
+
+      //Delete from session window
+      $window.sessionStorage['session'] = null;
+      $window.sessionStorage['user'] = null;
+      $window.sessionStorage['client'] = null;
     };
 
     session.store = function(user, client){
@@ -298,10 +313,10 @@
       }
 
       var sessionObj = {};
-      sessionObj.id = session.id;
       sessionObj.userId = session.userId;
       sessionObj.userRole = session.userRole;
       sessionObj.clientId = session.clientId;
+      sessionObj.regions = session.regions;
 
       $window.sessionStorage['session'] = JSON.stringify(sessionObj);
       $window.sessionStorage['user'] = JSON.stringify(userObj);
@@ -317,12 +332,12 @@
         storedSession = JSON.parse(storedSession);
         storedUser = JSON.parse(storedUser);
         storedClient = JSON.parse(storedClient);
-        session.id = storedSession.id;
         session.userId = storedSession.userId;
         session.userRole = storedSession.userRole;
         session.clientId = storedSession.clientId;
+        session.regions = storedSession.regions;
 
-        $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser, storedClient]);
+        $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser, storedClient, session.regions]);
       }
     }
 
@@ -541,30 +556,6 @@
     };
 
 
-    //TODO
-    //TODO
-    //TODO
-    //Testing Global Notifications
-    parseNotificationService.testGlobalNotifications = function(){
-      Parse.Push.send({
-        channels: ['homeClient_YgYS51sK0D'],
-        data: {
-          alert: 'Testing Global Notifications',
-          badge:"Increment",
-          sound: "cheering.caf",
-          title: 'GLOBAL NOTIFICATION TEST'
-        }
-      },{
-        success: function(){
-          console.log("SUCCESS");
-        },
-        error: function(error){
-          console.log("FAILED - "+error.code+": "+error.message);
-        }
-      });
-    };
-
-
     /**NOT BEING USED, BUT MIGHT BE IN THE FUTURE IF WE WANT
     TO ASSOCIATE NOTIFICATION WITH TIP BEFORE PUSHING**/
 
@@ -759,14 +750,16 @@
     };
 
     //TODO
-    $scope.setCurrentClient = function (client) {
+    $scope.setCurrentClient = function (client, regions) {
       $scope.currentClient = client;
+      $scope.currentRegions = regions;
     };
 
     //TODO
     $scope.$on(AUTH_EVENTS.loginSuccess, function(event, data){
       controllerScope.setCurrentUser(data[0]);
-      controllerScope.setCurrentClient(data[1]);
+      controllerScope.setCurrentClient(data[1], data[2]);
+
     });
   }]);
 
@@ -811,10 +804,11 @@
         function(response){
           var user = response.data[0];
           var client = response.data[1];
+          var regions = response.data[2];
           //Login was successful, create Session
-          Session.create(0, user.objectId, user.role, client.objectId);
+          Session.create(user.objectId, user.role, client.objectId, regions);
           Session.store(user, client);
-          $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client]);
+          $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
           loginCtrl.submitting = false;
           $scope.closeThisDialog();
 
@@ -855,7 +849,7 @@
       {name:'Video Streams', icon:'fa fa-video-camera', state:'#/streams'},
       {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
       {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
-      {name:'Wanted List', icon:'fa fa-warning', state:'#/wanted'},
+      {name:'Wanted List', icon:'fa fa-warning', state:'#/most-wanted'},
       {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
     ];
 
@@ -1209,7 +1203,7 @@
   function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
 
     // this.sending = false;
-    this.regions = $scope.currentClient.zipCodes;
+    this.regions = $scope.currentRegions;
     var notificationCtrl = this;
 
     this.allZipCodes = true;
@@ -1294,7 +1288,6 @@
       //Create Parse notification and send it
       var parseNotification = parseNotificationService.newGlobalNotification(notification);
       parseNotificationService.saveAndPushNotification(parseNotification);
-
     };
 
   }]);

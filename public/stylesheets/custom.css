@@ -74,15 +74,18 @@ input.strong{
 /**=============**/
 /**   COLORS    **/
 /**=============**/
-.dark-gray-bg{
-  background-color:#4d4d4d;
-}
 .dark-gray{
   color:#4d4d4d;
+}
+.dark-gray-bg{
+  background-color:#4d4d4d;
 }
 
 .white{
   color:#ffffff;
+}
+.white-bg{
+  background-color:#ffffff;
 }
 
 .light-blue{
@@ -95,9 +98,9 @@ input.strong{
 .orange{
   color:#ff6600;
 }
-.orange-border{
-  border-color:#ff6600;
-}
 .orange-bg{
   background-color:#ff6600;
+}
+.orange-border{
+  border-color:#ff6600;
 }

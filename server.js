@@ -201,11 +201,14 @@ app.post('/login', function(request, response){
     success: function(user) {
       //Get Client to which user belongs to
       var clientQuery = new Parse.Query(Client);
+      clientQuery.include("regions");
+      clientQuery.include("mostWantedList");
       clientQuery.get(user.attributes.homeClient.id, {
         success: function(client){
           var answer = [];
           answer.push(user);
           answer.push(client);
+          answer.push(client.get('regions'));
           // user.attributes.homeClient = client;
           response.send(200, answer);
         },
