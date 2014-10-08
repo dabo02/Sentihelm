@@ -96,10 +96,6 @@
           <div class="right" ng-controller="GoogleMapController as mapCtrl">
             <div class="map-canvas" id="{{tip.controlNumber}}">
 
-              <!--!!!!! MAP WILL ALWAYS BE SHOWN; OLD VERSION WHERE MAP WAS NOT SHOWN DISPLAYED THIS TEXT !!!!!-->
-                  <!------ANON NO LOCATION------>
-                  <!-- <span ng-show="tip.anonymous">NO LOCATION AVAILABLE</span> -->
-
               <!------GOOGLE MAP------>
               <google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
                 <marker coords="mapCtrl.getMarkerPosition(tip.center)"></marker>
