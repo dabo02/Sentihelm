@@ -1,4 +1,4 @@
-<div class="jumbotron vertical-center">
+<div class="jumbotron vertical-center" ng-controller="GlobalNotificationController as globalNotifCtrl">
   <div class="container">
 
     <h3 class="text-center">Send A Notification</h3>
@@ -45,6 +45,12 @@
           </div>
         </div>
 
+      </div>
+
+      <div class="form-group">
+        <div class="col-md-4 col-md-offset-4">
+          <button type="submit" class="btn btn-success" ng-click="globalNotifCtrl.submitNotification()">Send test notification</button>
+        </div>
       </div>
 
     </form>

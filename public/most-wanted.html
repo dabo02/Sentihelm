@@ -83,7 +83,7 @@
               <button type="submit" class="btn btn-success" style="width:100%;"ng-disabled="!mostWantedCtrl.editedPeopleIndices[$index]" ng-click="mostWantedCtrl.save($index)">Save</button>
             </div>
             <div class="col-md-1">
-              <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.delete($index)" ng-disabled="mostWantedCtrl.disableNewButton && $index === (mostWantedCtrl.wantedArray.length-1)">Delete</button>
+              <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.showConfirmDialog($index)" ng-disabled="mostWantedCtrl.disableNewButton && $index === (mostWantedCtrl.wantedArray.length-1)">Delete</button>
             </div>
           </div>
 

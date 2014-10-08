@@ -21,6 +21,11 @@ var net = require('net');
 var Parse = require('parse').Parse;
 var OpenTok = require('opentok');
 var MobileClient = require('./lib/mobileclient');
+// var RNCryptor = require('./lib/rncryptor.js');
+// var sjcl = require('sjcl');
+// var crypto = require('crypto');
+var AesUtil = require('./lib/AesUtil.js');
+
 
 //=========================================
 //  ENVIRONMENT SETUP
@@ -72,6 +77,168 @@ io.on('connect', function(socket){
   //Front-end requested a new batch of tips;
   //get query data and fetch
   socket.on('request-batch', function(data){
+
+    //********************TESTING ENCRYPTION Get Message from Parse********************************************/
+
+
+
+    // var TestingEncryption = Parse.Object.extend("TestingEncryption");
+    // var query = new Parse.Query(TestingEncryption);
+    // query.get("LUm1XE6w7G", {
+    //   success: function(object) {
+    //     // The object was retrieved successfully.
+    //     var code = JSON.parse(JSON.stringify(object)).dataObject;
+    //
+    //     var hashes = crypto.getHashes();
+    //
+    //     var AESCrypt = {};
+    //
+    //     AESCrypt.decrypt = function(cryptkey, iv, encryptdata) {
+    //         var decipher = crypto.createDecipheriv('aes-256-cbc', cryptkey, iv);
+    //         return Buffer.concat([
+    //             decipher.update(encryptdata),
+    //             decipher.final()
+    //         ]);
+    //     };
+    //
+    //     AESCrypt.encrypt = function(cryptkey, iv, cleardata) {
+    //         var encipher = crypto.createCipheriv('aes-256-cbc', cryptkey, iv);
+    //         return Buffer.concat([
+    //             encipher.update(cleardata),
+    //             encipher.final()
+    //         ]);
+    //     };
+    //
+    //     var cryptkey = crypto.createHash('sha256').update('Nixnogen').digest(),
+    //     iv = new Buffer('a2xhcgAAAAAAAAAA'),
+    //     // buf = new Buffer("Here is some data for the encrypt"), // 32 chars
+    //     buf = new Buffer("hello"), // 32 chars
+    //     enc = AESCrypt.encrypt(cryptkey, iv, buf);
+    //
+    //     var test = "AwHnUKnDtUI+5B+BsWujFeLd9oeq/I+AynoonStWeE8jz09fwwEjkzAxcLovA0ARbm+sgUlt8Yk+g4k95iPqjzHeQhmw0SJn1Aj9LZEgF/hxww=="
+    //     var test2 = new Buffer(code.base64, 'base64');
+    //     // var buf = new Buffer('aGVsbG8=', 'base64');
+    //     var dec = AESCrypt.decrypt(cryptkey, iv, test2);
+    //
+    //     console.log("encrypt length: ", enc.length);
+    //     console.log("encrypt in Base64:", enc.toString('base64'));
+    //     console.log("decrypt all: " + dec.toString('utf8'));
+    //
+    //
+    //   },
+    //   error: function(object, error) {
+    //     // The object was not retrieved successfully.
+    //     // error is a Parse.Error with an error code and message.
+    //   }
+    // });
+
+
+    //********************TESTING ENCRYPTION #1 RNCryptor ***********************************/
+
+    // var message = "thepassword";
+    // var decryptionTest = function(vector) {
+    //   var a = sjcl.random.randomWords(2, 0);
+    //   var b = sjcl.random.randomWords(2, 0);
+    //   var c = sjcl.random.randomWords(4, 0);
+    //   var ciphertext = RNCryptor.Encrypt("helloworld",
+    //                                      sjcl.codec.hex.toBits(message),
+    //                                      {});
+    //
+    //   var str = sjcl.codec.hex.fromBits(ciphertext);
+    //
+    //   var plaintext = RNCryptor.Decrypt("helloworld",
+    //                                     sjcl.codec.hex.toBits(str),
+    //                                      {});
+    //
+    //   var decodedText = sjcl.codec.hex.fromBits(plaintext);
+    //   if(decodedText === message) {
+    //     console.log("*Encryption/decryption succesfull!!!");
+    //   }
+    // };
+
+    // var decryptionTest = function(vector) {
+    //   var ciphertext = RNCryptor.Encrypt(vector["password"],
+    //                                      sjcl.codec.hex.toBits(vector["plaintext_hex"].replace(/\s/g,'')),
+    //                                      { "encryption_salt": sjcl.codec.hex.toBits(vector["enc_salt_hex"].replace(/\s/g,'')),
+    //                                        "hmac_salt": sjcl.codec.hex.toBits(vector["hmac_salt_hex"].replace(/\s/g,'')),
+    //                                        "iv": sjcl.codec.hex.toBits(vector["iv_hex"].replace(/\s/g,''))
+    //                                      });
+    //
+    //   var ciphertext_hex = sjcl.codec.hex.fromBits(ciphertext);
+    //   if (ciphertext_hex === vector["ciphertext_hex"].replace(/\s/g,'')) {
+    //     console.log('Encoding succesfull.');
+    //   }
+    //
+    //   var plaintext = RNCryptor.Decrypt(vector["password"],
+    //                                     vector["ciphertext_hex"].replace(/\s/g,''),
+    //                                      { "encryption_salt": sjcl.codec.hex.toBits(vector["enc_salt_hex"].replace(/\s/g,'')),
+    //                                        "hmac_salt": sjcl.codec.hex.toBits(vector["hmac_salt_hex"].replace(/\s/g,'')),
+    //                                        "iv": sjcl.codec.hex.toBits(vector["iv_hex"].replace(/\s/g,''))
+    //                                      });
+    //
+    //   var decodedText = sjcl.codec.hex.fromBits(plaintext);
+    //   if(decodedText === vector["plaintext_hex"].replace(/\s/g,'')) {
+    //     console.log("*Encryption/decryption succesfull!!!");
+    //   }
+    // };
+
+    // var vector = {"title":"Exactly one block","version":"3","password":"thepassword","enc_salt_hex":"0102030405060700","hmac_salt_hex":"0203040506070801","iv_hex":"030405060708090a0b0c0d0e0f000102","plaintext_hex":"0123456789abcdef","ciphertext_hex":"03010102 03040506 07000203 04050607 08010304 05060708 090a0b0c 0d0e0f00 01020e43 7fe80930 9c03fd53 a475131e 9a1978b8 eaef576f 60adb8ce 2320849b a32d7429 00438ba8 97d22210 c76c35c8 49df"};
+    // var vector = {"title":"Short password","version":"3","password":"thepassword","salt_hex":"0203040506070801","key_hex":"0ea84f52 52310dc3 e3a7607c 33bfd1eb 580805fb 68293005 da21037c cf499626"};
+    // var vector = {"title":"More than one block","version":"3","password":"thepassword","enc_salt_hex":"0203040506070001","hmac_salt_hex":"0304050607080102","iv_hex":"0405060708090a0b0c0d0e0f00010203","plaintext_hex":"0123456789abcdef 01234567","ciphertext_hex":"0301020304050607000103040506070801020405060708090a0b0c0d0e0f00010203e01bbda5df2ca8adace38f6c588d291e03f951b78d3417bc2816581dc6b767f1a2e57597512b18e1638f21235fa5928c"};
+    // decryptionTest(vector);
+
+
+    //********************TESTING ENCRYPTION #3 ********************************************/
+
+    // var plainText = 'AwEndQgaWN3YtajG9FmC/1ojIouGFka6NPNkD+PVLLs3mOt+lliLdJ2iCPw5EaY8UiXlKj3Ni4ANAtPeX9XLYMcK4LQRM/3MvFz/yD7+PGPW7A==';
+  /*  var plainText = 'hola pepe';
+    var pass = 'helloworld'; // helloworld in base64: aGVsbG93b3JsZA==
+    var cipher1 = crypto.createCipher('aes-256-cbc', pass);
+    var cipherText1 = cipher1.update(plainText, 'ascii','base64');
+    cipherText1 += cipher1.final('binary');
+
+    console.log('plainText:' + plainText);
+    console.log('cipherText length:' + cipherText1.length);
+    console.log("cipherText:" + cipherText1);
+
+    var decipher1 = crypto.createDecipher('aes-256-cbc', pass);
+    var result1 = decipher1.update(cipherText1, 'base64', 'ascii');
+    // var result1 = decipher1.update(plainText, 'base64', 'ascii');
+    result1 += decipher1.final('ascii');
+
+    console.log('result:' + result1);
+
+    */
+    //*************************************************************************************/
+    // var iv = "F27D5C9927726BCEFE7510B1BDD3D137";
+    // var salt = "3FF2EC019C627B945225DEBAD71A01B6985FE84C95A70EB132882F88C0A59A55";
+    // var plainText = "hola pepe";
+    // // var plainText = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy "
+    // //   + "eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed "
+    // //   + "diam voluptua. At vero eos et accusam et justo duo dolores et ea "
+    // //   + "rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem "
+    // //   + "ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur "
+    // //   + "sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et "
+    // //   + "dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam "
+    // //   + "et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea "
+    // //   + "takimata sanctus est Lorem ipsum dolor sit amet.";
+    // var keySize = 256;
+    // var iterations = iterationCount = 10000;
+    // var passPhrase = "helloworld";
+    //
+    // var aesUtil = new AesUtil(keySize, iterationCount);
+    // var encrypt = aesUtil.encrypt(salt, iv, passPhrase, plainText);
+    //
+    // // var areEqual = encrypt === cipherText;
+    //
+    // // var aesUtil = new AesUtil(keySize, iterationCount)
+    // var decrypt = aesUtil.decrypt(salt, iv, passPhrase, encrypt);
+    //
+    // areEqual = decrypt === plainText;
+
+
+
+    //*************************************************************************************/
     //Get filtering values: by clientId, date
     //and tips after or before given date
     var clientId = data.clientId
@@ -201,11 +368,15 @@ app.post('/login', function(request, response){
     success: function(user) {
       //Get Client to which user belongs to
       var clientQuery = new Parse.Query(Client);
+      clientQuery.include("regions");
+      clientQuery.include("mostWantedList");
+
       clientQuery.get(user.attributes.homeClient.id, {
         success: function(client){
           var answer = [];
           answer.push(user);
           answer.push(client);
+          answer.push(client.get('regions'));
           // user.attributes.homeClient = client;
           response.send(200, answer);
         },
