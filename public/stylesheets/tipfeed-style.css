@@ -1,14 +1,5 @@
 /*************PAGE*************/
 /*****************************/
-#tip-feed-container{
-  position:fixed;
-  top:20%;
-  left:17.5%;
-  width:65%;
-  height:70%;
-  overflow-y:auto;
-  text-align:center;
-}
 #tip-feed{
   margin:0 auto;
   padding:0;
@@ -17,9 +8,6 @@
   height:auto;
   list-style-type:none;
 }
-/*a:visited{
-  color:none;
-}*/
 
 /*************TIP*************/
 /*****************************/

@@ -10,6 +10,16 @@ body{
   background-color:#ffffff;
 }
 
+.mid-container{
+  position:fixed;
+  top:20%;
+  left:17.5%;
+  width:65%;
+  height:70%;
+  overflow-y:auto;
+  text-align:center;
+}
+
 /**=============**/
 /**   HEADER    **/
 /**=============**/

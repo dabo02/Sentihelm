@@ -29,6 +29,26 @@
       }
     })
 
+    //Video Streams endpoint/url
+    .state('video-streams',{
+      url:"/video-streams",
+      templateUrl:"/video-streams.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
+        }
+      }
+    })
+
     //Global notifications endpoint/url
     .state('global-notifications',{
       url:"/global-notifications",
@@ -48,6 +68,8 @@
         }
       }
     })
+
+    //Most Wanted List endoint/url
     .state('most-wanted',{
       url:"/most-wanted",
       templateUrl:"/most-wanted.html",
@@ -1029,7 +1051,7 @@
     //entries are off by default
     this.entries=[
       {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
-      {name:'Video Streams', icon:'fa fa-video-camera', state:'#/streams'},
+      {name:'Video Streams', icon:'fa fa-video-camera', state:'#/video-streams'},
       {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
       {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
       {name:'Wanted List', icon:'fa fa-warning', state:'#/most-wanted'},

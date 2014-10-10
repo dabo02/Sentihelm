@@ -1,0 +1,50 @@
+#video-streams-container{
+  margin-top:10%;
+  height:80%;
+  width:100%;
+  border:solid 0.2em #4d4d4d;
+}
+
+#video-streams-queue{
+  display:inline-block;
+  float:left;
+  height:100%;
+  width:20%;
+  border-right:solid 0.2em #4d4d4d;
+}
+
+#video-streams-video{
+  display:inline-block;
+  float:left;
+  height:70%;
+  width:52.5%;
+  border-right:solid 0.2em #4d4d4d;
+  border-bottom:solid 0.2em #4d4d4d;
+}
+
+#video-streams-chat{
+  display:inline-block;
+  float:left;
+  height:30%;
+  width:52.5%;
+  border-right:solid 0.2em #4d4d4d;
+}
+#video-streams-chat-log{
+  height:80%;
+  width:100%;
+  resize:none;
+  background-color:red;
+}
+
+#video-streams-map{
+  display:inline-block;
+  height:50%;
+  width:27.5%;
+  border-bottom:solid 0.2em #4d4d4d;
+}
+
+#video-streams-info{
+  display:inline-block;
+  height:50%;
+  width:27.5%;
+}
