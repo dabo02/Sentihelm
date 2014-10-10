@@ -43,6 +43,13 @@ Parse.initialize(APP_ID, JS_KEY);
 //Set up Parse classes for queries
 var TipReport = Parse.Object.extend("TipReport");
 var Client = Parse.Object.extend("Client");
+var VideoSession = Parse.Object.extend("VideoSession");
+
+//Set OpenTok key and secret. Create a new opentok object,
+//which is used to manage sessions and tokens.
+var otKey = '44755992';
+var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
+var opentok = new OpenTok(otKey, otSecret);
 
 //Create an non-overriding log file and feed it
 //to an express logger with default settings
@@ -56,16 +63,6 @@ app.use(bodyParser());
 //Add the static middleware: allows express to serve up
 //static content in the specified directory (for CSS/JS).
 app.use(express.static(__dirname + '/public'));
-
-
-//Set OpenTok key and secret. Create a new opentok object,
-//which is used to manage sessions and tokens.
-var otKey = '44755992';
-var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
-var opentok = new OpenTok.OpenTokSDK(otKey, otSecret);
-
-//Array that holds all current tips
-var tipArray = [];
 
 //Setup socket.io that communicates with front end
 io.on('connect', function(socket){
@@ -165,7 +162,6 @@ io.on('connect', function(socket){
           tips[i].date = tempDate;
         }
 
-        console.log('Total tips for client: '+totalTips);
         //Send the tips to the front end
         socket.emit('response-batch', {tips : tips, totalTipCount : totalTips});
 
@@ -224,6 +220,71 @@ app.post('/new-tip', function(request, response){
     io.sockets.emit('new-tip', {tip : tip});
     response.send(200);
   }
+});
+
+//Recieve a request for a video stream connection;
+//get data form mobile client, save session info in
+//Parse and pass on to front-end
+app.post('/request-video-connection', function(request, response){
+
+  //Check if password is valid
+  if(request.body.password!=="bahamut"){
+    return;
+  }
+
+  //Get data representing the mobile client
+  var connection = JSON.parse(request.body.data);
+
+  //Create OpenTok session
+  opentok.createSession({mediaMode:"routed"}, function(error, session){
+    if(error){
+      //TODO HANDLE ERROR
+      response.send(400,error);
+    }
+
+    //Create the token that will be sent to the mobile client
+    var clientToken = opentok.generateToken(session.sessionId, {
+      role: 'publisher',
+      expireTime: (new Date().getTime()/1000)+(3600),
+      data: JSON.stringify(connection)
+    });
+
+    //Prepare video session object
+    var videoSession = new VideoSession();
+    videoSession.set('status', 'pending');
+    videoSession.set('sessionId', session.sessionId);
+    videoSession.set('mobileClientToken', clientToken);
+    videoSession.set('mobileUser', {
+      __type:"Pointer",
+      className:"User",
+      objectId:connection.userObjectId
+    });
+    videoSession.set('client', {
+      __type:"Pointer",
+      className:"Client",
+      objectId:connection.currentClientId
+    });
+
+    //Save video session, respond to
+    //mobile client with sessionId and token,
+    //and pass connection on to front-end
+    videoSession.save(null, {
+      success: function(videoSession){
+        var stream = connection;
+        stream.sessionId = session.sessionId;
+        stream.connectionId = videoSession.id;
+        io.sockets.emit('new-video-stream', {stream: stream});
+        response.send(200, {
+          sessionId: session.sessionId,
+          token: clientToken
+        });
+      },
+      error: function(videoSession, error){
+        //TODO Handle error when couldn't save video session
+      }
+    });
+  });
+
 });
 
 //Landing/login page
@@ -328,7 +389,7 @@ function finalizeConnection(client){
     data : client.username
   });
   console.log(notice("CREATED CLIENT TOKEN\n")+token+"\n");
-  var answer = JSON.stringify({sessionId : client.sessionId, token : token});
+  var answer = JSON.stringify({sessionId : client.sessionId, clientToken : token});
   client.socket.write(answer);
   console.log(notice("SESSION SENT\n")+client.sessionId+"\n");
   console.log(notice("CLIENT TOKEN SENT\n")+token+"\n");
