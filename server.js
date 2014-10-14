@@ -236,16 +236,18 @@ app.post('/request-video-connection', function(request, response){
   var connection = JSON.parse(request.body.data);
 
   //Create OpenTok session
-  opentok.createSession({mediaMode:"routed"}, function(error, session){
+  opentok.createSession({mediaMode:"relayed"}, function(error, session){
+
+    //TODO
+    //Handle Error when session could not be created
     if(error){
-      //TODO HANDLE ERROR
       response.send(400,error);
     }
 
     //Create the token that will be sent to the mobile client
     var clientToken = opentok.generateToken(session.sessionId, {
       role: 'publisher',
-      expireTime: (new Date().getTime()/1000)+(3600),
+      expireTime: ((new Date().getTime()) + 36000),
       data: JSON.stringify(connection)
     });
 
@@ -268,21 +270,22 @@ app.post('/request-video-connection', function(request, response){
     //Save video session, respond to
     //mobile client with sessionId and token,
     //and pass connection on to front-end
-    videoSession.save(null, {
-      success: function(videoSession){
-        var stream = connection;
-        stream.sessionId = session.sessionId;
-        stream.connectionId = videoSession.id;
-        io.sockets.emit('new-video-stream', {stream: stream});
-        response.send(200, {
-          sessionId: session.sessionId,
-          token: clientToken
-        });
-      },
-      error: function(videoSession, error){
-        //TODO Handle error when couldn't save video session
-      }
+    videoSession.save().then(function(videoSession){
+      var stream = connection;
+      stream.sessionId = session.sessionId;
+      stream.connectionId = videoSession.id;
+      response.send(200, {
+        objectId: videoSession.id,
+        sessionId: session.sessionId,
+        token: clientToken
+      });
+      io.sockets.emit('new-video-stream', {stream: stream});
+    }, function(videoSession, error){
+      //TODO
+      //Handle error when couldn't save video session
+      var err = error;
     });
+    
   });
 
 });

@@ -773,6 +773,34 @@
     return paginator;
   }]);
 
+  app.factory('VideoStreamsService', ['socket', '$rootScope', function(socket, $rootScope){
+
+    var VideoStreamsService = {};
+
+    VideoStreamsService.getActiveStreams = function(clientId){
+      var VideoSession = Parse.Object.extend("VideoSession");
+      var query = new Parse.Query(VideoSession);
+      query.equalTo('client', {
+        __type: "Pointer",
+        className: "Client",
+        objectId: clientId
+      });
+      query.containedIn("status", ['pending', 'active']);
+      query.include("mobileUser");
+      query.find().then(function(results){
+
+        $rootScope.$broadcast('active-streams-fetched', results);
+
+      }, function(error){
+        //TODO
+        //Manage error when couldn't fetch active video streams
+        var err = error;
+      });
+    };
+
+    return VideoStreamsService;
+  }]);
+
   //Service to read uploaded images as url
   app.factory("fileReader", ['$q', '$log', function ($q, $log) {
         var onLoad = function(reader, deferred, scope) {
@@ -1068,6 +1096,32 @@
     $scope.$on('state-change', function(event){
       drawer.currentState = $rootScope.currentState;
     });
+  }]);
+
+  //Controller for VideStreams route; controls
+  //the video streams view, which contains queue,
+  //current video, chat with current mobile client,
+  //information on current call and all other controls
+  //to swap video calls
+  app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', function($scope, socket, VideoStreamsService){
+    var vidStrmCtrl = this;
+    this.queue = [];
+    VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
+
+    $scope.$on('active-streams-fetched', function(event, data){
+      vidStrmCtrl.queue = data;
+      $scope.$apply();
+    });
+
+    socket.on('new-video-stream', function(data){
+      var stream = data.stream;
+      queue.unshift(stream);
+    });
+
+    this.activateStream = function(stream){
+
+    };
+
   }]);
 
   //Controller for tipfeed route; handles the tip feed

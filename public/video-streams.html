@@ -1,8 +1,18 @@
-<div class="mid container">
+<div class="mid container" ng-controller="VideoStreamsController as videoStreamsCtrl">
   <div id="video-streams-container">
 
     <div id="video-streams-queue">
-      QUEUE
+
+      <ul class="video-streams-queue-list">
+
+        <li class="video-streams-queue-list-item"
+         ng-repeat="stream in videoStreamsCtrl.queue track by $index"
+        >
+          {{stream.attributes.mobileUser.attributes.firstName}}
+        </li>
+
+      </ul>
+
     </div>
 
     <div id="video-streams-video">

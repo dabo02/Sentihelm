@@ -12,6 +12,19 @@
   width:20%;
   border-right:solid 0.2em #4d4d4d;
 }
+.video-streams-queue-list{
+  height:inherit;
+  overflow:auto;
+  list-style-type:none;
+  padding:0;
+}
+.video-streams-queue-list-item{
+  display:block;
+  width:100%;
+  height:10%;
+  border-bottom:solid 0.1em #4d4d4d;
+  cursor:pointer;
+}
 
 #video-streams-video{
   display:inline-block;
@@ -33,7 +46,7 @@
   height:80%;
   width:100%;
   resize:none;
-  background-color:red;
+  border-bottom:solid 0.1em #4d4d4d;
 }
 
 #video-streams-map{
