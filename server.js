@@ -236,7 +236,7 @@ app.post('/request-video-connection', function(request, response){
   var connection = JSON.parse(request.body.data);
 
   //Create OpenTok session
-  opentok.createSession({mediaMode:"relayed"}, function(error, session){
+  opentok.createSession({mediaMode:"routed"}, function(error, session){
 
     //TODO
     //Handle Error when session could not be created
@@ -251,11 +251,20 @@ app.post('/request-video-connection', function(request, response){
       data: JSON.stringify(connection)
     });
 
+    //Create the token that officer will use to connect via web
+    var webToken = opentok.generateToken(session.sessionId, {
+      role: 'moderator',
+      data: JSON.stringify(connection.currentClientId)
+    });
+
     //Prepare video session object
     var videoSession = new VideoSession();
     videoSession.set('status', 'pending');
     videoSession.set('sessionId', session.sessionId);
     videoSession.set('mobileClientToken', clientToken);
+    videoSession.set('webClientToken', webToken);
+    videoSession.set('latitude', connection.latitude);
+    videoSession.set('longitude', connection.longitude);
     videoSession.set('mobileUser', {
       __type:"Pointer",
       className:"User",
@@ -274,6 +283,7 @@ app.post('/request-video-connection', function(request, response){
       var stream = connection;
       stream.sessionId = session.sessionId;
       stream.connectionId = videoSession.id;
+      stream.webClientToken = webToken;
       response.send(200, {
         objectId: videoSession.id,
         sessionId: session.sessionId,
@@ -285,7 +295,7 @@ app.post('/request-video-connection', function(request, response){
       //Handle error when couldn't save video session
       var err = error;
     });
-    
+
   });
 
 });

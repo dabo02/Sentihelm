@@ -398,10 +398,6 @@
 
       //Return true if userId is set; false otherwise
       return !!Session.userId;
-
-      // $window.sessionStorage['session'] = this;
-      // $window.sessionStorage['user'] = user;
-      // return !!$window.sessionStorage['user'];
     };
 
     authenticator.isAuthorized = function (authorizedRoles) {
@@ -412,16 +408,6 @@
 
       return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
 
-      //Check if user is authenticated and if his role(s)
-      //is in the authorized roles for this specific page
-      // if(!!$window.sessionStorage.user) {
-      //   // console.log(JSON.parse($window.sessionStorage.user));
-      //   var temp = JSON.parse($window.sessionStorage['user']);
-      //   return (this.isAuthenticated() && authorizedRoles.indexOf(temp.role) !== -1);
-      // }
-      // else {
-      //   return false;
-      // }
     };
 
     return authenticator;
@@ -775,11 +761,17 @@
 
   app.factory('VideoStreamsService', ['socket', '$rootScope', function(socket, $rootScope){
 
+    var otKey = '44755992';
+
+    var VideoSession = Parse.Object.extend("VideoSession");
+
     var VideoStreamsService = {};
 
+
+    //Get all active video streams from Parse
     VideoStreamsService.getActiveStreams = function(clientId){
-      var VideoSession = Parse.Object.extend("VideoSession");
       var query = new Parse.Query(VideoSession);
+
       query.equalTo('client', {
         __type: "Pointer",
         className: "Client",
@@ -787,15 +779,86 @@
       });
       query.containedIn("status", ['pending', 'active']);
       query.include("mobileUser");
+
       query.find().then(function(results){
+        //Format each result for front-end
+        //keep them in modifiedStreams array
+        var modifiedStreams = [];
+        for(var i=0; i<results.length; i++){
+          //Create a new strem and copy over values
+          //from current stream in results
+          var newStream = {};
+          newStream.connectionId = results[i].id;
+          newStream.sessionId = results[i].attributes.sessionId;
+          newStream.webClientToken = results[i].attributes.webClientToken;
+          newStream.latitude = results[i].attributes.latitude;
+          newStream.longitude = results[i].attributes.longitude;
+          newStream.currentCliendId = results[i].attributes.client.id;
+          newStream.userObjectId = results[i].attributes.mobileUser.id;
+          newStream.firstName = results[i].attributes.mobileUser.attributes.firstName;
+          newStream.lastName = results[i].attributes.mobileUser.attributes.lastName;
+          newStream.email = results[i].attributes.mobileUser.attributes.email;
+          newStream.phone = results[i].attributes.mobileUser.attributes.phoneNumber;
 
-        $rootScope.$broadcast('active-streams-fetched', results);
-
+          //Add modified stream to collection
+          modifiedStreams.push(newStream);
+        }
+        //Send modified results to controller
+        $rootScope.$broadcast('active-streams-fetched', modifiedStreams);
       }, function(error){
         //TODO
         //Manage error when couldn't fetch active video streams
         var err = error;
       });
+    };
+
+    //Subscribe to streams in the current session
+    VideoStreamsService.subscribeToStream = function(stream, currentUser){
+      var session = OT.initSession(otKey, stream.sessionId);
+
+      session.on("streamCreated", function(event){
+        var subscriber = session.subscribe(event.stream, 'video-streams-video', {insertMode:'append'},
+        function(error){
+          if(!!error){
+            //TODO
+            //Handle error when couldn't subscribe to published streams
+            return;
+          }
+
+          var query = new Parse.Query(VideoSession);
+          query.get(stream.connectionId)
+
+          .then(function(videoSession){
+            videoSession.set('officerUser', {
+              __type:"Pointer",
+              className:"User",
+              objectId:currentUser.objectId
+            });
+            return videoSession.save();
+          }, function(videoSession, error){
+            //TODO
+            //Handle error when videoession could not be retrieved
+          })
+
+          .then(function(videoSession){
+            //TODO
+            //Session was upated with officer
+          }, function(videoSession, error){
+            //TODO
+            //Session could not be saved
+          });
+
+        });
+      });
+
+      session.connect(stream.webClientToken, function(error){
+        if(!!error){
+          //TODO
+          //Handle error when couldn't connect to session
+          return;
+        }
+      });
+
     };
 
     return VideoStreamsService;
@@ -1106,20 +1169,23 @@
   app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', function($scope, socket, VideoStreamsService){
     var vidStrmCtrl = this;
     this.queue = [];
+    this.currentStream ={};
     VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
 
     $scope.$on('active-streams-fetched', function(event, data){
       vidStrmCtrl.queue = data;
+      vidStrmCtrl.currentStream = data[0];
       $scope.$apply();
     });
 
     socket.on('new-video-stream', function(data){
       var stream = data.stream;
-      queue.unshift(stream);
+      vidStrmCtrl.queue.unshift(stream);
     });
 
-    this.activateStream = function(stream){
-
+    vidStrmCtrl.activateStream = function(stream){
+      this.currentStream = stream;
+      VideoStreamsService.subscribeToStream(stream, $scope.currentUser);
     };
 
   }]);
