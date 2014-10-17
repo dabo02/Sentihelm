@@ -817,7 +817,8 @@
       var session = OT.initSession(otKey, stream.sessionId);
 
       session.on("streamCreated", function(event){
-        var subscriber = session.subscribe(event.stream, 'video-streams-video', {insertMode:'append'},
+        var subscriber = session.subscribe(event.stream, 'video-streams-video',
+        {insertMode:'replace', height:'402.6', width:'593'},
         function(error){
           if(!!error){
             //TODO
@@ -843,12 +844,19 @@
           .then(function(videoSession){
             //TODO
             //Session was upated with officer
+            var success = videoSession;
           }, function(videoSession, error){
             //TODO
+            var fail = error;
             //Session could not be saved
           });
 
         });
+      });
+
+      session.on("streamDestroyed", function(event){
+        event.preventDefault();
+        $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
       });
 
       session.connect(stream.webClientToken, function(error){
@@ -1170,6 +1178,7 @@
     var vidStrmCtrl = this;
     this.queue = [];
     this.currentStream ={};
+
     VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
 
     $scope.$on('active-streams-fetched', function(event, data){
@@ -1181,6 +1190,17 @@
     socket.on('new-video-stream', function(data){
       var stream = data.stream;
       vidStrmCtrl.queue.unshift(stream);
+    });
+
+    $scope.$on('stream-destroyed', function(event, data){
+      for(var stream in vidStrmCtrl.queue){
+        if(stream.sessionId === data.sessionId){
+          var index = vidStrmCtrl.queue.indexOf(stream);
+          vidStrmCtrl.queue.splice(index, 1);
+          break;
+        }
+      }
+      $scope.$apply();
     });
 
     vidStrmCtrl.activateStream = function(stream){

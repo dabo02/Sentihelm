@@ -104,6 +104,9 @@ input.strong{
 .white-bg{
   background-color:#ffffff;
 }
+.white-border{
+  border-color:#ff6600;
+}
 
 .light-blue{
   color:#219ef9;

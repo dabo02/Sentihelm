@@ -5,13 +5,10 @@
 
       <ul class="video-streams-queue-list">
 
-        <li class="video-streams-queue-list-item"
-         ng-repeat="stream in videoStreamsCtrl.queue track by $index"
-         ng-click="videoStreamsCtrl.activateStream(stream)"
-        >
-          <span>
+        <li class="video-streams-queue-list-item" ng-repeat="stream in videoStreamsCtrl.queue track by $index">
+          <button class="list-item-button" ng-click="videoStreamsCtrl.activateStream(stream)">
             {{stream.firstName+" "+stream.lastName}}
-          </span>
+          </button>
 
         </li>
 
@@ -40,7 +37,9 @@
     </div>
 
     <div id="video-streams-info">
-      INFO
+      {{videoStreamsCtrl.currentStream.firstName+" "+videoStreamsCtrl.currentStream.lastName}}<br>
+      {{videoStreamsCtrl.currentStream.email}}<br>
+      {{videoStreamsCtrl.currentStream.phone}}
     </div>
 
   </div>
