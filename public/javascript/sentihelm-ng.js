@@ -1517,7 +1517,7 @@
       }
 
       //Toggle sending animation
-      // this.sending = true;
+      this.sending = true;
 
       //Set the channel where notification will be sent
       parseNotificationService.channels.push(this.channel);
