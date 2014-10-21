@@ -1,0 +1,27 @@
+
+.most-wanted-mid-container{
+  position:fixed;
+  top:15%;
+  left:17.5%;
+  width:65%;
+  height:80%;
+  overflow-y:auto;
+  text-align:center;
+}
+
+.most-wanted-item{
+
+    /* background-color: lightgrey; */
+    border:none;
+    border-radius:0;
+    border-top: 5px solid #ddd;
+    border-bottom: 5px solid #ddd;
+    border-right: 5px solid #ddd;
+    border-left: 5px solid #ddd;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.most-wanted-ranking-number{
+    text-align: left;
+    font-size: -webkit-xxx-large;
+}

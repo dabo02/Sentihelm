@@ -1,11 +1,12 @@
 <div class="jumbotron vertical-center" ng-controller="MostWantedController as mostWantedCtrl">
-  <div id="tip-feed-container">
+  <div class="most-wanted-mid-container">
   <div class="container">
     <!-- <ul class="list-group" style="list-style-type:none">
       <li class="list-group" ng-repeat="wantedPerson in mostWantedCtrl.wantedArray track by $index"> -->
-        <form class="form-horizontal" role="form" ng-repeat="wantedPerson in mostWantedCtrl.wantedArray track by $index">
+        <form class="form-horizontal most-wanted-item" role="form" ng-repeat="wantedPerson in mostWantedCtrl.wantedArray track by $index">
 
-          <div class="col-md-3">
+          <div class="col-md-3 most-wanted-ranking-number">
+            {{$index + 1}}
           </div>
 
           <div class="col-md-2 no-padding" ng-file-select="mostWantedCtrl.onFileSelect($files, $index)">
@@ -80,14 +81,14 @@
 
           <div class="form-group">
             <div class=" col-md-offset-5 col-md-1">
-              <button type="submit" class="btn btn-success" style="width:100%;"ng-disabled="!mostWantedCtrl.editedPeopleIndices[$index]" ng-click="mostWantedCtrl.save($index)">Save</button>
+              <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.save($index)" ng-disabled="!mostWantedCtrl.editedPeopleIndices[$index]">Save</button>
             </div>
             <div class="col-md-1">
               <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.showConfirmDialog($index)" ng-disabled="mostWantedCtrl.disableNewButton && $index === (mostWantedCtrl.wantedArray.length-1)">Delete</button>
             </div>
           </div>
 
-          <div class="form-group col-md-12 dark-gray-bg"> </div>
+          <!-- <div class="form-group col-md-12 dark-gray-bg"> </div> -->
 
         </form>
 
