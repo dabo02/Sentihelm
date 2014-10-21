@@ -1,0 +1,21 @@
+<div ng-controller="PoliceStationsMapController as mapCtrl">
+  <div class="map-canvas">
+
+    <!--   GOOGLE MAP   -->
+    <google-map center="mapCtrl.getMapCenter({latitude: 18.467965, longitude:-66.121528})" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+
+      <marker coords="mapCtrl.getMarkerPosition({latitude: 18.467965, longitude:-66.121528})" click="mapCtrl.onMarkerClick()" options="mapCtrl.markerOptions">
+
+        <window options="mapCtrl.windowOptions" closeClick="mapCtrl.closeClick()" ng-cloak>
+
+                <div>Aquí va la descripción.</div>
+
+        </window>
+
+      </marker>
+
+    </google-map>
+
+  </div>
+
+</div>
