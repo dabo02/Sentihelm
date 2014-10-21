@@ -69,6 +69,26 @@
       }
     })
 
+    //Maps endpoint/url
+    .state('maps',{
+      url:"/maps",
+      templateUrl:"/maps.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Maps");
+        }
+      }
+    })
+
     //Most Wanted List endoint/url
     .state('most-wanted',{
       url:"/most-wanted",
@@ -1360,8 +1380,9 @@
     });
   }]);
 
-  //Controller for Google map in each tip;
-  //sets map center and crime position in map
+  //Controller for Google map in the maps state;
+  //sets map center and police station position
+  //in map
   app.controller('GoogleMapController', function() {
 
     //This position variables will store the position
@@ -1371,11 +1392,11 @@
     this.zoom = 14;
     this.icon = {
       url: 'resources/images/custom-marker.png',
-      // This marker is 20 pixels wide by 32 pixels tall.
+      // This marker is 25 pixels wide by 39 pixels tall.
       scaledSize: new google.maps.Size(25, 39),
       // The origin for this image is 0,0.
       origin: new google.maps.Point(0,0),
-      // The anchor for this image is the base of the flagpole at 0,32.
+      // The anchor for this image is the base of the flagpole.
       anchor: new google.maps.Point(12.5,39)
     };
 
@@ -1756,4 +1777,70 @@
     });
 
   }]);
+
+  //Controller for Google map in each tip;
+  //sets map center and crime position in map
+  app.controller('PoliceStationsMapController', function() {
+
+    /****************************************************************************************/
+
+    this.markerOptions = {
+      draggable: true,
+      visible: true,
+      title: "Test Title"
+    };
+
+    this.windowOptions = {
+      visible: false
+    };
+
+    this.onMarkerClick = function() {
+        this.windowOptions.visible = !this.windowOptions.visible;
+    };
+
+    this.closeClick = function() {
+        this.windowOptions.visible = false;
+    };
+
+    /****************************************************************************************/
+    //This position variables will store the position
+    //data so that the tip.center variable remain unchanged.
+    var markerPosition = {latitude: 0, longitude: 0};
+    var mapCenter = {latitude: 0, longitude: 0};
+    this.zoom = 14;
+
+    //Checks if the marker coordinates have changed
+    //and returns the correct position.
+    this.getMarkerPosition = function(point) {
+
+      if(point===undefined){
+        return markerPosition;
+      }
+      //Change the position if necessary.
+      if(markerPosition.latitude !== point.latitude || markerPosition.longitude !== point.longitude) {
+        this.zoom = 14;
+        markerPosition.latitude = point.latitude;
+        markerPosition.longitude = point.longitude;
+      }
+
+      return markerPosition;
+    };
+
+    //Checks if the map center coordinates have changed
+    // and returns the correct position.
+    this.getMapCenter = function(point) {
+
+      if(point===undefined || point.latitude===undefined || point.longitude===undefined){
+        return mapCenter;
+      }
+      // Change the coords if necessary.
+      if (mapCenter.latitude !== point.latitude || mapCenter.longitude !== point.longitude) {
+        mapCenter.latitude = point.latitude;
+        mapCenter.longitude = point.longitude;
+      }
+
+      return mapCenter;
+    };
+  });
+
 })();
