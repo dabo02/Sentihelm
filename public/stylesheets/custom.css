@@ -88,6 +88,10 @@ button:focus{
 input.strong{
   font-weight:700;
 }
+
+.pointer{
+  cursor:pointer;
+}
 /**=============**/
 /**   COLORS    **/
 /**=============**/

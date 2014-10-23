@@ -31,7 +31,7 @@
     </div>
 
     <div id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
-      <google-map center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+      <google-map center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})" zoom="mapCtrl.zoom" draggable="true" ng-if="videoStreamsCtrl.currentStream" ng-cloak>
         <marker coords="mapCtrl.getMarkerPosition({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"></marker>
       </google-map>
     </div>

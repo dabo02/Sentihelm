@@ -1573,10 +1573,10 @@
     var notificationCtrl = this;
 
     this.allZipCodes = true;
-    this.checkboxes = [];
-    for (var i = 0; i < this.regions.length; i++) {
-      this.checkboxes[i] = false;
-    }
+    // this.checkboxes = [];
+    // for (var i = 0; i < this.regions.length; i++) {
+    //   this.checkboxes[i] = false;
+    // }
 
     //Notification was successfully saved and pushed (sent)
     $scope.$on('notification-success',function(notification){
