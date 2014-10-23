@@ -9,7 +9,7 @@
             {{$index + 1}}
           </div>
 
-          <div class="col-md-2 no-padding pointer" accept="image/*" ng-file-select="mostWantedCtrl.onFileSelect($files, $index)">
+          <div class="col-md-2 no-padding pointer" accept="image/*" ng-file-select="mostWantedCtrl.onFileSelect($files)">
             <a class="thumbnail no-margin no-border">
               <img ng-src="{{wantedPerson.attributes.photoUrl || wantedPerson.attributes.photo._url || './resources/images/no-profile-pic.png'}}" alt="...">
             </a>
