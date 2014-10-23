@@ -20,8 +20,8 @@
 
       <div class="form-group">
         <div class="col-md-6 col-md-offset-3">
-          <div type="button" class="btn btn-primary btn-block white" ng-file-select="globalNotifCtrl.onFileSelect($files, $index)">
-            {{ 'Attach a File' || globalNotifCtrl.file.name}}
+          <div class="btn btn-primary btn-block white" accept="image/*,video/*,audio/*" ng-class="{'file-selected': globalNotifCtrl.file.name}" ng-file-select="globalNotifCtrl.onFileSelect($files)">
+            {{ globalNotifCtrl.file.name || 'Attach a File'}}
           </div>
         </div>
       </div>
