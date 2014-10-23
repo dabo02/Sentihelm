@@ -787,6 +787,7 @@
 
     var VideoStreamsService = {};
 
+    VideoStreamsService.currentMobileStream = null;
 
     //Get all active video streams from Parse
     VideoStreamsService.getActiveStreams = function(clientId){
@@ -834,15 +835,25 @@
 
     //Subscribe to streams in the current session
     VideoStreamsService.subscribeToStream = function(stream, currentUser){
+      //Create OpenTok Session
       var session = OT.initSession(otKey, stream.sessionId);
 
+      //If other session active, unsubscribe
+      if(!!VideoStreamsService.currentMobileStream){
+        VideoStreamsService.currentMobileStream.subscribeToAudio(false);
+        VideoStreamsService.currentMobileStream.subscribeToVideo(false);
+        // session.unsubscribe(VideoStreamsService.currentMobileStream);
+      }
+
+      //Set up callback that handles connection
       session.on("streamCreated", function(event){
-        var subscriber = session.subscribe(event.stream, 'video-streams-video',
+        VideoStreamsService.currentMobileStream = session.subscribe(event.stream, 'video-streams-video',
         {insertMode:'replace', height:'402.6', width:'593'},
         function(error){
           if(!!error){
             //TODO
             //Handle error when couldn't subscribe to published streams
+            console.log(error);
             return;
           }
 
@@ -859,6 +870,7 @@
           }, function(videoSession, error){
             //TODO
             //Handle error when videoession could not be retrieved
+            console.log(error);
           })
 
           .then(function(videoSession){
@@ -867,18 +879,21 @@
             var success = videoSession;
           }, function(videoSession, error){
             //TODO
-            var fail = error;
             //Session could not be saved
+            console.log(error);
           });
 
         });
       });
 
+      //Set up callback that handles disconnection
       session.on("streamDestroyed", function(event){
         event.preventDefault();
+        session.unsubscribe(VideoStreamsService.currentMobileStream);
         $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
       });
 
+      //Try and connect to the session
       session.connect(stream.webClientToken, function(error){
         if(!!error){
           //TODO
@@ -886,7 +901,6 @@
           return;
         }
       });
-
     };
 
     return VideoStreamsService;
