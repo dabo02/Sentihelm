@@ -39,13 +39,22 @@
   background-color:#1a7fba;
 }
 
-#video-streams-video{
+#video-streams-video-container{
   display:inline-block;
   float:left;
   height:402.6px;
   width:593px;
   border-right:solid 0.2em #4d4d4d;
   border-bottom:solid 0.2em #4d4d4d;
+}
+#video-streams-video{
+  /*display:inline-block;
+  float:left;*/
+  display:block;
+  height:400.6px;
+  width:591px;
+  /*border-right:solid 0.2em #4d4d4d;
+  border-bottom:solid 0.2em #4d4d4d;*/
 }
 
 #video-streams-chat{

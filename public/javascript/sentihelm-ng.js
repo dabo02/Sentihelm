@@ -49,10 +49,10 @@
       }
     })
 
-    //Global notifications endpoint/url
-    .state('global-notifications',{
-      url:"/global-notifications",
-      templateUrl:"/global-notifications.html",
+    //Regional notifications endpoint/url
+    .state('regional-notifications',{
+      url:"/regional-notifications",
+      templateUrl:"/regional-notifications.html",
       data: {
         authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
       },
@@ -199,26 +199,26 @@
         document.getElementById("notification-title").focus();
       }
     },
-    'GLOBAL-NOTIF-NO-MESSAGE':{
+    'REGIONAL-NOTIF-NO-MESSAGE':{
       title: 'No Content',
       message: 'The notification must contain a message.',
-      code: 'GLOBAL-NOTIF-NO-MESSAGE',
+      code: 'REGIONAL-NOTIF-NO-MESSAGE',
       onClose: function(){
-        document.getElementById("global-notification-body").focus();
+        document.getElementById("regional-notification-body").focus();
       }
     },
-    'GLOBAL-NOTIF-NO-TITLE':{
+    'REGIONAL-NOTIF-NO-TITLE':{
       title: 'No Title',
       message: 'The notification must have a title.',
-      code: 'GLOBAL-NOTIF-NO-TITLE',
+      code: 'REGIONAL-NOTIF-NO-TITLE',
       onClose: function(){
-        document.getElementById("global-notification-title").focus();
+        document.getElementById("regional-notification-title").focus();
       }
     },
-    'GLOBAL-NOTIF-NO-ZIPCODE':{
+    'REGIONAL-NOTIF-NO-ZIPCODE':{
       title: 'No Zip Codes',
       message: 'You must select at least one zip code',
-      code: 'GLOBAL-NOTIF-NO-ZIPCODE',
+      code: 'REGIONAL-NOTIF-NO-ZIPCODE',
       onClose: function(){
         //Do nothing
         return;
@@ -517,10 +517,8 @@
 
     //Creates and returns a new Parse Notification from
     //notification data gathered from controller
-    parseNotificationService.newGlobalNotification = function(notificationData){
+    parseNotificationService.newRegionalNotification = function(notificationData){
       var notification = new PushNotification();
-      // notification.set("userId", notificationData.userId);
-      // notification.set("tipId", notificationData.controlNumber);
       notification.set("title", notificationData.title);
       notification.set("message", notificationData.message);
       if(notificationData.attachment){
@@ -787,7 +785,7 @@
 
     var VideoStreamsService = {};
 
-    VideoStreamsService.currentMobileStream = null;
+    VideoStreamsService.currentSession = null;
 
     //Get all active video streams from Parse
     VideoStreamsService.getActiveStreams = function(clientId){
@@ -838,17 +836,15 @@
       //Create OpenTok Session
       var session = OT.initSession(otKey, stream.sessionId);
 
-      //If other session active, unsubscribe
-      if(!!VideoStreamsService.currentMobileStream){
-        VideoStreamsService.currentMobileStream.subscribeToAudio(false);
-        VideoStreamsService.currentMobileStream.subscribeToVideo(false);
-        // session.unsubscribe(VideoStreamsService.currentMobileStream);
+      //If another session is active, disconnect
+      if(!!VideoStreamsService.currentSession){
+        VideoStreamsService.currentSession.disconnect();
       }
 
-      //Set up callback that handles connection
+      //Set up callback that handles mobileUser's streams
       session.on("streamCreated", function(event){
-        VideoStreamsService.currentMobileStream = session.subscribe(event.stream, 'video-streams-video',
-        {insertMode:'replace', height:'402.6', width:'593'},
+        var subscriber = session.subscribe(event.stream, 'video-streams-video',
+        {insertMode:'replace', height:'400.6', width:'591'},
         function(error){
           if(!!error){
             //TODO
@@ -886,11 +882,20 @@
         });
       });
 
-      //Set up callback that handles disconnection
+      //Set up callback that handles when a mobile user disconnects
       session.on("streamDestroyed", function(event){
         event.preventDefault();
-        session.unsubscribe(VideoStreamsService.currentMobileStream);
         $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
+      });
+
+      //Set up callback that handles disconnection
+      session.on("sessionDisconnected", function(event) {
+        //TODO TEST
+        //Prevent default so DOM element won't be destroyed
+        event.preventDefault();
+        //TODO Change broadcast so it manages when video call is
+        //changed for another one
+        // $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
       });
 
       //Try and connect to the session
@@ -900,6 +905,8 @@
           //Handle error when couldn't connect to session
           return;
         }
+        //Save current session
+        VideoStreamsService.currentSession = session;
       });
     };
 
@@ -1185,7 +1192,7 @@
     this.entries=[
       {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
       {name:'Video Streams', icon:'fa fa-video-camera', state:'#/video-streams'},
-      {name:'Send Notification', icon:'fa fa-send-o', state:'#/global-notifications'},
+      {name:'Send Notification', icon:'fa fa-send-o', state:'#/regional-notifications'},
       {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
       {name:'Wanted List', icon:'fa fa-warning', state:'#/most-wanted'},
       {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
@@ -1579,10 +1586,10 @@
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('GlobalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
+  app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
   function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
 
-    // this.sending = false;
+    //this.sending = false;
     this.regions = $scope.currentRegions;
     var notificationCtrl = this;
 
@@ -1593,13 +1600,13 @@
     // }
 
     //Notification was successfully saved and pushed (sent)
-    $scope.$on('notification-success',function(notification){
+    $scope.$on('regional-notification-success',function(notification){
       notificationCtrl.sending = false;
       $scope.$apply();
     });
 
     //Notification was saved, but not pushed
-    $scope.$on('notification-partial-success',function(notification){
+    $scope.$on('regional-notification-partial-success',function(notification){
       //Right now same as success event, but might change
       notificationCtrl.sending = false;
       $scope.$apply();
@@ -1607,7 +1614,7 @@
 
     //Notification either wasn't saved, or did save
     //but push failed and error clause removed said save
-    $scope.$on('notification-error',function(notification){
+    $scope.$on('regional-notification-error',function(notification){
       errorFactory.showError('NOTIF-FAILED');
       notificationCtrl.sending = false;
       $scope.$apply();
@@ -1634,17 +1641,16 @@
 
     //Send the notification to the user
     this.submitNotification = function(){
-
       this.title = "Prueba";
       this.message = "Esto es el mensaje.";
       //If no title, show appropiate error and ignore
       if(!this.title){
-        errorFactory.showError('GLOBAL-NOTIF-NO-TITLE');
+        errorFactory.showError('REGIONAL-NOTIF-NO-TITLE');
         return;
       }
       //If no message or attachment, show appropiate error and ignore
       if(!this.message){
-        errorFactory.showError('GLOBAL-NOTIF-NO-MESSAGE');
+        errorFactory.showError('REGIONAL-NOTIF-NO-MESSAGE');
         return;
       }
 
@@ -1665,7 +1671,7 @@
       }
 
       if (parseNotificationService.channels.length == 0) {
-        errorFactory.showError('GLOBAL-NOTIF-NO-ZIPCODE');
+        errorFactory.showError('REGIONAL-NOTIF-NO-ZIPCODE');
         return;
       }
 
@@ -1680,7 +1686,7 @@
       }
 
       //Create Parse notification and send it
-      var parseNotification = parseNotificationService.newGlobalNotification(notification);
+      var parseNotification = parseNotificationService.newRegionalNotification(notification);
       parseNotificationService.saveAndPushNotification(parseNotification);
 
     };
