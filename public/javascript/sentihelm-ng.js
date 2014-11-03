@@ -2024,13 +2024,13 @@
       events: {
         places_changed: function (searchBox) {
           var places = searchBox.getPlaces()
-          if (places.length == 0) {
+          if (places.length === 0) {
             return;
           }
           //Take only the first place.
           var place = places[0];
 
-          mapCtrl.mapCenter = {
+          mapCtrl.map.center = {
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng()
           };
