@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps','ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'google-maps','ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -118,6 +118,14 @@
       disable:'right',
       touchToDrag: false
     };
+  }]);
+
+  app.config(['GoogleMapApiProvider'.ns(), function (GoogleMapApi) {
+    GoogleMapApi.configure({
+  //    key: 'your api key',
+      v: '3.16',
+      libraries: 'places'
+    });
   }]);
 
   //Initialize values needed throughout the app
@@ -787,6 +795,19 @@
 
     VideoStreamsService.currentSession = null;
 
+    var currStream;
+    var storedStreams = []
+    var currSubscriber;
+
+    //Used to create a new div inside the video-streams-video
+    //div to subscribe the stream to it.
+    var createDivElement = function(sessionId){
+      var div = document.createElement('div');
+      div.setAttribute('id', 'video-streams-video-'+sessionId);
+      document.getElementById('video-streams-video').appendChild(div);
+      return div;
+    };
+
     //Get all active video streams from Parse
     VideoStreamsService.getActiveStreams = function(clientId){
       var query = new Parse.Query(VideoSession);
@@ -831,19 +852,74 @@
       });
     };
 
+    //Restore active session if available if()
+    VideoStreamsService.checkActiveStream = function(){
+      if(!!VideoStreamsService.currentSession){
+        var subscriber = VideoStreamsService.currentSession.subscribe(currStream, createDivElement(VideoStreamsService.currentSession.id),
+        {insertMode:'replace', height:'400.6', width:'591'},
+        function(error){
+          if(!!error){
+            //TODO
+            //Handle error when couldn't subscribe to published streams
+            console.log(error);
+            return;
+          }
+        });
+        currSubscriber = subscriber;
+      }
+    };
+
+    //Stop current stream
+    VideoStreamsService.stopStream = function(){
+      if(!!VideoStreamsService.currentSession){
+        VideoStreamsService.currentSession.unsubscribe(currSubscriber);
+        // VideoStreamsService.currentSession.forceUnpublish(currStream);
+        currStream.destroy();
+        // VideoStreamsService.currentSession.destroy();
+      }
+    };
+
     //Subscribe to streams in the current session
     VideoStreamsService.subscribeToStream = function(stream, currentUser){
+
       //Create OpenTok Session
       var session = OT.initSession(otKey, stream.sessionId);
 
       //If another session is active, disconnect
       if(!!VideoStreamsService.currentSession){
-        VideoStreamsService.currentSession.disconnect();
+        VideoStreamsService.currentSession.unsubscribe(currSubscriber);
+        console.log("a");
+      }
+
+      if(session.isConnected()){
+
+        for(var i =0; i < storedStreams.length; i++) {
+          var object = storedStreams[i];
+          if(object.session.id == session.id) {
+            currStream = object.stream;
+            break;
+          }
+        }
+
+        var subscriber = session.subscribe(currStream, createDivElement(session.id),
+        {insertMode:'replace', height:'400.6', width:'591'},
+        function(error){
+          if(!!error){
+            //TODO
+            //Handle error when couldn't subscribe to published streams
+            console.log(error);
+            return;
+          }
+        });
+
+        currSubscriber = subscriber;
       }
 
       //Set up callback that handles mobileUser's streams
       session.on("streamCreated", function(event){
-        var subscriber = session.subscribe(event.stream, 'video-streams-video',
+        storedStreams.push({session: session, stream: event.stream});
+
+        var subscriber = session.subscribe(event.stream, createDivElement(session.id),
         {insertMode:'replace', height:'400.6', width:'591'},
         function(error){
           if(!!error){
@@ -878,21 +954,39 @@
             //Session could not be saved
             console.log(error);
           });
-
         });
+
+        currStream = event.stream;
+        currSubscriber = subscriber;
+
       });
 
       //Set up callback that handles when a mobile user disconnects
       session.on("streamDestroyed", function(event){
-        event.preventDefault();
+
+        //Remove stream from storedStreams
+        for(var i = 0; i < storedStreams.length; i++) {
+          if(storedStreams[i].stream.id === event.stream.id) {
+            storedStreams[i].session.disconnect();
+            storedStreams.splice(i, 1);
+            break;
+          }
+        }
+
+        if(currStream.id === event.stream.id) {
+          currStream = null;
+          currSubscriber = null;
+          VideoStreamsService.currentSession = null;
+        }
+
         $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
       });
 
       //Set up callback that handles disconnection
       session.on("sessionDisconnected", function(event) {
-        //TODO TEST
-        //Prevent default so DOM element won't be destroyed
-        event.preventDefault();
+
+        // access to disconnected session: event.target
+
         //TODO Change broadcast so it manages when video call is
         //changed for another one
         // $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
@@ -1222,6 +1316,8 @@
 
     VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
 
+    VideoStreamsService.checkActiveStream();
+
     $scope.$on('active-streams-fetched', function(event, data){
       vidStrmCtrl.queue = data;
       vidStrmCtrl.currentStream = data[0];
@@ -1234,19 +1330,27 @@
     });
 
     $scope.$on('stream-destroyed', function(event, data){
-      for(var stream in vidStrmCtrl.queue){
+      for(var i = 0; i < vidStrmCtrl.queue.length; i++){
+        var stream = vidStrmCtrl.queue[i];
         if(stream.sessionId === data.sessionId){
-          var index = vidStrmCtrl.queue.indexOf(stream);
-          vidStrmCtrl.queue.splice(index, 1);
+          vidStrmCtrl.queue.splice(i, 1);
           break;
         }
       }
       $scope.$apply();
     });
 
+    // $scope.$on('stream-already-connected', function(event){
+    //   $scope.$apply();
+    // });
+
     vidStrmCtrl.activateStream = function(stream){
       this.currentStream = stream;
       VideoStreamsService.subscribeToStream(stream, $scope.currentUser);
+    };
+
+    vidStrmCtrl.stopStream = function(){
+      VideoStreamsService.stopStream();
     };
 
   }]);
@@ -1430,7 +1534,9 @@
     //data so that the tip.center variable remain unchanged.
     var markerPosition = {latitude: 0, longitude: 0};
     var mapCenter = {latitude: 0, longitude: 0};
+    var markerKey = 0;
     this.zoom = 14;
+
     this.icon = {
       url: 'resources/images/custom-marker.png',
       // This marker is 25 pixels wide by 39 pixels tall.
@@ -1472,6 +1578,12 @@
       }
 
       return mapCenter;
+    };
+
+    //TODO  Is this needed?
+    this.getMarkerIdKey = function(key, currentPage, index) {
+      markerKey++;
+      return "key"+key+markerKey;
     };
   });
 
@@ -1818,69 +1930,142 @@
 
   }]);
 
+  //Service for managing the most wanted list. It can save, add
+  //or delete most wanted people to/from Parse
+  app.factory("PoliceStationsService", ['$rootScope',
+  function($rootScope){
+    var PoliceStationsService =  {};
+
+    var stationsMarkers = [];
+
+    PoliceStationsService.getStationsMarkers = function() {
+      var PoliceMapTest = Parse.Object.extend("PoliceMapTest");
+      var query = new Parse.Query(PoliceMapTest);
+      query.find({
+        success: function(results){
+          //Found the tip; append the notification to the array and
+          //save everything (including notification to it's own table)
+          for (var i = 0; i<results.length; i++) {
+
+            var station = results[i];
+
+            // Create a marker for each place.
+            var marker = {
+              id:station.id,
+              place_id: station.attributes.placeId,
+              name: station.attributes.name,
+              latitude: station.attributes.latitude,
+              longitude: station.attributes.longitude,
+              options: {
+                draggable: false,
+                title: station.attributes.name,
+                visible: true
+              },
+              templateurl:'window.tpl.html'
+            };
+            stationsMarkers.push(marker);
+          }
+          $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+
+        },
+        error: function(error){
+          console.log("Error receiving police stations from parse. " + error.message);
+        }
+      });
+    };
+
+    PoliceStationsService.addMarker = function(marker) {
+      stationsMarkers.push(marker);
+      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+    };
+
+    return PoliceStationsService;
+  }]);
+
+
+
+
   //Controller for Google map in each tip;
   //sets map center and crime position in map
-  app.controller('PoliceStationsMapController', function() {
+  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function(PoliceStationsService, $scope) {
 
     /****************************************************************************************/
+    var mapCtrl = this;
+    mapCtrl.isAddingStation = false;
+    mapCtrl.map = {
+      zoom: 14,
+      center: {latitude: 18.467965, longitude:-66.121528},
 
-    this.markerOptions = {
+    };
+
+    var num = 0;
+
+    mapCtrl.policeStationsMarkers = [];
+
+    mapCtrl.markerOptions = {
       draggable: true,
       visible: true,
       title: "Test Title"
     };
 
-    this.windowOptions = {
+    mapCtrl.windowOptions = {
       visible: false
     };
 
-    this.onMarkerClick = function() {
-        this.windowOptions.visible = !this.windowOptions.visible;
+    // this.markersArray = [];
+    mapCtrl.bounds = {};
+
+    mapCtrl.searchbox = {
+      template:'searchbox.tpl.html',
+      position:'top-left',
+      options: {
+        bounds: {}
+      },
+      events: {
+        places_changed: function (searchBox) {
+          var places = searchBox.getPlaces()
+          if (places.length == 0) {
+            return;
+          }
+          //Take only the first place.
+          var place = places[0];
+
+          mapCtrl.mapCenter = {
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng()
+          };
+        }
+      }
     };
 
-    this.closeClick = function() {
-        this.windowOptions.visible = false;
+    PoliceStationsService.getStationsMarkers();
+    $scope.$on('stations-markers-fetched', function(event, markers){
+      mapCtrl.policeStationsMarkers = markers;
+    });
+
+    mapCtrl.newStationMarker = function() {
+      mapCtrl.isAddingStation = true;
+      var marker = {
+        id:num++,
+        latitude: mapCtrl.map.center.latitude,
+        longitude: mapCtrl.map.center.longitude,
+        options: {
+          draggable: true,
+          title: "New Station",
+          visible: true
+        },
+      };
+      PoliceStationsService.addMarker(marker);
     };
 
-    /****************************************************************************************/
-    //This position variables will store the position
-    //data so that the tip.center variable remain unchanged.
-    var markerPosition = {latitude: 0, longitude: 0};
-    var mapCenter = {latitude: 0, longitude: 0};
-    this.zoom = 14;
+    // mapCtrl.onMarkerClick = function() {
+    //     this.windowOptions.visible = !this.windowOptions.visible;
+    // };
+    //
+    // mapCtrl.closeClick = function() {
+    //     this.windowOptions.visible = false;
+    // };
 
-    //Checks if the marker coordinates have changed
-    //and returns the correct position.
-    this.getMarkerPosition = function(point) {
-
-      if(point===undefined){
-        return markerPosition;
-      }
-      //Change the position if necessary.
-      if(markerPosition.latitude !== point.latitude || markerPosition.longitude !== point.longitude) {
-        this.zoom = 14;
-        markerPosition.latitude = point.latitude;
-        markerPosition.longitude = point.longitude;
-      }
-
-      return markerPosition;
-    };
-
-    //Checks if the map center coordinates have changed
-    // and returns the correct position.
-    this.getMapCenter = function(point) {
-
-      if(point===undefined || point.latitude===undefined || point.longitude===undefined){
-        return mapCenter;
-      }
-      // Change the coords if necessary.
-      if (mapCenter.latitude !== point.latitude || mapCenter.longitude !== point.longitude) {
-        mapCenter.latitude = point.latitude;
-        mapCenter.longitude = point.longitude;
-      }
-
-      return mapCenter;
-    };
-  });
+  }]);
 
 })();

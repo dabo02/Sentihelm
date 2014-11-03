@@ -40,7 +40,8 @@
     <div id="video-streams-info">
       {{videoStreamsCtrl.currentStream.firstName+" "+videoStreamsCtrl.currentStream.lastName}}<br>
       {{videoStreamsCtrl.currentStream.email}}<br>
-      {{videoStreamsCtrl.currentStream.phone}}
+      {{videoStreamsCtrl.currentStream.phone}}<br>
+      <button type="submit" class="btn btn-success" ng-click="videoStreamsCtrl.stopStream()" ng-disabled="videoStreamsCtrl.hello">Stop Video Stream</button>
     </div>
 
   </div>

@@ -1,0 +1,16 @@
+/*************PAGE*************/
+/*****************************/
+.map-container{
+  position:fixed;
+  top:10%;
+  /*left:17.5%;*/
+  width:100%%;
+  height:90%;
+  overflow-y:auto;
+  text-align:center;
+}
+
+.map-searchbox{
+  width:250px;
+  margin-top: 27px;
+}
