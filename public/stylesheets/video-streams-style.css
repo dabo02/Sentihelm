@@ -78,9 +78,16 @@
   border-bottom:solid 0.2em #4d4d4d;
 }
 
-#video-streams-info{
+#video-streams-info-container{
   display:inline-block;
   height:50%;
   width:311.3px;
   text-align:center;
+  background-color:#fff;
+  font-size:2em;
+}
+#video-streams-info{
+  display:block;
+  margin-top:25%;
+
 }
