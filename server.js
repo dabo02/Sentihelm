@@ -242,6 +242,7 @@ app.post('/request-video-connection', function(request, response){
     //Handle Error when session could not be created
     if(error){
       response.send(400,error);
+      return;
     }
 
     //Create the token that will be sent to the mobile client
@@ -290,7 +291,7 @@ app.post('/request-video-connection', function(request, response){
         token: clientToken
       });
       io.sockets.emit('new-video-stream', {stream: stream});
-    }, function(videoSession, error){
+    }, function(error, videoSession){
       //TODO
       //Handle error when couldn't save video session
       var err = error;

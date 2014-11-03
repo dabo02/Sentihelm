@@ -1,20 +1,38 @@
-<div ng-controller="PoliceStationsMapController as mapCtrl">
+<div class="map-container" ng-controller="PoliceStationsMapController as mapCtrl">
   <div class="map-canvas">
 
-    <!--   GOOGLE MAP   -->
-    <google-map center="mapCtrl.getMapCenter({latitude: 18.467965, longitude:-66.121528})" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+    <script type="text/ng-template" id="searchbox.tpl.html">
+       <input class="form-control map-searchbox" type="text" placeholder="Search">
+    </script>
 
-      <marker coords="mapCtrl.getMarkerPosition({latitude: 18.467965, longitude:-66.121528})" click="mapCtrl.onMarkerClick()" options="mapCtrl.markerOptions">
+    <!-- Cannot put a whitespace between script and button. -->
+    <script type="text/ng-template" id="control.tpl.html"><button type="submit" class="btn btn-success" ng-click="mapCtrl.newStationMarker()" style="margin-top:5px;">Add Police Station</button>
+    </script>
 
-        <window options="mapCtrl.windowOptions" closeClick="mapCtrl.closeClick()" ng-cloak>
+    <ui-gmap-google-map center="mapCtrl.map.center" zoom="mapCtrl.map.zoom" draggable="true" bounds="mapCtrl.bounds">
 
-                <div>Aquí va la descripción.</div>
+        <!-- Searchbox -->
+        <ui-gmap-search-box template="mapCtrl.searchbox.template" position="mapCtrl.searchbox.position" events="mapCtrl.searchbox.events"></ui-gmap-search-box>
 
-        </window>
+        <!-- New Police Station Button -->
+        <!-- TODO Create new controller for this??? -->
+        <!-- TODO ng-disabled is not working, use ng-hide? -->
+        <ui-gmap-map-control template="control.tpl.html" position="top-right" index="-1" ng-disabled="true" controller="PoliceStationsMapController as mapCtrl"></ui-gmap-map-control>
 
-      </marker>
+        <!-- Test marker -->
+        <!-- <ui-gmap-marker idKey="1" coords="{latitude: 18.467965, longitude:-66.121528}" click="mapCtrl.onMarkerClick()" options="mapCtrl.markerOptions">
+          <ui-gmap-window options="mapCtrl.windowOptions" closeClick="mapCtrl.closeClick()" ng-cloak>
 
-    </google-map>
+                  <div>Aquí va la descripción del Police Station.</div>
+
+          </ui-gmap-window>
+        </ui-gmap-marker> -->
+
+        <!-- Array of markers -->
+        <ui-gmap-markers models="mapCtrl.markersArray" coords="'self'" icon="'icon'" options="'options'"></ui-gmap-markers>
+        <ui-gmap-markers models="mapCtrl.policeStationsMarkers" coords="'self'" icon="'icon'" options="'options'"></ui-gmap-markers>
+
+    </ui-gmap-google-map>
 
   </div>
 
