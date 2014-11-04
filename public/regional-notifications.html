@@ -1,4 +1,5 @@
 <div class="jumbotron vertical-center" ng-controller="RegionalNotificationController as regionalNotifCtrl">
+
   <div class="container">
 
     <h3 class="text-center">Send A Notification</h3>
@@ -7,14 +8,14 @@
       <div class="form-group">
         <label class="sr-only"></label>
         <div class="col-md-6 col-md-offset-3">
-          <input type="text" class="form-control text-center" id="regional-notification-title" placeholder="Title"/>
+          <input type="text" class="form-control text-center" id="regional-notification-title" ng-model="regionalNotifCtrl.title" placeholder="Title"/>
         </div>
       </div>
 
       <div class="form-group">
         <label class="sr-only"></label>
         <div class="col-md-6 col-md-offset-3">
-          <textarea style="resize:none" class="form-control" rows="4" id="regional-notification-body" placeholder="Message"></textarea>
+          <textarea style="resize:none" class="form-control" rows="4" id="regional-notification-body" ng-model="regionalNotifCtrl.message" placeholder="Message"></textarea>
         </div>
       </div>
 
@@ -26,24 +27,24 @@
         </div>
       </div>
 
-      <!-- <div class="form-group">
         <div class="col-md-6 col-md-offset-3">
-          <div class="panel panel-info">
-
-            <div class="panel-heading">
-              <label class="checkbox-inline text-center">
-                <input type="checkbox" ng-model="check" value="region1">
-              </label>
-            </div>
-
-            <ul ng-show="check" class="list-group">
-
-            </ul>
-
-          </div>
+          <ul class="list-group region-list">
+            <li class="list-group-item" style="cursor:pointer;"
+             ng-click="regionalNotifCtrl.allRegions = !regionalNotifCtrl.allRegions"
+             ng-class="{'list-group-item-success': regionalNotifCtrl.allRegions, 'list-group-item-danger':!regionalNotifCtrl.allRegions}"
+            >
+             <h4 class="text-center">{{regionalNotifCtrl.allRegions? 'All Regions Selected' : 'Send To All Regions'}}</h4>
+            </li>
+            <li class="list-group-item" style="cursor:pointer;"
+             ng-repeat="region in regionalNotifCtrl.regions"
+             ng-click="region.selected = !region.selected"
+             ng-class="{'list-group-item-info': regionalNotifCtrl.allRegions || region.selected}"
+            >
+              <h4 class="text-center">{{region.regionName}}</h4>
+            </li>
+          </ul>
         </div>
 
-      </div> -->
 
       <div class="form-group">
         <div class="col-md-3 col-md-offset-5">
