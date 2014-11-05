@@ -516,6 +516,7 @@
       notification.set("tipId", notificationData.controlNumber);
       notification.set("title", notificationData.title);
       notification.set("message", notificationData.message);
+      notification.set("type", 'follow-up');
       notification.set("channels", parseNotificationService.channels);
       if(notificationData.attachment){
         notification.set(notificationData.attachmentType, notificationData.attachment);
@@ -529,6 +530,7 @@
       var notification = new PushNotification();
       notification.set("title", notificationData.title);
       notification.set("message", notificationData.message);
+      notification.set("type", 'regional');
       notification.set("channels", parseNotificationService.channels);
       if(notificationData.attachment){
         notification.set(notificationData.attachmentType, notificationData.attachment);
@@ -550,7 +552,12 @@
         error : function(notification, error){
           //Notification could not be saved, pass control back to controller
           //and reset channels
-          $rootScope.$broadcast('notification-error', [notification, error]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-error', [notification, error]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-error', [notification, error]);
+          }
           parseNotificationService.channels = [];
         }
       });
@@ -574,7 +581,13 @@
           //Push was successful
           //Reset channels and alert controller
           parseNotificationService.channels = [];
-          $rootScope.$broadcast('notification-success', [notification]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-success', [notification]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-success', [notification]);
+          }
+          // $rootScope.$broadcast('notification-success', [notification]);
         },
         error: function(error){
           //Push was unsuccessful
@@ -597,13 +610,25 @@
           //Notification was successfully deleted;
           //Alert the controller to prompt the user
           //to try again
-          $rootScope.$broadcast('notification-error', [notification, parentError]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-error', [notification, parentError]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-error', [notification, parentError]);
+          }
+          // $rootScope.$broadcast('notification-error', [notification, parentError]);
         },
         error: function(notification, error){
           //Failed to delete notification
           //Do Nothing, but alert controller
           //to partial success
-          $rootScope.$broadcast('notification-partial-success',[notification]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-partial-success', [notification]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-partial-success', [notification]);
+          }
+          // $rootScope.$broadcast('notification-partial-success',[notification]);
         }
       });
     };
@@ -1267,21 +1292,21 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', function($scope, $rootScope, snapRemote) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', function($scope, $rootScope, snapRemote, $state) {
     var drawer = this;
 
-    //Current active state
-    this.currentState = $rootScope.currentState;
+    // //Current active state
+    // this.currentState = $rootScope.currentState;
 
     //Drawer options with name and icon;
     //entries are off by default
     this.entries=[
-      {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
-      {name:'Video Streams', icon:'fa fa-video-camera', state:'#/video-streams'},
-      {name:'Send Notification', icon:'fa fa-send-o', state:'#/regional-notifications'},
-      {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
-      {name:'Wanted List', icon:'fa fa-warning', state:'#/most-wanted'},
-      {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
+      {name:'Tip Feed', icon:'glyphicon glyphicon-inbox', state:'tipfeed'},
+      {name:'Video Streams', icon:'glyphicon glyphicon-facetime-video', state:'video-streams'},
+      {name:'Send Notification', icon:'glyphicon glyphicon-send', state:'regional-notifications'},
+      {name:'Maps', icon:'glyphicon glyphicon-map-marker', state:'maps'},
+      {name:'Wanted List', icon:'glyphicon glyphicon-list-alt', state:'most-wanted'},
+      {name:'Data Analysis', icon:'glyphicon glyphicon-stats', state:'analysis'}
     ];
 
     //Hides (closes) the drawer by sliding
@@ -1290,10 +1315,15 @@
       snapRemote.close();
     };
 
-    //Change active state in drawer (blue text color)
-    $scope.$on('state-change', function(event){
-      drawer.currentState = $rootScope.currentState;
-    });
+    //Navigates/changes view to the corresponding state (page)
+    this.changeState = function(state){
+      $state.go(state);
+
+      // //Change active state in drawer (blue text color)
+      // $scope.$on('state-change', function(event){
+      //   drawer.currentState = $rootScope.currentState;
+      // });
+    };
   }]);
 
   //Controller for VideStreams route; controls
@@ -1693,10 +1723,10 @@
   app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
   function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
 
-    //this.sending = false;
+    this.sending = false;
     this.regions = $scope.currentRegions;
     this.allRegions = false;
-    var notificationCtrl = this;
+    var regionalNotificationCtrl = this;
 
     //Once a file is selected, prep file for upload to Parse
     this.onFileSelect = function($files){
@@ -1748,6 +1778,8 @@
         return;
       }
 
+      this.sending = true;
+
       //Prepare notification
       var notification = {};
       notification.title = this.title;
@@ -1765,14 +1797,14 @@
 
     //Notification was successfully saved and pushed (sent)
     $scope.$on('regional-notification-success',function(notification){
-      notificationCtrl.sending = false;
+      regionalNotificationCtrl.sending = false;
       $scope.$apply();
     });
 
     //Notification was saved, but not pushed
     $scope.$on('regional-notification-partial-success',function(notification){
       //Right now same as success event, but might change
-      notificationCtrl.sending = false;
+      regionalNotificationCtrl.sending = false;
       $scope.$apply();
     });
 
@@ -1780,7 +1812,7 @@
     //but push failed and error clause removed said save
     $scope.$on('regional-notification-error',function(notification){
       errorFactory.showError('NOTIF-FAILED');
-      notificationCtrl.sending = false;
+      regionalNotificationCtrl.sending = false;
       $scope.$apply();
     });
 

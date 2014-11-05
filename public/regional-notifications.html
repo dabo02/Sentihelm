@@ -1,6 +1,7 @@
 <div class="jumbotron vertical-center" ng-controller="RegionalNotificationController as regionalNotifCtrl">
 
-  <div class="container">
+  <!--Show regions are available-->
+  <div class="container" ng-if="regionalNotifCtrl.regions">
 
     <h3 class="text-center">Send A Notification</h3>
     <form class="form-horizontal" role="form">
@@ -29,7 +30,7 @@
 
         <div class="col-md-6 col-md-offset-3">
           <ul class="list-group region-list">
-            <li class="list-group-item" style="cursor:pointer;"
+            <li class="list-group-item pointer"
              ng-click="regionalNotifCtrl.allRegions = !regionalNotifCtrl.allRegions"
              ng-class="{'list-group-item-success': regionalNotifCtrl.allRegions, 'list-group-item-danger':!regionalNotifCtrl.allRegions}"
             >
@@ -48,10 +49,23 @@
 
       <div class="form-group">
         <div class="col-md-3 col-md-offset-5">
-          <button type="submit" class="btn btn-success" ng-click="regionalNotifCtrl.submitNotification()">Submit Notification</button>
+          <button type="submit" class="btn btn-success" ng-click="regionalNotifCtrl.submitNotification()">
+            <span ng-hide="regionalNotifCtrl.sending">Submit Notification</span>
+            <div class="spinner" ng-show="regionalNotifCtrl.sending">
+              <div class="bounce1"></div>
+              <div class="bounce2"></div>
+              <div class="bounce3"></div>
+            </div>
+          </button>
         </div>
       </div>
 
     </form>
   </div>
+
+  <!--Show if NO regions are available-->
+  <div class="container" ng-if="!regionalNotifCtrl.regions">
+    <h2 class="text-center">No Regions Have Been Defined</h2>
+  </div>
+
 </div>
