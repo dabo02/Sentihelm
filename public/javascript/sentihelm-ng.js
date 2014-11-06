@@ -1954,39 +1954,68 @@
 
   //Service for managing the most wanted list. It can save, add
   //or delete most wanted people to/from Parse
-  app.factory("PoliceStationsService", ['$rootScope',
-  function($rootScope){
+  app.factory("PoliceStationsService", ['$rootScope', 'Session',
+  function($rootScope, Session){
     var PoliceStationsService =  {};
 
+    //Current stations downloaded from Parse
     var stationsMarkers = [];
 
-    PoliceStationsService.getStationsMarkers = function() {
-      var PoliceMapTest = Parse.Object.extend("PoliceMapTest");
-      var query = new Parse.Query(PoliceMapTest);
+    //Map info
+    PoliceStationsService.map = null;
+
+    //Boolean to know if the user is currently adding a new station.
+    PoliceStationsService.isAdding = false;
+
+    //'Hack' to avoid maps error where the marker info wasn't
+    //getting updated after editing it. It is a bug in the library.
+    PoliceStationsService.redrawMarkers = true;
+
+    //Download stations from Parse. If editedMarkerId is not undefined, the
+    //window for the edited marker will be open.
+    PoliceStationsService.getStationsMarkers = function(editedMarkerId) {
+      stationsMarkers = [];
+      var PoliceMap = Parse.Object.extend("PoliceMap");
+      var query = new Parse.Query(PoliceMap);
+      //Filter by clientId
+      query.equalTo('client', {
+        __type: "Pointer",
+        className: "Client",
+        objectId: Session.clientId
+      });
       query.find({
         success: function(results){
-          //Found the tip; append the notification to the array and
-          //save everything (including notification to it's own table)
-          for (var i = 0; i<results.length; i++) {
 
+          //Create markers for each station.
+          for (var i = 0; i<results.length; i++) {
             var station = results[i];
 
             // Create a marker for each place.
             var marker = {
               id:station.id,
               place_id: station.attributes.placeId,
-              name: station.attributes.name,
               latitude: station.attributes.latitude,
               longitude: station.attributes.longitude,
+              name: station.attributes.name,
+              address: station.attributes.address,
+              email: station.attributes.email,
+              phone: station.attributes.phone,
+              description: station.attributes.description,
               options: {
                 draggable: false,
                 title: station.attributes.name,
                 visible: true
               },
-              templateurl:'window.tpl.html'
+              templateurl:'window.tpl.html',
+              show: editedMarkerId === station.id
+            };
+            marker.onClick = function() {
+                marker.show = !marker.show;
             };
             stationsMarkers.push(marker);
           }
+
+          //Send new markers to the controller.
           $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
 
         },
@@ -1996,43 +2025,145 @@
       });
     };
 
+    //Return the desired marker contained in the array.
+    PoliceStationsService.getMarker = function(id) {
+      for (var i = 0; i < stationsMarkers.length; i++) {
+        if(stationsMarkers[i].id === id)
+          return stationsMarkers[i];
+      }
+    };
+
+    //Changes the station info in Parse after user saves the edited station
+    PoliceStationsService.updateStationInfo = function(stationInfo) {
+      var PoliceMap = Parse.Object.extend("PoliceMap");
+      var query = new Parse.Query(PoliceMap);
+      query.get(stationInfo.id, {
+        success: function(station){
+          PoliceStationsService.saveStation(stationInfo, station);
+        },
+        error: function(station, error){
+          console.log("Error fetching police station");
+        }
+      });
+    };
+
+    //Add temporary marker.
     PoliceStationsService.addMarker = function(marker) {
       stationsMarkers.push(marker);
       $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
     };
 
+    //Cancels the addition of a new station. Removes the temp marker.
+    PoliceStationsService.cancel = function() {
+      stationsMarkers.pop();
+      PoliceStationsService.isAdding = false;
+      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+    };
+
+    //Save new station to Parse or update a station in parse if the
+    //station object is not undefined.
+    PoliceStationsService.saveStation = function(stationInfo, station) {
+      PoliceStationsService.isAdding = false;
+
+      //If station object isn't received, a new station object is created.
+      if(!station) {
+        var PoliceMap = Parse.Object.extend("PoliceMap");
+        station = new PoliceMap();
+        station.set("latitude", PoliceStationsService.getTempMarker().latitude);
+        station.set("longitude", PoliceStationsService.getTempMarker().longitude);
+        station.set("coordinates", new Parse.GeoPoint({latitude: PoliceStationsService.getTempMarker().latitude, longitude: PoliceStationsService.getTempMarker().longitude}))
+        station.set("client", {
+          __type: "Pointer",
+          className: "Client",
+          objectId: Session.clientId
+        });
+      }
+
+      station.set("name", stationInfo.name);
+      station.set("address", stationInfo.address);
+      station.set("phone", stationInfo.phone);
+      station.set("description", stationInfo.description);
+      station.set("email", stationInfo.email);
+      station.save(null, {
+        success: function(station) {
+          // Execute any logic that should take place after the object is saved.
+          PoliceStationsService.getStationsMarkers(station.id);
+        },
+        error: function(station, error) {
+          // Execute any logic that should take place if the save fails.
+          // error is a Parse.Error with an error code and message.
+          console.log('Failed to create/update  Police Station on Parse. Error: ' + error.message);
+        }
+      });
+    };
+
+    //Return the temp marker.
+    PoliceStationsService.getTempMarker = function() {
+      return stationsMarkers[stationsMarkers.length-1];
+    };
+
+    //Remove the temp marker and update the map.
+    PoliceStationsService.removeTempMarker = function() {
+      stationsMarkers.splice(stationsMarkers.length-1, 1);
+      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+    };
+
+    //Delete a station from Parse.
+    PoliceStationsService.deleteStation = function(id) {
+      var PoliceMap = Parse.Object.extend("PoliceMap");
+      var query = new Parse.Query(PoliceMap);
+      query.get(id, {
+        success: function(station){
+          station.destroy({
+            success: function(myObject) {
+              PoliceStationsService.getStationsMarkers();
+            },
+            error: function(myObject, error) {
+              // The delete failed.
+              // error is a Parse.Error with an error code and message.
+            }
+          });
+        },
+        error: function(station, error){
+          console.log("Error fetching police station");
+        }
+      });
+    };
+
     return PoliceStationsService;
   }]);
 
-  //Controller for Google map in each tip;
-  //sets map center and crime position in map
-  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function(PoliceStationsService, $scope) {
+  //Controller for Google map in the 'Maps' state.
+  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'Session', function(PoliceStationsService, $scope, Session) {
 
-    /****************************************************************************************/
     var mapCtrl = this;
-    mapCtrl.isAddingStation = false;
+
+    //Hack to avoid google-map directive bug when updating
+    //marker's window.
+    mapCtrl.redrawMarkers = function() {
+      return PoliceStationsService.redrawMarkers;
+    };
+
     mapCtrl.map = {
       zoom: 14,
-      center: {latitude: 18.467965, longitude:-66.121528},
-
+      center: {latitude: 0, longitude: 0},
     };
 
-    var num = 0;
+    //Get region center-location from Parse
+    var Client = Parse.Object.extend("Client");
+    var clientQuery = new Parse.Query(Client);
+    clientQuery.get(Session.clientId, {
+      success: function(client){
+        mapCtrl.map.center = {latitude: client.attributes.location._latitude, longitude: client.attributes.location.longitude};
+      },
+      error: function(object, error){
+        console.log("Error fetching client.");
+      }
+    });
+
+    PoliceStationsService.map = mapCtrl.map;
 
     mapCtrl.policeStationsMarkers = [];
-
-    mapCtrl.markerOptions = {
-      draggable: true,
-      visible: true,
-      title: "Test Title"
-    };
-
-    mapCtrl.windowOptions = {
-      visible: false
-    };
-
-    // this.markersArray = [];
-    mapCtrl.bounds = {};
 
     mapCtrl.searchbox = {
       template:'searchbox.tpl.html',
@@ -2046,28 +2177,93 @@
           if (places.length === 0) {
             return;
           }
-          //Take only the first place.
+          //Take only the first place on the list.
           var place = places[0];
-
           mapCtrl.map.center = {
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng()
           };
+          PoliceStationsService.map.center = mapCtrl.map.center;
         }
       }
     };
 
+    //Retreive markers from the service.
     PoliceStationsService.getStationsMarkers();
+
+    //Checks if an "$scope.$apply" is in progress before
+    //starting a new one.
+    $scope.safeApply = function(fn) {
+      var phase = this.$root.$$phase;
+      if(phase == '$apply' || phase == '$digest') {
+        if(fn && (typeof(fn) === 'function')) {
+          fn();
+        }
+      } else {
+        this.$apply(fn);
+      }
+    };
+
+    //Receive the markers from Parse.
     $scope.$on('stations-markers-fetched', function(event, markers){
       mapCtrl.policeStationsMarkers = markers;
+      PoliceStationsService.redrawMarkers = false;
+      $scope.safeApply();
+
     });
 
-    mapCtrl.newStationMarker = function() {
-      mapCtrl.isAddingStation = true;
+    //Check if the user is adding a new station.
+    mapCtrl.isAdding = function() {
+      return PoliceStationsService.isAdding;
+    };
+
+  }]);
+
+  //The buttons on the map need a new controller for themselves.
+  //This is it.
+  app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function(PoliceStationsService, $scope, ngDialog) {
+    var buttonCtrl = this;
+    var tempIdNum = 0;
+
+    //Check if the user is adding a new station to
+    //enable/disable the buttons.
+    buttonCtrl.isAdding = function() {
+      return PoliceStationsService.isAdding;
+    };
+
+    //Show the dialog to enter station information
+    buttonCtrl.showFormDialog = function (data) {
+       var loginDialog = ngDialog.open({
+        template: '../new-station-form.html',
+        className: 'ngdialog-theme-plain',
+        closeByDocument: false,
+        closeByEscape:false,
+        showClose: true,
+        scope: $scope,
+        data:data
+      });
+    };
+
+    //Add new temp marker to the map
+    buttonCtrl.newStationMarker = function() {
       var marker = {
-        id:num++,
-        latitude: mapCtrl.map.center.latitude,
-        longitude: mapCtrl.map.center.longitude,
+        id:'temp'+tempIdNum++,
+        name: "",
+        address: "",
+        email: "",
+        phone: "",
+        description: "",
+        latitude: PoliceStationsService.map.center.latitude,
+        longitude: PoliceStationsService.map.center.longitude,
+        icon: {
+          url: './resources/images/marker-icon.png',
+          // This marker is 20 pixels wide by 32 pixels tall.
+          scaledSize: new google.maps.Size(29, 44),
+          // The origin for this image is 0,0.
+          origin: new google.maps.Point(0,0),
+          // The anchor for this image is the base of the flagpole at 0,32.
+          anchor: new google.maps.Point(14.5,44)
+        },
         options: {
           draggable: true,
           title: "New Station",
@@ -2075,16 +2271,77 @@
         },
       };
       PoliceStationsService.addMarker(marker);
+      PoliceStationsService.isAdding = true;
     };
 
-    // mapCtrl.onMarkerClick = function() {
-    //     this.windowOptions.visible = !this.windowOptions.visible;
-    // };
-    //
-    // mapCtrl.closeClick = function() {
-    //     this.windowOptions.visible = false;
-    // };
+    //Cancel the addition of a new station.
+    buttonCtrl.cancel = function() {
+      PoliceStationsService.cancel();
+    };
 
+    //Edit station button inside the window of each marker.
+    buttonCtrl.editStation = function(id) {
+      var marker = PoliceStationsService.getMarker(id);
+      var data = JSON.stringify({
+        name: marker.name,
+        address: marker.address,
+        email:marker.email,
+        phone:marker.phone,
+        description:marker.description,
+        id:marker.id
+      });
+      buttonCtrl.showFormDialog(data);
+    };
   }]);
 
-})();
+  //Controller for the ngDialog pop-up for editing the station.
+  app.controller('StationDialogController', ['PoliceStationsService', '$scope', 'ngDialog', function(PoliceStationsService, $scope, ngDialog) {
+    var dialogCtrl = this;
+
+    //Populate station data if we are opening the dialog
+    //for editing a station
+    if ($scope.$parent.ngDialogData) {
+      dialogCtrl.station = $scope.$parent.ngDialogData;
+    }
+    //Is a new station dialog
+    else {
+      dialogCtrl.station = {
+        name: "",
+        address: "",
+        email: "",
+        phone: "",
+        description: "",
+        id: undefined
+      };
+    }
+    //Save the info for the station
+    dialogCtrl.submit = function() {
+      //Do not submit if there is no name entered.
+      if(dialogCtrl.station.name==="") {
+        // TODO throw NO-NAME error.
+        return;
+      }
+
+      //Start redraw-markers hack
+      PoliceStationsService.redrawMarkers = true;
+
+      //Update edited marker. If the id is defined, means
+      //that we are editing a previously saved station.
+      if(!!dialogCtrl.station.id) {
+        PoliceStationsService.updateStationInfo(dialogCtrl.station);
+      }
+      //Save new marker
+      else {
+        PoliceStationsService.saveStation(dialogCtrl.station);
+      }
+      $scope.closeThisDialog();
+    };
+
+    //Delete station
+    dialogCtrl.delete = function() {
+      PoliceStationsService.deleteStation(dialogCtrl.station.id);
+      $scope.closeThisDialog();
+    };
+  }]);
+
+  })();
