@@ -21,7 +21,8 @@ var net = require('net');
 var Parse = require('parse').Parse;
 var OpenTok = require('opentok');
 var MobileClient = require('./lib/mobileclient');
-
+var EncryptionManager = require('./lib/EncryptionManager.js');
+var PasswordGenerator = require('./lib/PasswordGenerator.js');
 
 //=========================================
 //  ENVIRONMENT SETUP
@@ -36,8 +37,8 @@ var notice = clc.magentaBright;
 var maroon = clc.red;
 
 //Set up parse.
-var APP_ID="Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE";
-var JS_KEY="021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk";
+var APP_ID = "Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE";
+var JS_KEY = "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk";
 Parse.initialize(APP_ID, JS_KEY);
 
 //Set up Parse classes for queries
@@ -50,6 +51,10 @@ var VideoSession = Parse.Object.extend("VideoSession");
 var otKey = '44755992';
 var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
 var opentok = new OpenTok(otKey, otSecret);
+
+//Set up static passkey for pasword generator used
+//for encryption.
+var passKey = "^691KQpvCAA1R^ujB3hv@6c6#ZUW8jFC";
 
 //Create an non-overriding log file and feed it
 //to an express logger with default settings
@@ -71,9 +76,154 @@ io.on('connect', function(socket){
   //get query data and fetch
   socket.on('request-batch', function(data){
 
+    //**************************Testing Encryption*****************************************/
+    var CryptoJS = require('node-cryptojs-aes').CryptoJS;
+    var fs = require("fs");
+    var http = require('http');
+
+    //**************** Password generator test *******************/
+
+    var passGen = new PasswordGenerator(passKey);
+    var passPhrase = passGen.generatePassword("iZS78LlpOu");
+    // console.log(passPhrase);
+
+    //***********************************************************/
+
+    //**************** INIT VARS ***************/
+    // var plainText = "Esto es una prueba. \r\nSe esta encodiando este texto, guardandolo en Parse, descargandolo y decriptandolo.";
+    // var passPhrase = "helloworld";
+    var encryptionManager = new EncryptionManager();
+
+    // var encryptedText = 'WKw7rVBBinwztxr4n7GDXlvfHaR5bWF5XrtBzKOBJZRtudm/X7eZiYnK/TxLo2LOS4FKMqGnxXe1gomGVzmOAsYLgw+IRbvfFb/VGig8Gn5zOtVX5Xi5AsFZ7/ayFtCXxkSNRyadwfz54ECADjYb8wIX0lOFk1p8WRrxCZ8nc9WgzL+d+FWoDwOhu3oKJJ0PUOTu6h6ZxS5H6/Gd60NTjERQsNiJ3Y+8dA==';
+    // var decrypt = encryptionManager.decrypt(passPhrase, encryptedText);
+    // console.log(decrypt);
+
+
+    //********************************************* Encrypt text and upload to Parse. **********************************************//
+    // var encryptedText = encryptionManager.encrypt(passPhrase, plainText);
+    //
+    // var TestingEncryption = Parse.Object.extend("TestingEncryption");
+    // testingEncryption = new TestingEncryption();
+    // testingEncryption.set('dataObject', {
+    //   __type: "Bytes",
+    //   base64: encryptedText
+    // });
+    // testingEncryption.set('textEncoded', "Text");
+    // testingEncryption.set('encryptedIn', "Javascript");
+    // testingEncryption.save(null, {
+    //   success: function(object){
+    //     console.log("Encrypted text saved.");
+    //
+    //
+    //     //**************** Fetch from Parse *** PD. No need to do this. already have the object. ***********//
+    //     var TestingEncryption = Parse.Object.extend("TestingEncryption");
+    //     var query = new Parse.Query(TestingEncryption);
+    //     query.get("DFGz84ozyb", {//object.id, {
+    //       success: function(object) {
+    //
+    //               var encryptedText = object.attributes.dataObject.base64;
+    //
+    //               var decrypt = encryptionManager.decrypt(passPhrase, encryptedText);
+    //
+    //               var message = decrypt === plainText? 'Decryption successful.': 'Decryption unsuccessful.';
+    //               console.log(message);
+    //
+    //       },
+    //       error: function(object, error) {
+    //         console.log("Fetch from parse error: " + error.message);
+    //       }
+    //     });
+    //     //*********** End of fetch from Parse **********/
+    //
+    //   },
+    //   error: function(object, error){
+    //     //TODO Handle error when couldn't save encryption session
+    //     console.log("Cannot create row. Error: " + error.message);
+    //   }
+    // });
+    //****************************************************************************************************************************//
+
+    //************************************* Read file, encrypt and upload to Parse. **********************************************//
+    // var inputFilename = "audio.m4a";
+    // fs.readFile(inputFilename, function(err, imageDataBuf){
+    //
+    //   var fileB64 = imageDataBuf.toString('base64');
+    //
+    //   var encryptedFile = encryptionManager.encrypt(passPhrase, fileB64);
+    //
+    //   var parseFile = new Parse.File("file.encrypted", { base64: encryptedFile });
+    //   console.log("Uploading file to Parse... -> " + inputFilename);
+    //   parseFile.save().then(function() {
+    //
+    //     var TestingEncryption = Parse.Object.extend("TestingEncryption");
+    //     testingEncryption = new TestingEncryption();
+    //
+    //     testingEncryption.set('textEncoded', inputFilename);
+    //     testingEncryption.set('encryptedIn', "Javascript");
+    //     testingEncryption.set('imageData', parseFile);
+    //     testingEncryption.save(null, {
+    //       success: function(object){
+    //         console.log("Encrypted file saved.");
+    //
+    //
+    //         //**************** Fetch from Parse *** PD. No need to do this. already have the object. ***********//
+    //         var TestingEncryption = Parse.Object.extend("TestingEncryption");
+    //         var query = new Parse.Query(TestingEncryption);
+    //         query.get(object.id, {
+    //           success: function(object) {
+    //
+    //             var parseFile = object.attributes.imageData;
+    //
+    //             var url = parseFile._url;
+    //
+    //             var filepath = "file.encrypted";
+    //
+    //             console.log("Downloading file from Parse...");
+    //             var file = fs.createWriteStream(filepath);
+    //             var request = http.get(url, function(response) {
+    //               response.pipe(file);
+    //               file.on('finish', function() {
+    //                 // file.close(cb);
+    //                 console.log("Download complete. Starting decryption...");
+    //                 fs.readFile(filepath, function(err, dataBuf){
+    //
+    //                   var fileB64 = dataBuf.toString('base64');
+    //
+    //                   var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
+    //                   console.log("End of decryption.");
+    //
+    //                   var decodedFile = new Buffer(decrypt, 'base64');
+    //
+    //                   fs.writeFile('decrypted-'+inputFilename, decodedFile, function(err) {});
+    //                 });
+    //               });
+    //             });
+    //
+    //           },
+    //           error: function(object, error) {
+    //             console.log("Fetch from parse error: " + error.message);
+    //           }
+    //         });
+    //         //*********** End of fetch from Parse **********/
+    //
+    //       },
+    //       error: function(object, error){
+    //         //TODO Handle error when couldn't save encryption session
+    //         console.log("Cannot create row. Error: " + error.message);
+    //       }
+    //     });
+    //   }, function(error) {
+    //     // The file either could not be read, or could not be saved to Parse.
+    //     console.log("Cannot save file to Parse. Error: " + error.message);
+    //   });
+    //
+    // });
+
+    //*************************************************************************************************************************//
+
     //Get filtering values: by clientId, date
     //and tips after or before given date
-    var clientId = data.clientId
+    var clientId = data.clientId;
     var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
     var isAfterDate = data.isAfterDate;
 

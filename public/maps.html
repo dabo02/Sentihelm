@@ -6,33 +6,49 @@
     </script>
 
     <!-- Cannot put a whitespace between script and button. -->
-    <script type="text/ng-template" id="control.tpl.html"><button type="submit" class="btn btn-success" ng-click="mapCtrl.newStationMarker()" style="margin-top:5px;">Add Police Station</button>
+    <script type="text/ng-template" id="control.tpl.html"><button type="submit" class="btn btn-primary" ng-click="buttonCtrl.newStationMarker()" ng-disabled="buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">Add Police Station</button>
     </script>
 
-    <ui-gmap-google-map center="mapCtrl.map.center" zoom="mapCtrl.map.zoom" draggable="true" bounds="mapCtrl.bounds">
+    <!-- Cannot put a whitespace between script and button. -->
+    <script type="text/ng-template" id="control3.tpl.html"><button type="submit" class="btn btn-danger" ng-click="buttonCtrl.cancel()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">Cancel</button>
+    </script>
+
+    <!-- Cannot put a whitespace between script and button. -->
+    <script type="text/ng-template" id="control2.tpl.html"><button type="submit" class="btn btn-primary" ng-click="buttonCtrl.showFormDialog()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px;">Select Location</button>
+    </script>
+
+    <ui-gmap-google-map center="mapCtrl.map.center" zoom="mapCtrl.map.zoom" draggable="true">
 
         <!-- Searchbox -->
         <ui-gmap-search-box template="mapCtrl.searchbox.template" position="mapCtrl.searchbox.position" events="mapCtrl.searchbox.events"></ui-gmap-search-box>
 
-        <!-- New Police Station Button -->
-        <!-- TODO Create new controller for this??? -->
-        <!-- TODO ng-disabled is not working, use ng-hide? -->
-        <ui-gmap-map-control template="control.tpl.html" position="top-right" index="-1" ng-disabled="true" controller="PoliceStationsMapController as mapCtrl"></ui-gmap-map-control>
+        <ui-gmap-map-control template="control.tpl.html" position="top-right" index="1" controller="AddStationController as buttonCtrl"></ui-gmap-map-control>
+        <ui-gmap-map-control template="control2.tpl.html" position="top-right" index="2" controller="AddStationController as buttonCtrl"></ui-gmap-map-control>
+        <ui-gmap-map-control template="control3.tpl.html" position="top-right" index="3" controller="AddStationController as buttonCtrl"></ui-gmap-map-control>
 
-        <!-- Test marker -->
-        <!-- <ui-gmap-marker idKey="1" coords="{latitude: 18.467965, longitude:-66.121528}" click="mapCtrl.onMarkerClick()" options="mapCtrl.markerOptions">
-          <ui-gmap-window options="mapCtrl.windowOptions" closeClick="mapCtrl.closeClick()" ng-cloak>
+        <ui-gmap-markers ng-if="!mapCtrl.redrawMarkers()" models="mapCtrl.policeStationsMarkers" coords="'self'" icon="'icon'" click="'onClick'" options="'options'">
 
-                  <div>Aquí va la descripción del Police Station.</div>
+          <ui-gmap-windows show="show">
+            <div>
+              <div ng-non-bindable style="text-align: left;">
+                Station Name: {{name}}<br>
+                Address: {{address}}<br>
+                Email: {{email}}<br>
+                Phone: {{phone}}<br>
+                Description: {{description}}<br>
+              </div>
+              <div ng-controller='AddStationController as buttonCtrl'>
+                <button type="submit" ng-click="buttonCtrl.editStation(model.id)" style="width: 100%;margin-left: 8px;margin-top:8px; margin-bottom:5px;">Edit</button>
+              </div>
+            </div>
+          </ui-gmap-windows>
 
-          </ui-gmap-window>
-        </ui-gmap-marker> -->
-
-        <!-- Array of markers -->
-        <ui-gmap-markers models="mapCtrl.markersArray" coords="'self'" icon="'icon'" options="'options'"></ui-gmap-markers>
-        <ui-gmap-markers models="mapCtrl.policeStationsMarkers" coords="'self'" icon="'icon'" options="'options'"></ui-gmap-markers>
-
+        </ui-gmap-markers>
     </ui-gmap-google-map>
+
+    <div ng-show="mapCtrl.isAdding()" style="display:block;z-index:100;position:absolute;top:5px;left:40%;width:20%;background:white;">
+        <label>Drag the blue marker to the desired location and click on "Select Location"</label>
+    </div>
 
   </div>
 

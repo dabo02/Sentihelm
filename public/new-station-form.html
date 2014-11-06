@@ -1,0 +1,47 @@
+<div ng-controller="StationDialogController as dialogCtrl">
+
+  <span id="login-dialog-title">{{!!dialogCtrl.station.name? 'Edit Station': 'New Station'}}</span><br>
+
+  <form class="form-horizontal" role="form">
+
+    <div class="form-group">
+      <label class="col-sm-3 control-label">Name</label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" id="inputStationName" ng-model="dialogCtrl.station.name" placeholder="Station Name">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label">Address</label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" id="inputStationAddress" ng-model="dialogCtrl.station.address" placeholder="Address">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label">Email</label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" id="inputStationEmail" ng-model="dialogCtrl.station.email" placeholder="Email">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label">Phone</label>
+      <div class="col-sm-9">
+        <input type="text" class="form-control" id="inputStationPhone" ng-model="dialogCtrl.station.phone" placeholder="Phone">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-sm-3 control-label">Description</label>
+      <div class="col-sm-9">
+        <textarea style="resize:none" class="form-control" rows="4" id="inputStationDescription" ng-model="dialogCtrl.station.description" placeholder="Description"></textarea>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-md-offset-4 col-md-2">
+        <button type="submit" class="btn btn-primary" ng-click="dialogCtrl.submit()">Submit</button>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-danger" ng-show="!!dialogCtrl.station.name" ng-click="dialogCtrl.delete()">Delete</button>
+      </div>
+    </div>
+  </form>
+
+</div>
