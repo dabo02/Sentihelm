@@ -11,10 +11,12 @@
    ng-repeat="item in drawerCtrl.entries"
    ng-click="drawerCtrl.changeState(item.state)"
   >
-    <h4 style="color:inherit;">
+
+    <h5 style="color:inherit;">
       <span class="{{item.icon}}"></span>
       <span style="margin-left:10px;">{{item.name}}</span>
-    </h4>
+      <span ng-if="item.name==='Tip Feed'&&drawerCtrl.newTips" class="badge pull-right">{{drawerCtrl.newTips}}</span>
+    </h5>
 
   </li>
 

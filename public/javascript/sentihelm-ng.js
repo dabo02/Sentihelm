@@ -1292,8 +1292,9 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', function($scope, $rootScope, snapRemote, $state) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', function($scope, $rootScope, snapRemote, $state, socket) {
     var drawer = this;
+    this.newTips = 0;
 
     // //Current active state
     // this.currentState = $rootScope.currentState;
@@ -1315,15 +1316,23 @@
       snapRemote.close();
     };
 
-    //Navigates/changes view to the corresponding state (page)
+    //Navigates/changes/reloads view to the corresponding state (page)
     this.changeState = function(state){
-      $state.go(state);
-
-      // //Change active state in drawer (blue text color)
-      // $scope.$on('state-change', function(event){
-      //   drawer.currentState = $rootScope.currentState;
-      // });
+      if(state==="tipfeed"){
+        drawer.newTips = 0;
+      }
+      $state.go(state, {newTips:0}, {reload:true});
     };
+
+    socket.on('new-tip', function(data){
+      drawer.newTips++;
+      $scope.$apply();
+    });
+
+    // //Change active state in drawer (blue text color)
+    // $scope.$on('state-change', function(event){
+    //   drawer.currentState = $rootScope.currentState;
+    // });
   }]);
 
   //Controller for VideStreams route; controls
