@@ -1,5 +1,6 @@
-<div class="mid container" ng-controller="VideoStreamsController as videoStreamsCtrl">
-  <div id="video-streams-container">
+<div class="container" ng-controller="VideoStreamsController as videoStreamsCtrl">
+
+  <div id="video-streams-container" ng-if="videoStreamsCtrl.queue.length!=0">
 
     <div id="video-streams-queue">
 
@@ -37,12 +38,20 @@
       </google-map>
     </div>
 
-    <div id="video-streams-info">
-      {{videoStreamsCtrl.currentStream.firstName+" "+videoStreamsCtrl.currentStream.lastName}}<br>
-      {{videoStreamsCtrl.currentStream.email}}<br>
-      {{videoStreamsCtrl.currentStream.phone}}<br>
+    <div id="video-streams-info-container">
+      <div id="video-streams-info">
+        {{videoStreamsCtrl.currentStream.firstName+" "+videoStreamsCtrl.currentStream.lastName}}<br>
+        {{videoStreamsCtrl.currentStream.email}}<br>
+        {{videoStreamsCtrl.currentStream.phone}}<br>
+      </div>
       <button type="submit" class="btn btn-success" ng-click="videoStreamsCtrl.stopStream()" ng-disabled="videoStreamsCtrl.hello">Stop Video Stream</button>
     </div>
 
   </div>
+
+  <div class="container vertical-center" ng-if="videoStreamsCtrl.queue.length===0">
+    <h2 class="text-center col-md-offset-4">No Video Streams Available</h2>
+  </div>
+
+
 </div>

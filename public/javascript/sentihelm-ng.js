@@ -223,10 +223,10 @@
         document.getElementById("regional-notification-title").focus();
       }
     },
-    'REGIONAL-NOTIF-NO-ZIPCODE':{
-      title: 'No Zip Codes',
-      message: 'You must select at least one zip code',
-      code: 'REGIONAL-NOTIF-NO-ZIPCODE',
+    'REGIONAL-NOTIF-NO-REGION':{
+      title: 'No Regions Selected',
+      message: 'You must select at least one region',
+      code: 'REGIONAL-NOTIF-NO-REGION',
       onClose: function(){
         //Do nothing
         return;
@@ -516,6 +516,7 @@
       notification.set("tipId", notificationData.controlNumber);
       notification.set("title", notificationData.title);
       notification.set("message", notificationData.message);
+      notification.set("type", 'follow-up');
       notification.set("channels", parseNotificationService.channels);
       if(notificationData.attachment){
         notification.set(notificationData.attachmentType, notificationData.attachment);
@@ -529,6 +530,8 @@
       var notification = new PushNotification();
       notification.set("title", notificationData.title);
       notification.set("message", notificationData.message);
+      notification.set("type", 'regional');
+      notification.set("channels", parseNotificationService.channels);
       if(notificationData.attachment){
         notification.set(notificationData.attachmentType, notificationData.attachment);
       }
@@ -549,7 +552,12 @@
         error : function(notification, error){
           //Notification could not be saved, pass control back to controller
           //and reset channels
-          $rootScope.$broadcast('notification-error', [notification, error]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-error', [notification, error]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-error', [notification, error]);
+          }
           parseNotificationService.channels = [];
         }
       });
@@ -573,7 +581,13 @@
           //Push was successful
           //Reset channels and alert controller
           parseNotificationService.channels = [];
-          $rootScope.$broadcast('notification-success', [notification]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-success', [notification]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-success', [notification]);
+          }
+          // $rootScope.$broadcast('notification-success', [notification]);
         },
         error: function(error){
           //Push was unsuccessful
@@ -596,13 +610,25 @@
           //Notification was successfully deleted;
           //Alert the controller to prompt the user
           //to try again
-          $rootScope.$broadcast('notification-error', [notification, parentError]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-error', [notification, parentError]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-error', [notification, parentError]);
+          }
+          // $rootScope.$broadcast('notification-error', [notification, parentError]);
         },
         error: function(notification, error){
           //Failed to delete notification
           //Do Nothing, but alert controller
           //to partial success
-          $rootScope.$broadcast('notification-partial-success',[notification]);
+          if(notification.attributes.type==='follow-up'){
+            $rootScope.$broadcast('notification-partial-success', [notification]);
+          }
+          else{
+            $rootScope.$broadcast('regional-notification-partial-success', [notification]);
+          }
+          // $rootScope.$broadcast('notification-partial-success',[notification]);
         }
       });
     };
@@ -917,6 +943,7 @@
 
       //Set up callback that handles mobileUser's streams
       session.on("streamCreated", function(event){
+
         storedStreams.push({session: session, stream: event.stream});
 
         var subscriber = session.subscribe(event.stream, createDivElement(session.id),
@@ -931,7 +958,6 @@
 
           var query = new Parse.Query(VideoSession);
           query.get(stream.connectionId)
-
           .then(function(videoSession){
             videoSession.set('officerUser', {
               __type:"Pointer",
@@ -939,21 +965,11 @@
               objectId:currentUser.objectId
             });
             return videoSession.save();
-          }, function(videoSession, error){
-            //TODO
-            //Handle error when videoession could not be retrieved
-            console.log(error);
           })
-
           .then(function(videoSession){
-            //TODO
             //Session was upated with officer
-            var success = videoSession;
-          }, function(videoSession, error){
-            //TODO
-            //Session could not be saved
-            console.log(error);
           });
+
         });
 
         currStream = event.stream;
@@ -982,6 +998,7 @@
         $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
       });
 
+      //TODO VERIFY
       //Set up callback that handles disconnection
       session.on("sessionDisconnected", function(event) {
 
@@ -1275,21 +1292,22 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', function($scope, $rootScope, snapRemote) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', function($scope, $rootScope, snapRemote, $state, socket) {
     var drawer = this;
+    this.newTips = 0;
 
-    //Current active state
-    this.currentState = $rootScope.currentState;
+    // //Current active state
+    // this.currentState = $rootScope.currentState;
 
     //Drawer options with name and icon;
     //entries are off by default
     this.entries=[
-      {name:'Tip Feed', icon:'fa fa-inbox', state:'#/tipfeed'},
-      {name:'Video Streams', icon:'fa fa-video-camera', state:'#/video-streams'},
-      {name:'Send Notification', icon:'fa fa-send-o', state:'#/regional-notifications'},
-      {name:'Maps', icon:'fa fa-globe', state:'#/maps'},
-      {name:'Wanted List', icon:'fa fa-warning', state:'#/most-wanted'},
-      {name:'Data Analysis', icon:'fa fa-bar-chart-o', state:'#/analysis'}
+      {name:'Tip Feed', icon:'glyphicon glyphicon-inbox', state:'tipfeed'},
+      {name:'Video Streams', icon:'glyphicon glyphicon-facetime-video', state:'video-streams'},
+      {name:'Send Notification', icon:'glyphicon glyphicon-send', state:'regional-notifications'},
+      {name:'Maps', icon:'glyphicon glyphicon-map-marker', state:'maps'},
+      {name:'Wanted List', icon:'glyphicon glyphicon-list-alt', state:'most-wanted'},
+      {name:'Data Analysis', icon:'glyphicon glyphicon-stats', state:'analysis'}
     ];
 
     //Hides (closes) the drawer by sliding
@@ -1298,10 +1316,23 @@
       snapRemote.close();
     };
 
-    //Change active state in drawer (blue text color)
-    $scope.$on('state-change', function(event){
-      drawer.currentState = $rootScope.currentState;
+    //Navigates/changes/reloads view to the corresponding state (page)
+    this.changeState = function(state){
+      if(state==="tipfeed"){
+        drawer.newTips = 0;
+      }
+      $state.go(state, {newTips:0}, {reload:true});
+    };
+
+    socket.on('new-tip', function(data){
+      drawer.newTips++;
+      $scope.$apply();
     });
+
+    // //Change active state in drawer (blue text color)
+    // $scope.$on('state-change', function(event){
+    //   drawer.currentState = $rootScope.currentState;
+    // });
   }]);
 
   //Controller for VideStreams route; controls
@@ -1701,36 +1732,10 @@
   app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
   function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
 
-    //this.sending = false;
+    this.sending = false;
     this.regions = $scope.currentRegions;
-    var notificationCtrl = this;
-
-    this.allZipCodes = true;
-    // this.checkboxes = [];
-    // for (var i = 0; i < this.regions.length; i++) {
-    //   this.checkboxes[i] = false;
-    // }
-
-    //Notification was successfully saved and pushed (sent)
-    $scope.$on('regional-notification-success',function(notification){
-      notificationCtrl.sending = false;
-      $scope.$apply();
-    });
-
-    //Notification was saved, but not pushed
-    $scope.$on('regional-notification-partial-success',function(notification){
-      //Right now same as success event, but might change
-      notificationCtrl.sending = false;
-      $scope.$apply();
-    });
-
-    //Notification either wasn't saved, or did save
-    //but push failed and error clause removed said save
-    $scope.$on('regional-notification-error',function(notification){
-      errorFactory.showError('NOTIF-FAILED');
-      notificationCtrl.sending = false;
-      $scope.$apply();
-    });
+    this.allRegions = false;
+    var regionalNotificationCtrl = this;
 
     //Once a file is selected, prep file for upload to Parse
     this.onFileSelect = function($files){
@@ -1753,8 +1758,6 @@
 
     //Send the notification to the user
     this.submitNotification = function(){
-      this.title = "Prueba";
-      this.message = "Esto es el mensaje.";
       //If no title, show appropiate error and ignore
       if(!this.title){
         errorFactory.showError('REGIONAL-NOTIF-NO-TITLE');
@@ -1766,26 +1769,25 @@
         return;
       }
 
-      //Toggle sending animation
-      // this.sending = true;
-
-      if (this.allZipCodes) {
-        var testChannel = $scope.$parent.currentClient.objectId+"_00920";
-        parseNotificationService.channels.push(testChannel);
-        // parseNotificationService.channels.push($scope.$parent.currentClient.objectId);
+      if(this.allRegions){
+        parseNotificationService.channels.push($scope.$parent.currentClient.objectId);
       }
-      else {
-        for (var i = 0; i < this.regions.length; i++) {
-          if (this.checkboxes[i]) {
-            parseNotificationService.channels.push($scope.$parent.currentClient.objectId+'_'+this.regions[i]);
+      else{
+        for(var i=0; i<this.regions.length;i++){
+          if(!!this.regions[i].selected){
+            for(var j=0; j< this.regions[i].zipCodes.length;j++){
+              parseNotificationService.channels.push($scope.$parent.currentClient.objectId+"_"+this.regions[i].zipCodes[j]);
+            }
           }
         }
       }
 
-      if (parseNotificationService.channels.length == 0) {
-        errorFactory.showError('REGIONAL-NOTIF-NO-ZIPCODE');
+      if(parseNotificationService.channels.length==0){
+        errorFactory.showError('REGIONAL-NOTIF-NO-REGION');
         return;
       }
+
+      this.sending = true;
 
       //Prepare notification
       var notification = {};
@@ -1800,8 +1802,28 @@
       //Create Parse notification and send it
       var parseNotification = parseNotificationService.newRegionalNotification(notification);
       parseNotificationService.saveAndPushNotification(parseNotification);
-
     };
+
+    //Notification was successfully saved and pushed (sent)
+    $scope.$on('regional-notification-success',function(notification){
+      regionalNotificationCtrl.sending = false;
+      $scope.$apply();
+    });
+
+    //Notification was saved, but not pushed
+    $scope.$on('regional-notification-partial-success',function(notification){
+      //Right now same as success event, but might change
+      regionalNotificationCtrl.sending = false;
+      $scope.$apply();
+    });
+
+    //Notification either wasn't saved, or did save
+    //but push failed and error clause removed said save
+    $scope.$on('regional-notification-error',function(notification){
+      errorFactory.showError('NOTIF-FAILED');
+      regionalNotificationCtrl.sending = false;
+      $scope.$apply();
+    });
 
   }]);
 
@@ -1981,9 +2003,6 @@
 
     return PoliceStationsService;
   }]);
-
-
-
 
   //Controller for Google map in each tip;
   //sets map center and crime position in map

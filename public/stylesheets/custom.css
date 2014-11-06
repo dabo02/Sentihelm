@@ -44,12 +44,22 @@ img.logo{
 /**=============**/
 
 .drawer-item{
-  border:none;
-  border-top:1px solid #ddd;
+  color:white;
+  border-right:none;
+  border-left:none;
   border-radius:0;
 }
+.drawer-item:hover,
+.drawer-item:active{
+  color:#219fe9;
+}
+
 .drawer-item:first-child{
-  border:none;
+  border-top:none;
+}
+.drawer-item:first-child,
+.drawer-item:last-child{
+  border-radius:0;
 }
 
 /**===============**/
@@ -70,13 +80,12 @@ button:focus{
   cursor:default;
 }
 
-
 .main-container{
   height:800px;
 }
 
 .vertical-center {
-  min-height: 100%;  /* Fallback for browsers that dont support vh unit */
+  min-height: 100%;
   min-height: 100vh;
   padding:0;
   margin:0;
@@ -92,6 +101,13 @@ input.strong{
 .pointer{
   cursor:pointer;
 }
+
+.region-list{
+  max-height:180px;
+  overflow-y:scroll;
+}
+
+
 /**=============**/
 /**   COLORS    **/
 /**=============**/
