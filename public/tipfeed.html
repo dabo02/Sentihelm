@@ -97,9 +97,9 @@
             <div class="map-canvas" id="{{tip.controlNumber}}">
 
               <!------GOOGLE MAP------>
-              <google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
-                <marker coords="mapCtrl.getMarkerPosition(tip.center)"></marker>
-              </google-map>
+              <ui-gmap-google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+                <ui-gmap-markers models="tip.markers" coords="'self'" options="'options'"></ui-gmap-markers>
+              </ui-gmap-google-map>
 
             </div>
           </div>

@@ -94,11 +94,6 @@ io.on('connect', function(socket){
     // var passPhrase = "helloworld";
     var encryptionManager = new EncryptionManager();
 
-    // var encryptedText = 'WKw7rVBBinwztxr4n7GDXlvfHaR5bWF5XrtBzKOBJZRtudm/X7eZiYnK/TxLo2LOS4FKMqGnxXe1gomGVzmOAsYLgw+IRbvfFb/VGig8Gn5zOtVX5Xi5AsFZ7/ayFtCXxkSNRyadwfz54ECADjYb8wIX0lOFk1p8WRrxCZ8nc9WgzL+d+FWoDwOhu3oKJJ0PUOTu6h6ZxS5H6/Gd60NTjERQsNiJ3Y+8dA==';
-    // var decrypt = encryptionManager.decrypt(passPhrase, encryptedText);
-    // console.log(decrypt);
-
-
     //********************************************* Encrypt text and upload to Parse. **********************************************//
     // var encryptedText = encryptionManager.encrypt(passPhrase, plainText);
     //
@@ -310,6 +305,17 @@ io.on('connect', function(socket){
           var tempDate = (new Date(tips[i].createdAt));
           tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
           tips[i].date = tempDate;
+          
+          tips[i].markers = [{
+            id: tips[i].objectId,
+            latitude: tips[i].center.latitude, 
+            longitude: tips[i].center.longitude,
+            options: {
+              draggable: false,
+              title: "Crime Location",
+              visible: true
+            }
+          }];
         }
 
         //Send the tips to the front end

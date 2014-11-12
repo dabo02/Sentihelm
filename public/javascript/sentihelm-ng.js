@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'google-maps','ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
