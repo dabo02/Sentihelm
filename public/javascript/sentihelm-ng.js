@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'google-maps','ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -1996,14 +1996,14 @@
               place_id: station.attributes.placeId,
               latitude: station.attributes.latitude,
               longitude: station.attributes.longitude,
-              name: station.attributes.name,
+              name: station.attributes.stationName,
               address: station.attributes.address,
               email: station.attributes.email,
               phone: station.attributes.phone,
               description: station.attributes.description,
               options: {
                 draggable: false,
-                title: station.attributes.name,
+                title: station.attributes.stationName,
                 visible: true
               },
               templateurl:'window.tpl.html',
@@ -2079,7 +2079,7 @@
         });
       }
 
-      station.set("name", stationInfo.name);
+      station.set("stationName", stationInfo.name);
       station.set("address", stationInfo.address);
       station.set("phone", stationInfo.phone);
       station.set("description", stationInfo.description);
@@ -2268,7 +2268,7 @@
           draggable: true,
           title: "New Station",
           visible: true
-        },
+        }
       };
       PoliceStationsService.addMarker(marker);
       PoliceStationsService.isAdding = true;

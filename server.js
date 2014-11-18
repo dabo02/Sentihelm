@@ -24,6 +24,9 @@ var MobileClient = require('./lib/mobileclient');
 var EncryptionManager = require('./lib/EncryptionManager.js');
 var PasswordGenerator = require('./lib/PasswordGenerator.js');
 
+var Cryptoped = require('cryptoped');
+var crypto = require("crypto-lite").crypto
+
 //=========================================
 //  ENVIRONMENT SETUP
 //=========================================
@@ -36,25 +39,32 @@ var red = clc.redBright;
 var notice = clc.magentaBright;
 var maroon = clc.red;
 
+////************************** User Encryption*****************************************/
+var APP_ID_2 = "csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd";
+var JS_KEY_2 = "T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor";
+Parse.initialize(APP_ID_2, JS_KEY_2);
+
 //Set up parse.
-var APP_ID = "Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE";
-var JS_KEY = "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk";
-Parse.initialize(APP_ID, JS_KEY);
+//var APP_ID = "Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE";
+//var JS_KEY = "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk";
+//Parse.initialize(APP_ID, JS_KEY);
 
 //Set up Parse classes for queries
 var TipReport = Parse.Object.extend("TipReport");
 var Client = Parse.Object.extend("Client");
 var VideoSession = Parse.Object.extend("VideoSession");
 
+//Generates the password for the encription manager.
+var passwordGenerator = new PasswordGenerator();
+
+//Encrypts and decrypts
+var encryptionManager = new EncryptionManager(crypto);
+
 //Set OpenTok key and secret. Create a new opentok object,
 //which is used to manage sessions and tokens.
 var otKey = '44755992';
 var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
 var opentok = new OpenTok(otKey, otSecret);
-
-//Set up static passkey for pasword generator used
-//for encryption.
-var passKey = "^691KQpvCAA1R^ujB3hv@6c6#ZUW8jFC";
 
 //Create an non-overriding log file and feed it
 //to an express logger with default settings
@@ -77,150 +87,7 @@ io.on('connect', function(socket){
   socket.on('request-batch', function(data){
 
     //**************************Testing Encryption*****************************************/
-    var CryptoJS = require('node-cryptojs-aes').CryptoJS;
-    var fs = require("fs");
-    var http = require('http');
-
-    //**************** Password generator test *******************/
-
-    var passGen = new PasswordGenerator(passKey);
-    var passPhrase = passGen.generatePassword("iZS78LlpOu");
-    // console.log(passPhrase);
-
-    //***********************************************************/
-
-    //**************** INIT VARS ***************/
-    // var plainText = "Esto es una prueba. \r\nSe esta encodiando este texto, guardandolo en Parse, descargandolo y decriptandolo.";
-    // var passPhrase = "helloworld";
-    var encryptionManager = new EncryptionManager();
-
-    // var encryptedText = 'WKw7rVBBinwztxr4n7GDXlvfHaR5bWF5XrtBzKOBJZRtudm/X7eZiYnK/TxLo2LOS4FKMqGnxXe1gomGVzmOAsYLgw+IRbvfFb/VGig8Gn5zOtVX5Xi5AsFZ7/ayFtCXxkSNRyadwfz54ECADjYb8wIX0lOFk1p8WRrxCZ8nc9WgzL+d+FWoDwOhu3oKJJ0PUOTu6h6ZxS5H6/Gd60NTjERQsNiJ3Y+8dA==';
-    // var decrypt = encryptionManager.decrypt(passPhrase, encryptedText);
-    // console.log(decrypt);
-
-
-    //********************************************* Encrypt text and upload to Parse. **********************************************//
-    // var encryptedText = encryptionManager.encrypt(passPhrase, plainText);
-    //
-    // var TestingEncryption = Parse.Object.extend("TestingEncryption");
-    // testingEncryption = new TestingEncryption();
-    // testingEncryption.set('dataObject', {
-    //   __type: "Bytes",
-    //   base64: encryptedText
-    // });
-    // testingEncryption.set('textEncoded', "Text");
-    // testingEncryption.set('encryptedIn', "Javascript");
-    // testingEncryption.save(null, {
-    //   success: function(object){
-    //     console.log("Encrypted text saved.");
-    //
-    //
-    //     //**************** Fetch from Parse *** PD. No need to do this. already have the object. ***********//
-    //     var TestingEncryption = Parse.Object.extend("TestingEncryption");
-    //     var query = new Parse.Query(TestingEncryption);
-    //     query.get("DFGz84ozyb", {//object.id, {
-    //       success: function(object) {
-    //
-    //               var encryptedText = object.attributes.dataObject.base64;
-    //
-    //               var decrypt = encryptionManager.decrypt(passPhrase, encryptedText);
-    //
-    //               var message = decrypt === plainText? 'Decryption successful.': 'Decryption unsuccessful.';
-    //               console.log(message);
-    //
-    //       },
-    //       error: function(object, error) {
-    //         console.log("Fetch from parse error: " + error.message);
-    //       }
-    //     });
-    //     //*********** End of fetch from Parse **********/
-    //
-    //   },
-    //   error: function(object, error){
-    //     //TODO Handle error when couldn't save encryption session
-    //     console.log("Cannot create row. Error: " + error.message);
-    //   }
-    // });
-    //****************************************************************************************************************************//
-
-    //************************************* Read file, encrypt and upload to Parse. **********************************************//
-    // var inputFilename = "audio.m4a";
-    // fs.readFile(inputFilename, function(err, imageDataBuf){
-    //
-    //   var fileB64 = imageDataBuf.toString('base64');
-    //
-    //   var encryptedFile = encryptionManager.encrypt(passPhrase, fileB64);
-    //
-    //   var parseFile = new Parse.File("file.encrypted", { base64: encryptedFile });
-    //   console.log("Uploading file to Parse... -> " + inputFilename);
-    //   parseFile.save().then(function() {
-    //
-    //     var TestingEncryption = Parse.Object.extend("TestingEncryption");
-    //     testingEncryption = new TestingEncryption();
-    //
-    //     testingEncryption.set('textEncoded', inputFilename);
-    //     testingEncryption.set('encryptedIn', "Javascript");
-    //     testingEncryption.set('imageData', parseFile);
-    //     testingEncryption.save(null, {
-    //       success: function(object){
-    //         console.log("Encrypted file saved.");
-    //
-    //
-    //         //**************** Fetch from Parse *** PD. No need to do this. already have the object. ***********//
-    //         var TestingEncryption = Parse.Object.extend("TestingEncryption");
-    //         var query = new Parse.Query(TestingEncryption);
-    //         query.get(object.id, {
-    //           success: function(object) {
-    //
-    //             var parseFile = object.attributes.imageData;
-    //
-    //             var url = parseFile._url;
-    //
-    //             var filepath = "file.encrypted";
-    //
-    //             console.log("Downloading file from Parse...");
-    //             var file = fs.createWriteStream(filepath);
-    //             var request = http.get(url, function(response) {
-    //               response.pipe(file);
-    //               file.on('finish', function() {
-    //                 // file.close(cb);
-    //                 console.log("Download complete. Starting decryption...");
-    //                 fs.readFile(filepath, function(err, dataBuf){
-    //
-    //                   var fileB64 = dataBuf.toString('base64');
-    //
-    //                   var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
-    //                   console.log("End of decryption.");
-    //
-    //                   var decodedFile = new Buffer(decrypt, 'base64');
-    //
-    //                   fs.writeFile('decrypted-'+inputFilename, decodedFile, function(err) {});
-    //                 });
-    //               });
-    //             });
-    //
-    //           },
-    //           error: function(object, error) {
-    //             console.log("Fetch from parse error: " + error.message);
-    //           }
-    //         });
-    //         //*********** End of fetch from Parse **********/
-    //
-    //       },
-    //       error: function(object, error){
-    //         //TODO Handle error when couldn't save encryption session
-    //         console.log("Cannot create row. Error: " + error.message);
-    //       }
-    //     });
-    //   }, function(error) {
-    //     // The file either could not be read, or could not be saved to Parse.
-    //     console.log("Cannot save file to Parse. Error: " + error.message);
-    //   });
-    //
-    // });
-
-    //*************************************************************************************************************************//
-
+    
     //Get filtering values: by clientId, date
     //and tips after or before given date
     var clientId = data.clientId;
@@ -230,11 +97,12 @@ io.on('connect', function(socket){
     //Create query
     var tipQuery = new Parse.Query(TipReport);
 
+    //TODO Create new client in and user to log in in the new tables. Client currently hardcoded.
     //Filter by clientId
     tipQuery.equalTo('clientId', {
       __type: "Pointer",
       className: "Client",
-      objectId: clientId
+      objectId: "crkkPT1naC"
     });
 
     //Filter by date (before or after given date)
@@ -266,16 +134,19 @@ io.on('connect', function(socket){
         if (isAfterDate) {
           tips.reverse();
         }
-
+        
+        var start = new Date().getTime();
         //Loop over the array to prepare the tip objects
         //for the front end
         for(var i = 0; i < tips.length; i++) {
-
+          
           //Get the user from the tip. This works
           //because we are using tipQuery.include('user').
           //It doesn't need to reconnect to the database
           //to retreive the user that submitted the tip.
-          var tipUser = tips[i].get('user');
+          var tipUser = tips[i].get('user')
+          
+          var passPhrase = passwordGenerator.generatePassword((!!tipUser? tipUser.attributes.username: tips[i].attributes.anonymousPassword), !tipUser);
 
           //Get the client object from the first tip to be
           //able to get the total tip count later on (all
@@ -283,15 +154,13 @@ io.on('connect', function(socket){
           if(i===0) {
             totalTips = tips[i].get('clientId').attributes.totalTipCount;
           }
-
           //Convert tip from Parse to Javascript object
           tips[i] = JSON.parse(JSON.stringify(tips[i]));
-
           //If not an anonymous tip, get user information
           if(!!tipUser) {
-            tips[i].firstName = tipUser.attributes.firstName;
-            tips[i].lastName = tipUser.attributes.lastName;
-            tips[i].phone = tipUser.attributes.phoneNumber;
+            tips[i].firstName = encryptionManager.decrypt(passPhrase, tipUser.attributes.firstName.base64);
+            tips[i].lastName = encryptionManager.decrypt(passPhrase, tipUser.attributes.lastName.base64);
+            tips[i].phone = encryptionManager.decrypt(passPhrase, tipUser.attributes.phoneNumber.base64);
             tips[i].anonymous = false;
             tips[i].channel = "user_" + tipUser.id;
           }
@@ -301,20 +170,33 @@ io.on('connect', function(socket){
             tips[i].lastName = "";
             tips[i].anonymous = true;
           }
-
+          
           //Prepare tip object with the values needed in
           //the front end; coordinates for map, tip control
           //number, and formatted date
-          tips[i].center = {latitude: tips[i].crimePositionLatitude, longitude: tips[i].crimePositionLongitude};
+          tips[i].center = {latitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLatitude.base64), longitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLongitude.base64)};
           tips[i].controlNumber = tips[i].objectId;
           var tempDate = (new Date(tips[i].createdAt));
           tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
           tips[i].date = tempDate;
+          tips[i].crimeDescription = encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64);
+          tips[i].crimeType = encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
+          tips[i].crimeListPosition = tips[i].crimeListPosition;
+          tips[i].markers = [{
+            id: tips[i].objectId,
+            latitude: tips[i].center.latitude, 
+            longitude: tips[i].center.longitude,
+            options: {
+              draggable: false,
+              title: "Crime Location",
+              visible: true
+            }
+          }];
+          console.log("DONE: current secs: " + (new Date().getTime() - start)/1000);
         }
 
         //Send the tips to the front end
         socket.emit('response-batch', {tips : tips, totalTipCount : totalTips});
-
       },
       error: function(error){
         //Tip fetching failed, emit response error
