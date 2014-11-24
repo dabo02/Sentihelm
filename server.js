@@ -53,6 +53,7 @@ Parse.initialize(APP_ID_2, JS_KEY_2);
 var TipReport = Parse.Object.extend("TipReport");
 var Client = Parse.Object.extend("Client");
 var VideoSession = Parse.Object.extend("VideoSession");
+var PushNotification = Parse.Object.extend("FollowUpNotifications");
 
 //Generates the password for the encription manager.
 var passwordGenerator = new PasswordGenerator();
@@ -87,7 +88,7 @@ io.on('connect', function(socket){
   socket.on('request-batch', function(data){
 
     //**************************Testing Encryption*****************************************/
-    
+
     //Get filtering values: by clientId, date
     //and tips after or before given date
     var clientId = data.clientId;
@@ -134,18 +135,18 @@ io.on('connect', function(socket){
         if (isAfterDate) {
           tips.reverse();
         }
-        
+
         var start = new Date().getTime();
         //Loop over the array to prepare the tip objects
         //for the front end
         for(var i = 0; i < tips.length; i++) {
-          
+
           //Get the user from the tip. This works
           //because we are using tipQuery.include('user').
           //It doesn't need to reconnect to the database
           //to retreive the user that submitted the tip.
           var tipUser = tips[i].get('user')
-          
+
           var passPhrase = passwordGenerator.generatePassword((!!tipUser? tipUser.attributes.username: tips[i].attributes.anonymousPassword), !tipUser);
 
           //Get the client object from the first tip to be
@@ -170,7 +171,7 @@ io.on('connect', function(socket){
             tips[i].lastName = "";
             tips[i].anonymous = true;
           }
-          
+
           //Prepare tip object with the values needed in
           //the front end; coordinates for map, tip control
           //number, and formatted date
@@ -179,12 +180,12 @@ io.on('connect', function(socket){
           var tempDate = (new Date(tips[i].createdAt));
           tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
           tips[i].date = tempDate;
-          tips[i].crimeDescription = encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64);
+          tips[i].crimeDescription = tips[i].crimeDescription? encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64) : "";
           tips[i].crimeType = encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
           tips[i].crimeListPosition = tips[i].crimeListPosition;
           tips[i].markers = [{
             id: tips[i].objectId,
-            latitude: tips[i].center.latitude, 
+            latitude: tips[i].center.latitude,
             longitude: tips[i].center.longitude,
             options: {
               draggable: false,
@@ -205,6 +206,10 @@ io.on('connect', function(socket){
       }
     });
 
+  });
+
+  socket.on('new-follow-up-notif', function(data){
+    saveAndPushNotification(data.notificationData);
   });
 
 });
@@ -344,68 +349,6 @@ app.get('*', function(request, response){
 });
 
 //=========================================
-//  TCP SERVER FOR VIDEOSTREAMING
-//=========================================
-
-//The function passed to 'net.createServer'
-//is the 'connection' event listener; notify
-//that client connected and set callbacks
-//for events.
-
-//A stringified JSON object is recieved, parsed,
-//then passed to a MobileClient object - along
-//with the active socket and a callback to handle
-//session generation - in order to create the
-//object representation of that mobile client.
-
-//If the string recieved is not a valid stringified
-//JSON, or the secret handshaking key is invalid, an
-//error is thrown.
-
-var tcpServer = net.createServer(function(socket){
-  //Client has connected.
-  console.log(yellow("TCP") +" : "+green("CLIENT CONNECTED\n"));
-
-  socket.on('data', function(data){
-    console.log(notice("RECIEVED FROM CLIENT\n")+data.toString()+"\n");
-    try{
-      var tempClient = JSON.parse(data.toString());
-      var client = new MobileClient(tempClient, socket, function(){
-        var token = '';
-        var modToken = '';
-        //The session will attempt to transmit streams directly between clients.
-        //If clients cannot connect, the session uses the OpenTok TURN server
-        opentok.createSession({mediaMode:"relayed"},function(error, sessionId){
-          if (error) {
-            throw new Error("Session creation failed.");
-          }
-          //Created session will be asigned to this MobileClient's instance
-          //sessionId parameter.
-          client.sessionId = sessionId;
-          console.log(notice("CREATED SESSION\n")+sessionId+"\n");
-          // Once session has been created, finalize the setup.
-          finalizeConnection(client);
-        });
-      });
-    }
-    catch(error){
-      console.log(red("ERROR - ")+maroon(error)+"\n");
-      //TODO
-      //DATA WAS NOT A JSON OBJECT,
-      //OR INVALID KEY
-    }
-  });
-
-  socket.on('end', function() {
-    console.log(yellow("TCP") +" : "+red("CLIENT DISCONNECTED\n"));
-  });
-});
-
-tcpServer.listen(3000, function() {
-  console.log(notice('TCP SERVER RUNNING ON PORT %s\n'), tcpServer.address().port);
-});
-
-//=========================================
 //  START WEB SERVER
 //=========================================
 
@@ -422,38 +365,66 @@ server.listen((process.env.PORT || 80), function(){;
 //  HELPER FUNCTIONS
 //=========================================
 
-//Generate both client and moderator tokens,
-//create and send a stringified JSON answer
-//which will contain the client's token and
-//session Id. Tokens will be valid for 1 hour
-//only. Log all events and save connection.
+function saveAndPushNotification(notificationData){
+  var passPhrase = "";
+  var query = new Parse.Query(Parse.User);
+  query.get(notificationData.userId).
 
-function finalizeConnection(client){
-  var token = opentok.generateToken(client.sessionId, {
-    role :'publisher',
-    expireTime :(new Date().getTime()/1000)+(3600),
-    data : client.username
-  });
-  console.log(notice("CREATED CLIENT TOKEN\n")+token+"\n");
-  var answer = JSON.stringify({sessionId : client.sessionId, clientToken : token});
-  client.socket.write(answer);
-  console.log(notice("SESSION SENT\n")+client.sessionId+"\n");
-  console.log(notice("CLIENT TOKEN SENT\n")+token+"\n");
-  var modToken = opentok.generateToken(client.sessionId, {
-    role :'moderator',
-    expireTime :(new Date().getTime()/1000)+(3600),
-    data : client.username
+  then(function(user){
+    var username = user.attributes.username;
+    passPhrase = passwordGenerator.generatePassword(username);
+
+    var notification = new PushNotification();
+    notification.set("userId", notificationData.userId);
+    notification.set("tipId", notificationData.controlNumber);
+
+    notification.set('title', {
+        __type: "Bytes",
+        base64: encryptionManager.encrypt(passPhrase, notificationData.title)
+    });
+
+    notification.set('message', {
+        __type: "Bytes",
+        base64: encryptionManager.encrypt(passPhrase, notificationData.message)
+    });
+
+    if(notificationData.attachment){
+      var encryptedFile = encryptionManager.encrypt(passPhrase, notificationData.attachment);
+      var attachment = new Parse.File('file', {base64: encryptedFile});
+      notification.set(notificationData.attachmentType, attachment);
+    }
+
+    return notification.save();
+  }).
+
+  then(function(notification){
+    return pushNotification(notification);
+  }, function(error){
+    var err = error;
+  }).
+
+  then(function(){
+    io.sockets.emit('follow-up-notif-sent');
+  }, function(error){
+    var err = error;
   });
 
-  //Create a new object which will contain needed info
-  //for front end app
-  var connection = {};
-  connection.username = client.username;
-  connection.latitude = client.latitude;
-  connection.longitude = client.longitude;
-  connection.sessionId = client.sessionId;
-  connection.modToken = modToken;
-  connection.apiKey = otKey;
-  io.sockets.emit('new stream', {connection : connection});
-  console.log(notice("MODERATOR TOKEN CREATED AND EMITTED:\n")+connection.modToken+"\n");
-}
+};
+
+//Sends the already saved notification to the user; if pushing
+//failed, tries to revert save or continues as partial success
+function pushNotification(notification){
+
+  var pushChannels = ['user_'+notification.attributes.userId];
+  return Parse.Push.send({
+    channels: pushChannels,
+    data: {
+      alert: "New Follow-up Notification Available",
+      badge:"Increment",
+      sound: "cheering.caf",
+      title: "Notification",
+      pushId: notification.id
+    }
+  });
+
+};

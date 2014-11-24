@@ -131,7 +131,7 @@
   //Initialize values needed throughout the app
   app.run(function(){
     //Initialize Parse
-    Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
+    Parse.initialize("csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd", "T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor");
   });
 
   //Autorhization events for log in functionality
@@ -148,7 +148,8 @@
   //content control
   app.constant('USER_ROLES', {
     all: '*',
-    user: 'manager',
+    demo: 'demo',
+    user: 'officer',
     admin: 'admin'
   });
 
@@ -342,10 +343,10 @@
 
     var session = {};
 
-    //Create a session object, along with id, userId and role
-    session.create = function (userId, userRole, clientId, regions) {
+    //Create a session object, along with id, userId and roles
+    session.create = function (userId, userRoles, clientId, regions) {
       session.userId = userId;
-      session.userRole = userRole;
+      session.userRoles = userRoles;
       session.clientId = clientId;
       session.regions = regions;
     };
@@ -353,7 +354,7 @@
     //Destroy current session object
     session.destroy = function () {
       session.userId = null;
-      session.userRole = null;
+      session.userRoles = null;
       session.clientId = null;
       session.regions = null;
 
@@ -381,7 +382,7 @@
 
       var sessionObj = {};
       sessionObj.userId = session.userId;
-      sessionObj.userRole = session.userRole;
+      sessionObj.userRoles = session.userRoles;
       sessionObj.clientId = session.clientId;
       sessionObj.regions = session.regions;
 
@@ -400,7 +401,7 @@
         storedUser = JSON.parse(storedUser);
         storedClient = JSON.parse(storedClient);
         session.userId = storedSession.userId;
-        session.userRole = storedSession.userRole;
+        session.userRoles = storedSession.userRoles;
         session.clientId = storedSession.clientId;
         session.regions = storedSession.regions;
 
@@ -434,8 +435,18 @@
         authorizedRoles = [authorizedRoles];
       }
 
-      return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
+      if(this.isAuthenticated()){
+        for(var i=0; i<Session.userRoles.length; i++){
+          var role = Session.userRoles[i];
+          if(authorizedRoles.indexOf(role) !== -1){
+            return true;
+          }
+        }
+      }
 
+      return false;
+
+      // return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
     };
 
     return authenticator;
@@ -1262,7 +1273,7 @@
           var client = response.data[1];
           var regions = response.data[2];
           //Login was successful, create Session
-          Session.create(user.objectId, user.role, client.objectId, regions);
+          Session.create(user.objectId, user.roles, client.objectId, regions);
           Session.store(user, client);
           $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
           loginCtrl.submitting = false;
@@ -1620,8 +1631,8 @@
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
-  function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
+  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket',
+  function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket){
     //Get data from ngDialog directive
     this.name = $scope.$parent.ngDialogData.name;
     this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -1704,8 +1715,12 @@
       //Toggle sending animation
       this.sending = true;
 
-      //Set the channel where notification will be sent
-      parseNotificationService.channels.push(this.channel);
+      //--USED FOR NON ENCRYPTED FOLLOW UP--
+      //--
+      // //Set the channel where notification will be sent
+      // parseNotificationService.channels.push(this.channel);
+      //--
+      //------------------------------------
 
       //Prepare notification
       var notification = {};
@@ -1715,13 +1730,34 @@
       notification.message = this.message;
       //If a file is present, attach it and set its type
       if(this.file){
-        notification.attachment = new Parse.File("attachment", this.file);
-        notification.attachmentType = this.fileType;
+        var reader = new FileReader();
+        reader.onload = function(event){
+          var x = reader.result;
+          socket.emit('new-follow-up-notif', {
+            notificationData: notification
+          });
+        };
+        reader.readAsArrayBuffer(this.file)
+      }
+      else{
+        socket.emit('new-follow-up-notif', {
+          notificationData: notification
+        });
       }
 
-      //Create Parse notification and send it
-      var parseNotification = parseNotificationService.newFollowUpNotification(notification);
-      parseNotificationService.saveAndPushNotification(parseNotification);
+      socket.on('follow-up-notif-sent', function(data){
+        notificationCtrl.sending = false;
+        $scope.$apply();
+        $scope.closeThisDialog();
+      });
+
+      //--USED FOR NON ENCRYPTED FOLLOW UP--
+      //--
+      // //Create Parse notification and send it
+      // var parseNotification = parseNotificationService.newFollowUpNotification(notification);
+      // parseNotificationService.saveAndPushNotification(parseNotification);
+      //--
+      //------------------------------------
 
     };
 
