@@ -103,7 +103,7 @@ io.on('connect', function(socket){
     tipQuery.equalTo('clientId', {
       __type: "Pointer",
       className: "Client",
-      objectId: "crkkPT1naC"
+      objectId: clientId
     });
 
     //Filter by date (before or after given date)

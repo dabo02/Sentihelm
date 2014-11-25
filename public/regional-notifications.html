@@ -1,7 +1,7 @@
 <div class="jumbotron vertical-center" ng-controller="RegionalNotificationController as regionalNotifCtrl">
 
   <!--Show regions are available-->
-  <div class="container" ng-if="regionalNotifCtrl.regions">
+  <div class="container" ng-if="regionalNotifCtrl.regions.length!==0">
 
     <h3 class="text-center">Send A Notification</h3>
     <form class="form-horizontal" role="form">
@@ -64,7 +64,7 @@
   </div>
 
   <!--Show if NO regions are available-->
-  <div class="container" ng-if="!regionalNotifCtrl.regions">
+  <div class="container" ng-if="regionalNotifCtrl.regions.length===0">
     <h2 class="text-center">No Regions Have Been Defined</h2>
   </div>
 
