@@ -1,5 +1,7 @@
 <div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
-
+  
+  <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
+  
   <div id="tip-feed-container" class="mid-container">
 
     <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
@@ -73,13 +75,13 @@
             <!------ATTACHMENTS------>
             <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
 
-              <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentVideo.url, 'VID')">
+              <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'VID')">
                 <img src="./resources/images/videoAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
               </a>
-              <a id="imageAtt" ng-class="{'disabled-link': !tip.attachmentPhoto.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentPhoto.url, 'IMG')">
+              <a id="imageAtt" ng-class="{'disabled-link': !tip.attachmentPhoto.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'IMG')">
                 <img src="./resources/images/imageAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
               </a>
-              <a id="audioAtt" ng-class="{'disabled-link': !tip.attachmentAudio.url}" ng-click="tipfeed.showAttachmentDialog(tip.attachmentAudio.url, 'AUDIO')">
+              <a id="audioAtt" ng-class="{'disabled-link': !tip.attachmentAudio.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'AUDIO')">
                 <img src="./resources/images/audioAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
               </a>
 
@@ -98,7 +100,6 @@
 
               <!------GOOGLE MAP------>
               <ui-gmap-google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
-<!--                <ui-gmap-marker idKey="tip.controlNumber" coords="mapCtrl.getMarkerPosition(tip.center)"></ui-gmap-marker>-->
                 <ui-gmap-markers models="tip.markers" coords="'self'" options="'options'"></ui-gmap-markers>
               </ui-gmap-google-map>
 

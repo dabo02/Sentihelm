@@ -1,22 +1,22 @@
 <div  ng-controller="AttachmentController as attachCtrl" align="center">
 
-
+  <!--======SPINNER (LOADING)======-->
+<!--  <span ng-if='attachCtrl.showSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="1"></span>-->
+  
   <div ng-show="attachCtrl.attachType === 'IMG'">
-
-    <img ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}}  class="attachment-dialog">
+    <img ng-src={{attachCtrl.address}}  class="attachment-dialog">
 
   </div>
-
 
   <div ng-show="attachCtrl.attachType === 'VID'">
 
     <video width="100%" controls>
 
-      <source ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="video/mp4">
+      <source ng-src={{attachCtrl.address}} type="video/mp4">
 
     </video>
     <br>
-    <a ng-href={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} download>
+    <a ng-href={{attachCtrl.address}} download>
 
       <button type="button" name="Download")>Download</button>
 
@@ -30,13 +30,13 @@
     <audio controls>
 
       <!-- <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/aac"> -->
-      <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/mpeg">
-      <source  ng-src={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} type="audio/gpp">
+      <source  ng-src={{attachCtrl.address}} type="audio/mpeg">
+      <source  ng-src={{attachCtrl.address}} type="audio/gpp">
       Your browser does not support this audio format.
     </audio>
 
     <br>
-    <a ng-href={{attachCtrl.trustAsResourceUrl(attachCtrl.address)}} download>
+    <a ng-href={{attachCtrl.address}} download>
 
       <button type="button" name="Download")>Download</button>
 
