@@ -1,0 +1,14 @@
+{
+    "applications": {
+        "SentiGuard": {
+            "applicationId": "csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd", 
+            "masterKey": "DuduvRG41DNRDbbF0Ik2mi7WVKR8FdaFBSH7Pdqu"
+        }, 
+        "_default": {
+            "link": "SentiGuard"
+        }
+    }, 
+    "global": {
+        "parseVersion": "1.3.1"
+    }
+}

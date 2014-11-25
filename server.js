@@ -11,6 +11,7 @@ var server = require('http').Server(app);
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var fs = require('fs');
+var http = require('http');
 
 //Import and initialize socket.io
 var io = require('socket.io')(server);
@@ -161,6 +162,7 @@ io.on('connect', function(socket){
           if(!!tipUser) {
             tips[i].firstName = encryptionManager.decrypt(passPhrase, tipUser.attributes.firstName.base64);
             tips[i].lastName = encryptionManager.decrypt(passPhrase, tipUser.attributes.lastName.base64);
+            tips[i].username = tipUser.attributes.username;
             tips[i].phone = encryptionManager.decrypt(passPhrase, tipUser.attributes.phoneNumber.base64);
             tips[i].anonymous = false;
             tips[i].channel = "user_" + tipUser.id;
@@ -180,7 +182,7 @@ io.on('connect', function(socket){
           var tempDate = (new Date(tips[i].createdAt));
           tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
           tips[i].date = tempDate;
-          tips[i].crimeDescription = tips[i].crimeDescription? encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64) : "";
+          tips[i].crimeDescription = tips[i].crimeDescription? encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64): "";
           tips[i].crimeType = encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
           tips[i].crimeListPosition = tips[i].crimeListPosition;
           tips[i].markers = [{
@@ -193,7 +195,6 @@ io.on('connect', function(socket){
               visible: true
             }
           }];
-          console.log("DONE: current secs: " + (new Date().getTime() - start)/1000);
         }
 
         //Send the tips to the front end
@@ -206,6 +207,40 @@ io.on('connect', function(socket){
       }
     });
 
+  });
+  
+  socket.on('request-media-url', function(data){
+    
+    var parseFile = data.parseFile;
+    var passPhrase = passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
+    
+    var url = parseFile.url;
+    var filepath = parseFile.name;//'/temp/' + temp.file';
+
+    var file = fs.createWriteStream(filepath);
+    var request = http.get(url, function(response) {
+     response.pipe(file);
+     file.on('finish', function() {
+       fs.readFile(filepath, function(err, dataBuf){
+         
+         if(data.type === 'IMG') {
+           filepath = '/temp/file.jpg';
+         }
+         else if(data.type === 'VID'){
+            filepath = '/temp/file.mpg4';
+         }
+         else {
+            filepath = '/temp/file.aac';
+         }
+         
+         var fileB64 = dataBuf.toString('base64');
+         var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
+         var decodedFile = new Buffer(decrypt, 'base64');
+         fs.writeFile('./public'+filepath, decodedFile, function(err) {});
+         socket.emit('response-media-url', filepath);         
+       });
+     });
+    });
   });
 
   socket.on('new-follow-up-notif', function(data){
