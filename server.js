@@ -11,6 +11,7 @@ var server = require('http').Server(app);
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var fs = require('fs');
+var http = require('http');
 
 //Import and initialize socket.io
 var io = require('socket.io')(server);
@@ -86,7 +87,80 @@ io.on('connect', function(socket){
   //get query data and fetch
   socket.on('request-batch', function(data){
 
-    //**************************Testing Encryption*****************************************/
+    //*********************************************Testing Encryption*************************************************************//
+    //************************************* Read file, encrypt and upload to Parse. **********************************************//
+    // var inputFilename = "audio.m4a";
+    // fs.readFile(inputFilename, function(err, imageDataBuf){
+    //
+    //   var fileB64 = imageDataBuf.toString('base64');
+    //
+    //   var encryptedFile = encryptionManager.encrypt(passPhrase, fileB64);
+    //
+    //   var parseFile = new Parse.File("file.encrypted", { base64: encryptedFile });
+    //   console.log("Uploading file to Parse... -> " + inputFilename);
+    //   parseFile.save().then(function() {
+    //
+    //     var TestingEncryption = Parse.Object.extend("TestingEncryption");
+    //     testingEncryption = new TestingEncryption();
+    //
+    //     testingEncryption.set('textEncoded', inputFilename);
+    //     testingEncryption.set('encryptedIn', "Javascript");
+    //     testingEncryption.set('imageData', parseFile);
+    //     testingEncryption.save(null, {
+    //       success: function(object){
+    //         console.log("Encrypted file saved.");
+    //
+    //         //**************** Fetch from Parse *** PD. No need to do this. already have the object. ***********//
+    //         var TestingEncryption = Parse.Object.extend("TestingEncryption");
+    //         var query = new Parse.Query(TestingEncryption);
+    //         query.get(object.id, {
+    //           success: function(object) {
+    //
+    //             var parseFile = object.attributes.imageData;
+    //
+    //             var url = parseFile._url;
+    //
+    //             var filepath = "file.encrypted";
+    //
+    //             console.log("Downloading file from Parse...");
+    //             var file = fs.createWriteStream(filepath);
+    //             var request = http.get(url, function(response) {
+    //               response.pipe(file);
+    //               file.on('finish', function() {
+    //                 // file.close(cb);
+    //                 console.log("Download complete. Starting decryption...");
+    //                 fs.readFile(filepath, function(err, dataBuf){
+    //
+    //                   var fileB64 = dataBuf.toString('base64');
+    //
+    //                   var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
+    //                   console.log("End of decryption.");
+    //
+    //                   var decodedFile = new Buffer(decrypt, 'base64');
+    //
+    //                   fs.writeFile('decrypted-'+inputFilename, decodedFile, function(err) {});
+    //                 });
+    //               });
+    //             });
+    //
+    //           },
+    //           error: function(object, error) {
+    //             console.log("Fetch from parse error: " + error.message);
+    //           }
+    //         });
+    //         //*********** End of fetch from Parse **********/
+    //
+    //       },
+    //       error: function(object, error){
+    //         //TODO Handle error when couldn't save encryption session
+    //         console.log("Cannot create row. Error: " + error.message);
+    //       }
+    //     });
+    //   }, function(error) {
+    //     // The file either could not be read, or could not be saved to Parse.
+    //     console.log("Cannot save file to Parse. Error: " + error.message);
+    //   });
+    // });
     
     //Get filtering values: by clientId, date
     //and tips after or before given date
@@ -156,10 +230,12 @@ io.on('connect', function(socket){
           }
           //Convert tip from Parse to Javascript object
           tips[i] = JSON.parse(JSON.stringify(tips[i]));
+          
           //If not an anonymous tip, get user information
           if(!!tipUser) {
             tips[i].firstName = encryptionManager.decrypt(passPhrase, tipUser.attributes.firstName.base64);
             tips[i].lastName = encryptionManager.decrypt(passPhrase, tipUser.attributes.lastName.base64);
+            tips[i].username = tipUser.attributes.username;
             tips[i].phone = encryptionManager.decrypt(passPhrase, tipUser.attributes.phoneNumber.base64);
             tips[i].anonymous = false;
             tips[i].channel = "user_" + tipUser.id;
@@ -179,7 +255,8 @@ io.on('connect', function(socket){
           var tempDate = (new Date(tips[i].createdAt));
           tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
           tips[i].date = tempDate;
-          tips[i].crimeDescription = encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64);
+          
+          tips[i].crimeDescription = tips[i].crimeDescription? encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64): "";
           tips[i].crimeType = encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
           tips[i].crimeListPosition = tips[i].crimeListPosition;
           tips[i].markers = [{
@@ -192,7 +269,8 @@ io.on('connect', function(socket){
               visible: true
             }
           }];
-          console.log("DONE: current secs: " + (new Date().getTime() - start)/1000);
+
+          console.log("DONE #" + i + ": current secs: " + (new Date().getTime() - start)/1000);
         }
 
         //Send the tips to the front end
@@ -205,6 +283,40 @@ io.on('connect', function(socket){
       }
     });
 
+  });
+  
+  socket.on('request-media-url', function(data){
+    
+    var parseFile = data.parseFile;
+    var passPhrase = passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
+    
+    var url = parseFile.url;
+    var filepath = parseFile.name;//'/temp/' + temp.file';
+
+    var file = fs.createWriteStream(filepath);
+    var request = http.get(url, function(response) {
+     response.pipe(file);
+     file.on('finish', function() {
+       fs.readFile(filepath, function(err, dataBuf){
+         
+         if(data.type === 'IMG') {
+           filepath = '/temp/file.jpg';
+         }
+         else if(data.type === 'VID'){
+            filepath = '/temp/file.mpg4';
+         }
+         else {
+            filepath = '/temp/file.aac';
+         }
+         
+         var fileB64 = dataBuf.toString('base64');
+         var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
+         var decodedFile = new Buffer(decrypt, 'base64');
+         fs.writeFile('./public'+filepath, decodedFile, function(err) {});
+         socket.emit('response-media-url', filepath);         
+       });
+     });
+    });
   });
 
 });

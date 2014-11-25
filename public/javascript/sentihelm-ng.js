@@ -131,7 +131,10 @@
   //Initialize values needed throughout the app
   app.run(function(){
     //Initialize Parse
-    Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
+    //Bata-Ya 4.0 tables
+//    Parse.initialize("Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE", "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk");
+    //Sentiguard tables
+    Parse.initialize("csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd", "T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor");
   });
 
   //Autorhization events for log in functionality
@@ -1396,6 +1399,7 @@
     //number of total pages, divided by groups of 10
     var tipfeed = this;
     this.tipsAvailable = true;
+    this.showMediaSpinner = false;
     this.currentTips = [];
     this.currentPage = paginator.currentPage;
     this.lastPage = paginator.lastPage;
@@ -1508,40 +1512,75 @@
 
     //Shows dialog that contains attachment which
     //triggered it; video, image or audio
-    this.showAttachmentDialog = function(address, type) {
+    this.showAttachmentDialog = function(tip, type) {
+      
+      this.attachmentType = type;
+      
       //Only show dialog if it, and notificationDialog,
       //are not showing
       if(!this.notificationDialogIsOn && !this.attachmentDialogIsOn){
-        //ngDialog can only handle stringified JSONs
-        var data = JSON.stringify({
-          address:address,
-          attachmentType:type
+        this.showMediaSpinner = true;
+        usSpinnerService.spin('loading-media-spinner');
+        var parseFile;
+        if(type === 'IMG') {
+          parseFile = tip.attachmentPhoto;
+        }
+        else if (type === 'VID') {
+          parseFile = tip.attachmentVideo;
+        }
+        else {
+          parseFile = tip.attachmentAudio;
+        }
+        
+        //Request decrypted media url
+        socket.emit('request-media-url', {
+          parseFile:parseFile,
+          passPhrase:tip.anonymous? tip.anonymousPassword: tip.username,
+          anonymous:tip.anonymous,
+          type:type
         });
+        
+        //Receive url
+        socket.on('response-media-url', function(address){
+          
+          if(tipfeed.attachmentDialogIsOn) {
+            return; 
+          }
+          
+          usSpinnerService.stop('loading-media-spinner');
+          tipfeed.showMediaSpinner = false;
+          
+          //ngDialog can only handle stringified JSONs
+          var data = JSON.stringify({
+            attachmentType:tipfeed.attachmentType,
+            address: address
+          });
 
-        //If attachment is an audio file,
-        //don't show close control (X)
-        var showClose = type !== 'AUDIO';
+          //If attachment is an audio file,
+          //don't show close control (X)
+          var showClose = tipfeed.attachmentType !== 'AUDIO';
 
-        //Open dialog and pass control to AttachmentController
-        $scope.attachmentDialog = ngDialog.open({
-          template: '../attachment-dialog.html',
-          className: 'ngdialog-attachment',
-          showClose: showClose,
-          scope: $scope,
-          data:data
+          //Open dialog and pass control to AttachmentController
+          $scope.attachmentDialog = ngDialog.open({
+            template: '../attachment-dialog.html',
+            className: 'ngdialog-attachment',
+            showClose: showClose,
+            scope: $scope,
+            data:data
+          });
+
+          //Attachment dialog is now showing
+          tipfeed.attachmentDialogIsOn = true;
         });
-
-        //Attachment dialog is now showing
-        this.attachmentDialogIsOn = true;
       }
     };
-
   }]);
 
   //Controller for the tip's attachments; must display
   //video and images, and play audio files
-  app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce',
-  function($scope, $rootScope, ngDialog, $sce){
+  app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce', 'socket', 'usSpinnerService',
+  function($scope, $rootScope, ngDialog, $sce, socket, usSpinnerService){
+
     //Needed so that attachment-dialog.html can open the media files from parse.
     this.trustAsResourceUrl = $sce.trustAsResourceUrl;
     this.address = $scope.$parent.ngDialogData.address;
@@ -2154,10 +2193,10 @@
     var clientQuery = new Parse.Query(Client);
     clientQuery.get(Session.clientId, {
       success: function(client){
-        mapCtrl.map.center = {latitude: client.attributes.location._latitude, longitude: client.attributes.location.longitude};
+        mapCtrl.map.center = {latitude: client.attributes.location._latitude, longitude: client.attributes.location._longitude};
       },
       error: function(object, error){
-        console.log("Error fetching client.");
+        console.log("Error fetching client: " + error.message);
       }
     });
 
