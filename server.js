@@ -237,6 +237,7 @@ io.on('connect', function(socket){
          var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
          var decodedFile = new Buffer(decrypt, 'base64');
          fs.writeFile('./public'+filepath, decodedFile, function(err) {});
+         fs.unlinkSync(parseFile.name);
          socket.emit('response-media-url', filepath);         
        });
      });
@@ -246,7 +247,6 @@ io.on('connect', function(socket){
   socket.on('new-follow-up-notif', function(data){
     saveAndPushNotification(data.notificationData);
   });
-
 });
 
 //=========================================
