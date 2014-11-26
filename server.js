@@ -99,7 +99,6 @@ io.on('connect', function(socket){
     //Create query
     var tipQuery = new Parse.Query(TipReport);
 
-    //TODO Create new client in and user to log in in the new tables. Client currently hardcoded.
     //Filter by clientId
     tipQuery.equalTo('clientId', {
       __type: "Pointer",
@@ -208,12 +207,12 @@ io.on('connect', function(socket){
     });
 
   });
-  
+
   socket.on('request-media-url', function(data){
-    
+
     var parseFile = data.parseFile;
     var passPhrase = passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
-    
+
     var url = parseFile.url;
     var filepath = parseFile.name;//'/temp/' + temp.file';
 
@@ -222,7 +221,7 @@ io.on('connect', function(socket){
      response.pipe(file);
      file.on('finish', function() {
        fs.readFile(filepath, function(err, dataBuf){
-         
+
          if(data.type === 'IMG') {
            filepath = '/temp/file.jpg';
          }
@@ -232,12 +231,12 @@ io.on('connect', function(socket){
          else {
             filepath = '/temp/file.aac';
          }
-         
+
          var fileB64 = dataBuf.toString('base64');
          var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
          var decodedFile = new Buffer(decrypt, 'base64');
          fs.writeFile('./public'+filepath, decodedFile, function(err) {});
-         socket.emit('response-media-url', filepath);         
+         socket.emit('response-media-url', filepath);
        });
      });
     });
