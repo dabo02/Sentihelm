@@ -209,19 +209,24 @@ io.on('connect', function(socket){
   });
 
   socket.on('request-media-url', function(data){
-
+    
+    //Get parseFile
     var parseFile = data.parseFile;
+    //Generate password for decryption
     var passPhrase = passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
 
     var url = parseFile.url;
-    var filepath = parseFile.name;//'/temp/' + temp.file';
-
+    var filepath = parseFile.name;
+    
+    //Download file to server
     var file = fs.createWriteStream(filepath);
     var request = http.get(url, function(response) {
      response.pipe(file);
      file.on('finish', function() {
+       //File finished downloading. Read file.
        fs.readFile(filepath, function(err, dataBuf){
-
+         
+         //Select the correct extension depending on file type.
          if(data.type === 'IMG') {
            filepath = '/temp/file.jpg';
          }
@@ -231,18 +236,25 @@ io.on('connect', function(socket){
          else {
             filepath = '/temp/file.aac';
          }
-
+         
+         //Convert to base64 and decrypt.
          var fileB64 = dataBuf.toString('base64');
          var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
+         
+         //Create buffer and write the decrypted file.
          var decodedFile = new Buffer(decrypt, 'base64');
-         fs.writeFile('./public'+filepath, decodedFile, function(err) {});
-         fs.unlinkSync(parseFile.name);
+         fs.writeFile('./public'+filepath, decodedFile, function(err) {
+           //Delete the downloaded and encrypted file.
+           fs.unlinkSync(parseFile.name);
+         });
+         
+         //Send file url to front-end
          socket.emit('response-media-url', filepath);         
        });
      });
     });
   });
-
+  //Encrypt and send follow-up.
   socket.on('new-follow-up-notif', function(data){
     saveAndPushNotification(data.notificationData);
   });
