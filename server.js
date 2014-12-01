@@ -89,7 +89,6 @@ io.on('connect', function(socket){
   socket.on('request-batch', function(data){
 
     //**************************Testing Encryption*****************************************/
-
     //Get filtering values: by clientId, date
     //and tips after or before given date
     var clientId = data.clientId;
@@ -124,6 +123,12 @@ io.on('connect', function(socket){
     //instead of just passing the pointers.
     tipQuery.include('user');
     tipQuery.include('clientId');
+    
+    tipQuery.limit(10);
+    
+    if(!!data.tipsToSkip) {
+      tipQuery.skip(data.tipsToSkip);
+    }
 
     //Execute query
     tipQuery.find({

@@ -113,39 +113,39 @@
 
   </div>
 
-<!--=====PAGINATOR======-->
-<!--====================-->
-<div id="paginator-container" ng-init="tipfeed.currentPage=1">
-  <ul id="paginator">
+  <!--=====PAGINATOR======-->
+  <!--====================-->
+  <div id="paginator-container" ng-init="tipfeed.currentPage=1">
+    <ul id="paginator">
 
-    <!------PREVIOUS PAGE CONTROL------>
-    <li id="page-previous" class="paginator-control"
-       ng-show="tipfeed.paginatorSet"
-       ng-class="{'disabled-link': tipfeed.currentPage===1}"
-       ng-click="tipfeed.prevPage()"
-     >
-      <span class="fa fa-chevron-left fa-lg"></span>
-    </li>
+      <!------PREVIOUS PAGE CONTROL------>
+      <li id="page-previous" class="paginator-control"
+         ng-show="tipfeed.paginatorSet"
+         ng-class="{'disabled-link': tipfeed.currentPage===1}"
+         ng-click="tipfeed.prevPage()"
+       >
+        <span class="fa fa-chevron-left fa-lg"></span>
+      </li>
 
-    <!------PAGE CONTROLS------>
-    <li class="paginator-control"
-       ng-repeat="value in tipfeed.paginatorSet"
-       ng-class="{'light-blue': tipfeed.currentPage === value}"
-       ng-click="tipfeed.changePage(value)"
-     >
-      {{value}}
-    </li>
+      <!------PAGE CONTROLS------>
+      <li class="paginator-control"
+         ng-repeat="value in tipfeed.paginatorSet"
+         ng-class="{'light-blue': tipfeed.currentPage === value}"
+         ng-click="tipfeed.changePage(value)"
+       >
+        {{value}}
+      </li>
 
-    <!------NEXT PAGE CONTROL------>
-    <li id="page-next" class="paginator-control"
-       ng-show="tipfeed.paginatorSet"
-       ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
-       ng-click="tipfeed.nextPage()"
-     >
-      <span class="fa fa-chevron-right fa-lg"></span>
-    </li>
+      <!------NEXT PAGE CONTROL------>
+      <li id="page-next" class="paginator-control"
+         ng-show="tipfeed.paginatorSet"
+         ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
+         ng-click="tipfeed.nextPage()"
+       >
+        <span class="fa fa-chevron-right fa-lg"></span>
+      </li>
 
-  </ul>
-</div>
+    </ul>
+  </div>
 
 </div>

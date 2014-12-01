@@ -455,7 +455,7 @@
   //Creates an injectable socket service that
   //works just like socket.io's client library
   app.factory('socket', function (socketFactory) {
-    // var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+//     var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
     var ioSocket = io.connect('http://localhost:80');
 
     socket = socketFactory({
@@ -713,7 +713,8 @@
         if(paginator.currentPage===1){
           paginator.pageSetUpdater(paginator.lastPage, false);
         }
-        paginator.changePage(paginator.currentPage);
+//        paginator.changePage(paginator.currentPage);
+        $rootScope.$broadcast('new-batch', [paginator.tips, paginator.currentPage]);
       }
       else{
         $rootScope.$broadcast('no-tips');
@@ -756,19 +757,30 @@
     //Change the page and ask server for tips present in new page;
     //let controller know the page has changed
     paginator.changePage = function(newPage){
-      this.currentPage = newPage;
-      var pageIndex = (this.currentPage)%10 === 0? 10 : (this.currentPage)%10;
-      var start = pageIndex*10-10;
-      var end = start + 10;
-      var currentTips = this.tips.slice(start, end);
-      $rootScope.$broadcast('new-batch', [currentTips, paginator.currentPage]);
+      
+      var isAfterDate = this.currentPage > newPage;
+      
+      if(this.currentPage !== newPage) {
+        var tipsToSkip = isAfterDate? (this.currentPage - newPage - 1)*10: (newPage - this.currentPage - 1)*10;
+        this.currentPage = newPage;
+        socket.emit('request-batch', {
+          clientId: Session.clientId,
+          lastTipDate: isAfterDate? paginator.firstTipDateInArray: paginator.lastTipDateInArray,
+          isAfterDate: isAfterDate,
+          tipsToSkip: tipsToSkip
+        });
+        $rootScope.$broadcast('discard-current-tips',[]);
+      }
+      else {
+        var currentTips = this.tips;
+      }
+      
+//      $rootScope.$broadcast('new-batch', [currentTips, paginator.currentPage]);
     };
 
     //Change to previous page; update references
     paginator.prevPage = function(){
       --this.currentPage;
-      if(this.currentPage%10===0){
-        //Request previous 100 tips
         socket.emit('request-batch', {
           clientId: Session.clientId,
           lastTipDate: paginator.firstTipDateInArray,
@@ -777,29 +789,26 @@
 
         //Discard current shown tips and update paginator
         $rootScope.$broadcast('discard-current-tips',[]);
-        this.pageSetUpdater(this.lastPage, true);
-      }
-      else{
-        this.changePage(this.currentPage);
-      }
+      
+        if(this.currentPage%10===0){
+          this.pageSetUpdater(this.lastPage, true);
+        }
     };
 
     //Change to next page; update references
     paginator.nextPage = function(){
-      if(this.currentPage%10===0){
-        // Request next 100 tips
-        socket.emit('request-batch', {
-          clientId: Session.clientId,
-          lastTipDate: paginator.lastTipDateInArray,
-          isAfterDate: false
-        });
+      socket.emit('request-batch', {
+        clientId: Session.clientId,
+        lastTipDate: paginator.lastTipDateInArray,
+        isAfterDate: false
+      });
 
-        //Discard current shown tips and update paginator
-        $rootScope.$broadcast('discard-current-tips',[]);
-        this.pageSetUpdater(this.lastPage - this.currentPage++, false);
-      }
-      else{
-        this.changePage(++this.currentPage);
+      //Discard current shown tips and update paginator
+      $rootScope.$broadcast('discard-current-tips',[]);
+      ++this.currentPage;  
+      
+      if(this.currentPage-1%10===0){
+        this.pageSetUpdater(this.lastPage, false);
       }
     };
 
