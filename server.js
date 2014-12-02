@@ -120,9 +120,9 @@ io.on('connect', function(socket){
     //instead of just passing the pointers.
     tipQuery.include('user');
     tipQuery.include('clientId');
-    
+
     tipQuery.limit(10);
-    
+
     if(!!data.tipsToSkip) {
       tipQuery.skip(data.tipsToSkip);
     }
@@ -211,7 +211,7 @@ io.on('connect', function(socket){
   });
 
   socket.on('request-media-url', function(data){
-    
+
     //Get parseFile
     var parseFile = data.parseFile;
     //Generate password for decryption
@@ -219,7 +219,7 @@ io.on('connect', function(socket){
 
     var url = parseFile.url;
     var filepath = parseFile.name;
-    
+
     //Download file to server
     var file = fs.createWriteStream(filepath);
     var request = http.get(url, function(response) {
@@ -227,7 +227,7 @@ io.on('connect', function(socket){
      file.on('finish', function() {
        //File finished downloading. Read file.
        fs.readFile(filepath, function(err, dataBuf){
-         
+
          //Select the correct extension depending on file type.
          if(data.type === 'IMG') {
            filepath = '/temp/file.jpg';
@@ -238,20 +238,20 @@ io.on('connect', function(socket){
          else {
             filepath = '/temp/file.aac';
          }
-         
+
          //Convert to base64 and decrypt.
          var fileB64 = dataBuf.toString('base64');
          var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
-         
+
          //Create buffer and write the decrypted file.
          var decodedFile = new Buffer(decrypt, 'base64');
          fs.writeFile('./public'+filepath, decodedFile, function(err) {
            //Delete the downloaded and encrypted file.
            fs.unlinkSync(parseFile.name);
          });
-         
+
          //Send file url to front-end
-         socket.emit('response-media-url', filepath);         
+         socket.emit('response-media-url', filepath);
        });
      });
     });
@@ -471,7 +471,8 @@ function pushNotification(notification){
       badge:"Increment",
       sound: "cheering.caf",
       title: "Notification",
-      pushId: notification.id
+      pushId: notification.id,
+      type:"follow-up"
     }
   });
 

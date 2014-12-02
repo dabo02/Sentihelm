@@ -585,7 +585,8 @@
           badge:"Increment",
           sound: "cheering.caf",
           title: notification.attributes.title,
-          pushId: notification.id
+          pushId: notification.id,
+          type: "regional"
         }
       },{
         success: function(){
@@ -757,9 +758,9 @@
     //Change the page and ask server for tips present in new page;
     //let controller know the page has changed
     paginator.changePage = function(newPage){
-      
+
       var isAfterDate = this.currentPage > newPage;
-      
+
       if(this.currentPage !== newPage) {
         var tipsToSkip = isAfterDate? (this.currentPage - newPage - 1)*10: (newPage - this.currentPage - 1)*10;
         this.currentPage = newPage;
@@ -774,7 +775,7 @@
       else {
         var currentTips = this.tips;
       }
-      
+
 //      $rootScope.$broadcast('new-batch', [currentTips, paginator.currentPage]);
     };
 
@@ -789,7 +790,7 @@
 
         //Discard current shown tips and update paginator
         $rootScope.$broadcast('discard-current-tips',[]);
-      
+
         if(this.currentPage%10===0){
           this.pageSetUpdater(this.lastPage, true);
         }
@@ -805,8 +806,8 @@
 
       //Discard current shown tips and update paginator
       $rootScope.$broadcast('discard-current-tips',[]);
-      ++this.currentPage;  
-      
+      ++this.currentPage;
+
       if(this.currentPage-1%10===0){
         this.pageSetUpdater(this.lastPage, false);
       }
@@ -1531,13 +1532,13 @@
     //Shows dialog that contains attachment which
     //triggered it; video, image or audio
     this.showAttachmentDialog = function(tip, type) {
-      
+
       this.attachmentType = type;
-      
+
       //Only show dialog if it, and notificationDialog,
       //are not showing
       if(!this.notificationDialogIsOn && !this.attachmentDialogIsOn){
-        
+
         this.showMediaSpinner = true;
         usSpinnerService.spin('loading-media-spinner');
         var parseFile;
@@ -1550,8 +1551,8 @@
         else {
           parseFile = tip.attachmentAudio;
         }
-        
-        
+
+
         //Request decrypted media url
         socket.emit('request-media-url', {
           parseFile:parseFile,
@@ -1559,23 +1560,23 @@
           anonymous:tip.anonymous,
           type:type
         });
-                
+
         //Receive url
         socket.on('response-media-url', function(address){
-          
+
           if(tipfeed.attachmentDialogIsOn) {
-            return; 
+            return;
           }
-          
+
           usSpinnerService.stop('loading-media-spinner');
           tipfeed.showMediaSpinner = false;
-          
+
           //ngDialog can only handle stringified JSONs
           var data = JSON.stringify({
             attachmentType:tipfeed.attachmentType,
             address: address
           });
-          
+
           //If attachment is an audio file,
           //don't show close control (X)
           var showClose = tipfeed.attachmentType !== 'AUDIO';
@@ -1726,7 +1727,7 @@
       notificationCtrl.sending = false;
       $scope.$apply();
     });
-    
+
     socket.on('follow-up-notif-sent', function(data){
         notificationCtrl.sending = false;
         $scope.$apply();
