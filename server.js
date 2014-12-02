@@ -25,9 +25,6 @@ var MobileClient = require('./lib/mobileclient');
 var EncryptionManager = require('./lib/EncryptionManager.js');
 var PasswordGenerator = require('./lib/PasswordGenerator.js');
 
-var Cryptoped = require('cryptoped');
-var crypto = require("crypto-lite").crypto
-
 //=========================================
 //  ENVIRONMENT SETUP
 //=========================================
@@ -60,7 +57,7 @@ var PushNotification = Parse.Object.extend("FollowUpNotifications");
 var passwordGenerator = new PasswordGenerator();
 
 //Encrypts and decrypts
-var encryptionManager = new EncryptionManager(crypto);
+var encryptionManager = new EncryptionManager();
 
 //Set OpenTok key and secret. Create a new opentok object,
 //which is used to manage sessions and tokens.
