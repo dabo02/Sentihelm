@@ -1443,6 +1443,7 @@
     //Stop tipfeed spinner
     $scope.$on('hide-spinner', function(event){
       usSpinnerService.stop('loading-tips-spinner');
+      tipfeed.showPaginator = true;
     });
 
     //Catch event when paginator has new tips
@@ -1464,6 +1465,7 @@
     $scope.$on('discard-current-tips', function(){
       tipfeed.currentTips = [];
       usSpinnerService.spin('loading-tips-spinner');
+      tipfeed.showPaginator = false;
     });
 
     //Note that notification dialog is off
@@ -1489,7 +1491,6 @@
       paginatorService.nextPage();
       $anchorScroll();
     };
-
 
     //Change to previous page;
     //scroll to top
