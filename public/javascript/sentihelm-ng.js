@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -1685,6 +1685,7 @@
     this.channel = $scope.$parent.ngDialogData.channel;
     this.userId = this.channel.substring(5);
     this.sending = false;
+    this.file = undefined;
     var notificationCtrl = this;
     var thisDialogId = $scope.$parent.notificationDialog.id;
 
@@ -1724,25 +1725,31 @@
       notificationCtrl.sending = false;
       $scope.$apply();
     });
+    
+    socket.on('follow-up-notif-sent', function(data){
+        notificationCtrl.sending = false;
+        $scope.$apply();
+        $scope.closeThisDialog();
+      });
 
-    //Once a file is selected, prep file for upload to Parse
-    this.onFileSelect = function($files){
-      //Fetch file
-      this.file = $files[0];
-
-      //Set file type
-      if(this.file.type.match('image.*')){
-        this.fileType = "image";
-      }
-      else if(this.file.type.match('video.*')){
-        this.fileType = "video";
-      }
-      else{
-        this.fileType = "audio";
-      }
-      //Set file name
-      this.fileLabel = this.file.name
-    };
+//    //Once a file is selected, prep file for upload to Parse
+//    this.onFileSelect = function($files){
+//      //Fetch file
+//      this.file = $files[0];
+//
+//      //Set file type
+//      if(this.file.type.match('image.*')){
+//        this.fileType = "image";
+//      }
+//      else if(this.file.type.match('video.*')){
+//        this.fileType = "video";
+//      }
+//      else{
+//        this.fileType = "audio";
+//      }
+//      //Set file name
+//      this.fileLabel = this.file.name
+//    };
 
     //Send the notification to the user
     this.submitNotification = function(){
@@ -1776,26 +1783,13 @@
       notification.message = this.message;
       //If a file is present, attach it and set its type
       if(this.file){
-        var reader = new FileReader();
-        reader.onload = function(event){
-          var x = reader.result;
-          socket.emit('new-follow-up-notif', {
-            notificationData: notification
-          });
-        };
-        reader.readAsArrayBuffer(this.file)
-      }
-      else{
-        socket.emit('new-follow-up-notif', {
-          notificationData: notification
-        });
+        notification.attachment = this.file.base64;
+        notification.attachmentType = this.file.filetype.substring(0, 5);
       }
 
-      socket.on('follow-up-notif-sent', function(data){
-        notificationCtrl.sending = false;
-        $scope.$apply();
-        $scope.closeThisDialog();
-      });
+      socket.emit('new-follow-up-notif', {
+          notificationData: notification
+        });
 
       //--USED FOR NON ENCRYPTED FOLLOW UP--
       //--
