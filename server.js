@@ -301,7 +301,7 @@ app.post('/login', function(request, response){
 app.post('/new-tip', function(request, response){
   var tip = request.body;
   var pass = tip.pass;
-  if(pass=='bahamut'){
+  if(pass=='hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@'){
     io.sockets.emit('new-tip', {tip : tip});
     response.send(200);
   }
@@ -313,7 +313,7 @@ app.post('/new-tip', function(request, response){
 app.post('/request-video-connection', function(request, response){
 
   //Check if password is valid
-  if(request.body.password!=="bahamut"){
+  if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
     return;
   }
 
