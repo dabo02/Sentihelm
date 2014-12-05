@@ -20,6 +20,17 @@
 
   </li>
 
+  <li class="list-group-item dark-gray-bg drawer-item pointer"
+   ng-if="drawerCtrl.isAdmin"
+   ng-click="drawerCtrl.changeState('admin-panel')">
+
+    <h5 style="color:inherit;">
+      <span class="glyphicon glyphicon-briefcase"></span>
+      <span style="margin-left:10px;">Administrator Panel</span>
+    </h5>
+    
+  </li>
+
 </ul>
 
 </div>

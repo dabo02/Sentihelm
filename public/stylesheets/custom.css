@@ -107,6 +107,10 @@ input.strong{
   overflow-y:scroll;
 }
 
+.mid{
+  margin-top: 10%;
+}
+
 
 /**=============**/
 /**   COLORS    **/

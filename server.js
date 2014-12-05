@@ -301,8 +301,12 @@ app.post('/login', function(request, response){
 app.post('/new-tip', function(request, response){
   var tip = request.body;
   var pass = tip.pass;
+  var clientId = tip.clientId;
   if(pass=='hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@'){
-    io.sockets.emit('new-tip', {tip : tip});
+    io.sockets.emit('new-tip', {
+      tip : tip,
+      clientId : clientId
+    });
     response.send(200);
   }
 });
