@@ -44,7 +44,7 @@
         // executes the login dialog if needed and waits for the dialog
         // to close before loading the state.
         authenticate: function(routingService) {
-          return routingService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Video Streams");
         }
       }
     })
@@ -105,6 +105,26 @@
         // to close before loading the state.
         authenticate: function(routingService) {
           return routingService.checkUserStatus(this.data.authorizedRoles, "Wanted List");
+        }
+      }
+    })
+
+    //Admin-panel endpoint/url
+    .state('admin-panel',{
+      url:"/admin-panel",
+      templateUrl:"/admin-panel.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Administrator Panel");
         }
       }
     });
@@ -320,8 +340,6 @@
 
             //Resolve the promise, proceed to load
             //the state and change active state in drawer
-            $rootScope.currentState = stateName;
-            $rootScope.$broadcast('state-change');
             return Promise.resolve("Recently logged in user is authorized to view the page.");
           });
         }
@@ -329,8 +347,6 @@
 
       //Resolve the promise, proceed to load
       //the state and change active state in drawer
-      $rootScope.currentState = stateName;
-      $rootScope.$broadcast('state-change');
       return Promise.resolve("User is already logged in and authorized to view the page");
     };
 
@@ -1313,12 +1329,11 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', function($scope, $rootScope, snapRemote, $state, socket) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', function($scope, $rootScope, snapRemote, $state, socket, Session) {
     var drawer = this;
     this.newTips = 0;
+    this.isAdmin = Session.userRoles.indexOf('admin')===-1? false : true;
 
-    // //Current active state
-    // this.currentState = $rootScope.currentState;
 
     //Drawer options with name and icon;
     //entries are off by default
@@ -1346,14 +1361,12 @@
     };
 
     socket.on('new-tip', function(data){
-      drawer.newTips++;
-      $scope.$apply();
+      if(data.clientId===Session.clientId){
+        drawer.newTips++;
+        $scope.$apply();
+      } 
     });
 
-    // //Change active state in drawer (blue text color)
-    // $scope.$on('state-change', function(event){
-    //   drawer.currentState = $rootScope.currentState;
-    // });
   }]);
 
   //Controller for VideStreams route; controls
@@ -2422,6 +2435,16 @@
       PoliceStationsService.deleteStation(dialogCtrl.station.id);
       $scope.closeThisDialog();
     };
+  }]);
+
+  //Controller for Administrator Panel
+  app.controller('AdminPanelController', ['socket', function(socket){
+
+    //Adds new SentiHelm user
+    this.addUser = function(newUser){
+      socket.emit('add-new-officer', {newOfficer : newUser});
+    };
+
   }]);
 
   })();
