@@ -353,15 +353,14 @@
 
     //Destroy current session object
     session.destroy = function () {
-      session.userId = null;
-      session.userRoles = null;
-      session.clientId = null;
-      session.regions = null;
+      session.userId = undefined;
+      session.userRoles = undefined;
+      session.clientId = undefined;
+      session.regions = undefined;
 
       //Delete from session window
-      $window.sessionStorage['session'] = null;
-      $window.sessionStorage['user'] = null;
-      $window.sessionStorage['client'] = null;
+      $window.sessionStorage.clear();
+      
     };
 
     session.store = function(user, client){
@@ -1302,12 +1301,16 @@
 
   //Controller for the header; contains a button
   //that triggers drawer element when clicked
-  app.controller('HeaderController', ['snapRemote', function(snapRemote){
+  app.controller('HeaderController', ['snapRemote', '$state', 'Session', '$window', function(snapRemote, $state, Session, $window){
 
     //Reveals (opens) the drawer by sliding
     //snap-content (main page view) to the right
     this.openDrawer = function(){
       snapRemote.open("left");
+    };
+    this.logOut = function() {
+      Session.destroy();
+      $window.location.reload();
     };
   }]);
 
