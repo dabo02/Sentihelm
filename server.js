@@ -260,6 +260,12 @@ io.on('connect', function(socket){
   socket.on('new-follow-up-notif', function(data){
     saveAndPushNotification(data.notificationData);
   });
+
+  //Add a new officer to Sentihelm
+  socket.on('add-new-officer', function(data){
+    var officer = data.newUser;
+    var clientId = data.clientId;
+  });
 });
 
 //=========================================
@@ -417,6 +423,8 @@ server.listen((process.env.PORT || 80), function(){;
 //  HELPER FUNCTIONS
 //=========================================
 
+//Creates and saves a notification, then calls 
+//pushNotification, which alerts all mobile devices
 function saveAndPushNotification(notificationData){
   var passPhrase = "";
   var query = new Parse.Query(Parse.User);
@@ -460,13 +468,11 @@ function saveAndPushNotification(notificationData){
   }, function(error){
     var err = error;
   });
-
 };
 
 //Sends the already saved notification to the user; if pushing
 //failed, tries to revert save or continues as partial success
 function pushNotification(notification){
-
   var pushChannels = ['user_'+notification.attributes.userId];
   return Parse.Push.send({
     channels: pushChannels,
@@ -479,5 +485,24 @@ function pushNotification(notification){
       type:"follow-up"
     }
   });
+};
 
+//Adds a new officer/user to SentiHelm
+function addNewOfficer(officerData, clientId){
+  var officer = new Parse.User();
+  officer.set('firstName', officerData.fname);
+  officer.set('lastName', officerData.lname);
+  officer.set('username', officerData.username);
+  officer.set('password', officerData.password);
+  officer.set('roles', [officerData.role]);
+  officer.set('homeClient', {
+        __type: "Pointer",
+        className:"Client",
+        objectId:clientId
+  });
+  officer.signUp().then(function(newOfficer){
+    io.sockets.emit('new-officer-added');
+  }, function(newOfficer, error){
+    io.sockets.emit('new-officer-failed', {officer: newOfficer, error: error});
+  });
 };

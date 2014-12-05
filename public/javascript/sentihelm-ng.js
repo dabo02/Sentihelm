@@ -2438,12 +2438,16 @@
   }]);
 
   //Controller for Administrator Panel
-  app.controller('AdminPanelController', ['socket', function(socket){
+  app.controller('AdminPanelController', ['socket', 'Session', function(socket, Session){
 
     //Adds new SentiHelm user
     this.addUser = function(newUser){
-      socket.emit('add-new-officer', {newOfficer : newUser});
+      socket.emit('add-new-officer', {newOfficer : newUser, clientId : Session.clientId});
     };
+
+    socket.on('new-officer-added', function(data){
+      
+    });
 
   }]);
 
