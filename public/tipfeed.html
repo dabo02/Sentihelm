@@ -1,11 +1,12 @@
 <div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
   
   <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
-  
+
   <div id="tip-feed-container" class="mid-container">
 
     <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
 
+    <button class="btn btn-primary" ng-click="tipfeed.filterTips()">Test Filter</button>
 
     <!--======SPINNER (LOADING)======-->
     <span ng-if='tipfeed.tipsAvailable' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-tips-spinner" spinner-start-active="1"></span>

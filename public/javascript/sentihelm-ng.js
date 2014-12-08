@@ -750,7 +750,7 @@
     //Called when tipfeed loads, be it on
     //refresh or navigating to it again;
     //initiliazes tip feed for current client
-    paginator.initializeFeed = function(){
+    paginator.initializeFeed = function(date, isAfterDate, crimePosition){
 
       //Need references to current and last page,
       //array of number of pages paginator will print
@@ -765,9 +765,9 @@
       //Request tips
       socket.emit('request-batch', {
         clientId: Session.clientId,
-        isAfterDate: false,
-        crimePosition: undefined,
-        date: undefined
+        lastTipDate: date,
+        isAfterDate: isAfterDate,
+        crimePosition: crimePosition
       });
     };
 
@@ -786,7 +786,6 @@
           isAfterDate: isAfterDate,
           tipsToSkip: tipsToSkip,
           crimePosition: undefined,
-          date: undefined
         });
         $rootScope.$broadcast('discard-current-tips',[]);
       }
@@ -805,7 +804,6 @@
           lastTipDate: paginator.firstTipDateInArray,
           isAfterDate: true,
           crimePosition: undefined,
-          date: undefined
         });
 
         //Discard current shown tips and update paginator
@@ -823,7 +821,6 @@
         lastTipDate: paginator.lastTipDateInArray,
         isAfterDate: false,
         crimePosition: undefined,
-        date: undefined
       });
 
       //Discard current shown tips and update paginator
@@ -1433,8 +1430,8 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
-  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
-  function($scope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
+  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
+  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -1617,6 +1614,13 @@
           tipfeed.attachmentDialogIsOn = true;
         });
       }
+    };
+    
+    tipfeed.filterTips = function() {
+      var date = new Date();
+      var crimePosition = 1;
+      $rootScope.$broadcast('discard-current-tips',[]);
+      paginatorService.initializeFeed(date, false, crimePosition);
     };
   }]);
 
