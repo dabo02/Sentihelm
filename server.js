@@ -91,6 +91,7 @@ io.on('connect', function(socket){
     var clientId = data.clientId;
     var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
     var isAfterDate = data.isAfterDate;
+    var crimePosition = data.crimePosition;
 
     //Create query
     var tipQuery = new Parse.Query(TipReport);
@@ -125,6 +126,10 @@ io.on('connect', function(socket){
 
     if(!!data.tipsToSkip) {
       tipQuery.skip(data.tipsToSkip);
+    }
+    
+    if(!!crimePosition) {
+      tipQuery.equalTo("crimeListPosition", crimePosition); 
     }
 
     //Execute query

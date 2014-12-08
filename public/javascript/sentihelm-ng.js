@@ -739,7 +739,6 @@
       $rootScope.$broadcast('hide-spinner');
     });
 
-
     //Catch socket.io event when a tip request
     //failed; manage error accordingly with
     //errorFactory service
@@ -766,9 +765,11 @@
       //Request tips
       socket.emit('request-batch', {
         clientId: Session.clientId,
-        isAfterDate: false
+        isAfterDate: false,
+        crimePosition: undefined,
+        date: undefined
       });
-    }
+    };
 
     //Change the page and ask server for tips present in new page;
     //let controller know the page has changed
@@ -783,7 +784,9 @@
           clientId: Session.clientId,
           lastTipDate: isAfterDate? paginator.firstTipDateInArray: paginator.lastTipDateInArray,
           isAfterDate: isAfterDate,
-          tipsToSkip: tipsToSkip
+          tipsToSkip: tipsToSkip,
+          crimePosition: undefined,
+          date: undefined
         });
         $rootScope.$broadcast('discard-current-tips',[]);
       }
@@ -800,7 +803,9 @@
         socket.emit('request-batch', {
           clientId: Session.clientId,
           lastTipDate: paginator.firstTipDateInArray,
-          isAfterDate: true
+          isAfterDate: true,
+          crimePosition: undefined,
+          date: undefined
         });
 
         //Discard current shown tips and update paginator
@@ -816,7 +821,9 @@
       socket.emit('request-batch', {
         clientId: Session.clientId,
         lastTipDate: paginator.lastTipDateInArray,
-        isAfterDate: false
+        isAfterDate: false,
+        crimePosition: undefined,
+        date: undefined
       });
 
       //Discard current shown tips and update paginator
@@ -2319,7 +2326,6 @@
   //This is it.
   app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function(PoliceStationsService, $scope, ngDialog) {
     var buttonCtrl = this;
-    var tempIdNum = 0;
 
     //Check if the user is adding a new station to
     //enable/disable the buttons.
@@ -2343,22 +2349,23 @@
     //Add new temp marker to the map
     buttonCtrl.newStationMarker = function() {
       var marker = {
-        id:'temp'+tempIdNum++,
+        id:'temp',
         name: "",
         address: "",
         email: "",
         phone: "",
         description: "",
+        // temp: true,
         latitude: PoliceStationsService.map.center.latitude,
         longitude: PoliceStationsService.map.center.longitude,
         icon: {
           url: './resources/images/marker-icon.png',
-          // This marker is 20 pixels wide by 32 pixels tall.
-          scaledSize: new google.maps.Size(29, 44),
+          // This marker is 29 pixels wide by 40 pixels tall.
+          scaledSize: new google.maps.Size(32, 44),
           // The origin for this image is 0,0.
           origin: new google.maps.Point(0,0),
           // The anchor for this image is the base of the flagpole at 0,32.
-          anchor: new google.maps.Point(14.5,44)
+          anchor: new google.maps.Point(16,44)
         },
         options: {
           draggable: true,
@@ -2377,6 +2384,12 @@
 
     //Edit station button inside the window of each marker.
     buttonCtrl.editStation = function(id) {
+      //Disable Edit button on temp markers.
+      if(id === "temp"){
+        return;
+      }
+      
+      //Prepare data to be sent to the form/dialog
       var marker = PoliceStationsService.getMarker(id);
       var data = JSON.stringify({
         name: marker.name,
@@ -2386,6 +2399,8 @@
         description:marker.description,
         id:marker.id
       });
+      
+      //Show the form to edit the police station
       buttonCtrl.showFormDialog(data);
     };
   }]);
