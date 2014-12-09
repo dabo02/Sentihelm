@@ -1134,6 +1134,9 @@
         success: function(client){
           clientParseObj = client;
           mostWantedArray = client.get('mostWantedList');
+          if(!mostWantedArray) {
+            mostWantedArray = [];
+          }
           $rootScope.$broadcast('MostWantedList', mostWantedArray);
         },
         error: function(object, error){
@@ -1616,7 +1619,7 @@
         });
       }
     };
-    
+
     socket.on('new-tip', function(data){
       if(data.clientId===Session.clientId){
         tipfeed.counter++;
