@@ -13,10 +13,18 @@
   margin:100px auto;
   margin-bottom: 25px;
   width:200px;
-  background-color: #219fe9;
   color:white;
   text-align: center;
   border-radius: 3px;
+}
+
+.disabled-counter{
+  background-color: #9a9a9a;
+  cursor: default;
+}
+
+.active-counter{
+  background-color: #219fe9;
   cursor: pointer;
 }
 

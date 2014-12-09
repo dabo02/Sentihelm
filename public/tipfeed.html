@@ -1,8 +1,13 @@
 <div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
 
   <!-- ng-show="tipfeed.counter>0" -->
-  <div class="tip-counter">
-    <u>{{tipfeed.counter}}</u> new tips available
+  <div class="tip-counter" ng-class="{'disabled-counter':tipfeed.counter===0, 'active-counter':tipfeed.counter>0}">
+    <span ng-show="tipfeed.counter>0">
+      <u>{{tipfeed.counter}}</u> new tips available
+    </span>
+    <span ng-hide="tipfeed.counter>0">
+      No new Tips available
+    </span>
   </div>
 
 
