@@ -38,7 +38,7 @@
                 Description: {{description}}<br>
               </div>
               <div ng-controller='AddStationController as buttonCtrl'>
-                <button type="submit" ng-click="buttonCtrl.editStation(model.id)" style="width: 100%;margin-left: 8px;margin-top:8px; margin-bottom:5px;">Edit</button>
+                <button type="submit" ng-disabled="model.id === 'temp'" ng-click="buttonCtrl.editStation(model.id)" style="width: 100%;margin-left: 8px;margin-top:8px; margin-bottom:5px;">Edit</button>
               </div>
             </div>
           </ui-gmap-windows>

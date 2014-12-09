@@ -1,5 +1,5 @@
 <nav class="navbar navbar-fixed-top dark-gray-bg" role="navigation" ng-controller="HeaderController as headerCtrl">
-  <div class="container">
+  <div class="container" style="width:100%">
       <button id="drawer-button" class="fa fa-reorder fa-2x transparent-button"
         ng-show="$parent.currentUser"
         ng-click="headerCtrl.openDrawer()"
@@ -7,7 +7,7 @@
       >
       </button>
       <img class="img-responsive logo" ng-src="../resources/images/sentihelm.png"/>
-      <button id="drawer-button" class="btn btn-primary" style="left:94%;" ng-show="$parent.currentUser" ng-click="headerCtrl.logOut()">Log Out</button>
+      <button class="btn btn-primary" style="right:1%;position:fixed;top:40%;" ng-show="$parent.currentUser" ng-click="headerCtrl.logOut()">Log Out</button>
 
   </div>
 </nav>

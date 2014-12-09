@@ -9,6 +9,17 @@
   list-style-type:none;
 }
 
+.tip-counter{
+  margin:100px auto;
+  margin-bottom: 25px;
+  width:200px;
+  background-color: #219fe9;
+  color:white;
+  text-align: center;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
 /*************TIP*************/
 /*****************************/
 .tip{

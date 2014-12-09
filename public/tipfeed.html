@@ -1,11 +1,56 @@
 <div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
+
+  <!-- ng-show="tipfeed.counter>0" -->
+  <div class="tip-counter">
+    <u>{{tipfeed.counter}}</u> new tips available
+  </div>
+
+
+
+<form class="form-horizontal" role="form">
+<!-- 
+  <div class="form-group">
+    <label for="crime-date" class="col-sm-1 control-label">Crime Date</label>
+    <div class="col-md-2">
+      <input id="crime-date" type="date"/>
+    </div>
+  </div> -->
+
+
+  <div class="form-group">
+    <label for="crime-type-selection" class="col-sm-1 control-label">Crime Type</label>
+    <div class="col-md-2">
+      <select id="crime-type-selection" class="form-control">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+      </select>
+    </div>
+  </div>
+
+  
+
+</form>
+
+  <!-- <div class="row">
+    <div class="col-md-2 col-md-offset-5">
+      Crime Type
+      <select id="crime-type-selection" class="form-control">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+      </select>
+    </div>
+  </div>
+    -->
   
   <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
-  
+
   <div id="tip-feed-container" class="mid-container">
 
     <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
 
+    <button class="btn btn-primary" ng-click="tipfeed.filterTips()">Test Filter</button>
 
     <!--======SPINNER (LOADING)======-->
     <span ng-if='tipfeed.tipsAvailable' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-tips-spinner" spinner-start-active="1"></span>

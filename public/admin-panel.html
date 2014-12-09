@@ -35,7 +35,14 @@
 			</select>	
 		</div>
 
-		<button type="submit" class="btn btn-primary col-md-2 col-md-offset-5" ng-click="adminPanelCtrl.addUser(newUser)">Add User</button>
+		<button type="submit" class="btn btn-primary col-md-2 col-md-offset-5" ng-click="adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
+			<span ng-hide="adminPanelCtrl.sending">{{adminPanelCtrl.successMessage || "Add User"}}</span>
+			<div class="spinner" ng-show="adminPanelCtrl.sending">
+		        <div class="bounce1"></div>
+		        <div class="bounce2"></div>
+		        <div class="bounce3"></div>
+		     </div>
+		</button>
 
 	</form>	
 

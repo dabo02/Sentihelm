@@ -169,7 +169,7 @@
   app.constant('USER_ROLES', {
     all: '*',
     demo: 'demo',
-    user: 'officer',
+    user: 'manager',
     admin: 'admin'
   });
 
@@ -739,7 +739,6 @@
       $rootScope.$broadcast('hide-spinner');
     });
 
-
     //Catch socket.io event when a tip request
     //failed; manage error accordingly with
     //errorFactory service
@@ -751,7 +750,7 @@
     //Called when tipfeed loads, be it on
     //refresh or navigating to it again;
     //initiliazes tip feed for current client
-    paginator.initializeFeed = function(){
+    paginator.initializeFeed = function(date, isAfterDate, crimePosition){
 
       //Need references to current and last page,
       //array of number of pages paginator will print
@@ -766,9 +765,11 @@
       //Request tips
       socket.emit('request-batch', {
         clientId: Session.clientId,
-        isAfterDate: false
+        lastTipDate: date,
+        isAfterDate: isAfterDate,
+        crimePosition: crimePosition
       });
-    }
+    };
 
     //Change the page and ask server for tips present in new page;
     //let controller know the page has changed
@@ -783,7 +784,8 @@
           clientId: Session.clientId,
           lastTipDate: isAfterDate? paginator.firstTipDateInArray: paginator.lastTipDateInArray,
           isAfterDate: isAfterDate,
-          tipsToSkip: tipsToSkip
+          tipsToSkip: tipsToSkip,
+          crimePosition: undefined,
         });
         $rootScope.$broadcast('discard-current-tips',[]);
       }
@@ -800,7 +802,8 @@
         socket.emit('request-batch', {
           clientId: Session.clientId,
           lastTipDate: paginator.firstTipDateInArray,
-          isAfterDate: true
+          isAfterDate: true,
+          crimePosition: undefined,
         });
 
         //Discard current shown tips and update paginator
@@ -816,7 +819,8 @@
       socket.emit('request-batch', {
         clientId: Session.clientId,
         lastTipDate: paginator.lastTipDateInArray,
-        isAfterDate: false
+        isAfterDate: false,
+        crimePosition: undefined,
       });
 
       //Discard current shown tips and update paginator
@@ -1426,8 +1430,13 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
-  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
-  function($scope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
+<<<<<<< HEAD
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', 'Session',
+  function($scope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, Session){
+=======
+  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
+  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
+>>>>>>> d058dde73b526376c1d73db4ed9da098327b2496
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -1438,6 +1447,7 @@
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
     this.showMediaSpinner = false;
+    this.counter = 0;
 
     //Set scroll position to top
     //when pages change
@@ -1611,6 +1621,23 @@
         });
       }
     };
+<<<<<<< HEAD
+
+    socket.on('new-tip', function(data){
+      if(data.clientId===Session.clientId){
+        tipfeed.counter++;
+      }
+    });
+    
+=======
+    
+    tipfeed.filterTips = function() {
+      var date = new Date();
+      var crimePosition = 1;
+      $rootScope.$broadcast('discard-current-tips',[]);
+      paginatorService.initializeFeed(date, false, crimePosition);
+    };
+>>>>>>> d058dde73b526376c1d73db4ed9da098327b2496
   }]);
 
   //Controller for the tip's attachments; must display
@@ -2319,7 +2346,6 @@
   //This is it.
   app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function(PoliceStationsService, $scope, ngDialog) {
     var buttonCtrl = this;
-    var tempIdNum = 0;
 
     //Check if the user is adding a new station to
     //enable/disable the buttons.
@@ -2343,22 +2369,23 @@
     //Add new temp marker to the map
     buttonCtrl.newStationMarker = function() {
       var marker = {
-        id:'temp'+tempIdNum++,
+        id:'temp',
         name: "",
         address: "",
         email: "",
         phone: "",
         description: "",
+        // temp: true,
         latitude: PoliceStationsService.map.center.latitude,
         longitude: PoliceStationsService.map.center.longitude,
         icon: {
           url: './resources/images/marker-icon.png',
-          // This marker is 20 pixels wide by 32 pixels tall.
-          scaledSize: new google.maps.Size(29, 44),
+          // This marker is 29 pixels wide by 40 pixels tall.
+          scaledSize: new google.maps.Size(32, 44),
           // The origin for this image is 0,0.
           origin: new google.maps.Point(0,0),
           // The anchor for this image is the base of the flagpole at 0,32.
-          anchor: new google.maps.Point(14.5,44)
+          anchor: new google.maps.Point(16,44)
         },
         options: {
           draggable: true,
@@ -2377,6 +2404,12 @@
 
     //Edit station button inside the window of each marker.
     buttonCtrl.editStation = function(id) {
+      //Disable Edit button on temp markers.
+      if(id === "temp"){
+        return;
+      }
+      
+      //Prepare data to be sent to the form/dialog
       var marker = PoliceStationsService.getMarker(id);
       var data = JSON.stringify({
         name: marker.name,
@@ -2386,6 +2419,8 @@
         description:marker.description,
         id:marker.id
       });
+      
+      //Show the form to edit the police station
       buttonCtrl.showFormDialog(data);
     };
   }]);
@@ -2443,13 +2478,23 @@
   //Controller for Administrator Panel
   app.controller('AdminPanelController', ['socket', 'Session', function(socket, Session){
 
+    var adminPanelCtrl = this;
+    this.sending = false;
+
     //Adds new SentiHelm user
     this.addUser = function(newUser){
+      this.sending = true;
       socket.emit('add-new-officer', {newOfficer : newUser, clientId : Session.clientId});
     };
 
     socket.on('new-officer-added', function(data){
-      
+      adminPanelCtrl.sending = false;
+      adminPanelCtrl.successMessage = "SUCCEDED";
+    });
+
+    socket.on('new-officer-failed', function(data){
+      adminPanelCtrl.sending = false;
+      adminPanelCtrl.successMessage = "FAILED";
     });
 
   }]);
