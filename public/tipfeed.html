@@ -6,13 +6,31 @@
   </div>
 
 
+  <div class="tip-filter-container">
+    <div class="filter-controls">
+
+      <div class="crime-filter">
+        <label class="">Crime Date</label>
+        <input class="crime-date " type="date" ng-model="tipfeed.crimeDateFilter"/>
+      </div>
+      
+      <div class="crime-filter">
+        <label class="">Crime Type</label>
+        <select class="crime-type" ng-model="tipfeed.crimeTypeFilter">
+          <option value="{{$index}}" ng-repeat="crimetype in tipfeed.crimeTypes track by $index">{{crimetype}}</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary filter-submit" ng-click="tipfeed.filterTips(tipfeed.crimeDateFilter, tipfeed.crimeTypeFilter)">Filter</button>
+
+    </div>
+  </div>
+
   <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
 
   <div id="tip-feed-container" class="mid-container">
 
     <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
-
-    <button class="btn btn-primary" ng-click="tipfeed.filterTips()">Test Filter</button>
 
     <!--======SPINNER (LOADING)======-->
     <span ng-if='tipfeed.tipsAvailable' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-tips-spinner" spinner-start-active="1"></span>
