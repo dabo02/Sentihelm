@@ -766,7 +766,7 @@
       socket.emit('request-batch', {
         clientId: Session.clientId,
         lastTipDate: date,
-        isAfterDate: isAfterDate,
+        isAfterDate: !!isAfterDate,
         crimePosition: crimePosition
       });
     };
@@ -785,7 +785,7 @@
           lastTipDate: isAfterDate? paginator.firstTipDateInArray: paginator.lastTipDateInArray,
           isAfterDate: isAfterDate,
           tipsToSkip: tipsToSkip,
-          crimePosition: undefined,
+          crimePosition: undefined
         });
         $rootScope.$broadcast('discard-current-tips',[]);
       }
@@ -803,7 +803,7 @@
           clientId: Session.clientId,
           lastTipDate: paginator.firstTipDateInArray,
           isAfterDate: true,
-          crimePosition: undefined,
+          crimePosition: undefined
         });
 
         //Discard current shown tips and update paginator
@@ -820,7 +820,7 @@
         clientId: Session.clientId,
         lastTipDate: paginator.lastTipDateInArray,
         isAfterDate: false,
-        crimePosition: undefined,
+        crimePosition: undefined
       });
 
       //Discard current shown tips and update paginator
