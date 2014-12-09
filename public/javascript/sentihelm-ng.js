@@ -1431,8 +1431,8 @@
   //which lets you interact with tips, depends heavily
   //on paginatorService
 
-  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
-  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
+  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state',
+  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -1631,11 +1631,19 @@
     
 
     
-    tipfeed.filterTips = function(filterDate, filterType) {
+    this.filterTips = function(filterDate, filterType) {
       var date = new Date();
       var crimePosition = 1;
       $rootScope.$broadcast('discard-current-tips',[]);
       paginatorService.initializeFeed(date, false, crimePosition);
+    };
+
+    this.loadNewTips = function(){
+      if(this.counter<=0){
+        return;
+      }
+      this.counter = 0;
+      $state.go($state.current, {}, {reload: true});
     };
 
   }]);
