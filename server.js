@@ -268,8 +268,9 @@ io.on('connect', function(socket){
 
   //Add a new officer to Sentihelm
   socket.on('add-new-officer', function(data){
-    var officer = data.newUser;
+    var officer = data.newOfficer;
     var clientId = data.clientId;
+    addNewOfficer(officer, clientId);
   });
 });
 
@@ -494,20 +495,43 @@ function pushNotification(notification){
 
 //Adds a new officer/user to SentiHelm
 function addNewOfficer(officerData, clientId){
+  //Generate passphrase for encryption
+  var passPhrase = "";
+  passPhrase = passwordGenerator.generatePassword(officerData.username);
+
+  //Encrypted/Hashed Values
+  var encryptedFirstName = encryptionManager.encrypt(passPhrase, officerData.fname);
+  var encryptedLastName = encryptionManager.encrypt(passPhrase, officerData.fname);
+  var hashedPassword = passwordGenerator.md5(officerData.password);
+
+  //Create new officer
   var officer = new Parse.User();
-  officer.set('firstName', officerData.fname);
-  officer.set('lastName', officerData.lname);
+  officer.set('firstName', {
+        __type: "Bytes",
+        base64: encryptedFirstName
+  });
+  officer.set('lastName', {
+        __type: "Bytes",
+        base64: encryptedLastName
+  });
+  // officer.set('firstName', encryptedFirstName);
+  // officer.set('lastName', encryptedLastName);
   officer.set('username', officerData.username);
   officer.set('password', officerData.password);
+  officer.set('userPassword', hashedPassword);
   officer.set('roles', [officerData.role]);
   officer.set('homeClient', {
         __type: "Pointer",
         className:"Client",
         objectId:clientId
   });
+
+  //Save/Signup new officer
   officer.signUp().then(function(newOfficer){
+    //Successfuly added; alert front-end
     io.sockets.emit('new-officer-added');
-  }, function(newOfficer, error){
-    io.sockets.emit('new-officer-failed', {officer: newOfficer, error: error});
+  }, function(error){
+    //Failed adding officer; alert front-end
+    io.sockets.emit('new-officer-failed', {error: error});
   });
 };

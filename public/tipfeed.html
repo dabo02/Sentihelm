@@ -1,5 +1,11 @@
 <div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
-  
+
+  <!-- ng-show="tipfeed.counter>0" -->
+  <div class="tip-counter">
+    <u>{{tipfeed.counter}}</u> new tips available
+  </div>
+
+
   <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
 
   <div id="tip-feed-container" class="mid-container">
@@ -23,51 +29,51 @@
       ng-class="{'orange-border':tip.anonymous}"
       >
 
-        <!-------------------->
-        <!------TIP HEAD------>
-        <!-------------------->
-        <div class="tip-header">
+      <!-------------------->
+      <!------TIP HEAD------>
+      <!-------------------->
+      <div class="tip-header">
 
-          <!------DATE------>
-          <span class="white tip-date">
-            {{tip.date}}
-          </span>
+        <!------DATE------>
+        <span class="white tip-date">
+          {{tip.date}}
+        </span>
 
-          <!------NAME------>
-          <span class="user" ng-class="{orange:tip.anonymous, white:!tip.anonymous}">
-            {{(tip.firstName+" "+tip.lastName)}}
-          </span>
+        <!------NAME------>
+        <span class="user" ng-class="{orange:tip.anonymous, white:!tip.anonymous}">
+          {{(tip.firstName+" "+tip.lastName)}}
+        </span>
 
-          <!------CONTROL NUMBER------>
-          <div class="control-number" ng-class="{'orange-border':tip.anonymous}">
-            {{tip.controlNumber}}
-          </div>
-
+        <!------CONTROL NUMBER------>
+        <div class="control-number" ng-class="{'orange-border':tip.anonymous}">
+          {{tip.controlNumber}}
         </div>
 
-        <!-------------------->
-        <!------TIP BODY------>
-        <!-------------------->
-        <div class="tip-body">
+      </div>
 
-          <!-------LEFT DIVISION------>
-          <!-------------------------->
-          <div class="left">
+      <!-------------------->
+      <!------TIP BODY------>
+      <!-------------------->
+      <div class="tip-body">
 
-            <!------CRIME IMAGE------>
-            <img ng-src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
-            <br>
+        <!-------LEFT DIVISION------>
+        <!-------------------------->
+        <div class="left">
 
-            <!------CRIME TYPE------>
-            <span>{{tip.crimeType}}</span>
+          <!------CRIME IMAGE------>
+          <img ng-src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
+          <br>
 
-            <!------CONTACT USER INFORMATION------>
-            <div ng-hide="tip.anonymous" class="contact-info">
-              CONTACT USER<br>
-              <span class="contact-number">{{tip.phone}}</span><br>
-              <button class="notification-button" ng-click="tipfeed.showNotificationDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">Send Notification</button>
-            </div>
+          <!------CRIME TYPE------>
+          <span>{{tip.crimeType}}</span>
+
+          <!------CONTACT USER INFORMATION------>
+          <div ng-hide="tip.anonymous" class="contact-info">
+            CONTACT USER<br>
+            <span class="contact-number">{{tip.phone}}</span><br>
+            <button class="notification-button" ng-click="tipfeed.showNotificationDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">Send Notification</button>
           </div>
+        </div>
 
           <!-------MID DIVISION------->
           <!-------------------------->
@@ -101,52 +107,52 @@
 
               <!------GOOGLE MAP------>
               <ui-gmap-google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
-                <ui-gmap-markers models="tip.markers" coords="'self'" options="'options'"></ui-gmap-markers>
-              </ui-gmap-google-map>
+              <ui-gmap-markers models="tip.markers" coords="'self'" options="'options'"></ui-gmap-markers>
+            </ui-gmap-google-map>
 
-            </div>
           </div>
-
         </div>
-        <!-- END TIP -->
-      </li>
-    </ul>
 
-  </div>
+      </div>
+      <!-- END TIP -->
+    </li>
+  </ul>
 
-  <!--=====PAGINATOR======-->
-  <!--====================-->
-  <div ng-show='tipfeed.showPaginator' id="paginator-container" ng-init="tipfeed.currentPage=1">
-    <ul id="paginator">
+</div>
 
-      <!------PREVIOUS PAGE CONTROL------>
-      <li id="page-previous" class="paginator-control"
-         ng-show="tipfeed.paginatorSet"
-         ng-class="{'disabled-link': tipfeed.currentPage===1}"
-         ng-click="tipfeed.prevPage()"
-       >
-        <span class="fa fa-chevron-left fa-lg"></span>
-      </li>
+<!--=====PAGINATOR======-->
+<!--====================-->
+<div ng-show='tipfeed.showPaginator' id="paginator-container" ng-init="tipfeed.currentPage=1">
+  <ul id="paginator">
 
-      <!------PAGE CONTROLS------>
-      <li class="paginator-control"
-         ng-repeat="value in tipfeed.paginatorSet"
-         ng-class="{'light-blue': tipfeed.currentPage === value}"
-         ng-click="tipfeed.changePage(value)"
-       >
-        {{value}}
-      </li>
+    <!------PREVIOUS PAGE CONTROL------>
+    <li id="page-previous" class="paginator-control"
+    ng-show="tipfeed.paginatorSet"
+    ng-class="{'disabled-link': tipfeed.currentPage===1}"
+    ng-click="tipfeed.prevPage()"
+    >
+    <span class="fa fa-chevron-left fa-lg"></span>
+  </li>
 
-      <!------NEXT PAGE CONTROL------>
-      <li id="page-next" class="paginator-control"
-         ng-show="tipfeed.paginatorSet"
-         ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
-         ng-click="tipfeed.nextPage()"
-       >
-        <span class="fa fa-chevron-right fa-lg"></span>
-      </li>
+  <!------PAGE CONTROLS------>
+  <li class="paginator-control"
+  ng-repeat="value in tipfeed.paginatorSet"
+  ng-class="{'light-blue': tipfeed.currentPage === value}"
+  ng-click="tipfeed.changePage(value)"
+  >
+  {{value}}
+</li>
 
-    </ul>
-  </div>
+<!------NEXT PAGE CONTROL------>
+<li id="page-next" class="paginator-control"
+ng-show="tipfeed.paginatorSet"
+ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
+ng-click="tipfeed.nextPage()"
+>
+<span class="fa fa-chevron-right fa-lg"></span>
+</li>
+
+</ul>
+</div>
 
 </div>

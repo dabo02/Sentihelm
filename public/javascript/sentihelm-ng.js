@@ -169,7 +169,7 @@
   app.constant('USER_ROLES', {
     all: '*',
     demo: 'demo',
-    user: 'officer',
+    user: 'manager',
     admin: 'admin'
   });
 
@@ -1430,8 +1430,18 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
+<<<<<<< HEAD
+<<<<<<< HEAD
+  app.controller('TipFeedController', ['$scope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', 'Session',
+  function($scope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, Session){
+=======
   app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
   function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
+>>>>>>> d058dde73b526376c1d73db4ed9da098327b2496
+=======
+  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll',
+  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll){
+>>>>>>> FETCH_HEAD
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -1442,6 +1452,7 @@
     this.lastPage = paginator.lastPage;
     this.paginatorSet = paginator.paginatorSet;
     this.showMediaSpinner = false;
+    this.counter = 0;
 
     //Set scroll position to top
     //when pages change
@@ -1615,6 +1626,18 @@
         });
       }
     };
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+    socket.on('new-tip', function(data){
+      if(data.clientId===Session.clientId){
+        tipfeed.counter++;
+      }
+    });
+    
+=======
+=======
+>>>>>>> FETCH_HEAD
     
     tipfeed.filterTips = function() {
       var date = new Date();
@@ -1622,6 +1645,10 @@
       $rootScope.$broadcast('discard-current-tips',[]);
       paginatorService.initializeFeed(date, false, crimePosition);
     };
+<<<<<<< HEAD
+>>>>>>> d058dde73b526376c1d73db4ed9da098327b2496
+=======
+>>>>>>> FETCH_HEAD
   }]);
 
   //Controller for the tip's attachments; must display
@@ -2462,13 +2489,23 @@
   //Controller for Administrator Panel
   app.controller('AdminPanelController', ['socket', 'Session', function(socket, Session){
 
+    var adminPanelCtrl = this;
+    this.sending = false;
+
     //Adds new SentiHelm user
     this.addUser = function(newUser){
+      this.sending = true;
       socket.emit('add-new-officer', {newOfficer : newUser, clientId : Session.clientId});
     };
 
     socket.on('new-officer-added', function(data){
-      
+      adminPanelCtrl.sending = false;
+      adminPanelCtrl.successMessage = "SUCCEDED";
+    });
+
+    socket.on('new-officer-failed', function(data){
+      adminPanelCtrl.sending = false;
+      adminPanelCtrl.successMessage = "FAILED";
     });
 
   }]);

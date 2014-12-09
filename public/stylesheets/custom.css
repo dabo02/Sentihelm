@@ -12,10 +12,10 @@ body{
 
 .mid-container{
   position:fixed;
-  top:20%;
+  top:30%;
   left:17.5%;
   width:65%;
-  height:70%;
+  height:60%;
   overflow-y:auto;
   text-align:center;
 }
