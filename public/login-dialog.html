@@ -1,39 +1,64 @@
 <div ng-controller="LoginController as loginCtrl">
 
-  <span id="login-dialog-title">{{loginCtrl.resetPassword? 'Login': 'Reset Password'}}</span>
+  <span id="login-dialog-title">{{loginCtrl.resetPasswordAvailable? 'Login': 'Reset Password'}}</span><br>
 
-  <form class="login-dialog-form" ng-submit="loginCtrl.login()">
+  <form class="form-horizontal" role="form">
 
-      <div class="login-dialog-input-container" ng-if="loginCtrl.resetPassword">
+      <div ng-if="loginCtrl.resetPasswordAvailable">
 
-        <label class="login-dialog-label">User ID</label>
-        <input type="text" id="login-dialog-username" ng-model="loginCtrl.credentials.userId"/>
-
-        <br>
-
-        <label class="login-dialog-label">Password</label>
-        <input type="password" id="login-dialog-password" ng-model="loginCtrl.credentials.password"/>
-
-        <br>
-
-        <label ng-class="{'pointer': loginCtrl.resetPassword}" ng-click="loginCtrl.resetPassword? loginCtrl.resetPassword(): undefined" ng-style="{ 'color': loginCtrl.resetPassword? '#219fe9': 'inherit'}">{{loginCtrl.resetPasswordMessage}}</label>
-
-      </div>
-
-      <div class="login-dialog-input-container" ng-if="!loginCtrl.resetPassword">
-        <label class="login-dialog-label">Email</label>
-        <input type="text" id="login-dialog-username" ng-model="loginCtrl.credentials.email"/>
-      </div>
-
-
-      <button type="submit" id="login-dialog-submit">
-        <span ng-hide="loginCtrl.submitting">{{loginCtrl.resetPassword? 'Sign in': 'Reset Password'}}</span>
-        <div class="spinner" ng-show="loginCtrl.submitting">
-          <div class="bounce1 charcoal-spinner"></div>
-          <div class="bounce2 charcoal-spinner"></div>
-          <div class="bounce3 charcoal-spinner"></div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">User ID</label>
+          <div class="col-sm-7">
+            <input type="text" class="form-control" ng-model="loginCtrl.credentials.userId" placeholder="User ID"/>
+          </div>
         </div>
-      </button>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Password</label>
+          <div class="col-sm-7">
+            <input type="password" class="form-control" type="password" ng-model="loginCtrl.credentials.password" placeholder="Password"/>
+          </div>
+          <div class="col-sm-offset-3">
+            <label class="col-sm-offset-1 col-sm-6 control-label pointer login-reset-pass-label" ng-click="loginCtrl.showResetPasswordForm()">
+            {{loginCtrl.resetPasswordMessage}}
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary col-md-offset-4 col-md-4" ng-click="loginCtrl.login()">
+            <span ng-hide="loginCtrl.submitting">Sign in</span>
+            <div class="spinner" ng-show="loginCtrl.submitting">
+              <div class="bounce1 charcoal-spinner"></div>
+              <div class="bounce2 charcoal-spinner"></div>
+              <div class="bounce3 charcoal-spinner"></div>
+            </div>
+          </button>
+        </div>
+
+      </div>
+
+      <div ng-if="!loginCtrl.resetPasswordAvailable">
+
+        <div class="form-group" ng-if="!loginCtrl.resetPasswordAvailable">
+          <label class="col-sm-3 control-label">Email</label>
+          <div class="col-sm-7">
+            <input type="text" class="form-control" ng-model="loginCtrl.credentials.email" placeholder="Email">
+          </div>
+        </div>
+        <div class="form-group">
+          <button type="submit" class="btn btn-danger col-md-offset-2 col-md-3" ng-click="loginCtrl.cancelResetPassword()">
+            <span>Cancel</span>
+          </button>
+          <button type="submit" class="btn btn-primary col-md-offset-2 col-md-3" ng-click="loginCtrl.resetPassword()">
+            <span ng-hide="loginCtrl.submitting">Reset</span>
+            <div class="spinner" ng-show="loginCtrl.submitting">
+              <div class="bounce1 charcoal-spinner"></div>
+              <div class="bounce2 charcoal-spinner"></div>
+              <div class="bounce3 charcoal-spinner"></div>
+            </div>
+          </button>
+        </div>
+
+      </div>
 
   </form>
 

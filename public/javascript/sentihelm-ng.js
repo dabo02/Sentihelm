@@ -1329,7 +1329,7 @@
 
     var loginCtrl = this;
 
-    this.resetPassword = true;
+    this.resetPasswordAvailable = true;
     this.resetPasswordMessage = "Forgot Password?"
 
     //Credentials that will be passed to the authenticator service
@@ -1346,18 +1346,6 @@
     //proceeds to try and login; if login fails, shows
     //corresponding error
     this.login = function(){
-
-      if(!this.resetPassword) {
-        // this.resetPassword(this.credentials.email);
-        Session.resetPassword(loginCtrl.credentials.email);
-        this.resetPassword = true;
-        // ngDialog.open({
-        //     template: '../reset-pass.html',
-        //     className: 'ngdialog-theme-plain'
-        // });
-
-        return;
-      }
 
       //No username/id entered, throw error
       if(!this.credentials.userId){
@@ -1395,20 +1383,42 @@
       );
     };
 
+    loginCtrl.showResetPasswordForm = function() {
+      loginCtrl.resetPasswordAvailable = false;
+    };
+
     loginCtrl.resetPassword = function() {
-      loginCtrl.resetPassword = false;
+      if(!this.resetPasswordAvailable) {
+        loginCtrl.submitting = true;
+        Session.resetPassword(loginCtrl.credentials.email);
+      }
+    };
+
+    loginCtrl.cancelResetPassword = function() {
+      loginCtrl.resetPasswordAvailable = true;
     };
 
     socket.on('reset-password-success', function(){
-      loginCtrl.resetPassword = true;
-      ngDialog.open({
-            template: '../reset-pass.html',
-            className: 'ngdialog-theme-plain'
-        });
+      loginCtrl.submitting = false;
+
+      //Show 
+      var messageDialog = ngDialog.open({
+        template: '../reset-pass.html',
+        className: 'ngdialog-theme-plain'
+      });
+      messageDialog.closePromise.then(function(){
+        loginCtrl.resetPasswordAvailable = true;
+        //Resolve the promise, proceed to load
+        //the state and change active state in drawer
+        return Promise.resolve("");
+      });
+
+
     });
 
     socket.on('reset-password-failed', function(){
-      loginCtrl.resetPassword = true;
+      loginCtrl.submitting = false;
+      loginCtrl.resetPasswordAvailable = true;
     });
 
   }]);
