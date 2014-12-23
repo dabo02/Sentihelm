@@ -50,6 +50,7 @@ Parse.initialize(APP_ID_2, JS_KEY_2);
 //Set up Parse classes for queries
 var TipReport = Parse.Object.extend("TipReport");
 var Client = Parse.Object.extend("Client");
+var User = Parse.Object.extend("User");
 var VideoSession = Parse.Object.extend("VideoSession");
 var PushNotification = Parse.Object.extend("FollowUpNotifications");
 
@@ -91,7 +92,7 @@ io.on('connect', function(socket){
     var clientId = data.clientId;
     var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
     var isAfterDate = data.isAfterDate;
-    var crimePosition = data.crimePosition;
+    var filter = data.filter;
 
     //Create query
     var tipQuery = new Parse.Query(TipReport);
@@ -103,34 +104,70 @@ io.on('connect', function(socket){
       objectId: clientId
     });
 
-    //Filter by date (before or after given date)
-    isAfterDate ? tipQuery.greaterThan("createdAt", date) :
-                  tipQuery.lessThan("createdAt", date);
-
-    //If isAfterDate is false, query tips before said date in
-    //descending order (newest to oldest, earliest date first);
-    //otherwise, query tips after date in ascending order, but
-    //reverse final results array or tips will be incorrectly
-    //displayed from oldest to newest (tips in page 1 will be tips
-    //corresponding to page 10, and vice versa)
-    if (!isAfterDate) {
-      tipQuery.descending("createdAt");
-    }
 
     //Tell parse to include the user and client objects
     //instead of just passing the pointers.
     tipQuery.include('user');
     tipQuery.include('clientId');
 
-    tipQuery.limit(10);
-
     if(!!data.tipsToSkip) {
       tipQuery.skip(data.tipsToSkip);
     }
-    
-    if(!!crimePosition) {
-      tipQuery.equalTo("crimeListPosition", crimePosition); 
+
+    //If filter by crime type is activated
+    if(!!filter && !isNaN(filter.crimePosition)) {
+      tipQuery.equalTo("crimeListPosition", filter.crimePosition); 
+
+
+      //Get crime type number of tips
+
+
+
     }
+
+    //If filter by date is activated
+    if(!!filter && !!filter.date) {
+
+      tipQuery.greaterThan("createdAt", filter.dateBefore);
+      // tipQuery.lessThan("createdAt", filter.dateAfter); //date.setDate(date.getDate() + 1);
+
+
+      //Do something
+
+
+      //Get num of tips on that date.
+
+
+    }
+    //Filter by date not activated
+    else {
+      //Filter by date (before or after given date)
+      isAfterDate ? tipQuery.greaterThan("createdAt", date) :
+                    tipQuery.lessThan("createdAt", date);
+
+
+      //If isAfterDate is false, query tips before said date in
+      //descending order (newest to oldest, earliest date first);
+      //otherwise, query tips after date in ascending order, but
+      //reverse final results array or tips will be incorrectly
+      //displayed from oldest to newest (tips in page 1 will be tips
+      //corresponding to page 10, and vice versa)
+      if (!isAfterDate) {
+        tipQuery.descending("createdAt");
+      }
+    }
+
+
+    tipQuery.limit(10);
+
+    
+    // if(!!crimePosition) {
+    //   tipQuery.equalTo("crimeListPosition", crimePosition); 
+    // }
+
+    // if(!!onDate){
+    //   tipQuery.equalTo('createdAt', onDate);
+    // }
 
     //Execute query
     tipQuery.find({
@@ -154,7 +191,12 @@ io.on('connect', function(socket){
           //to retreive the user that submitted the tip.
           var tipUser = tips[i].get('user')
 
-          var passPhrase = passwordGenerator.generatePassword((!!tipUser? tipUser.attributes.username: tips[i].attributes.anonymousPassword), !tipUser);
+          if(!tips[i].attributes.smsId) {
+            var passPhrase = passwordGenerator.generatePassword((!!tipUser? tipUser.attributes.username: tips[i].attributes.anonymousPassword), !tipUser);
+          }
+          else {
+            var passPhrase = passwordGenerator.generatePassword(tips[i].attributes.smsId);
+          }
 
           //Get the client object from the first tip to be
           //able to get the total tip count later on (all
@@ -201,6 +243,10 @@ io.on('connect', function(socket){
               visible: true
             }
           }];
+
+          if(tips[i].smsNumber) {
+            tips[i].phone = encryptionManager.decrypt(passPhrase, tips[i].smsNumber.base64);
+          }
         }
 
         //Send the tips to the front end
@@ -272,6 +318,23 @@ io.on('connect', function(socket){
     var clientId = data.clientId;
     addNewOfficer(officer, clientId);
   });
+
+  //Save user to Sentihelm
+  socket.on('save-user', function(data){
+    var user = data.user;
+    saveUser(user);
+  });
+
+  //Save password to Sentihelm
+  socket.on('save-user-password', function(data){
+    saveUserPassword(data);
+  });
+
+  //Save user to Sentihelm
+  socket.on('reset-password', function(data){
+    resetPassword(data.email);
+  });
+
 });
 
 //=========================================
@@ -285,13 +348,32 @@ app.post('/login', function(request, response){
   var password = request.body.password;
   Parse.User.logIn(userId, password, {
     success: function(user) {
+
+      //Update userPassword column on Parse
+      user.set("userPassword", passwordGenerator.md5(password));
+      user.save(null, {
+        success: function(user) {
+          // Execute any logic that should take place after the object is saved.
+        },
+        error: function(user, error) {
+          // Execute any logic that should take place if the save fails.
+          // error is a Parse.Error with an error code and message.
+        }
+      });
+
       //Get Client to which user belongs to
       var clientQuery = new Parse.Query(Client);
       clientQuery.include("regions");
       clientQuery.include("mostWantedList");
       clientQuery.get(user.attributes.homeClient.id, {
         success: function(client){
+
           var answer = [];
+
+          var passPhrase = passwordGenerator.generatePassword(user.attributes.username);
+          user.attributes.firstName = encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
+          user.attributes.lastName = encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
+
           answer.push(user);
           answer.push(client);
           answer.push(client.get('regions'));
@@ -501,7 +583,7 @@ function addNewOfficer(officerData, clientId){
 
   //Encrypted/Hashed Values
   var encryptedFirstName = encryptionManager.encrypt(passPhrase, officerData.fname);
-  var encryptedLastName = encryptionManager.encrypt(passPhrase, officerData.fname);
+  var encryptedLastName = encryptionManager.encrypt(passPhrase, officerData.lname);
   var hashedPassword = passwordGenerator.md5(officerData.password);
 
   //Create new officer
@@ -514,8 +596,9 @@ function addNewOfficer(officerData, clientId){
         __type: "Bytes",
         base64: encryptedLastName
   });
+
   // officer.set('firstName', encryptedFirstName);
-  // officer.set('lastName', encryptedLastName);
+  officer.set('email', officerData.email);
   officer.set('username', officerData.username);
   officer.set('password', officerData.password);
   officer.set('userPassword', hashedPassword);
@@ -535,3 +618,100 @@ function addNewOfficer(officerData, clientId){
     io.sockets.emit('new-officer-failed', {error: error});
   });
 };
+
+//Save edited user
+function saveUser(editedUser){
+
+  //Generate passphrase for encryption
+  var passPhrase = "";
+  passPhrase = passwordGenerator.generatePassword(editedUser.username);
+
+  //Encrypted/Hashed Values
+  var encryptedFirstName = encryptionManager.encrypt(passPhrase, editedUser.firstName);
+  var encryptedLastName = encryptionManager.encrypt(passPhrase, editedUser.lastName);
+  var email = editedUser.email;
+
+  // var hashedPassword = passwordGenerator.md5(officerData.password);
+
+  // var ParseUser = new Parse.Query(User);
+  var user =  Parse.User.current();
+  if(!user) {
+    io.sockets.emit('user-session-timeout');
+    return;
+  }
+
+  user.set('firstName', {
+        __type: "Bytes",
+        base64: encryptedFirstName
+  });
+  user.set('lastName', {
+        __type: "Bytes",
+        base64: encryptedLastName
+  });
+  user.set('email', email);
+  // officer.set('userPassword', hashedPassword);
+  // officer.set('roles', [officerData.role]);
+  user.save(null, {
+    success: function(user) {
+      // Execute any logic that should take place after the object is saved.
+      io.sockets.emit('save-user-success');
+    },
+    error: function(user, error) {
+      // Execute any logic that should take place if the save fails.
+      // error is a Parse.Error with an error code and message.
+      io.sockets.emit('save-user-failed');
+    }
+  });
+};
+
+//Save/change user password
+function saveUserPassword(data) {
+
+  var user =  Parse.User.current();
+  if(!user) {
+    io.sockets.emit('user-session-timeout');
+    return;
+  }
+
+  var prevPass = data.prevPass;
+  var newPass = data.newPass;
+  var confirmPass = data.confirmPass;
+
+
+  //Change pass
+  if(passwordGenerator.md5(prevPass) === user.attributes.userPassword) {
+
+    //Throw pass incorrect
+    user.set("password", newPass);
+    user.set("userPassword", passwordGenerator.md5(newPass));
+    user.save(null, {
+      success: function(user) {
+        // Execute any logic that should take place after the object is saved.
+        io.sockets.emit('save-user-password-success');
+      },
+      error: function(user, error) {
+        // Execute any logic that should take place if the save fails.
+        // error is a Parse.Error with an error code and message.
+        io.sockets.emit('save-user-password-failed');
+      }
+    });
+  }
+  else {
+    //Incorrect password
+    io.sockets.emit('save-user-password-failed');
+
+  }
+};
+
+function resetPassword(email) {
+  Parse.User.requestPasswordReset(email, {
+    success: function() {
+      // Password reset request was sent successfully
+      io.sockets.emit('reset-password-success');
+    },
+    error: function(error) {
+      // Show the error message somewhere
+      io.sockets.emit('reset-password-failed');
+    }
+  });
+}

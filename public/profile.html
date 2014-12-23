@@ -1,0 +1,67 @@
+<div class="profile-mid-container" ng-controller="ProfileController as profileCtrl">
+
+	<h1 class="text-center">
+		Profile
+	</h1>
+	<br>
+
+	<form role="form">
+ 
+		<div class="form-group col-md-4 col-md-offset-4">
+			<label for="new-officer-fname" class="dark-gray">First Name</label>
+			<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="profileCtrl.user.firstName" ng-change="profileCtrl.userChange()">
+		</div>
+
+		<div class="form-group col-md-4 col-md-offset-4">
+			<label for="new-officer-lname" class="dark-gray">Last Name</label>
+			<input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="profileCtrl.user.lastName" ng-change="profileCtrl.userChange()">
+		</div>
+
+		<div class="form-group col-md-4 col-md-offset-4">
+			<label for="new-officer-email" class="dark-gray">Email</label>
+			<input type="text" class="form-control" id="new-officer-email" placeholder="Email" ng-model="profileCtrl.user.email" ng-change="profileCtrl.userChange()">
+		</div>
+
+		<button type="submit" class="btn btn-primary col-md-2 col-md-offset-5" ng-click="profileCtrl.saveUser(profileCtrl.user)" ng-disabled="!profileCtrl.userChanged">
+			<span ng-hide="profileCtrl.savingUser">{{(!profileCtrl.userChanged && profileCtrl.userSuccessMessage)? profileCtrl.userSuccessMessage: "Save User" || "Save User"}}</span>
+			<div class="spinner" ng-show="profileCtrl.savingUser">
+		        <div class="bounce1"></div>
+		        <div class="bounce2"></div>
+		        <div class="bounce3"></div>
+		     </div>
+		</button>
+
+		<div class="form-group col-md-4 col-md-offset-4">
+			<br>
+			<br>
+			<h1>
+				Change Password
+			</h1>
+			<br>
+		</div>
+
+		<div class="form-group col-md-4 col-md-offset-4">
+			<label for="new-officer-password" class="dark-gray">Current Password</label>
+			<input type="password" class="form-control" id="new-officer-password" placeholder="Current Password" ng-model="profileCtrl.user.prevPassword" ng-change="profileCtrl.passwordChange()">
+		</div>
+
+		<div class="form-group col-md-4 col-md-offset-4">
+			<label for="new-officer-password" class="dark-gray">New Password</label>
+			<input type="password" class="form-control" id="new-officer-password" placeholder="New Password" ng-model="profileCtrl.user.newPassword" ng-change="profileCtrl.passwordChange()">
+		</div>
+
+		<div ng-class="{'form-group col-md-4 col-md-offset-4 ':true, 'has-error':profileCtrl.user.newPassword !== profileCtrl.user.confirmPassword}">
+			<label for="new-officer-password" class="dark-gray">Confirm Password</label>
+			<input type="password" class="form-control" id="new-officer-password" placeholder="Confirm Password" ng-model="profileCtrl.user.confirmPassword" ng-change="profileCtrl.passwordChange()">
+		</div>
+
+		<button type="submit" class="btn btn-primary col-md-2 col-md-offset-5" ng-click="profileCtrl.savePassword(profileCtrl.user.prevPassword, profileCtrl.user.newPassword, profileCtrl.user.confirmPassword)" ng-disabled="!profileCtrl.user.prevPassword || !profileCtrl.user.newPassword || !profileCtrl.user.confirmPassword || profileCtrl.user.newPassword !== profileCtrl.user.confirmPassword ">
+			<span ng-hide="profileCtrl.savingPass">{{(!profileCtrl.passwordChanged && profileCtrl.passwordSuccessMessage)? profileCtrl.passwordSuccessMessage: "Save Password" || "Save Password"}}</span>
+			<div class="spinner" ng-show="profileCtrl.savingPass">
+		        <div class="bounce1"></div>
+		        <div class="bounce2"></div>
+		        <div class="bounce3"></div>
+		     </div>
+		</button>
+	</form>	
+</div>

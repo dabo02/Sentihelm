@@ -1,10 +1,10 @@
 <div ng-controller="LoginController as loginCtrl">
 
-  <span id="login-dialog-title">Login</span>
+  <span id="login-dialog-title">{{loginCtrl.resetPassword? 'Login': 'Reset Password'}}</span>
 
   <form class="login-dialog-form" ng-submit="loginCtrl.login()">
 
-      <div class="login-dialog-input-container">
+      <div class="login-dialog-input-container" ng-if="loginCtrl.resetPassword">
 
         <label class="login-dialog-label">User ID</label>
         <input type="text" id="login-dialog-username" ng-model="loginCtrl.credentials.userId"/>
@@ -16,10 +16,18 @@
 
         <br>
 
+        <label ng-class="{'pointer': loginCtrl.resetPassword}" ng-click="loginCtrl.resetPassword? loginCtrl.resetPassword(): undefined" ng-style="{ 'color': loginCtrl.resetPassword? '#219fe9': 'inherit'}">{{loginCtrl.resetPasswordMessage}}</label>
+
       </div>
 
+      <div class="login-dialog-input-container" ng-if="!loginCtrl.resetPassword">
+        <label class="login-dialog-label">Email</label>
+        <input type="text" id="login-dialog-username" ng-model="loginCtrl.credentials.email"/>
+      </div>
+
+
       <button type="submit" id="login-dialog-submit">
-        <span ng-hide="loginCtrl.submitting">Send</span>
+        <span ng-hide="loginCtrl.submitting">{{loginCtrl.resetPassword? 'Sign in': 'Reset Password'}}</span>
         <div class="spinner" ng-show="loginCtrl.submitting">
           <div class="bounce1 charcoal-spinner"></div>
           <div class="bounce2 charcoal-spinner"></div>

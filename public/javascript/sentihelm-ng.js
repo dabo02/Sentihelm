@@ -127,6 +127,26 @@
           return routingService.checkUserStatus(this.data.authorizedRoles, "Administrator Panel");
         }
       }
+    })
+
+    //Profile pagel endpoint/url
+    .state('profile',{
+      url:"/profile",
+      templateUrl:"/profile.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Profile");
+        }
+      }
     });
   }]);
 
@@ -216,6 +236,14 @@
       title: 'No Content',
       message: 'The notification must contain a message.',
       code: 'NOTIF-NO-MESSAGE',
+      onClose: function(){
+        document.getElementById("notification-message").focus();
+      }
+    },
+    'SMS-NO-MESSAGE':{
+      title: 'No Content',
+      message: 'The must contain a message.',
+      code: 'SMS-NO-MESSAGE',
       onClose: function(){
         document.getElementById("notification-message").focus();
       }
@@ -355,16 +383,21 @@
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
-  app.factory('Session',['$window', '$rootScope', 'AUTH_EVENTS', function($window, $rootScope, AUTH_EVENTS){
+  app.factory('Session',['$window', '$rootScope', 'AUTH_EVENTS', 'socket', function($window, $rootScope, AUTH_EVENTS, socket){
 
     var session = {};
 
     //Create a session object, along with id, userId and roles
-    session.create = function (userId, userRoles, clientId, regions) {
-      session.userId = userId;
+    session.create = function (user, userRoles, client, regions) {
+      session.userId = user.objectId;
       session.userRoles = userRoles;
-      session.clientId = clientId;
+      session.clientId = client.objectId;
+      session.clientLogo = client.logo.url;
       session.regions = regions;
+      session.userFullName = user.firstName + " " + user.lastName;
+      session.clientAgency = client.agency; 
+      session.user = user;
+      session.client = client;
     };
 
     //Destroy current session object
@@ -372,11 +405,15 @@
       session.userId = undefined;
       session.userRoles = undefined;
       session.clientId = undefined;
+      session.clientLogo = undefined;
       session.regions = undefined;
+      session.userFullName = undefined;
+      session.clientAgency = undefined;
+      session.user = undefined;
+      session.client = undefined;
 
       //Delete from session window
       $window.sessionStorage.clear();
-      
     };
 
     session.store = function(user, client){
@@ -399,7 +436,12 @@
       sessionObj.userId = session.userId;
       sessionObj.userRoles = session.userRoles;
       sessionObj.clientId = session.clientId;
+      sessionObj.clientLogo = session.clientLogo;
       sessionObj.regions = session.regions;
+      sessionObj.userFullName = session.userFullName;
+      sessionObj.clientAgency = session.clientAgency; 
+      // sessionObj.user = session.user;
+
 
       $window.sessionStorage['session'] = JSON.stringify(sessionObj);
       $window.sessionStorage['user'] = JSON.stringify(userObj);
@@ -418,10 +460,30 @@
         session.userId = storedSession.userId;
         session.userRoles = storedSession.userRoles;
         session.clientId = storedSession.clientId;
+        session.clientLogo = storedSession.clientLogo;
         session.regions = storedSession.regions;
+        session.userFullName = storedSession.userFullName;
+        session.clientAgency = storedSession.clientAgency;
+        session.user = storedUser;
+        session.client = storedClient;
 
         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser, storedClient, session.regions]);
       }
+    }
+
+    session.updateUser = function(user){
+      session.userId = user.objectId;
+      session.userFullName = user.firstName + " " + user.lastName;
+      session.user = user;
+      session.store(session.user, session.client);
+      $rootScope.$broadcast('update-user', []);
+    }
+
+    session.resetPassword = function(email) {
+      //Request tips
+      socket.emit('reset-password', {
+        email: email
+      });
     }
 
     return session;
@@ -429,7 +491,7 @@
 
   //Creates a service that manages login and
   //authentication functionality; manages current session
-  app.factory('authenticator', ['$http', 'Session', '$window', function($http, Session, $window){
+  app.factory('authenticator', ['$http', 'Session', '$window', 'socket', function($http, Session, $window, socket){
 
     var authenticator = {};
 
@@ -463,6 +525,11 @@
 
       // return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
     };
+
+    socket.on('user-session-timeout', function(data){
+      Session.destroy();
+      $window.location.reload();
+    });
 
     return authenticator;
   }]);
@@ -643,7 +710,6 @@
           else{
             $rootScope.$broadcast('regional-notification-error', [notification, parentError]);
           }
-          // $rootScope.$broadcast('notification-error', [notification, parentError]);
         },
         error: function(notification, error){
           //Failed to delete notification
@@ -750,7 +816,7 @@
     //Called when tipfeed loads, be it on
     //refresh or navigating to it again;
     //initiliazes tip feed for current client
-    paginator.initializeFeed = function(date, isAfterDate, crimePosition){
+    paginator.initializeFeed = function(filter){
 
       //Need references to current and last page,
       //array of number of pages paginator will print
@@ -765,9 +831,9 @@
       //Request tips
       socket.emit('request-batch', {
         clientId: Session.clientId,
-        lastTipDate: date,
-        isAfterDate: isAfterDate,
-        crimePosition: crimePosition
+        filter: filter
+        // crimePosition: crimePosition,
+        // onDate: date
       });
     };
 
@@ -784,8 +850,7 @@
           clientId: Session.clientId,
           lastTipDate: isAfterDate? paginator.firstTipDateInArray: paginator.lastTipDateInArray,
           isAfterDate: isAfterDate,
-          tipsToSkip: tipsToSkip,
-          crimePosition: undefined,
+          tipsToSkip: tipsToSkip
         });
         $rootScope.$broadcast('discard-current-tips',[]);
       }
@@ -802,8 +867,7 @@
         socket.emit('request-batch', {
           clientId: Session.clientId,
           lastTipDate: paginator.firstTipDateInArray,
-          isAfterDate: true,
-          crimePosition: undefined,
+          isAfterDate: true
         });
 
         //Discard current shown tips and update paginator
@@ -819,16 +883,15 @@
       socket.emit('request-batch', {
         clientId: Session.clientId,
         lastTipDate: paginator.lastTipDateInArray,
-        isAfterDate: false,
-        crimePosition: undefined,
+        isAfterDate: false
       });
 
       //Discard current shown tips and update paginator
       $rootScope.$broadcast('discard-current-tips',[]);
       ++this.currentPage;
 
-      if(this.currentPage-1%10===0){
-        this.pageSetUpdater(this.lastPage, false);
+      if((this.currentPage-1)%10===0){
+        this.pageSetUpdater(this.lastPage-(this.currentPage-1), false);
       }
     };
 
@@ -1261,10 +1324,13 @@
 
   //Controller for login dialog and login
   //landing page
-  app.controller('LoginController', ['$state', '$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state',
-  function($state, $rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state){
+  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', 'socket', 'ngDialog',
+  function($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, socket, ngDialog){
 
     var loginCtrl = this;
+
+    this.resetPassword = true;
+    this.resetPasswordMessage = "Forgot Password?"
 
     //Credentials that will be passed to the authenticator service
     this.credentials = {
@@ -1280,6 +1346,18 @@
     //proceeds to try and login; if login fails, shows
     //corresponding error
     this.login = function(){
+
+      if(!this.resetPassword) {
+        // this.resetPassword(this.credentials.email);
+        Session.resetPassword(loginCtrl.credentials.email);
+        this.resetPassword = true;
+        // ngDialog.open({
+        //     template: '../reset-pass.html',
+        //     className: 'ngdialog-theme-plain'
+        // });
+
+        return;
+      }
 
       //No username/id entered, throw error
       if(!this.credentials.userId){
@@ -1302,7 +1380,7 @@
           var client = response.data[1];
           var regions = response.data[2];
           //Login was successful, create Session
-          Session.create(user.objectId, user.roles, client.objectId, regions);
+          Session.create(user, user.roles, client, regions);
           Session.store(user, client);
           $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
           loginCtrl.submitting = false;
@@ -1316,6 +1394,22 @@
         }
       );
     };
+
+    loginCtrl.resetPassword = function() {
+      loginCtrl.resetPassword = false;
+    };
+
+    socket.on('reset-password-success', function(){
+      loginCtrl.resetPassword = true;
+      ngDialog.open({
+            template: '../reset-pass.html',
+            className: 'ngdialog-theme-plain'
+        });
+    });
+
+    socket.on('reset-password-failed', function(){
+      loginCtrl.resetPassword = true;
+    });
 
   }]);
 
@@ -1340,7 +1434,9 @@
     var drawer = this;
     this.newTips = 0;
     this.isAdmin = Session.userRoles.indexOf('admin')===-1? false : true;
-
+    this.userFullName = Session.userFullName;
+    this.clientAgency = Session.clientAgency;
+    drawer.clientLogo = Session.clientLogo;
 
     //Drawer options with name and icon;
     //entries are off by default
@@ -1372,6 +1468,10 @@
         drawer.newTips++;
         $scope.$apply();
       } 
+    });
+
+    $scope.$on('update-user', function(event, data){
+      drawer.userFullName = Session.userFullName;
     });
 
   }]);
@@ -1437,6 +1537,7 @@
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
     var tipfeed = this;
+    this.showFilter = false;
     this.tipsAvailable = true;
     this.currentTips = [];
     this.currentPage = paginator.currentPage;
@@ -1578,7 +1679,6 @@
           parseFile = tip.attachmentAudio;
         }
 
-
         //Request decrypted media url
         socket.emit('request-media-url', {
           parseFile:parseFile,
@@ -1632,10 +1732,21 @@
 
     
     this.filterTips = function(filterDate, filterType) {
-      var date = new Date();
-      var crimePosition = 1;
+      //If no values were selected, ignore button press
+      if(!filterDate && ! filterType) {
+        return;
+      }
+      var date = filterDate? new Date(filterDate): undefined;
+      var crimePosition = filterType? parseInt(filterType): undefined;
+      var dateBefore = filterDate? new Date(filterDate): undefined;
+      dateBefore.setDate(dateBefore.getDate() - 1);
+      var filter = {
+        date: date,
+        dateBefore: dateBefore,
+        crimePosition: crimePosition
+      }
       $rootScope.$broadcast('discard-current-tips',[]);
-      paginatorService.initializeFeed(date, false, crimePosition);
+      paginatorService.initializeFeed(filter);
     };
 
     this.loadNewTips = function(){
@@ -1646,6 +1757,31 @@
       $state.go($state.current, {}, {reload: true});
     };
 
+    this.showSMSDialog = function(phone) {
+      //ngDialog can only handle stringified JSONs
+      var data = JSON.stringify({
+        phoneNumber:phone
+      });
+
+      //Open dialog and pass control to AttachmentController
+      $scope.SMSDialog = ngDialog.open({
+        template: '../sms-dialog.html',
+        className: 'ngdialog-theme-plain',
+        showClose: true,
+        scope: $scope,
+        data:data
+      });
+
+      // Parse.Cloud.run('sendSMS', {To:phone, From:"+18636570997", Body:'Testing text messages from SentiHelm.'}, {
+      //   success: function(result) {
+      //     // result is 'Hello world!'
+      //     console.log('Sent');
+      //   },
+      //   error: function(error) {
+      //     console.log('Error: '+error.message);
+      //   }
+      // });
+    };
   }]);
 
   //Controller for the tip's attachments; must display
@@ -1855,6 +1991,80 @@
     };
 
   }]);
+
+  //Controller for user follow-up notification; controls the
+  //dialog that allows for message/attachment to be sent to users
+  app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket',
+  function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket){
+    //Get data from ngDialog directive
+    this.phone = $scope.$parent.ngDialogData.phoneNumber;
+    // this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
+    // this.channel = $scope.$parent.ngDialogData.channel;
+    // this.userId = this.channel.substring(5);
+    this.sending = false;
+    // this.file = undefined;
+
+    var smsCtrl = this;
+    var thisDialogId = $scope.$parent.SMSDialog.id;
+
+    //Set focus on message box once dialog pops up
+    $scope.$on('ngDialog.opened', function (event, $dialog) {
+      if(thisDialogId===$dialog.attr('id')){
+        document.getElementById("notification-message").focus();
+      }
+    });
+
+    //Notification was successfully saved and pushed (sent)
+    $scope.$on('sms-success',function(){
+      smsCtrl.sending = false;
+      $scope.$apply();
+      $scope.closeThisDialog();
+    });
+
+    //Send the notification to the user
+    this.sendSMS = function(){
+
+      // //If no title, show appropiate error and ignore
+      // if(!this.title){
+      //   errorFactory.showError('NOTIF-NO-TITLE');
+      //   return;
+      // }
+
+      //If no message or attachment, show appropiate error and ignore
+      if(!this.message){
+        errorFactory.showError('SMS-NO-MESSAGE');
+        return;
+      }
+
+      //Toggle sending animation
+      this.sending = true;
+
+      // //Prepare notification
+      // var notification = {};
+      // notification.userId = this.userId;
+      // notification.controlNumber = this.controlNumber;
+      // notification.title = this.title;
+      // notification.message = this.message;
+      // //If a file is present, attach it and set its type
+      // if(this.file){
+      //   notification.attachment = this.file.base64;
+      //   notification.attachmentType = this.file.filetype.substring(0, 5);
+      // }
+
+      Parse.Cloud.run('sendSMS', {To:this.phone, From:"+18636570997", Body:this.message}, {
+        success: function(result) {
+          // result is 'Hello world!'
+          console.log('Sent');
+          $rootScope.$broadcast('sms-success');
+        },
+        error: function(error) {
+          console.log('Error: '+error.message);
+          smsCtrl.sending = false;
+        }
+      });
+    };
+  }]);
+
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
@@ -2507,4 +2717,60 @@
 
   }]);
 
-  })();
+  //Controller for Profile page
+  app.controller('ProfileController', ['socket', 'Session', '$scope', function(socket, Session, $scope){
+
+    var profileCtrl = this;
+    profileCtrl.user = Session.user;
+    profileCtrl.userChanged = false;
+    profileCtrl.passwordChanged = false;
+
+    profileCtrl.savingUser = false;
+    profileCtrl.savingPass = false;
+
+    //Adds new SentiHelm user
+    profileCtrl.saveUser = function(user){
+      this.savingUser = true;
+      profileCtrl.userChanged = false;
+      socket.emit('save-user', {user : user});
+    };
+
+    profileCtrl.savePassword = function(prevPass, newPass, confirmPass){
+      this.savingPass = true;
+      profileCtrl.passwordChanged = false;
+
+      socket.emit('save-user-password', {prevPass:prevPass, newPass:newPass, confirmPass:confirmPass});
+
+    };
+
+    socket.on('save-user-success', function(data){
+      profileCtrl.savingUser = false;
+      profileCtrl.userSuccessMessage = "Succeded";
+      Session.updateUser(profileCtrl.user);
+    });
+
+    socket.on('save-user-failed', function(data){
+      profileCtrl.savingUser = false;
+      profileCtrl.userSuccessMessage = "Failed";
+    });
+    socket.on('save-user-password-success', function(data){
+      profileCtrl.savingPass = false;
+      profileCtrl.passwordSuccessMessage = "Succeded";
+    });
+
+    socket.on('save-user-password-failed', function(data){
+      profileCtrl.savingPass = false;
+      profileCtrl.passwordSuccessMessage = "Incorrect password";
+    });
+
+    profileCtrl.userChange = function() {
+      profileCtrl.userChanged = true;
+    }
+
+    profileCtrl.passwordChange = function() {
+      profileCtrl.passwordChanged = true;
+    }
+
+  }]);
+
+})();

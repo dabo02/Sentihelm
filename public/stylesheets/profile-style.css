@@ -1,0 +1,10 @@
+
+.profile-mid-container{
+  position:fixed;
+  top:15%;
+  /*left:17.5%;
+  width:65%;*/
+  height:80%;
+  overflow-y:auto;
+  text-align:center;
+}

@@ -20,6 +20,11 @@ body{
   text-align:center;
 }
 
+.profile-image{
+  width:30px;
+  /*margin:0.5em auto;*/
+}
+
 /**=============**/
 /**   HEADER    **/
 /**=============**/
@@ -51,6 +56,16 @@ img.logo{
 }
 .drawer-item:hover,
 .drawer-item:active{
+  color:#219fe9;
+}
+
+.drawer-profile-item{
+  color:white;
+  background-color:#084B73;
+  border:none;
+}
+.drawer-profile-item:hover,
+.drawer-profile-item:active{
   color:#219fe9;
 }
 

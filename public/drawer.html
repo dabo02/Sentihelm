@@ -7,6 +7,21 @@
 
 <ul class="list-group dark-gray-bg" role="menu">
 
+  <li class="list-group-item drawer-profile-item pointer"
+   ng-click="drawerCtrl.changeState('profile')">
+
+    <h5 style="color:inherit;">
+      <div style="position: absolute;">
+        <img class="profile-image" ng-src="{{drawerCtrl.clientLogo}}"/>
+      </div>
+      <div style="position: static; padding-left: 20px;">
+        <span style="margin-left:20px;">{{drawerCtrl.userFullName}}</span><br>
+        <span style="margin-left:20px; font-size: 10;line-height: 2;">{{drawerCtrl.clientAgency}}</span>
+      </div>
+    </h5>
+
+  </li>
+
   <li class="list-group-item dark-gray-bg drawer-item pointer"
    ng-repeat="item in drawerCtrl.entries"
    ng-click="drawerCtrl.changeState(item.state)"

@@ -10,8 +10,7 @@
     </span>
   </div>
 
-
-  <div class="tip-filter-container">
+  <div class="tip-filter-container" ng-show="tipfeed.showFilter">
     <div class="filter-controls">
 
       <div class="crime-filter">
@@ -33,8 +32,11 @@
 
   <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
 
-  <div id="tip-feed-container" class="mid-container">
+  <div id="tip-feed-container" class="mid-container" 
+    ng-style="{ 'top': tipfeed.showFilter? 'inherit': 'inherit', 'height': tipfeed.showFilter? '60%': '70%'}"
 
+  >
+<!-- ng-class="{'mid-container no-filter-container':!tipfeed.showFilter}" -->
     <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
 
     <!--======SPINNER (LOADING)======-->
@@ -96,46 +98,54 @@
             <span class="contact-number">{{tip.phone}}</span><br>
             <button class="notification-button" ng-click="tipfeed.showNotificationDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">Send Notification</button>
           </div>
-        </div>
 
-          <!-------MID DIVISION------->
-          <!-------------------------->
-          <div class="center">
-
-            <!------ATTACHMENTS------>
-            <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
-
-              <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'VID')">
-                <img src="./resources/images/videoAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
-              </a>
-              <a id="imageAtt" ng-class="{'disabled-link': !tip.attachmentPhoto.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'IMG')">
-                <img src="./resources/images/imageAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
-              </a>
-              <a id="audioAtt" ng-class="{'disabled-link': !tip.attachmentAudio.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'AUDIO')">
-                <img src="./resources/images/audioAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
-              </a>
-
-            </div>
-
-            <!------CRIME DESCRIPTION------>
-            <div class="crime-description" ng-class="{'orange-border':tip.anonymous}">
-              <span>{{tip.crimeDescription}}</span>
-            </div>
+          <div ng-show="tip.smsNumber" class="contact-info">
+            CONTACT USER<br>
+            <span class="contact-number">{{tip.phone}}</span><br>
+            <button class="notification-button" ng-click="tipfeed.showSMSDialog(tip.phone)">Send Text Message</button>
           </div>
 
-          <!------RIGHT DIVISION------>
-          <!-------------------------->
-          <div class="right" ng-controller="GoogleMapController as mapCtrl">
-            <div class="map-canvas" id="{{tip.controlNumber}}">
+        </div>
 
-              <!------GOOGLE MAP------>
-              <ui-gmap-google-map center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+        <!-------MID DIVISION------->
+        <!-------------------------->
+        <div class="center">
+
+          <!------ATTACHMENTS------>
+          <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
+
+            <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'VID')">
+              <img src="./resources/images/videoAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
+            </a>
+            <a id="imageAtt" ng-class="{'disabled-link': !tip.attachmentPhoto.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'IMG')">
+              <img src="./resources/images/imageAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
+            </a>
+            <a id="audioAtt" ng-class="{'disabled-link': !tip.attachmentAudio.url}" ng-click="tipfeed.showAttachmentDialog(tip, 'AUDIO')">
+              <img src="./resources/images/audioAtt.png" ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
+            </a>
+
+          </div>
+
+          <!------CRIME DESCRIPTION------>
+          <div class="crime-description" ng-class="{'orange-border':tip.anonymous}">
+            <span>{{tip.crimeDescription}}</span>
+          </div>
+        </div>
+
+        <!------RIGHT DIVISION------>
+        <!-------------------------->
+        <div class="right" ng-controller="GoogleMapController as mapCtrl">
+          <div class="map-canvas" id="{{tip.controlNumber}}">
+
+            <!------ANON NO LOCATION------>
+            <span ng-show="tip.smsNumber">NO LOCATION AVAILABLE</span>
+
+            <!------GOOGLE MAP------>
+            <ui-gmap-google-map  ng-if="!tip.smsNumber" center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
               <ui-gmap-markers models="tip.markers" coords="'self'" options="'options'"></ui-gmap-markers>
             </ui-gmap-google-map>
-
           </div>
         </div>
-
       </div>
       <!-- END TIP -->
     </li>

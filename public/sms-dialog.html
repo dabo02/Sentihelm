@@ -1,0 +1,24 @@
+<div class="notification-dialog" ng-controller="SMSController as smsCtrl">
+
+  <div class="dialog-title">
+    Message to <span>{{smsCtrl.phone}}</span>
+  </div>
+
+  <form id="notification-form">
+
+    <div class="dialog-body">
+      <textarea id="notification-message" placeholder="Message to user" ng-model="smsCtrl.message"></textarea>
+    </div>
+
+    <button id="notification-submit" type="submit" ng-click="smsCtrl.sendSMS()">
+      <span ng-hide="smsCtrl.sending">Send</span>
+      <div class="spinner" ng-show="smsCtrl.sending">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </button>
+
+  </form>
+
+</div>
