@@ -1,7 +1,7 @@
 <div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
 
   <!-- ng-show="tipfeed.counter>0" -->
-  <div class="tip-counter" ng-class="{'disabled-counter':tipfeed.counter===0, 'active-counter':tipfeed.counter>0}" ng-click="tipfeed.loadNewTips()">
+  <div class="tip-counter" ng-class="{'disabled-counter':tipfeed.counter===0, 'active-counter':tipfeed.counter>0}" ng-click="tipfeed.loadNewTips()" >
     <span ng-show="tipfeed.counter>0">
       <u>{{tipfeed.counter}}</u> new tips available
     </span>
@@ -36,7 +36,6 @@
     ng-style="{ 'top': tipfeed.showFilter? 'inherit': 'inherit', 'height': tipfeed.showFilter? '60%': '70%'}"
 
   >
-<!-- ng-class="{'mid-container no-filter-container':!tipfeed.showFilter}" -->
     <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
 
     <!--======SPINNER (LOADING)======-->
@@ -138,7 +137,7 @@
           <div class="map-canvas" id="{{tip.controlNumber}}">
 
             <!------ANON NO LOCATION------>
-            <span ng-show="tip.smsNumber">NO LOCATION AVAILABLE</span>
+            <span ng-show="tip.smsNumber" style="line-height: 290px;">NO LOCATION AVAILABLE</span>
 
             <!------GOOGLE MAP------>
             <ui-gmap-google-map  ng-if="!tip.smsNumber" center="mapCtrl.getMapCenter(tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>

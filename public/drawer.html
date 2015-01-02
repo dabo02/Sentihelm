@@ -5,47 +5,56 @@
   snap-drawer
 >
 
-<ul class="list-group dark-gray-bg" role="menu">
+  <ul class="list-group dark-gray-bg" role="menu">
 
-  <li class="list-group-item drawer-profile-item pointer"
-   ng-click="drawerCtrl.changeState('profile')">
+    <li class="list-group-item drawer-profile-item pointer"
+     ng-click="drawerCtrl.changeState('profile')">
 
-    <h5 style="color:inherit;">
-      <div style="position: absolute;">
-        <img class="profile-image" ng-src="{{drawerCtrl.clientLogo}}"/>
-      </div>
-      <div style="position: static; padding-left: 20px;">
-        <span style="margin-left:20px;">{{drawerCtrl.userFullName}}</span><br>
-        <span style="margin-left:20px; font-size: 10;line-height: 2;">{{drawerCtrl.clientAgency}}</span>
-      </div>
-    </h5>
+      <h5 style="color:inherit;">
+        <div style="position: absolute;">
+          <img class="profile-image" ng-src="{{drawerCtrl.clientLogo}}"/>
+        </div>
+        <div style="position: static; padding-left: 20px;">
+          <span style="margin-left:20px;">{{drawerCtrl.userFullName}}</span><br>
+          <span style="margin-left:20px; font-size: 10;line-height: 2;">{{drawerCtrl.clientAgency}}</span>
+        </div>
+      </h5>
 
-  </li>
+    </li>
 
-  <li class="list-group-item dark-gray-bg drawer-item pointer"
-   ng-repeat="item in drawerCtrl.entries"
-   ng-click="drawerCtrl.changeState(item.state)"
-  >
+    <li class="list-group-item dark-gray-bg drawer-item pointer"
+     ng-repeat="item in drawerCtrl.entries"
+     ng-click="drawerCtrl.changeState(item.state)"
+    >
 
-    <h5 style="color:inherit;">
-      <span class="{{item.icon}}"></span>
-      <span style="margin-left:10px;">{{item.name}}</span>
-      <span ng-if="item.name==='Tip Feed'&&drawerCtrl.newTips" class="badge pull-right">{{drawerCtrl.newTips}}</span>
-    </h5>
+      <h5 style="color:inherit;">
+        <span class="{{item.icon}}"></span>
+        <span style="margin-left:10px;">{{item.name}}</span>
+        <span ng-if="item.name==='Tip Feed'&&drawerCtrl.newTips" class="badge pull-right">{{drawerCtrl.newTips}}</span>
+      </h5>
 
-  </li>
+    </li>
 
-  <li class="list-group-item dark-gray-bg drawer-item pointer"
-   ng-if="drawerCtrl.isAdmin"
-   ng-click="drawerCtrl.changeState('admin-panel')">
+    <li class="list-group-item dark-gray-bg drawer-item pointer"
+     ng-if="drawerCtrl.isAdmin"
+     ng-click="drawerCtrl.changeState('admin-panel')">
 
-    <h5 style="color:inherit;">
-      <span class="glyphicon glyphicon-briefcase"></span>
-      <span style="margin-left:10px;">Administrator Panel</span>
-    </h5>
-    
-  </li>
+      <h5 style="color:inherit;">
+        <span class="glyphicon glyphicon-briefcase"></span>
+        <span style="margin-left:10px;">Administrator Panel</span>
+      </h5>
+      
+    </li>
+    <li class="list-group-item dark-gray-bg drawer-item pointer"
+     ng-click="drawerCtrl.logOut()">
 
-</ul>
+      <h5 style="color:inherit;">
+        <span class="glyphicon glyphicon-off"></span>
+        <span style="margin-left:10px;">Log Out</span>
+      </h5>
+      
+    </li>
+
+  </ul>
 
 </div>

@@ -80,10 +80,10 @@
 
           <div class="form-group">
             <div class=" col-md-offset-5 col-md-1">
-              <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.save($index)" ng-disabled="!mostWantedCtrl.editedPeopleIndices[$index]">Save</button>
+              <button type="submit" class="btn btn-primary" ng-click="mostWantedCtrl.save($index)" ng-disabled="!mostWantedCtrl.editedPeopleIndices[$index]">Save</button>
             </div>
             <div class="col-md-1">
-              <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.showConfirmDialog($index)" ng-disabled="mostWantedCtrl.disableNewButton && $index === (mostWantedCtrl.wantedArray.length-1)">Delete</button>
+              <button type="submit" class="btn btn-danger" ng-click="mostWantedCtrl.showConfirmDialog($index)" ng-disabled="mostWantedCtrl.disableNewButton && $index === (mostWantedCtrl.wantedArray.length-1)">Delete</button>
             </div>
           </div>
 
@@ -93,7 +93,7 @@
 
         <div class="form-group">
           <div class="col-md-4 col-md-offset-4">
-            <button type="submit" class="btn btn-success" ng-click="mostWantedCtrl.add()" ng-disabled="mostWantedCtrl.disableNewButton">Add Most Wanted</button>
+            <button type="submit" class="btn btn-primary" ng-click="mostWantedCtrl.add()" ng-disabled="mostWantedCtrl.disableNewButton">Add Most Wanted</button>
           </div>
         </div>
       <!-- </li>

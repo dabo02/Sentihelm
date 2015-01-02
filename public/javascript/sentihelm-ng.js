@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64']);
+  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -9,6 +9,27 @@
     $urlRouterProvider.otherwise("/tipfeed");
 
     $stateProvider
+    
+    //Profile pagel endpoint/url
+    .state('profile',{
+      url:"/profile",
+      templateUrl:"/profile.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Profile");
+        }
+      }
+    })
+
     //Tipfeed endpoint/url
     .state('tipfeed',{
       url:"/tipfeed",
@@ -109,6 +130,26 @@
       }
     })
 
+    //Most Wanted List endoint/url
+    .state('data-analysis',{
+      url:"/data-analysis",
+      templateUrl:"/data-analysis.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Data Analysis");
+        }
+      }
+    })
+
     //Admin-panel endpoint/url
     .state('admin-panel',{
       url:"/admin-panel",
@@ -125,26 +166,6 @@
         // to close before loading the state.
         authenticate: function(routingService) {
           return routingService.checkUserStatus(this.data.authorizedRoles, "Administrator Panel");
-        }
-      }
-    })
-
-    //Profile pagel endpoint/url
-    .state('profile',{
-      url:"/profile",
-      templateUrl:"/profile.html",
-      data: {
-        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
-      },
-      resolve: {
-        // Reads the Routing Service
-        routingService: 'RoutingService',
-
-        // Receives the Routing Service, checks if user is logged in,
-        // executes the login dialog if needed and waits for the dialog
-        // to close before loading the state.
-        authenticate: function(routingService) {
-          return routingService.checkUserStatus(this.data.authorizedRoles, "Profile");
         }
       }
     });
@@ -392,6 +413,9 @@
       session.userId = user.objectId;
       session.userRoles = userRoles;
       session.clientId = client.objectId;
+      if(client.smsNumber && client.smsNumber.length>0)
+        session.clientPhoneNumber = client.smsNumber[0];
+      
       session.clientLogo = client.logo.url;
       session.regions = regions;
       session.userFullName = user.firstName + " " + user.lastName;
@@ -405,6 +429,7 @@
       session.userId = undefined;
       session.userRoles = undefined;
       session.clientId = undefined;
+      session.clientPhoneNumber = undefined;
       session.clientLogo = undefined;
       session.regions = undefined;
       session.userFullName = undefined;
@@ -436,6 +461,7 @@
       sessionObj.userId = session.userId;
       sessionObj.userRoles = session.userRoles;
       sessionObj.clientId = session.clientId;
+      sessionObj.clientPhoneNumber = session.clientPhoneNumber
       sessionObj.clientLogo = session.clientLogo;
       sessionObj.regions = session.regions;
       sessionObj.userFullName = session.userFullName;
@@ -460,6 +486,7 @@
         session.userId = storedSession.userId;
         session.userRoles = storedSession.userRoles;
         session.clientId = storedSession.clientId;
+        session.clientPhoneNumber = storedSession.clientPhoneNumber;
         session.clientLogo = storedSession.clientLogo;
         session.regions = storedSession.regions;
         session.userFullName = storedSession.userFullName;
@@ -537,7 +564,7 @@
   //Creates an injectable socket service that
   //works just like socket.io's client library
   app.factory('socket', function (socketFactory) {
-//     var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+    // var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
     var ioSocket = io.connect('http://localhost:80');
 
     socket = socketFactory({
@@ -1425,22 +1452,19 @@
 
   //Controller for the header; contains a button
   //that triggers drawer element when clicked
-  app.controller('HeaderController', ['snapRemote', '$state', 'Session', '$window', function(snapRemote, $state, Session, $window){
+  app.controller('HeaderController', ['snapRemote', function(snapRemote){
 
     //Reveals (opens) the drawer by sliding
     //snap-content (main page view) to the right
     this.openDrawer = function(){
       snapRemote.open("left");
     };
-    this.logOut = function() {
-      Session.destroy();
-      $window.location.reload();
-    };
+
   }]);
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', function($scope, $rootScope, snapRemote, $state, socket, Session) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', function($scope, $rootScope, snapRemote, $state, socket, Session, $window) {
     var drawer = this;
     this.newTips = 0;
     this.isAdmin = Session.userRoles.indexOf('admin')===-1? false : true;
@@ -1456,7 +1480,7 @@
       {name:'Send Notification', icon:'glyphicon glyphicon-send', state:'regional-notifications'},
       {name:'Maps', icon:'glyphicon glyphicon-map-marker', state:'maps'},
       {name:'Wanted List', icon:'glyphicon glyphicon-list-alt', state:'most-wanted'},
-      {name:'Data Analysis', icon:'glyphicon glyphicon-stats', state:'analysis'}
+      {name:'Data Analysis', icon:'glyphicon glyphicon-stats', state:'data-analysis'}
     ];
 
     //Hides (closes) the drawer by sliding
@@ -1473,6 +1497,11 @@
       $state.go(state, {newTips:0}, {reload:true});
     };
 
+    this.logOut = function() {
+      Session.destroy();
+      $window.location.reload();
+    };
+
     socket.on('new-tip', function(data){
       if(data.clientId===Session.clientId){
         drawer.newTips++;
@@ -1482,6 +1511,11 @@
 
     $scope.$on('update-user', function(event, data){
       drawer.userFullName = Session.userFullName;
+    });
+
+    $scope.$on('refresh-counter', function(event, data){
+      drawer.newTips = 0;
+      $scope.$apply();
     });
 
   }]);
@@ -1541,8 +1575,8 @@
   //which lets you interact with tips, depends heavily
   //on paginatorService
 
-  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state',
-  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state){
+  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session',
+  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
@@ -1732,14 +1766,12 @@
       }
     };
 
-
     socket.on('new-tip', function(data){
       if(data.clientId===Session.clientId){
         tipfeed.counter++;
+        $scope.$apply();
       }
     });
-    
-
     
     this.filterTips = function(filterDate, filterType) {
       //If no values were selected, ignore button press
@@ -1764,6 +1796,7 @@
         return;
       }
       this.counter = 0;
+      $rootScope.$broadcast('refresh-counter',[]);
       $state.go($state.current, {}, {reload: true});
     };
 
@@ -1781,16 +1814,6 @@
         scope: $scope,
         data:data
       });
-
-      // Parse.Cloud.run('sendSMS', {To:phone, From:"+18636570997", Body:'Testing text messages from SentiHelm.'}, {
-      //   success: function(result) {
-      //     // result is 'Hello world!'
-      //     console.log('Sent');
-      //   },
-      //   error: function(error) {
-      //     console.log('Error: '+error.message);
-      //   }
-      // });
     };
   }]);
 
@@ -2004,8 +2027,8 @@
 
   //Controller for user follow-up notification; controls the
   //dialog that allows for message/attachment to be sent to users
-  app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket',
-  function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket){
+  app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session',
+  function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session){
     //Get data from ngDialog directive
     this.phone = $scope.$parent.ngDialogData.phoneNumber;
     // this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -2024,21 +2047,8 @@
       }
     });
 
-    //Notification was successfully saved and pushed (sent)
-    $scope.$on('sms-success',function(){
-      smsCtrl.sending = false;
-      $scope.$apply();
-      $scope.closeThisDialog();
-    });
-
     //Send the notification to the user
     this.sendSMS = function(){
-
-      // //If no title, show appropiate error and ignore
-      // if(!this.title){
-      //   errorFactory.showError('NOTIF-NO-TITLE');
-      //   return;
-      // }
 
       //If no message or attachment, show appropiate error and ignore
       if(!this.message){
@@ -2046,25 +2056,15 @@
         return;
       }
 
+      if(!Session.clientPhoneNumber) {
+        return;
+      }
+
       //Toggle sending animation
       this.sending = true;
 
-      // //Prepare notification
-      // var notification = {};
-      // notification.userId = this.userId;
-      // notification.controlNumber = this.controlNumber;
-      // notification.title = this.title;
-      // notification.message = this.message;
-      // //If a file is present, attach it and set its type
-      // if(this.file){
-      //   notification.attachment = this.file.base64;
-      //   notification.attachmentType = this.file.filetype.substring(0, 5);
-      // }
-
-      Parse.Cloud.run('sendSMS', {To:this.phone, From:"+18636570997", Body:this.message}, {
+      Parse.Cloud.run('sendSMS', {To:this.phone, From:Session.clientPhoneNumber, Body:this.message}, {
         success: function(result) {
-          // result is 'Hello world!'
-          console.log('Sent');
           $rootScope.$broadcast('sms-success');
         },
         error: function(error) {
@@ -2073,6 +2073,13 @@
         }
       });
     };
+
+    //SMS was successfully saved and sent
+    $scope.$on('sms-success',function(){
+      smsCtrl.sending = false;
+      $scope.$apply();
+      $scope.closeThisDialog();
+    });
   }]);
 
 
@@ -2781,6 +2788,75 @@
       profileCtrl.passwordChanged = true;
     }
 
+  }]);
+
+  //Controller for Data Analysis page
+  app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function($scope, DataAnalysisService){
+
+    var analysisCtrl = this;
+
+    $scope.$on('data-analysis', function(event, data){
+      analysisCtrl.tipsDateChart = data.tipDateChart;
+      analysisCtrl.tipsTypeChart = data.tipsTypeChart;
+    });
+
+    analysisCtrl.chartObject = DataAnalysisService.getData();
+
+  }]);
+
+  //Creates a Data analysis service which retreives the data from Parse 
+  //and organizes the data that will be used in the charts.
+  app.factory("DataAnalysisService", ['$rootScope', 'socket',
+  function($rootScope, socket){
+
+    var analysisService =  {};
+
+    var chartObject = {};
+    chartObject.data = {
+      "cols": [
+        {id: "t", label: "Topping", type: "string"},
+        {id: "s", label: "Slices", type: "number"}
+      ], 
+      "rows": [
+        {c: [
+            {v: "Mushrooms"},
+            {v: 3},
+        ]},
+        {c: [
+            {v: "Onions"},
+            {v: 3},
+        ]},
+        {c: [
+            {v: "Olives"},
+            {v: 31}
+        ]},
+        {c: [
+            {v: "Zucchini"},
+            {v: 1},
+        ]},
+        {c: [
+            {v: "Pepperoni"},
+            {v: 2},
+        ]}
+      ]
+    };
+
+    // $routeParams.chartType == BarChart or PieChart or ColumnChart...
+    chartObject.type = 'PieChart';
+    chartObject.options = {
+      'title': 'How Much Pizza I Ate Last Night'
+    };
+
+    socket.emit('analyze-data', {});
+    socket.on('analyze-data-response', function(data){
+      $rootScope.$broadcast('data-analysis', data);
+    });
+
+    analysisService.getData = function () {
+      return chartObject;
+    };
+
+    return analysisService;
   }]);
 
 })();
