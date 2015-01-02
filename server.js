@@ -307,6 +307,7 @@ io.on('connect', function(socket){
      });
     });
   });
+
   //Encrypt and send follow-up.
   socket.on('new-follow-up-notif', function(data){
     saveAndPushNotification(data.notificationData);
@@ -333,6 +334,11 @@ io.on('connect', function(socket){
   //Save user to Sentihelm
   socket.on('reset-password', function(data){
     resetPassword(data.email);
+  });
+
+  //Download data from parse and organize it.
+  socket.on('analyze-data', function(data){
+    analyzeData(data.clientId);
   });
 
 });
@@ -703,6 +709,7 @@ function saveUserPassword(data) {
   }
 };
 
+//Reset password using Parse website
 function resetPassword(email) {
   Parse.User.requestPasswordReset(email, {
     success: function() {
@@ -714,4 +721,138 @@ function resetPassword(email) {
       io.sockets.emit('reset-password-failed');
     }
   });
+}
+
+
+function analyzeData(clientId) {
+  //Create query
+  var tipQuery = new Parse.Query(TipReport);
+  //Filter by clientId
+  tipQuery.equalTo('clientId', {
+    __type: "Pointer",
+    className: "Client",
+    objectId: clientId
+  });
+  tipQuery.limit(1000);
+  tipQuery.find({
+    success: function(tips){
+      var charts = {};
+      charts.tipCount = tips.length;
+
+      charts = getChartsData(tips);
+
+      io.sockets.emit('analyze-data-response', charts);
+    },
+    error: function(error){
+
+    }
+  });
+
+}
+
+function getChartsData(tips) {
+
+  var crimeTypes = ["Assault", "Child Abuse", "Elderly Abuse", "Domestic Violence", "Drugs", "Homicide", "Animal Abuse", 
+                     "Robbery", "Sex Offenses", "Bullying", "Police Misconduct", "Bribery", "Vehicle Theft", "Vandalism",
+                     "Auto Accident", "Civil Rights", "Arson", "Other"];
+
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", 
+                "October", "November", "December"];
+
+  var tipsTypeChart = {};
+  var tipsDateChart = {};
+
+  //Initialize # of Tips vs CrimeType chart
+  tipsTypeChart.type = 'PieChart';
+  tipsTypeChart.options = {
+    'title': 'Crime Types Chart'
+  };
+  tipsTypeChart.data = {
+    "cols": [
+      {id: "t", label: "Crime Type", type: "string"},
+      {id: "s", label: "Amount of Tips", type: "number"}
+    ], 
+    "rows": []
+  };
+  for (var i=0; i<crimeTypes.length; i++) {
+    tipsTypeChart.data.rows.push({
+      c: [
+        {v: crimeTypes[i]},
+        {v: 0}
+      ]
+    });
+  }
+
+  //Initialize # of Tips vs Date chart
+  tipsDateChart.type = 'ColumnChart';
+  tipsDateChart.options = {
+    'title': 'Amount of Tips Chart'
+  };
+  tipsDateChart.data = {
+    "cols": [
+      {id: "t", label: "Date", type: "string"},
+      {id: "s", label: "Amount of Tips", type: "number"}
+    ], 
+    "rows": []
+  };
+  for (var i=0; i<months.length; i++) {
+    tipsDateChart.data.rows.push({
+      c: [
+        {v: months[i]},
+        {v: 0}
+      ]
+    });
+  }
+
+
+  //Fill out data for both charts
+  for (var i=0; i<tips.length; i++) {
+    var crimePos = tips[i].attributes.crimeListPosition;
+    var monthPos = tips[i].createdAt.getMonth();
+    tipsTypeChart.data.rows[crimePos].c[1].v++;
+    tipsDateChart.data.rows[monthPos].c[1].v++;
+  }
+
+  return {
+    tipsTypeChart: tipsTypeChart,
+    tipsDateChart: tipsDateChart
+  };
+}
+
+function getSampleChartData() {
+  var chartObject = {};
+   // $routeParams.chartType == BarChart or PieChart or ColumnChart...
+  chartObject.type = 'PieChart';
+  chartObject.options = {
+    'title': 'How Much Pizza I Ate Last Night'
+  };
+  chartObject.data = {
+    "cols": [
+      {id: "t", label: "Topping", type: "string"},
+      {id: "s", label: "Slices", type: "number"}
+    ], 
+    "rows": [
+      {c: [
+          {v: "Mushrooms"},
+          {v: 3},
+      ]},
+      {c: [
+          {v: "Onions"},
+          {v: 3},
+      ]},
+      {c: [
+          {v: "Olives"},
+          {v: 31}
+      ]},
+      {c: [
+          {v: "Zucchini"},
+          {v: 1},
+      ]},
+      {c: [
+          {v: "Pepperoni"},
+          {v: 2},
+      ]}
+    ]
+  };
+  return chartObject;
 }

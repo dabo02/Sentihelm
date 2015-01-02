@@ -1,3 +1,12 @@
-<div ng-controller="DataAnalysisController as analysisCtrl">
-	<div google-chart chart="analysisCtrl.chartObject" style="height: 600px; width: 100%; margin-top: 10%; xmenposition: relative;" class="ng-scope ng-isolate-scope"></div>
+<div class="data-analysis-mid-container" ng-controller="DataAnalysisController as analysisCtrl">
+
+	<!--======SPINNER (LOADING)======-->
+    <span ng-if='analysisCtrl.loading' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="analizing-data-spinner" spinner-start-active="1"></span>
+    <div class="container data-analysis-vertical-center" ng-if='analysisCtrl.loading'>
+		<h2 class="text-center col-xs-offset-4 col-xs-4">Analizing Data</h2>
+	</div>
+
+	<div ng-if='!analysisCtrl.loading' google-chart chart="analysisCtrl.tipsDateChart" style="height: 600px; width: 100%; xmenposition: relative;" class="ng-scope ng-isolate-scope"></div>
+
+	<div ng-if='!analysisCtrl.loading' google-chart chart="analysisCtrl.tipsTypeChart" style="height: 600px; width: 100%; xmenposition: relative;" class="ng-scope ng-isolate-scope"></div>
 </div>

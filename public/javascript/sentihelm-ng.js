@@ -2794,67 +2794,69 @@
   app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function($scope, DataAnalysisService){
 
     var analysisCtrl = this;
+    analysisCtrl.loading = true;
 
-    $scope.$on('data-analysis', function(event, data){
-      analysisCtrl.tipsDateChart = data.tipDateChart;
-      analysisCtrl.tipsTypeChart = data.tipsTypeChart;
+    $scope.$on('data-analysis', function(event, charts){
+      analysisCtrl.loading = false;
+      analysisCtrl.tipsDateChart = charts.tipsDateChart;
+      analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
     });
 
-    analysisCtrl.chartObject = DataAnalysisService.getData();
+    // analysisCtrl.chartObject = DataAnalysisService.getData();
 
   }]);
 
   //Creates a Data analysis service which retreives the data from Parse 
   //and organizes the data that will be used in the charts.
-  app.factory("DataAnalysisService", ['$rootScope', 'socket',
-  function($rootScope, socket){
+  app.factory("DataAnalysisService", ['Session', '$rootScope', 'socket', 'usSpinnerService',
+  function(Session, $rootScope, socket, usSpinnerService){
 
     var analysisService =  {};
 
-    var chartObject = {};
-    chartObject.data = {
-      "cols": [
-        {id: "t", label: "Topping", type: "string"},
-        {id: "s", label: "Slices", type: "number"}
-      ], 
-      "rows": [
-        {c: [
-            {v: "Mushrooms"},
-            {v: 3},
-        ]},
-        {c: [
-            {v: "Onions"},
-            {v: 3},
-        ]},
-        {c: [
-            {v: "Olives"},
-            {v: 31}
-        ]},
-        {c: [
-            {v: "Zucchini"},
-            {v: 1},
-        ]},
-        {c: [
-            {v: "Pepperoni"},
-            {v: 2},
-        ]}
-      ]
-    };
-
-    // $routeParams.chartType == BarChart or PieChart or ColumnChart...
-    chartObject.type = 'PieChart';
-    chartObject.options = {
-      'title': 'How Much Pizza I Ate Last Night'
-    };
-
-    socket.emit('analyze-data', {});
-    socket.on('analyze-data-response', function(data){
-      $rootScope.$broadcast('data-analysis', data);
+    socket.emit('analyze-data', {clientId: Session.clientId});
+    socket.on('analyze-data-response', function(charts){
+      $rootScope.$broadcast('data-analysis', charts);
+      usSpinnerService.stop('analizing-data-spinner');
     });
 
-    analysisService.getData = function () {
-      return chartObject;
-    };
+    // var chartObject = {};
+    //  // $routeParams.chartType == BarChart or PieChart or ColumnChart...
+    // chartObject.type = 'PieChart';
+    // chartObject.options = {
+    //   'title': 'How Much Pizza I Ate Last Night'
+    // };
+    // chartObject.data = {
+    //   "cols": [
+    //     {id: "t", label: "Topping", type: "string"},
+    //     {id: "s", label: "Slices", type: "number"}
+    //   ], 
+    //   "rows": [
+    //     {c: [
+    //         {v: "Mushrooms"},
+    //         {v: 3},
+    //     ]},
+    //     {c: [
+    //         {v: "Onions"},
+    //         {v: 3},
+    //     ]},
+    //     {c: [
+    //         {v: "Olives"},
+    //         {v: 31}
+    //     ]},
+    //     {c: [
+    //         {v: "Zucchini"},
+    //         {v: 1},
+    //     ]},
+    //     {c: [
+    //         {v: "Pepperoni"},
+    //         {v: 2},
+    //     ]}
+    //   ]
+    // };
+
+    // analysisService.getData = function () {
+    //   return chartObject;
+    // };
 
     return analysisService;
   }]);
