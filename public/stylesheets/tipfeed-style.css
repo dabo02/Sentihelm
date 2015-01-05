@@ -12,6 +12,7 @@
 .tip-counter{
   margin:100px auto;
   margin-bottom: 25px;
+  margin-top: 25px;
   width:200px;
   color:white;
   text-align: center;
@@ -33,7 +34,6 @@
 .tip-filter-container{
   width:100%;
   height:50px;
-  margin:50px auto;
 }
 
 .filter-controls{
@@ -62,8 +62,7 @@
 }
 
 .filter-submit{
-/*  width:100px;
-*/  float:right;
+  float:right;
 }
 
 .no-filter-container{
@@ -75,6 +74,15 @@
 
 /*************TIP*************/
 /*****************************/
+.tip-mid-container{
+  position:fixed;
+  top:25%;
+  left:17.5%;
+  width:65%;
+  height:65%;
+  overflow-y:auto;
+  text-align:center;
+}
 .tip{
   margin-bottom:3em;
   height:25em;

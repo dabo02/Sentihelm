@@ -1581,7 +1581,7 @@
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
     var tipfeed = this;
-    this.showFilter = false;
+    this.showFilter = true;
     this.tipsAvailable = true;
     this.currentTips = [];
     this.currentPage = paginator.currentPage;

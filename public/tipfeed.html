@@ -1,6 +1,7 @@
 <div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
 
-  <!-- ng-show="tipfeed.counter>0" -->
+  <!--=======COUNTER======-->
+  <!--====================-->
   <div class="tip-counter" ng-class="{'disabled-counter':tipfeed.counter===0, 'active-counter':tipfeed.counter>0}" ng-click="tipfeed.loadNewTips()" >
     <span ng-show="tipfeed.counter>0">
       <u>{{tipfeed.counter}}</u> new tips available
@@ -30,12 +31,7 @@
     </div>
   </div>
 
-  <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
-
-  <div id="tip-feed-container" class="mid-container" 
-    ng-style="{ 'top': tipfeed.showFilter? 'inherit': 'inherit', 'height': tipfeed.showFilter? '60%': '70%'}"
-
-  >
+  <div id="tip-feed-container" class="tip-mid-container" >
     <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
 
     <!--======SPINNER (LOADING)======-->
@@ -186,5 +182,8 @@ ng-click="tipfeed.nextPage()"
 
 </ul>
 </div>
+
+<!-- LOADING MEDIA SPINNER -->
+<span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="0"></span>
 
 </div>

@@ -35,7 +35,8 @@ img.logo{
 
 #drawer-button{
   position:absolute;
-  top:40%;
+  top:3%;
+  /*top:40%;*/
   left:1%;
   color:#f7f7f7;
 }
@@ -100,8 +101,8 @@ button:focus{
 }
 
 .vertical-center {
-  min-height: 100%;
-  min-height: 100vh;
+  min-height: 88%;
+  /*min-height: 100vh;*/
   padding:0;
   margin:0;
   display: flex;
@@ -118,12 +119,12 @@ input.strong{
 }
 
 .region-list{
-  max-height:180px;
+  max-height:40%;
   overflow-y:scroll;
 }
 
 .mid{
-  margin-top: 10%;
+  margin-top: 3%;
 }
 
 

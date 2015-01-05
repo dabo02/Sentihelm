@@ -7,32 +7,32 @@
 
 	<form role="form">
 
-		<div class="form-group col-md-4 col-md-offset-4">
+		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-fname" class="dark-gray">First Name</label>
 			<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="adminPanelCtrl.newUser.fname">
 		</div>
 
-		<div class="form-group col-md-4 col-md-offset-4">
+		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-lname" class="dark-gray">Last Name</label>
 			<input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="adminPanelCtrl.newUser.lname">
 		</div>
 
-		<div class="form-group col-md-4 col-md-offset-4">
+		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-email" class="dark-gray">Email</label>
 			<input type="text" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.newUser.email">
 		</div>
 
-		<div class="form-group col-md-4 col-md-offset-4">
+		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-username" class="dark-gray">Username</label>
 			<input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.newUser.username">
 		</div>
 
-		<div class="form-group col-md-4 col-md-offset-4">
+		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-password" class="dark-gray">Password</label>
 			<input type="password" class="form-control" id="new-officer-password" placeholder="Password" ng-model="adminPanelCtrl.newUser.password">
 		</div>
 
-		<div class="form-group col-md-4 col-md-offset-4">
+		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-role" class="dark-gray">Set Access Level</label>
 			<select id="new-officer-role" class="form-control" ng-model="adminPanelCtrl.newUser.role" ng-init="adminPanelCtrl.newUser.role='manager'">
 				<option value="manager">User</option>
@@ -40,7 +40,7 @@
 			</select>	
 		</div>
 
-		<button type="submit" class="btn btn-primary col-md-2 col-md-offset-5" ng-click="adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
+		<button type="submit" class="btn btn-primary col-sm-2 col-sm-offset-5" ng-click="adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
 			<span ng-hide="adminPanelCtrl.sending">{{adminPanelCtrl.successMessage || "Add User"}}</span>
 			<div class="spinner" ng-show="adminPanelCtrl.sending">
 		        <div class="bounce1"></div>

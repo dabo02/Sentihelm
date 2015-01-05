@@ -1,3 +1,13 @@
+.streams-mid-container{
+  position:fixed;
+  top:10%;
+  /*left:17.5%;
+  width:65%;*/
+  height:88%;
+  overflow-y:auto;
+  text-align:center;
+}
+
 body{
   height:100%;
   position:relative;
