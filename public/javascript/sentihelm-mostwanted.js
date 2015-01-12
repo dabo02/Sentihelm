@@ -14,7 +14,7 @@
                 rank: "="
             },
             templateUrl: '/wanted-person-template.html',
-            transclude: true,
+            transclude: false,
             link: function (scope, element, attrs) {
 
                 scope.editing = true;
