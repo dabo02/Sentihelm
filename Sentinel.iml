@@ -25,7 +25,9 @@
     <orderEntry type="library" name="less-DefinitelyTyped" level="application" />
     <orderEntry type="library" name="mongoose-DefinitelyTyped" level="application" />
     <orderEntry type="library" name="morgan-DefinitelyTyped" level="application" />
-    <orderEntry type="library" name="Node.js v0.10.34 Core Modules" level="application" />
     <orderEntry type="library" name="parse-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="sjcl-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="cryptojs-DefinitelyTyped" level="project" />
+    <orderEntry type="library" name="Node.js v0.10.35 Core Modules" level="application" />
   </component>
 </module>
