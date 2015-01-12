@@ -1,5 +1,7 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart']);
+  var app = angular.module('sentihelm',
+      ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload',
+        'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -1044,7 +1046,6 @@
       //If another session is active, disconnect
       if(!!VideoStreamsService.currentSession){
         VideoStreamsService.currentSession.unsubscribe(currSubscriber);
-        console.log("a");
       }
 
       if(session.isConnected()){
@@ -1223,7 +1224,13 @@
       clientQuery.get(Session.clientId, {
         success: function(client){
           clientParseObj = client;
-          mostWantedArray = client.get('mostWantedList');
+          var tempMostWantedArray = client.get('mostWantedList');
+
+          // Performming deep copy, as reference to object dies once this function, exits
+          angular.forEach(tempMostWantedArray, function (mostWantedPerson) {
+            mostWantedArray.push(mostWantedPerson);
+          });
+
           $rootScope.$broadcast('MostWantedList', mostWantedArray);
         },
         error: function(object, error){
@@ -2274,7 +2281,7 @@
     //Dialog to confirm if the user really wants to
     //delete the most wanted from the list
     this.showConfirmDialog = function (index) {
-      this.aboutToDeleteName = this.wantedArray[index].attributes.firstName;
+      //this.aboutToDeleteName = this.wantedArray[index].attributes.firstName;
       ngDialog.openConfirm({
         template: '../most-wanted-confirm-dialog.html',
         className: 'ngdialog-theme-plain',

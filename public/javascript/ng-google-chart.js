@@ -22,15 +22,15 @@
             var protocol = 'https:';
             var url = '//www.google.com/jsapi';
 
-            this.setProtocol = function(newProtocol) {
+            this.setProtocol = function (newProtocol) {
                 protocol = newProtocol;
             };
 
-            this.setUrl = function(newUrl) {
+            this.setUrl = function (newUrl) {
                 url = newUrl;
             };
 
-            this.$get = function() {
+            this.$get = function () {
                 return (protocol ? protocol : '') + url;
             };
         })
@@ -88,9 +88,9 @@
                 },
                 link: function ($scope, $elm, $attrs) {
                     /* Watches, to refresh the chart when its data, formatters, options, view,
-                        or type change. All other values intentionally disregarded to avoid double
-                        calls to the draw function. Please avoid making changes to these objects
-                        directly from this directive.*/
+                     or type change. All other values intentionally disregarded to avoid double
+                     calls to the draw function. Please avoid making changes to these objects
+                     directly from this directive.*/
                     $scope.$watch(function () {
                         if ($scope.chart) {
                             return {
@@ -111,7 +111,7 @@
                     var resizeHandler = $rootScope.$on('resizeMsg', function () {
                         $timeout(function () {
                             // Not always defined yet in IE so check
-                            if($scope.chartWrapper) {
+                            if ($scope.chartWrapper) {
                                 drawAsync();
                             }
                         });
@@ -151,7 +151,7 @@
 
                                     for (var i = 0; i < $scope.chart.formatters[formatType].length; i++) {
                                         $scope.formatters[formatType].push(new formatClass(
-                                            $scope.chart.formatters[formatType][i])
+                                                $scope.chart.formatters[formatType][i])
                                         );
                                     }
                                 }
@@ -189,7 +189,7 @@
                                     google.visualization.events.addListener($scope.chartWrapper, 'ready', function () {
                                         $scope.chart.displayed = true;
                                         $scope.$apply(function (scope) {
-                                            scope.onReady({ chartWrapper: scope.chartWrapper });
+                                            scope.onReady({chartWrapper: scope.chartWrapper});
                                         });
                                     });
                                     google.visualization.events.addListener($scope.chartWrapper, 'error', function (err) {
@@ -201,10 +201,10 @@
                                         $scope.$apply(function () {
                                             if ($attrs.select) {
                                                 console.log('Angular-Google-Chart: The \'select\' attribute is deprecated and will be removed in a future release.  Please use \'onSelect\'.');
-                                                $scope.select({ selectedItem: selectedItem });
+                                                $scope.select({selectedItem: selectedItem});
                                             }
                                             else {
-                                                $scope.onSelect({ selectedItem: selectedItem });
+                                                $scope.onSelect({selectedItem: selectedItem});
                                             }
                                         });
                                     });
@@ -235,7 +235,7 @@
                                 }
 
                                 $timeout(function () {
-                                    $scope.beforeDraw({ chartWrapper: $scope.chartWrapper });
+                                    $scope.beforeDraw({chartWrapper: $scope.chartWrapper});
                                     $scope.chartWrapper.draw();
                                     draw.triggered = false;
                                 });
