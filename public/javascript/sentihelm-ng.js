@@ -252,7 +252,7 @@
       code: 'NOTIF-FAILED',
       onClose: function(){
         //Do nothing
-        return;
+
       }
     },
     'NOTIF-NO-MESSAGE':{
@@ -301,7 +301,7 @@
       code: 'REGIONAL-NOTIF-NO-REGION',
       onClose: function(){
         //Do nothing
-        return;
+
       }
     },
     'NO-SESSION':{
@@ -310,7 +310,7 @@
       code: 'NO-SESSION',
       onClose: function(){
         //Do nothing
-        return;
+
       },
     },
     'NO-AUTH':{
@@ -320,7 +320,7 @@
       code: 'NO-AUTH',
       onClose: function(){
         //Do nothing
-        return;
+
       }
     },
     'MOST-WANTED-NO-NAME':{
@@ -329,7 +329,7 @@
       code: 'MOST-WANTED-NO-NAME',
       onClose: function(){
         //Do nothing
-        return;
+
       }
     }
   });
@@ -463,7 +463,7 @@
       sessionObj.userId = session.userId;
       sessionObj.userRoles = session.userRoles;
       sessionObj.clientId = session.clientId;
-      sessionObj.clientPhoneNumber = session.clientPhoneNumber
+      sessionObj.clientPhoneNumber = session.clientPhoneNumber;
       sessionObj.clientLogo = session.clientLogo;
       sessionObj.regions = session.regions;
       sessionObj.userFullName = session.userFullName;
@@ -474,7 +474,7 @@
       $window.sessionStorage['session'] = JSON.stringify(sessionObj);
       $window.sessionStorage['user'] = JSON.stringify(userObj);
       $window.sessionStorage['client'] = JSON.stringify(clientObj);
-    }
+    };
 
     session.restoreSession = function(){
       var storedSession = $window.sessionStorage['session'];
@@ -498,7 +498,7 @@
 
         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser, storedClient, session.regions]);
       }
-    }
+    };
 
     session.updateUser = function(user){
       session.userId = user.objectId;
@@ -506,14 +506,14 @@
       session.user = user;
       session.store(session.user, session.client);
       $rootScope.$broadcast('update-user', []);
-    }
+    };
 
     session.resetPassword = function(email) {
       //Request tips
       socket.emit('reset-password', {
         email: email
       });
-    }
+    };
 
     return session;
   }]);
@@ -938,7 +938,7 @@
 
       //Let controller know the set has changed
       $rootScope.$broadcast('paginator-set-update',[paginator.paginatorSet, paginator.lastPage]);
-    }
+    };
 
     return paginator;
   }]);
@@ -954,7 +954,7 @@
     VideoStreamsService.currentSession = null;
 
     var currStream;
-    var storedStreams = []
+    var storedStreams = [];
     var currSubscriber;
 
     //Used to create a new div inside the video-streams-video
@@ -1020,7 +1020,7 @@
             //TODO
             //Handle error when couldn't subscribe to published streams
             console.log(error);
-            return;
+
           }
         });
         currSubscriber = subscriber;
@@ -1065,7 +1065,7 @@
             //TODO
             //Handle error when couldn't subscribe to published streams
             console.log(error);
-            return;
+
           }
         });
 
@@ -1301,7 +1301,7 @@
         }
       });
 
-      return;
+
     };
 
     //Delete a most wanted from parse
@@ -1364,7 +1364,7 @@
     var loginCtrl = this;
 
     this.resetPasswordAvailable = true;
-    this.resetPasswordMessage = "Forgot Password?"
+    this.resetPasswordMessage = "Forgot Password?";
 
     //Credentials that will be passed to the authenticator service
     this.credentials = {
@@ -1793,7 +1793,7 @@
         date: date,
         dateBefore: dateBefore,
         crimePosition: crimePosition
-      }
+      };
       $rootScope.$broadcast('discard-current-tips',[]);
       paginatorService.initializeFeed(filter);
     };
@@ -2262,8 +2262,8 @@
       console.log(this.wantedArray[index]);
     };
 
-    //Delete most wanted from local array and from
-    //Parse
+    // Delete most wanted from local array and from
+    // Parse
     this.delete = function(index) {
       MostWantedService.deleteMostWanted(index).then(function(result) {
           MostWantedCtrl.wantedArray.splice(index, 1);
@@ -2435,7 +2435,7 @@
         station = new PoliceMap();
         station.set("latitude", PoliceStationsService.getTempMarker().latitude);
         station.set("longitude", PoliceStationsService.getTempMarker().longitude);
-        station.set("coordinates", new Parse.GeoPoint({latitude: PoliceStationsService.getTempMarker().latitude, longitude: PoliceStationsService.getTempMarker().longitude}))
+        station.set("coordinates", new Parse.GeoPoint({latitude: PoliceStationsService.getTempMarker().latitude, longitude: PoliceStationsService.getTempMarker().longitude}));
         station.set("client", {
           __type: "Pointer",
           className: "Client",
@@ -2539,7 +2539,7 @@
       },
       events: {
         places_changed: function (searchBox) {
-          var places = searchBox.getPlaces()
+          var places = searchBox.getPlaces();
           if (places.length === 0) {
             return;
           }
@@ -2790,7 +2790,7 @@
 
     profileCtrl.userChange = function() {
       profileCtrl.userChanged = true;
-    }
+    };
 
     profileCtrl.passwordChange = function() {
       profileCtrl.passwordChanged = true;

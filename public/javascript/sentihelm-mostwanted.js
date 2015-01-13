@@ -5,7 +5,7 @@
 (function (angular) {
     var mostWantedModule = angular.module('sh.mostwanted', []);
 
-    /// TODO: Add toggle button, remove list styling bullets, finally test
+    /// TODO: Add toggle button, finally test
     mostWantedModule.directive('wantedPerson', function () {
         return {
             restrict: 'EA',
