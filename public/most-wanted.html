@@ -4,11 +4,17 @@
   <div class="most-wanted-mid-container">
     <ul class="container" ui-sortable="sortableOptions" ng-model="mostWantedCtrl.wantedArray">
 
-      <li ng-repeat="criminal in mostWantedCtrl.wantedArray track by $index">
+      <li ng-repeat="criminal in mostWantedCtrl.wantedArray track by $index"
+          class="wanted-list">
         <!-- Add wanted-card and wanted-editor -->
-        <wanted-person person="criminal" editing="false">
-          <wanted-card></wanted-card>
-          <wanted-editor></wanted-editor>
+        <wanted-person person="criminal"
+                       wanted-array="mostWantedCtrl.wantedArray"
+                       edited-people-indices="mostWantedCtrl.editedPeopleIndices"
+                       disable-new-button="mostWantedCtrl.disabledNewButton"
+                       change="mostWantedCtrl.onChange(index)"
+                       save="mostWantedCtrl.save(index)"
+                       confirm="mostWantedCtrl.showConfirmDialog(index)"
+                       index="$index">
         </wanted-person>
       </li>
 

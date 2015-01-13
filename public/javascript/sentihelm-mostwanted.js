@@ -8,49 +8,25 @@
     /// TODO: Add toggle button, remove list styling bullets, finally test
     mostWantedModule.directive('wantedPerson', function () {
         return {
-            restrict: 'E',
+            restrict: 'EA',
             scope: {
-                person: "="
+                change: "&",
+                save: "&",
+                confirm: "&",
+                person: "=",
+                disableNewButton: "=",
+                wantedArray: "=",
+                editedPeopleIndices: "=",
+                index: "="
             },
             templateUrl: '/wanted-person-template.html',
             transclude: true,
-            link: function (scope, element) {
-                scope.editing = false;
-
-                console.log(scope.person);
-
-                scope.$watch('editing', function (editing) {
-                    element.children('.editor').toggle(0, function () {
-                        if (editing) {
-                            element.children('.card').hide();
-                        } else {
-                            element.children('.card').show();
-                        }
-                    });
-
-                });
+            link: function (scope) {
+                scope.editing = true;
+                scope.wantedCardTemplate = '/most-wanted-card.html';
+                scope.wantedEditorTemplate = '/most-wanted-editor.html';
             }
 
-        };
-    });
-
-    /// TODO: test if this still works.
-    mostWantedModule.directive('wantedEditor', function () {
-        return {
-            restrict: 'E',
-            templateUrl: '/most-wanted-editor.html',
-            replace: true,
-            require: '^?wantedPerson'
-        };
-    });
-
-    /// TODO: Finish creating most wanted card and add css styling
-    mostWantedModule.directive('wantedCard', function () {
-        return {
-            restrict: 'E',
-            templateUrl: '/most-wanted-card.html',
-            require: '^?wantedPerson',
-            replace: true
         };
     });
 

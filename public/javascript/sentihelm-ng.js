@@ -2214,8 +2214,7 @@
   }]);
 
   //Controller for the Most-Wanted state
-  app.controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog',
-  function(MostWantedService, $scope, fileReader, ngDialog){
+  app.controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog',  function(MostWantedService, $scope, fileReader, ngDialog){
 
     var MostWantedCtrl = this;
     this.wantedArray = [];
@@ -2259,6 +2258,8 @@
       else {
         MostWantedService.saveMostWanted(this.wantedArray[index], index);
       }
+
+      console.log(this.wantedArray[index]);
     };
 
     //Delete most wanted from local array and from
