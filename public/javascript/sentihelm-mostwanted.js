@@ -10,19 +10,25 @@
         return {
             restrict: 'E',
             scope: {
-                person: "=",
-                rank: "="
+                person: "="
             },
             templateUrl: '/wanted-person-template.html',
             transclude: true,
-            link: function (scope, element, attrs) {
+            link: function (scope, element) {
+                scope.editing = false;
 
-                scope.editing = true;
+                console.log(scope.person);
 
-                scope.toggleEditing = function () {
-                    scope.editing = !scope.editing;
-                };
+                scope.$watch('editing', function (editing) {
+                    element.children('.editor').toggle(0, function () {
+                        if (editing) {
+                            element.children('.card').hide();
+                        } else {
+                            element.children('.card').show();
+                        }
+                    });
 
+                });
             }
 
         };

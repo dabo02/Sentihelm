@@ -6,7 +6,7 @@
 
       <li ng-repeat="criminal in mostWantedCtrl.wantedArray track by $index">
         <!-- Add wanted-card and wanted-editor -->
-        <wanted-person person="criminal" rank="$index">
+        <wanted-person person="criminal" editing="false">
           <wanted-card></wanted-card>
           <wanted-editor></wanted-editor>
         </wanted-person>

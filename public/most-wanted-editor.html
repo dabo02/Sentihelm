@@ -1,12 +1,12 @@
 <form class="form-horizontal most-wanted-item"
-      role="form" ng-show="{editing}">
+      role="form" class="editor">
 
-    <div class="col-md-3 most-wanted-ranking-number">
-        {{rank + 1}}
+    <div class="col-md-3 most-wanted-$indexing-number">
+        {{$index + 1}}
     </div>
 
     <div class="col-md-2 no-padding pointer" accept="image/*"
-         ng-file-select="controller.onFileSelect($files, rank)">
+         ng-file-select="controller.onFileSelect($files, $index)">
         <a class="thumbnail no-margin no-border">
             <img ng-src="{{person.attributes.photoUrl || person.attributes.photo._url || './resources/images/no-profile-pic.png'}}"
                  alt="...">
@@ -19,14 +19,14 @@
 
         <div class="col-md-3">
             <input type="text" class="form-control" placeholder="Name" ng-model="person.attributes.name"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
         <br><br><br>
         <label for="alias" class="col-md-1 control-label">Alias</label>
 
         <div class="col-md-3">
             <input class="form-control" placeholder="Alias" ng-model="person.attributes.alias"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
     </div>
 
@@ -35,13 +35,13 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Birthdate" ng-model="person.attributes.birthdate"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
         <label for="age" class="col-md-2 control-label">Age</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Age" ng-model="person.attributes.age"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
     </div>
 
@@ -50,13 +50,13 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Eye Color" ng-model="person.attributes.eyeColor"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
         <label for="hairColor" class="col-md-2 control-label">Hair Color</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Hair Color" ng-model="person.attributes.hairColor"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
     </div>
 
@@ -65,13 +65,13 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Height" ng-model="person.attributes.height"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
         <label for="weight" class="col-md-2 control-label">Weight</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Weight" ng-model="person.attributes.weight"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
     </div>
 
@@ -80,13 +80,13 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Race" ng-model="person.attributes.race"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
         <label for="characteristics" class="col-md-2 control-label">Characteristics</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Characteristics" ng-model="person.attributes.characteristics"
-                   ng-change="controller.onChange(rank)">
+                   ng-change="controller.onChange($index)">
         </div>
     </div>
 
@@ -96,19 +96,19 @@
         <div class="col-md-6">
             <textarea style="resize:none" class="form-control" rows="4" id="global-notification-body"
                       placeholder="Message" ng-model="person.attributes.summary"
-                      ng-change="controller.onChange(rank)"></textarea>
+                      ng-change="controller.onChange($index)"></textarea>
         </div>
     </div>
 
     <div class="form-group">
         <div class=" col-md-offset-5 col-md-1">
-            <button type="submit" class="btn btn-primary" ng-click="controller.save(rank)"
-                    ng-disabled="!controller.editedPeopleIndices[rank]">Save
+            <button type="submit" class="btn btn-primary" ng-click="controller.save($index)"
+                    ng-disabled="!controller.editedPeopleIndices[$index]">Save
             </button>
         </div>
         <div class="col-md-1">
-            <button type="submit" class="btn btn-danger" ng-click="controller.showConfirmDialog(rank)"
-                    ng-disabled="controller.disableNewButton && rank === (controller.wantedArray.length-1)">
+            <button type="submit" class="btn btn-danger" ng-click="controller.showConfirmDialog($index)"
+                    ng-disabled="controller.disableNewButton && $index === (controller.wantedArray.length-1)">
                 Delete
             </button>
         </div>
