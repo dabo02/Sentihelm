@@ -22,9 +22,14 @@
             templateUrl: '/wanted-person-template.html',
             transclude: true,
             link: function (scope) {
-                scope.editing = true;
+                scope.editing = false;
                 scope.wantedCardTemplate = '/most-wanted-card.html';
                 scope.wantedEditorTemplate = '/most-wanted-editor.html';
+
+                scope.toggleEditing = function () {
+                    scope.editing = !scope.editing;
+                    console.log(scope.editing);
+                }
             }
 
         };

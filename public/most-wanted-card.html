@@ -1,1 +1,11 @@
-<div class="card"></div>
+<div class="card">
+    <div class="col-md-3 most-wanted-ranking-number">{{index + 1}}</div>
+
+    <div class="col-md-2 no-pading pointer">
+        <img class="thumbnail no-margin no-border"
+             ng-src="{{person.attributes.photoUrl || person.attributes.photo._url || ./resources/images/no-profile-pic.png}}"
+             alt="..."/>
+    </div>
+    <div class="col-md-3">Name: {{person.attributes.name}}</div>
+    <div class="cold-md-3"> Alias: {{person.attributes.alias}}</div>
+</div>

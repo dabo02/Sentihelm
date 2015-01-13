@@ -111,10 +111,11 @@
     </div>
 
     <div class="form-group">
-        <div class=" col-md-offset-5 col-md-1">
-            <button type="submit" class="btn btn-primary" ng-click="save({index:index})"
-                    ng-disabled="!editedPeopleIndices[index]">Save
-            </button>
+        <div class=" col-md-offset-4 col-md-2">
+            <div class="btn btn-success" ng-click="save({index:index}); toggleEditing()"
+                 ng-disabled="!editedPeopleIndices[index]">
+                <span class="done-editing-btn glyphicon glyphicon-ok"></span>Finish Editing
+            </div>
         </div>
         <div class="col-md-1">
             <button type="submit" class="btn btn-danger"
@@ -124,6 +125,8 @@
                 Delete
             </button>
         </div>
+
+
     </div>
 
     <!-- <div class="form-group col-md-12 dark-gray-bg"> </div> -->

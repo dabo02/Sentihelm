@@ -26,3 +26,7 @@
 .wanted-list {
     list-style: none;
 }
+
+.done-editing-btn {
+    flost: left;
+}
