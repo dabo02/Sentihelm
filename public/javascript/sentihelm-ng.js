@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart']);
+  var app = angular.module('sentihelm', ['ngSanitize', 'ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ngCsv']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -1044,7 +1044,6 @@
       //If another session is active, disconnect
       if(!!VideoStreamsService.currentSession){
         VideoStreamsService.currentSession.unsubscribe(currSubscriber);
-        console.log("a");
       }
 
       if(session.isConnected()){
@@ -1319,6 +1318,215 @@
     };
 
     return mostWantedService;
+  }]);
+
+  //Service for managing the most wanted list. It can save, add
+  //or delete most wanted people to/from Parse
+  app.factory("PoliceStationsService", ['$rootScope', 'Session',
+  function($rootScope, Session){
+    var PoliceStationsService =  {};
+
+    //Current stations downloaded from Parse
+    var stationsMarkers = [];
+
+    //Map info
+    PoliceStationsService.map = null;
+
+    //Boolean to know if the user is currently adding a new station.
+    PoliceStationsService.isAdding = false;
+
+    //'Hack' to avoid maps error where the marker info wasn't
+    //getting updated after editing it. It is a bug in the library.
+    PoliceStationsService.redrawMarkers = true;
+
+    //Download stations from Parse. If editedMarkerId is not undefined, the
+    //window for the edited marker will be open.
+    PoliceStationsService.getStationsMarkers = function(editedMarkerId) {
+      stationsMarkers = [];
+      var PoliceMap = Parse.Object.extend("PoliceMap");
+      var query = new Parse.Query(PoliceMap);
+      //Filter by clientId
+      query.equalTo('client', {
+        __type: "Pointer",
+        className: "Client",
+        objectId: Session.clientId
+      });
+      query.find({
+        success: function(results){
+
+          //Create markers for each station.
+          for (var i = 0; i<results.length; i++) {
+            var station = results[i];
+
+            // Create a marker for each place.
+            var marker = {
+              id:station.id,
+              place_id: station.attributes.placeId,
+              latitude: station.attributes.latitude,
+              longitude: station.attributes.longitude,
+              name: station.attributes.stationName,
+              address: station.attributes.address,
+              email: station.attributes.email,
+              phone: station.attributes.phone,
+              description: station.attributes.description,
+              options: {
+                draggable: false,
+                title: station.attributes.stationName,
+                visible: true
+              },
+              templateurl:'window.tpl.html',
+              show: editedMarkerId === station.id
+            };
+            marker.onClick = function() {
+                marker.show = !marker.show;
+            };
+            stationsMarkers.push(marker);
+          }
+
+          //Send new markers to the controller.
+          $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+
+        },
+        error: function(error){
+          console.log("Error receiving police stations from parse. " + error.message);
+        }
+      });
+    };
+
+    //Return the desired marker contained in the array.
+    PoliceStationsService.getMarker = function(id) {
+      for (var i = 0; i < stationsMarkers.length; i++) {
+        if(stationsMarkers[i].id === id)
+          return stationsMarkers[i];
+      }
+    };
+
+    //Changes the station info in Parse after user saves the edited station
+    PoliceStationsService.updateStationInfo = function(stationInfo) {
+      var PoliceMap = Parse.Object.extend("PoliceMap");
+      var query = new Parse.Query(PoliceMap);
+      query.get(stationInfo.id, {
+        success: function(station){
+          PoliceStationsService.saveStation(stationInfo, station);
+        },
+        error: function(station, error){
+          console.log("Error fetching police station");
+        }
+      });
+    };
+
+    //Add temporary marker.
+    PoliceStationsService.addMarker = function(marker) {
+      stationsMarkers.push(marker);
+      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+    };
+
+    //Cancels the addition of a new station. Removes the temp marker.
+    PoliceStationsService.cancel = function() {
+      stationsMarkers.pop();
+      PoliceStationsService.isAdding = false;
+      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+    };
+
+    //Save new station to Parse or update a station in parse if the
+    //station object is not undefined.
+    PoliceStationsService.saveStation = function(stationInfo, station) {
+      PoliceStationsService.isAdding = false;
+
+      //If station object isn't received, a new station object is created.
+      if(!station) {
+        var PoliceMap = Parse.Object.extend("PoliceMap");
+        station = new PoliceMap();
+        station.set("latitude", PoliceStationsService.getTempMarker().latitude);
+        station.set("longitude", PoliceStationsService.getTempMarker().longitude);
+        station.set("coordinates", new Parse.GeoPoint({latitude: PoliceStationsService.getTempMarker().latitude, longitude: PoliceStationsService.getTempMarker().longitude}))
+        station.set("client", {
+          __type: "Pointer",
+          className: "Client",
+          objectId: Session.clientId
+        });
+      }
+
+      station.set("stationName", stationInfo.name);
+      station.set("address", stationInfo.address);
+      station.set("phone", stationInfo.phone);
+      station.set("description", stationInfo.description);
+      station.set("email", stationInfo.email);
+      station.save(null, {
+        success: function(station) {
+          // Execute any logic that should take place after the object is saved.
+          PoliceStationsService.getStationsMarkers(station.id);
+        },
+        error: function(station, error) {
+          // Execute any logic that should take place if the save fails.
+          // error is a Parse.Error with an error code and message.
+          console.log('Failed to create/update  Police Station on Parse. Error: ' + error.message);
+        }
+      });
+    };
+
+    //Return the temp marker.
+    PoliceStationsService.getTempMarker = function() {
+      return stationsMarkers[stationsMarkers.length-1];
+    };
+
+    //Remove the temp marker and update the map.
+    PoliceStationsService.removeTempMarker = function() {
+      stationsMarkers.splice(stationsMarkers.length-1, 1);
+      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
+    };
+
+    //Delete a station from Parse.
+    PoliceStationsService.deleteStation = function(id) {
+      var PoliceMap = Parse.Object.extend("PoliceMap");
+      var query = new Parse.Query(PoliceMap);
+      query.get(id, {
+        success: function(station){
+          station.destroy({
+            success: function(myObject) {
+              PoliceStationsService.getStationsMarkers();
+            },
+            error: function(myObject, error) {
+              // The delete failed.
+              // error is a Parse.Error with an error code and message.
+            }
+          });
+        },
+        error: function(station, error){
+          console.log("Error fetching police station");
+        }
+      });
+    };
+
+    return PoliceStationsService;
+  }]);
+
+  //Creates a Data analysis service which retreives the data from Parse 
+  //and organizes the data that will be used in the charts.
+  app.factory("DataAnalysisService", ['Session', '$rootScope', 'socket', 'usSpinnerService',
+  function(Session, $rootScope, socket, usSpinnerService){
+
+    var analysisService =  {};
+
+    socket.on('analyze-data-response', function(charts){
+      $rootScope.$broadcast('data-analysis', charts);
+      usSpinnerService.stop('analizing-data-spinner');
+    });
+
+    socket.on('analyze-data-error', function(error){
+      // $rootScope.$broadcast('data-analysis', charts);
+      // usSpinnerService.stop('analizing-data-spinner');
+      $rootScope.$broadcast('data-analysis-error', error);
+      // console.log(error.message);
+    });
+
+    analysisService.requestDataAnalysis = function(year, month) {
+      usSpinnerService.spin('analizing-data-spinner');
+      var data = {clientId: Session.clientId, month: month, year: year};
+      socket.emit('analyze-data', data);
+    }
+
+    return analysisService;
   }]);
 
   //Controller which assigns to its $scope
@@ -1775,7 +1983,7 @@
     
     this.filterTips = function(filterDate, filterType) {
       //If no values were selected, ignore button press
-      if(!filterDate && ! filterType) {
+      if(!filterDate && !filterType) {
         return;
       }
       var date = filterDate? new Date(filterDate): undefined;
@@ -2308,187 +2516,6 @@
 
   }]);
 
-  //Service for managing the most wanted list. It can save, add
-  //or delete most wanted people to/from Parse
-  app.factory("PoliceStationsService", ['$rootScope', 'Session',
-  function($rootScope, Session){
-    var PoliceStationsService =  {};
-
-    //Current stations downloaded from Parse
-    var stationsMarkers = [];
-
-    //Map info
-    PoliceStationsService.map = null;
-
-    //Boolean to know if the user is currently adding a new station.
-    PoliceStationsService.isAdding = false;
-
-    //'Hack' to avoid maps error where the marker info wasn't
-    //getting updated after editing it. It is a bug in the library.
-    PoliceStationsService.redrawMarkers = true;
-
-    //Download stations from Parse. If editedMarkerId is not undefined, the
-    //window for the edited marker will be open.
-    PoliceStationsService.getStationsMarkers = function(editedMarkerId) {
-      stationsMarkers = [];
-      var PoliceMap = Parse.Object.extend("PoliceMap");
-      var query = new Parse.Query(PoliceMap);
-      //Filter by clientId
-      query.equalTo('client', {
-        __type: "Pointer",
-        className: "Client",
-        objectId: Session.clientId
-      });
-      query.find({
-        success: function(results){
-
-          //Create markers for each station.
-          for (var i = 0; i<results.length; i++) {
-            var station = results[i];
-
-            // Create a marker for each place.
-            var marker = {
-              id:station.id,
-              place_id: station.attributes.placeId,
-              latitude: station.attributes.latitude,
-              longitude: station.attributes.longitude,
-              name: station.attributes.stationName,
-              address: station.attributes.address,
-              email: station.attributes.email,
-              phone: station.attributes.phone,
-              description: station.attributes.description,
-              options: {
-                draggable: false,
-                title: station.attributes.stationName,
-                visible: true
-              },
-              templateurl:'window.tpl.html',
-              show: editedMarkerId === station.id
-            };
-            marker.onClick = function() {
-                marker.show = !marker.show;
-            };
-            stationsMarkers.push(marker);
-          }
-
-          //Send new markers to the controller.
-          $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-
-        },
-        error: function(error){
-          console.log("Error receiving police stations from parse. " + error.message);
-        }
-      });
-    };
-
-    //Return the desired marker contained in the array.
-    PoliceStationsService.getMarker = function(id) {
-      for (var i = 0; i < stationsMarkers.length; i++) {
-        if(stationsMarkers[i].id === id)
-          return stationsMarkers[i];
-      }
-    };
-
-    //Changes the station info in Parse after user saves the edited station
-    PoliceStationsService.updateStationInfo = function(stationInfo) {
-      var PoliceMap = Parse.Object.extend("PoliceMap");
-      var query = new Parse.Query(PoliceMap);
-      query.get(stationInfo.id, {
-        success: function(station){
-          PoliceStationsService.saveStation(stationInfo, station);
-        },
-        error: function(station, error){
-          console.log("Error fetching police station");
-        }
-      });
-    };
-
-    //Add temporary marker.
-    PoliceStationsService.addMarker = function(marker) {
-      stationsMarkers.push(marker);
-      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-    };
-
-    //Cancels the addition of a new station. Removes the temp marker.
-    PoliceStationsService.cancel = function() {
-      stationsMarkers.pop();
-      PoliceStationsService.isAdding = false;
-      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-    };
-
-    //Save new station to Parse or update a station in parse if the
-    //station object is not undefined.
-    PoliceStationsService.saveStation = function(stationInfo, station) {
-      PoliceStationsService.isAdding = false;
-
-      //If station object isn't received, a new station object is created.
-      if(!station) {
-        var PoliceMap = Parse.Object.extend("PoliceMap");
-        station = new PoliceMap();
-        station.set("latitude", PoliceStationsService.getTempMarker().latitude);
-        station.set("longitude", PoliceStationsService.getTempMarker().longitude);
-        station.set("coordinates", new Parse.GeoPoint({latitude: PoliceStationsService.getTempMarker().latitude, longitude: PoliceStationsService.getTempMarker().longitude}))
-        station.set("client", {
-          __type: "Pointer",
-          className: "Client",
-          objectId: Session.clientId
-        });
-      }
-
-      station.set("stationName", stationInfo.name);
-      station.set("address", stationInfo.address);
-      station.set("phone", stationInfo.phone);
-      station.set("description", stationInfo.description);
-      station.set("email", stationInfo.email);
-      station.save(null, {
-        success: function(station) {
-          // Execute any logic that should take place after the object is saved.
-          PoliceStationsService.getStationsMarkers(station.id);
-        },
-        error: function(station, error) {
-          // Execute any logic that should take place if the save fails.
-          // error is a Parse.Error with an error code and message.
-          console.log('Failed to create/update  Police Station on Parse. Error: ' + error.message);
-        }
-      });
-    };
-
-    //Return the temp marker.
-    PoliceStationsService.getTempMarker = function() {
-      return stationsMarkers[stationsMarkers.length-1];
-    };
-
-    //Remove the temp marker and update the map.
-    PoliceStationsService.removeTempMarker = function() {
-      stationsMarkers.splice(stationsMarkers.length-1, 1);
-      $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-    };
-
-    //Delete a station from Parse.
-    PoliceStationsService.deleteStation = function(id) {
-      var PoliceMap = Parse.Object.extend("PoliceMap");
-      var query = new Parse.Query(PoliceMap);
-      query.get(id, {
-        success: function(station){
-          station.destroy({
-            success: function(myObject) {
-              PoliceStationsService.getStationsMarkers();
-            },
-            error: function(myObject, error) {
-              // The delete failed.
-              // error is a Parse.Error with an error code and message.
-            }
-          });
-        },
-        error: function(station, error){
-          console.log("Error fetching police station");
-        }
-      });
-    };
-
-    return PoliceStationsService;
-  }]);
-
   //Controller for Google map in the 'Maps' state.
   app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'Session', function(PoliceStationsService, $scope, Session) {
 
@@ -2795,70 +2822,65 @@
 
     var analysisCtrl = this;
     analysisCtrl.loading = true;
+    analysisCtrl.currentYear = new Date().getFullYear();
+    analysisCtrl.previousAvailableYears = [];
+    analysisCtrl.selectedYear = analysisCtrl.currentYear;
+    analysisCtrl.yearInSelector = analysisCtrl.currentYear;
+    analysisCtrl.selectedMonth = null;
+    analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
+    analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
+    analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", 
+                "October", "November", "December"];
 
+    //Get years from current year to 2014
+    for (var i = 1; i <= analysisCtrl.currentYear-2014; i++) {
+      analysisCtrl.previousAvailableYears.push(analysisCtrl.currentYear-i);
+    };
+    
+    //Initiate data analysis
+    DataAnalysisService.requestDataAnalysis(analysisCtrl.selectedYear);
+
+    //Receive the data from service
     $scope.$on('data-analysis', function(event, charts){
-      analysisCtrl.loading = false;
       analysisCtrl.tipsDateChart = charts.tipsDateChart;
       analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
+      analysisCtrl.loading = false;
     });
 
-    // analysisCtrl.chartObject = DataAnalysisService.getData();
-
-  }]);
-
-  //Creates a Data analysis service which retreives the data from Parse 
-  //and organizes the data that will be used in the charts.
-  app.factory("DataAnalysisService", ['Session', '$rootScope', 'socket', 'usSpinnerService',
-  function(Session, $rootScope, socket, usSpinnerService){
-
-    var analysisService =  {};
-
-    socket.emit('analyze-data', {clientId: Session.clientId});
-    socket.on('analyze-data-response', function(charts){
-      $rootScope.$broadcast('data-analysis', charts);
-      usSpinnerService.stop('analizing-data-spinner');
+    //Receive the data from service
+    $scope.$on('data-analysis-error', function(event, charts){
+      analysisCtrl.loading = false;
+      // analysisCtrl.tipsDateChart = charts.tipsDateChart;
+      // analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
     });
 
-    // var chartObject = {};
-    //  // $routeParams.chartType == BarChart or PieChart or ColumnChart...
-    // chartObject.type = 'PieChart';
-    // chartObject.options = {
-    //   'title': 'How Much Pizza I Ate Last Night'
-    // };
-    // chartObject.data = {
-    //   "cols": [
-    //     {id: "t", label: "Topping", type: "string"},
-    //     {id: "s", label: "Slices", type: "number"}
-    //   ], 
-    //   "rows": [
-    //     {c: [
-    //         {v: "Mushrooms"},
-    //         {v: 3},
-    //     ]},
-    //     {c: [
-    //         {v: "Onions"},
-    //         {v: 3},
-    //     ]},
-    //     {c: [
-    //         {v: "Olives"},
-    //         {v: 31}
-    //     ]},
-    //     {c: [
-    //         {v: "Zucchini"},
-    //         {v: 1},
-    //     ]},
-    //     {c: [
-    //         {v: "Pepperoni"},
-    //         {v: 2},
-    //     ]}
-    //   ]
-    // };
+    var onSelectTipsDateChart = function () {
+      var selectedItem = $scope.$$childHead.chartWrapper.getChart().getSelection()[0];
+      //User selected one item.
+      if(selectedItem && selectedItem.row !== null && $scope.$$childHead.chart.type === "ColumnChart") {
+        analysisCtrl.loading = true;
+        analysisCtrl.selectedMonth = months[selectedItem.row];
+        DataAnalysisService.requestDataAnalysis(analysisCtrl.selectedYear, selectedItem.row);
+      }
+      $scope.$apply();
+    }
 
-    // analysisService.getData = function () {
-    //   return chartObject;
-    // };
+    var callback = function(){
+      $scope.$$childHead.callback = onSelectTipsDateChart;
+    };
 
-    return analysisService;
+    var settings = {callback: callback, packages: ['corechart']};
+
+    google.load('visualization', '1.0', settings);
+
+    analysisCtrl.selectYear = function(selectedYear) {
+      analysisCtrl.loading = true;
+      analysisCtrl.selectedMonth = null;
+      analysisCtrl.selectedYear = selectedYear;
+      DataAnalysisService.requestDataAnalysis(selectedYear);
+    };
+
   }]);
 
 })();

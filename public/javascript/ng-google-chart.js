@@ -207,7 +207,11 @@
                                                 $scope.onSelect({ selectedItem: selectedItem });
                                             }
                                         });
+                                        if($scope.callback)
+                                            $scope.callback();
                                     });
+                                    if(!$scope.callback)
+                                        $scope.callback = null;
                                 }
                                 else {
                                     $scope.chartWrapper.setChartType($scope.chart.type);
