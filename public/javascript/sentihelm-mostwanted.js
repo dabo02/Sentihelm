@@ -5,7 +5,7 @@
 (function (angular) {
     var mostWantedModule = angular.module('sh.mostwanted', []);
 
-    /// TODO: Add toggle button, finally test
+    /// TODO: finally test
     mostWantedModule.directive('wantedPerson', function ($rootScope) {
         return {
             restrict: 'EA',
@@ -22,14 +22,18 @@
             templateUrl: '/wanted-person-template.html',
             transclude: true,
             link: function (scope) {
-                scope.editing = false;
+                scope.editing = scope.index === $rootScope.lastPersonAddedIndex;
                 scope.wantedCardTemplate = '/most-wanted-card.html';
                 scope.wantedEditorTemplate = '/most-wanted-editor.html';
 
                 scope.toggleEditing = function () {
                     scope.editing = !scope.editing;
-                    console.log(scope.editing);
-                }
+                    scope.$apply();
+                };
+
+                try {
+                    delete $rootScope['lastPersonAddedIndex'];
+                } catch (e) {}
             }
 
         };

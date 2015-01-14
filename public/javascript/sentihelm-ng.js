@@ -2214,7 +2214,8 @@
   }]);
 
   //Controller for the Most-Wanted state
-  app.controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog',  function(MostWantedService, $scope, fileReader, ngDialog){
+  app.controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog', '$rootScope',
+    function(MostWantedService, $scope, fileReader, ngDialog, $rootScope){
 
     var MostWantedCtrl = this;
     this.wantedArray = [];
@@ -2246,6 +2247,9 @@
     this.add = function() {
       this.wantedArray.push({ attributes:{} });
       this.disableNewButton = true;
+      // hack so that when adding a new person the wantedPerson directive knows weather to show or hide the editor
+      $rootScope.lastPersonAddedIndex = this.wantedArray.length - 1;
+      $rootScope.$apply();
     };
 
     //Save new most wanted, or update an old one,

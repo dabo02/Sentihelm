@@ -1,25 +1,28 @@
-<div class="wanted-card">
+<div class="wanted-card container-fluid">
     <div class="row">
-        <div class="col-md-2 most-wanted-ranking-number">{{index + 1}}</div>
+        <div class="btn btn-default col-xs-offset-11 edit-btn" ng-click="toggleEditing()">
+            <span class="glyphicon glyphicon-pencil"></span>
+        </div>
+        <div class="col-xs-2 most-wanted-ranking-number">{{index + 1}}</div>
 
-        <div class="thumbnail no-margin no-border col-md-2 no-padding pointer">
+        <div class="thumbnail no-margin no-border col-xs-2 no-padding pointer">
             <img ng-src="{{person.attributes.photoUrl || person.attributes.photo._url || './resources/images/no-profile-pic.png'}}"
                  alt="..."/>
         </div>
-        <div class="col-md-3"><em>Name:</em> {{person.attributes.name}}</div>
-        <div class="col-md-3"><em>Alias:</em> {{person.attributes.alias}}</div>
-        <br/><br/>
+        <div class="col-xs-8">
+            <div class="col-xs-3"><em>Name:</em> {{person.attributes.name}}</div>
+            <div class="col-xs-3"><em>Alias:</em> {{person.attributes.alias}}</div>
+            <br/><br/>
 
-        <div class="col-md-3"><em>Age:</em> {{person.attributes.age || "Unknown"}}</div>
-        <div class="col-md-3"><em>Height:</em> {{person.attributes.height || "Unknown"}}</div>
+            <div class="col-xs-3"><em>Age:</em> {{person.attributes.age || "Unknown"}}</div>
+            <div class="col-xs-5"><em>Height:</em> {{person.attributes.height || "Unknown"}}</div>
 
-        <br/><br/>
-        <div class="col-md-5 col-md-offset-0"><em>Wanted For:</em> {{person.attributes.summary || "Reasons unknown."}}
-        </div>
-        <br/><br/>
-        <div class="btn btn-default edit-btn col-md-offset-1" ng-click="toggleEditing()">
-            <span class="glyphicon glyphicon-pencil"></span>
-            Edit
+            <br/><br/>
+
+            <div class="col-xs-7"><em>Wanted For:</em> {{person.attributes.summary || "Reasons;
+                unknown.";}}
+            </div>
+            <br/><br/>
         </div>
     </div>
 </div>

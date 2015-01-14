@@ -28,9 +28,30 @@
 }
 
 .done-editing-btn {
-    flost: left;
+    flaot: left;
 }
 
-.edit-btn {
-    float: left;
+
+.wanted-card {
+    background-color: #fff;
+    border: 3px solid #ddd;
+    margin: 2% auto;
+    padding: 10px 0px 5px 15px;
+}
+
+.wanted-card img {
+    cursor: default;
+}
+
+.wanted-card div {
+    text-align: left;
+}
+
+.wanted-card em {
+    font-weight: bold;
+    font-style: normal;
+}
+
+.wanted-card.edit-btn {
+    margin-left: 30px;
 }
