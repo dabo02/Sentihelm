@@ -6,7 +6,7 @@
     var mostWantedModule = angular.module('sh.mostwanted', []);
 
     /// TODO: Add toggle button, finally test
-    mostWantedModule.directive('wantedPerson', function () {
+    mostWantedModule.directive('wantedPerson', function ($rootScope) {
         return {
             restrict: 'EA',
             scope: {

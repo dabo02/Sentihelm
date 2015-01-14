@@ -1,11 +1,25 @@
-<div class="card">
-    <div class="col-md-3 most-wanted-ranking-number">{{index + 1}}</div>
+<div class="wanted-card">
+    <div class="row">
+        <div class="col-md-2 most-wanted-ranking-number">{{index + 1}}</div>
 
-    <div class="col-md-2 no-pading pointer">
-        <img class="thumbnail no-margin no-border"
-             ng-src="{{person.attributes.photoUrl || person.attributes.photo._url || ./resources/images/no-profile-pic.png}}"
-             alt="..."/>
+        <div class="thumbnail no-margin no-border col-md-2 no-padding pointer">
+            <img ng-src="{{person.attributes.photoUrl || person.attributes.photo._url || './resources/images/no-profile-pic.png'}}"
+                 alt="..."/>
+        </div>
+        <div class="col-md-3"><em>Name:</em> {{person.attributes.name}}</div>
+        <div class="col-md-3"><em>Alias:</em> {{person.attributes.alias}}</div>
+        <br/><br/>
+
+        <div class="col-md-3"><em>Age:</em> {{person.attributes.age || "Unknown"}}</div>
+        <div class="col-md-3"><em>Height:</em> {{person.attributes.height || "Unknown"}}</div>
+
+        <br/><br/>
+        <div class="col-md-5 col-md-offset-0"><em>Wanted For:</em> {{person.attributes.summary || "Reasons unknown."}}
+        </div>
+        <br/><br/>
+        <div class="btn btn-default edit-btn col-md-offset-1" ng-click="toggleEditing()">
+            <span class="glyphicon glyphicon-pencil"></span>
+            Edit
+        </div>
     </div>
-    <div class="col-md-3">Name: {{person.attributes.name}}</div>
-    <div class="cold-md-3"> Alias: {{person.attributes.alias}}</div>
 </div>

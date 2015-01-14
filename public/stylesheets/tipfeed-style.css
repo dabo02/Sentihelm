@@ -1,18 +1,27 @@
 /*************PAGE*************/
 /*****************************/
-#tip-feed{
-  margin:0 auto;
+#tip-feed {
   padding:0;
   height:100%;
   width:100%;
   height:auto;
   list-style-type:none;
+  min-width: 800px;
 }
 
-.tip-counter{
-  margin:100px auto;
-  margin-bottom: 25px;
-  margin-top: 25px;
+#tip-feed-route-container {
+  width: 65%;
+  min-width: 850px;
+  margin: 0 auto;
+}
+
+#tip-feed-container {
+  margin: 5px auto 0;
+}
+
+.tip-counter {
+  margin: 25px auto;
+  martin-bottom: 100px;
   width:200px;
   color:white;
   text-align: center;
@@ -37,13 +46,12 @@
 }
 
 .filter-controls{
-  width: 50%;
+  width: 100%;
   height: inherit;
   margin:0 auto;
 }
 
 .crime-filter{
-  margin-right: 100px;
   display: inline-block;
 }
 
@@ -75,16 +83,18 @@
 /*************TIP*************/
 /*****************************/
 .tip-mid-container{
-  position:fixed;
-  top:25%;
-  left:17.5%;
-  width:65%;
-  height:65%;
+  position: relative;
+  margin: 5px auto;
+  width: 100%;
+  height:55%;
+  min-width: 850px;
   overflow-y:auto;
   text-align:center;
 }
-.tip{
-  margin-bottom:3em;
+
+.tip {
+  margin: 2% 0;
+  width: 98%;
   height:25em;
   background-color:#DDD;
   color:#616161;
