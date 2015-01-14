@@ -4,8 +4,7 @@
 
 (function (angular) {
     var mostWantedModule = angular.module('sh.mostwanted', []);
-
-    /// TODO: finally test
+    
     mostWantedModule.directive('wantedPerson', function ($rootScope) {
         return {
             restrict: 'EA',
