@@ -28,22 +28,30 @@
                 save: "&",                // for saving changes
                 confirm: "&",             // for confirming deletion
                 fileSelect: "&",          // for selecting image file
-                criminal: "=",              // the person object for the model, information should be in person.attributes object
+                criminal: "=",            // the person object for the model, information should be in person.attributes object
                 disableNewButton: "=",    // boolean value, disables/enables new button
                 wantedArray: "=",         // array of wanted people
                 editedPeopleIndices: "=", // indices of people being edited
                 index: "="                // index of current element
             },
             templateUrl: '/wanted-person-template.html',
-            link: function (scope, element) {
+            link: function(scope, element) {
+                // creates boolean value from expression, if true this element was just created and added to the list
+                // by the new button. Otherwise, just normal ngRpeat directive.
                 scope.justCreated = scope.editing = (scope.index === $rootScope.lastPersonAddedIndex);
+
+                // templates
                 scope.wantedCardTemplate = '/most-wanted-card.html';
                 scope.wantedEditorTemplate = '/most-wanted-editor.html';
 
+                // toggles state of editing, shows and hides editing form and card respectively.
                 scope.toggleEditing = function() {
                     scope.editing = !scope.editing;
                 };
 
+                // discards current card and editor for the wanted person
+                // can only be run if the card was just created and not saved
+                // to the database.
                 scope.discard = function() {
                     scope.toggleEditing();
                     element.controller().wantedArray.pop();
