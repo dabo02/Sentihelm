@@ -2,9 +2,9 @@
  * Created by Victor Martinez <victoramartinez@optivon.net> on 1/12/2015.
  */
 
-(function (angular) {
+(function (angular, undefined) {
     var mostWantedModule = angular.module('sh.mostwanted', []);
-    
+
     mostWantedModule.directive('wantedPerson', function ($rootScope) {
         return {
             restrict: 'EA',
@@ -12,6 +12,7 @@
                 change: "&",
                 save: "&",
                 confirm: "&",
+                fileSelect: "&",
                 person: "=",
                 disableNewButton: "=",
                 wantedArray: "=",
@@ -20,22 +21,24 @@
             },
             templateUrl: '/wanted-person-template.html',
             transclude: true,
-            link: function (scope) {
-                scope.editing = scope.index === $rootScope.lastPersonAddedIndex;
+            link: function (scope, element) {
+                scope.justCreated = scope.editing = (scope.index === $rootScope.lastPersonAddedIndex);
                 scope.wantedCardTemplate = '/most-wanted-card.html';
                 scope.wantedEditorTemplate = '/most-wanted-editor.html';
 
-                scope.toggleEditing = function () {
+                scope.toggleEditing = function() {
                     scope.editing = !scope.editing;
-                    scope.$apply();
                 };
 
-                try {
-                    delete $rootScope['lastPersonAddedIndex'];
-                } catch (e) {}
+                scope.discard = function() {
+                    scope.toggleEditing();
+                    element.controller().wantedArray.pop();
+                    element.controller().disableNewButton = false;
+                    element[0].remove();
+                };
             }
 
         };
     });
 
-})(angular);
+})(window.angular);

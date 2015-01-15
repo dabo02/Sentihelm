@@ -4,7 +4,7 @@
     <div class="col-md-3 most-wanted-ranking-number">{{index + 1}}</div>
 
     <div class="col-md-2 no-padding pointer" accept="image/*"
-         ng-file-select="controller.onFileSelect($files, index)">
+         ng-file-select="fileSelect({files: $files, index: index})">
         <a class="thumbnail no-margin no-border">
             <img ng-src="{{person.attributes.photoUrl ||
                             person.attributes.photo._url ||
@@ -114,15 +114,22 @@
         <div class=" col-md-offset-4 col-md-2">
             <div class="btn btn-success" ng-click="save({index:index}); toggleEditing()"
                  ng-disabled="!editedPeopleIndices[index]">
-                <span class="done-editing-btn glyphicon glyphicon-ok"></span>Finish Editing
+                <span class="done-editing-btn glyphicon glyphicon-ok"></span>
+                Finish Editing
             </div>
         </div>
         <div class="col-md-1">
             <button type="submit" class="btn btn-danger"
-                    ng-click="confirm({index: index})"
+                    ng-click="confirm({index: index}); toggleEditing()"
                     ng-disabled="disableNewButton
-                    && index === (wantedArray.length-1)">
+                    && index === (wantedArray.length-1)"
+                    ng-hide="justCreated">
                 Delete
+            </button>
+            <button class="btn btn-danger" type="submit"
+                    ng-click="discard()"
+                    ng-show="justCreated">
+                Discard
             </button>
         </div>
     </div>

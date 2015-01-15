@@ -1,24 +1,25 @@
 
-.most-wanted-mid-container{
-  position:fixed;
-  top:15%;
-  left:17.5%;
-  width:65%;
-  height:80%;
-  overflow-y:auto;
-  text-align:center;
+.most-wanted-mid-container {
+    position: fixed;
+    top: 15%;
+    left: 17.5%;
+    width: 65%;
+    height: 80%;
+    overflow-y: auto;
+    text-align: center;
 }
 
-.most-wanted-item{
+.most-wanted-item {
 
     /* background-color: lightgrey; */
-    border-radius:0;
+    border-radius: 0;
     border: 5px solid #ddd;
     padding-top: 5px;
     padding-bottom: 5px;
     background-color: #ffffff;
 }
-.most-wanted-ranking-number{
+
+.most-wanted-ranking-number {
     text-align: left;
     font-size: xx-large;
 }
@@ -28,15 +29,14 @@
 }
 
 .done-editing-btn {
-    flaot: left;
+    float: left;
 }
-
 
 .wanted-card {
     background-color: #fff;
     border: 3px solid #ddd;
     margin: 2% auto;
-    padding: 10px 0px 5px 15px;
+    padding: 0.6em .8em 0em 0.8em;
 }
 
 .wanted-card img {
@@ -54,4 +54,8 @@
 
 .wanted-card.edit-btn {
     margin-left: 30px;
+}
+
+.wanted-card.profile {
+    margin-top: 15px;
 }
