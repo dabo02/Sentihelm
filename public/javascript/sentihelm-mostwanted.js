@@ -35,7 +35,6 @@
                 index: "="                // index of current element
             },
             templateUrl: '/wanted-person-template.html',
-            transclude: true,
             link: function (scope, element) {
                 scope.justCreated = scope.editing = (scope.index === $rootScope.lastPersonAddedIndex);
                 scope.wantedCardTemplate = '/most-wanted-card.html';
