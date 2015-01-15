@@ -1,11 +1,9 @@
-(function () {
-    var app = angular.module('sentihelm',
-        ['ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload',
-            'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted']);
+(function(){
+    var app = angular.module('sentihelm', ['ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted']);
 
     //Sets up all the states/routes the app will handle,
     //so as to have a one page app with deep-linking
-    app.config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', function ($stateProvider, $urlRouterProvider, USER_ROLES) {
+    app.config(['$stateProvider','$urlRouterProvider', 'USER_ROLES', function($stateProvider, $urlRouterProvider, USER_ROLES){
 
         // For any unmatched url, redirect to /tipfeed
         $urlRouterProvider.otherwise("/tipfeed");
@@ -13,9 +11,9 @@
         $stateProvider
 
             //Profile pagel endpoint/url
-            .state('profile', {
-                url: "/profile",
-                templateUrl: "/profile.html",
+            .state('profile',{
+                url:"/profile",
+                templateUrl:"/profile.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
                 },
@@ -26,16 +24,16 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Profile");
                     }
                 }
             })
 
             //Tipfeed endpoint/url
-            .state('tipfeed', {
-                url: "/tipfeed",
-                templateUrl: "/tipfeed.html",
+            .state('tipfeed',{
+                url:"/tipfeed",
+                templateUrl:"/tipfeed.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
                 },
@@ -46,16 +44,16 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Tip Feed");
                     }
                 }
             })
 
             //Video Streams endpoint/url
-            .state('video-streams', {
-                url: "/video-streams",
-                templateUrl: "/video-streams.html",
+            .state('video-streams',{
+                url:"/video-streams",
+                templateUrl:"/video-streams.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
                 },
@@ -66,16 +64,16 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Video Streams");
                     }
                 }
             })
 
             //Regional notifications endpoint/url
-            .state('regional-notifications', {
-                url: "/regional-notifications",
-                templateUrl: "/regional-notifications.html",
+            .state('regional-notifications',{
+                url:"/regional-notifications",
+                templateUrl:"/regional-notifications.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
                 },
@@ -86,16 +84,16 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Send Notification");
                     }
                 }
             })
 
             //Maps endpoint/url
-            .state('maps', {
-                url: "/maps",
-                templateUrl: "/maps.html",
+            .state('maps',{
+                url:"/maps",
+                templateUrl:"/maps.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
                 },
@@ -106,16 +104,16 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Maps");
                     }
                 }
             })
 
             //Most Wanted List endoint/url
-            .state('most-wanted', {
-                url: "/most-wanted",
-                templateUrl: "/most-wanted.html",
+            .state('most-wanted',{
+                url:"/most-wanted",
+                templateUrl:"/most-wanted.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
                 },
@@ -126,16 +124,16 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Wanted List");
                     }
                 }
             })
 
             //Most Wanted List endoint/url
-            .state('data-analysis', {
-                url: "/data-analysis",
-                templateUrl: "/data-analysis.html",
+            .state('data-analysis',{
+                url:"/data-analysis",
+                templateUrl:"/data-analysis.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
                 },
@@ -146,16 +144,16 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Data Analysis");
                     }
                 }
             })
 
             //Admin-panel endpoint/url
-            .state('admin-panel', {
-                url: "/admin-panel",
-                templateUrl: "/admin-panel.html",
+            .state('admin-panel',{
+                url:"/admin-panel",
+                templateUrl:"/admin-panel.html",
                 data: {
                     authorizedRoles: [USER_ROLES.admin]
                 },
@@ -166,7 +164,7 @@
                     // Receives the Routing Service, checks if user is logged in,
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
-                    authenticate: function (routingService) {
+                    authenticate: function(routingService) {
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Administrator Panel");
                     }
                 }
@@ -176,9 +174,9 @@
     //Sets up the options for snapRemote, which is
     //the snap.js instance that allows for a slidable
     //drawer
-    app.config(['snapRemoteProvider', function (snapRemoteProvider) {
+    app.config(['snapRemoteProvider', function(snapRemoteProvider){
         snapRemoteProvider.globalOptions = {
-            disable: 'right',
+            disable:'right',
             touchToDrag: false
         };
     }]);
@@ -192,7 +190,7 @@
     }]);
 
     //Initialize values needed throughout the app
-    app.run(function () {
+    app.run(function(){
         //Initialize Parse
         Parse.initialize("csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd", "T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor");
     });
@@ -219,115 +217,115 @@
     //All errors are contained in this constant;
     //used with errorFactory service for easy error
     //alerting
-    app.constant('ERRORS', {
-        'LOGIN-101': {
+    app.constant('ERRORS',{
+        'LOGIN-101':{
             title: 'Invalid Login Parameters',
             message: 'The email or password you entered is incorrect',
-            code: 'LOGIN-101',
-            onClose: function () {
+            code:'LOGIN-101',
+            onClose: function(){
                 document.getElementById("login-dialog-username").focus();
             }
         },
-        'LOGIN-NO-USERID': {
+        'LOGIN-NO-USERID':{
             title: 'No UserId',
             message: 'You must provide a login ID',
-            code: 'LOGIN-NO-USERID',
-            onClose: function () {
+            code:'LOGIN-NO-USERID',
+            onClose: function(){
                 document.getElementById("login-dialog-username").focus();
             }
         },
-        'LOGIN-NO-PASS': {
+        'LOGIN-NO-PASS':{
             title: 'No Password',
             message: 'You must provide a password',
-            code: 'LOGIN-NO-PASS',
-            onClose: function () {
+            code:'LOGIN-NO-PASS',
+            onClose: function(){
                 document.getElementById("login-dialog-password").focus();
             }
         },
         'NOTIF-FAILED': {
             title: 'Push Notification Failed',
-            message: 'The notification could not be sent. ' +
-            'Please try again in a while. If the ' +
+            message: 'The notification could not be sent. '+
+            'Please try again in a while. If the '+
             'error persists, contact the tech team.',
             code: 'NOTIF-FAILED',
-            onClose: function () {
+            onClose: function(){
                 //Do nothing
 
             }
         },
-        'NOTIF-NO-MESSAGE': {
+        'NOTIF-NO-MESSAGE':{
             title: 'No Content',
             message: 'The notification must contain a message.',
             code: 'NOTIF-NO-MESSAGE',
-            onClose: function () {
+            onClose: function(){
                 document.getElementById("notification-message").focus();
             }
         },
-        'SMS-NO-MESSAGE': {
+        'SMS-NO-MESSAGE':{
             title: 'No Content',
             message: 'The must contain a message.',
             code: 'SMS-NO-MESSAGE',
-            onClose: function () {
+            onClose: function(){
                 document.getElementById("notification-message").focus();
             }
         },
-        'NOTIF-NO-TITLE': {
+        'NOTIF-NO-TITLE':{
             title: 'No Title',
             message: 'The notification must have a title.',
             code: 'NOTIF-NO-TITLE',
-            onClose: function () {
+            onClose: function(){
                 document.getElementById("notification-title").focus();
             }
         },
-        'REGIONAL-NOTIF-NO-MESSAGE': {
+        'REGIONAL-NOTIF-NO-MESSAGE':{
             title: 'No Content',
             message: 'The notification must contain a message.',
             code: 'REGIONAL-NOTIF-NO-MESSAGE',
-            onClose: function () {
+            onClose: function(){
                 document.getElementById("regional-notification-body").focus();
             }
         },
-        'REGIONAL-NOTIF-NO-TITLE': {
+        'REGIONAL-NOTIF-NO-TITLE':{
             title: 'No Title',
             message: 'The notification must have a title.',
             code: 'REGIONAL-NOTIF-NO-TITLE',
-            onClose: function () {
+            onClose: function(){
                 document.getElementById("regional-notification-title").focus();
             }
         },
-        'REGIONAL-NOTIF-NO-REGION': {
+        'REGIONAL-NOTIF-NO-REGION':{
             title: 'No Regions Selected',
             message: 'You must select at least one region',
             code: 'REGIONAL-NOTIF-NO-REGION',
-            onClose: function () {
+            onClose: function(){
                 //Do nothing
 
             }
         },
-        'NO-SESSION': {
+        'NO-SESSION':{
             title: 'You Are Not Logged In',
             message: 'You need to log in order to use the dashboard.',
             code: 'NO-SESSION',
-            onClose: function () {
+            onClose: function(){
                 //Do nothing
 
             },
         },
-        'NO-AUTH': {
+        'NO-AUTH':{
             title: 'You do Not Have Access to This Page',
-            message: 'Your access level does not allow you to view this page. ' +
+            message: 'Your access level does not allow you to view this page. '+
             'If you believe this is an error, contact your dashboard administrator.',
             code: 'NO-AUTH',
-            onClose: function () {
+            onClose: function(){
                 //Do nothing
 
             }
         },
-        'MOST-WANTED-NO-NAME': {
+        'MOST-WANTED-NO-NAME':{
             title: 'No Name Provided',
             message: 'The name field cannot be empty.',
             code: 'MOST-WANTED-NO-NAME',
-            onClose: function () {
+            onClose: function(){
                 //Do nothing
 
             }
@@ -338,9 +336,9 @@
     //to check if user is logged in and/or has access to the
     //current route; returns a Promise
     app.factory("RoutingService", ['USER_ROLES', '$rootScope', 'AUTH_EVENTS', 'authenticator', 'errorFactory', 'ngDialog',
-        function (USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog) {
+        function(USER_ROLES, $rootScope, AUTH_EVENTS, authenticator, errorFactory, ngDialog){
 
-            var routingService = {};
+            var routingService =  {};
 
             routingService.checkUserStatus = function (authorizedRoles, stateName) {
 
@@ -367,7 +365,7 @@
                             template: '../login-dialog.html',
                             className: 'ngdialog-theme-plain',
                             closeByDocument: false,
-                            closeByEscape: false,
+                            closeByEscape:false,
                             showClose: false,
                             scope: $rootScope
                         });
@@ -376,7 +374,7 @@
                         //Return the promise of the login dialog so that the resolve can use
                         //this promise and wait until the dialog is closed before loading the
                         //corresponding state
-                        return loginDialog.closePromise.then(function () {
+                        return loginDialog.closePromise.then(function(){
                             //User is now logged in, check for authorization
                             if (!authenticator.isAuthorized(authorizedRoles)) {
 
@@ -406,7 +404,7 @@
 
     //Creates a session service that can create
     //and destroy a session which manages (logged in) users
-    app.factory('Session', ['$window', '$rootScope', 'AUTH_EVENTS', 'socket', function ($window, $rootScope, AUTH_EVENTS, socket) {
+    app.factory('Session',['$window', '$rootScope', 'AUTH_EVENTS', 'socket', function($window, $rootScope, AUTH_EVENTS, socket){
 
         var session = {};
 
@@ -415,7 +413,7 @@
             session.userId = user.objectId;
             session.userRoles = userRoles;
             session.clientId = client.objectId;
-            if (client.smsNumber && client.smsNumber.length > 0)
+            if(client.smsNumber && client.smsNumber.length>0)
                 session.clientPhoneNumber = client.smsNumber[0];
 
             session.clientLogo = client.logo.url;
@@ -443,7 +441,7 @@
             $window.sessionStorage.clear();
         };
 
-        session.store = function (user, client) {
+        session.store = function(user, client){
 
             var userObj = {};
             for (var property in user) {
@@ -476,12 +474,12 @@
             $window.sessionStorage['client'] = JSON.stringify(clientObj);
         };
 
-        session.restoreSession = function () {
+        session.restoreSession = function(){
             var storedSession = $window.sessionStorage['session'];
             var storedUser = $window.sessionStorage['user'];
             var storedClient = $window.sessionStorage['client'];
 
-            if (!!storedSession && !!storedUser && !!storedClient) {
+            if(!!storedSession && !!storedUser && !!storedClient) {
                 storedSession = JSON.parse(storedSession);
                 storedUser = JSON.parse(storedUser);
                 storedClient = JSON.parse(storedClient);
@@ -500,7 +498,7 @@
             }
         };
 
-        session.updateUser = function (user) {
+        session.updateUser = function(user){
             session.userId = user.objectId;
             session.userFullName = user.firstName + " " + user.lastName;
             session.user = user;
@@ -508,7 +506,7 @@
             $rootScope.$broadcast('update-user', []);
         };
 
-        session.resetPassword = function (email) {
+        session.resetPassword = function(email) {
             //Request tips
             socket.emit('reset-password', {
                 email: email
@@ -520,11 +518,11 @@
 
     //Creates a service that manages login and
     //authentication functionality; manages current session
-    app.factory('authenticator', ['$http', 'Session', '$window', 'socket', function ($http, Session, $window, socket) {
+    app.factory('authenticator', ['$http', 'Session', '$window', 'socket', function($http, Session, $window, socket){
 
         var authenticator = {};
 
-        authenticator.login = function (credentials) {
+        authenticator.login = function(credentials){
             return $http.post('/login', credentials);
         };
 
@@ -541,10 +539,10 @@
                 authorizedRoles = [authorizedRoles];
             }
 
-            if (this.isAuthenticated()) {
-                for (var i = 0; i < Session.userRoles.length; i++) {
+            if(this.isAuthenticated()){
+                for(var i=0; i<Session.userRoles.length; i++){
                     var role = Session.userRoles[i];
-                    if (authorizedRoles.indexOf(role) !== -1) {
+                    if(authorizedRoles.indexOf(role) !== -1){
                         return true;
                     }
                 }
@@ -555,7 +553,7 @@
             // return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
         };
 
-        socket.on('user-session-timeout', function (data) {
+        socket.on('user-session-timeout', function(data){
             Session.destroy();
             $window.location.reload();
         });
@@ -579,7 +577,7 @@
     //be called anywhere in the app, be it with
     //pre-made errors fount in ERROR_CODES constant
     //or newly created errors via methods offered
-    app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERRORS', function (ngDialog, $rootScope, ERRORS) {
+    app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERRORS', function(ngDialog, $rootScope, ERRORS){
 
         var errorFactory = {};
 
@@ -588,21 +586,21 @@
 
         //Not being used; might use in future releases to create
         //on-the-fly errors
-        errorFactory.newError = function (title, message, onClose) {
+        errorFactory.newError = function(title, message, onClose){
             //Error creation would go here
         };
 
         //Show pre-made, constant errors with display function
-        errorFactory.showError = function (errorCode) {
-            if (!errorFactory.errorIsActive) {
-                var error = JSON.stringify({errorCode: errorCode});
+        errorFactory.showError = function(errorCode){
+            if(!errorFactory.errorIsActive){
+                var error = JSON.stringify({errorCode:errorCode});
                 var errorDialog = ngDialog.open({
                     template: '../error-dialog.html',
                     className: 'ngdialog-error',
                     closeByDocument: false,
-                    closeByEscape: false,
+                    closeByEscape:false,
                     showClose: false,
-                    data: error
+                    data:error
                 });
 
                 //Note that error is showing on screen
@@ -618,7 +616,7 @@
     //save and push those notifications, while associating
     //said notification with corresponding tip;
     //can push to different channels
-    app.factory('parseNotificationService', ['$rootScope', function ($rootScope) {
+    app.factory('parseNotificationService', ['$rootScope', function($rootScope){
 
         //Needed to save Parse notifications to
         //the PushNotifications class in Parse
@@ -632,7 +630,7 @@
 
         //Creates and returns a new Parse Notification from
         //notification data gathered from controller
-        parseNotificationService.newFollowUpNotification = function (notificationData) {
+        parseNotificationService.newFollowUpNotification = function(notificationData){
             var notification = new PushNotification();
             notification.set("userId", notificationData.userId);
             notification.set("tipId", notificationData.controlNumber);
@@ -640,7 +638,7 @@
             notification.set("message", notificationData.message);
             notification.set("type", 'follow-up');
             notification.set("channels", parseNotificationService.channels);
-            if (notificationData.attachment) {
+            if(notificationData.attachment){
                 notification.set(notificationData.attachmentType, notificationData.attachment);
             }
             return notification;
@@ -648,13 +646,13 @@
 
         //Creates and returns a new Parse Notification from
         //notification data gathered from controller
-        parseNotificationService.newRegionalNotification = function (notificationData) {
+        parseNotificationService.newRegionalNotification = function(notificationData){
             var notification = new PushNotification();
             notification.set("title", notificationData.title);
             notification.set("message", notificationData.message);
             notification.set("type", 'regional');
             notification.set("channels", parseNotificationService.channels);
-            if (notificationData.attachment) {
+            if(notificationData.attachment){
                 notification.set(notificationData.attachmentType, notificationData.attachment);
             }
             return notification;
@@ -664,20 +662,20 @@
         //in chain; it first saves the notification, then calls
         //associateNotificationWithTip(), which in turn calls pushNotification();
         //if anything fails, the error is broadcast throughout the app
-        parseNotificationService.saveAndPushNotification = function (notification) {
+        parseNotificationService.saveAndPushNotification = function(notification){
             //Try and save the notification to Parse, for future viewing
             notification.save(null, {
-                success: function (notification) {
+                success: function(notification){
                     //Notification saved, now push it to channels
                     parseNotificationService.pushNotification(notification);
                 },
-                error: function (notification, error) {
+                error : function(notification, error){
                     //Notification could not be saved, pass control back to controller
                     //and reset channels
-                    if (notification.attributes.type === 'follow-up') {
+                    if(notification.attributes.type==='follow-up'){
                         $rootScope.$broadcast('notification-error', [notification, error]);
                     }
-                    else {
+                    else{
                         $rootScope.$broadcast('regional-notification-error', [notification, error]);
                     }
                     parseNotificationService.channels = [];
@@ -687,32 +685,32 @@
 
         //Sends the already saved notification to the user; if pushing
         //failed, tries to revert save or continues as partial success
-        parseNotificationService.pushNotification = function (notification) {
+        parseNotificationService.pushNotification = function(notification){
             //Send notification
             Parse.Push.send({
                 channels: parseNotificationService.channels,
                 data: {
                     alert: notification.attributes.message,
-                    badge: "Increment",
+                    badge:"Increment",
                     sound: "cheering.caf",
                     title: notification.attributes.title,
                     pushId: notification.id,
                     type: "regional"
                 }
-            }, {
-                success: function () {
+            },{
+                success: function(){
                     //Push was successful
                     //Reset channels and alert controller
                     parseNotificationService.channels = [];
-                    if (notification.attributes.type === 'follow-up') {
+                    if(notification.attributes.type==='follow-up'){
                         $rootScope.$broadcast('notification-success', [notification]);
                     }
-                    else {
+                    else{
                         $rootScope.$broadcast('regional-notification-success', [notification]);
                     }
                     // $rootScope.$broadcast('notification-success', [notification]);
                 },
-                error: function (error) {
+                error: function(error){
                     //Push was unsuccessful
                     //Try and nuke notification
                     parseNotificationService.deleteSavedNotification(notification, error);
@@ -726,28 +724,28 @@
 
         //Delete saved notification; broadcast notification sent error
         //or partial success, depending on if it was deleted or not
-        parseNotificationService.deleteSavedNotification = function (notification, passedError) {
+        parseNotificationService.deleteSavedNotification = function(notification, passedError){
             var parentError = passedError;
             notification.destroy({
-                success: function (notification) {
+                success: function(notification){
                     //Notification was successfully deleted;
                     //Alert the controller to prompt the user
                     //to try again
-                    if (notification.attributes.type === 'follow-up') {
+                    if(notification.attributes.type==='follow-up'){
                         $rootScope.$broadcast('notification-error', [notification, parentError]);
                     }
-                    else {
+                    else{
                         $rootScope.$broadcast('regional-notification-error', [notification, parentError]);
                     }
                 },
-                error: function (notification, error) {
+                error: function(notification, error){
                     //Failed to delete notification
                     //Do Nothing, but alert controller
                     //to partial success
-                    if (notification.attributes.type === 'follow-up') {
+                    if(notification.attributes.type==='follow-up'){
                         $rootScope.$broadcast('notification-partial-success', [notification]);
                     }
-                    else {
+                    else{
                         $rootScope.$broadcast('regional-notification-partial-success', [notification]);
                     }
                     // $rootScope.$broadcast('notification-partial-success',[notification]);
@@ -805,7 +803,7 @@
     //Creates a paginator service which
     //handles tip-feed pagination and
     //updates tip- feedcontroller accordingly
-    app.factory('paginatorService', ['socket', '$rootScope', 'Session', function (socket, $rootScope, Session) {
+    app.factory('paginatorService', ['socket', '$rootScope', 'Session', function(socket, $rootScope, Session){
 
         //Set up the paginator object
         var paginator = {};
@@ -814,20 +812,20 @@
         //Let controller know news tips arrived; update
         //amount of total tips in server, last page, first
         //and last tip dates and paginator set
-        socket.on('response-batch', function (data) {
-            if (!!data.totalTipCount) {
+        socket.on('response-batch', function(data){
+            if(!!data.totalTipCount){
                 paginator.tips = data.tips;
                 paginator.totalTipCount = data.totalTipCount;
-                paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount / 10), 1);
+                paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
                 paginator.firstTipDateInArray = data.tips[0].createdAt;
-                paginator.lastTipDateInArray = data.tips[data.tips.length - 1].createdAt;
-                if (paginator.currentPage === 1) {
+                paginator.lastTipDateInArray = data.tips[data.tips.length-1].createdAt;
+                if(paginator.currentPage===1){
                     paginator.pageSetUpdater(paginator.lastPage, false);
                 }
 //        paginator.changePage(paginator.currentPage);
                 $rootScope.$broadcast('new-batch', [paginator.tips, paginator.currentPage]);
             }
-            else {
+            else{
                 $rootScope.$broadcast('no-tips');
             }
 
@@ -837,7 +835,7 @@
         //Catch socket.io event when a tip request
         //failed; manage error accordingly with
         //errorFactory service
-        socket.on('response-error', function (data) {
+        socket.on('response-error', function(data){
             var error = data.error;
             //TODO MANAGE ERROR
         });
@@ -845,7 +843,7 @@
         //Called when tipfeed loads, be it on
         //refresh or navigating to it again;
         //initiliazes tip feed for current client
-        paginator.initializeFeed = function (filter) {
+        paginator.initializeFeed = function(filter){
 
             //Need references to current and last page,
             //array of number of pages paginator will print
@@ -868,20 +866,20 @@
 
         //Change the page and ask server for tips present in new page;
         //let controller know the page has changed
-        paginator.changePage = function (newPage) {
+        paginator.changePage = function(newPage){
 
             var isAfterDate = this.currentPage > newPage;
 
-            if (this.currentPage !== newPage) {
-                var tipsToSkip = isAfterDate ? (this.currentPage - newPage - 1) * 10 : (newPage - this.currentPage - 1) * 10;
+            if(this.currentPage !== newPage) {
+                var tipsToSkip = isAfterDate? (this.currentPage - newPage - 1)*10: (newPage - this.currentPage - 1)*10;
                 this.currentPage = newPage;
                 socket.emit('request-batch', {
                     clientId: Session.clientId,
-                    lastTipDate: isAfterDate ? paginator.firstTipDateInArray : paginator.lastTipDateInArray,
+                    lastTipDate: isAfterDate? paginator.firstTipDateInArray: paginator.lastTipDateInArray,
                     isAfterDate: isAfterDate,
                     tipsToSkip: tipsToSkip
                 });
-                $rootScope.$broadcast('discard-current-tips', []);
+                $rootScope.$broadcast('discard-current-tips',[]);
             }
             else {
                 var currentTips = this.tips;
@@ -891,7 +889,7 @@
         };
 
         //Change to previous page; update references
-        paginator.prevPage = function () {
+        paginator.prevPage = function(){
             --this.currentPage;
             socket.emit('request-batch', {
                 clientId: Session.clientId,
@@ -900,15 +898,15 @@
             });
 
             //Discard current shown tips and update paginator
-            $rootScope.$broadcast('discard-current-tips', []);
+            $rootScope.$broadcast('discard-current-tips',[]);
 
-            if (this.currentPage % 10 === 0) {
+            if(this.currentPage%10===0){
                 this.pageSetUpdater(this.lastPage, true);
             }
         };
 
         //Change to next page; update references
-        paginator.nextPage = function () {
+        paginator.nextPage = function(){
             socket.emit('request-batch', {
                 clientId: Session.clientId,
                 lastTipDate: paginator.lastTipDateInArray,
@@ -916,34 +914,34 @@
             });
 
             //Discard current shown tips and update paginator
-            $rootScope.$broadcast('discard-current-tips', []);
+            $rootScope.$broadcast('discard-current-tips',[]);
             ++this.currentPage;
 
-            if ((this.currentPage - 1) % 10 === 0) {
-                this.pageSetUpdater(this.lastPage - (this.currentPage - 1), false);
+            if((this.currentPage-1)%10===0){
+                this.pageSetUpdater(this.lastPage-(this.currentPage-1), false);
             }
         };
 
         //Update paginator set (page numbers that will be printed every 10 pages)
-        paginator.pageSetUpdater = function (setSizeLimit, previousSet) {
+        paginator.pageSetUpdater = function(setSizeLimit, previousSet){
 
             //If called from prevPage, gotta set starting limit to
             //previous 10 pages, otherwise start at current page
-            var setStartValue = previousSet ? this.currentPage - 9 : this.currentPage;
+            var setStartValue = previousSet ? this.currentPage-9 : this.currentPage;
             this.paginatorSet = [];
             this.paginatorSetSize = Math.min(10, setSizeLimit);
-            for (var i = 0; i < this.paginatorSetSize; i++) {
-                this.paginatorSet.push(setStartValue + i);
+            for(var i=0; i<this.paginatorSetSize;i++){
+                this.paginatorSet.push(setStartValue+i);
             }
 
             //Let controller know the set has changed
-            $rootScope.$broadcast('paginator-set-update', [paginator.paginatorSet, paginator.lastPage]);
+            $rootScope.$broadcast('paginator-set-update',[paginator.paginatorSet, paginator.lastPage]);
         };
 
         return paginator;
     }]);
 
-    app.factory('VideoStreamsService', ['socket', '$rootScope', function (socket, $rootScope) {
+    app.factory('VideoStreamsService', ['socket', '$rootScope', function(socket, $rootScope){
 
         var otKey = '44755992';
 
@@ -959,15 +957,15 @@
 
         //Used to create a new div inside the video-streams-video
         //div to subscribe the stream to it.
-        var createDivElement = function (sessionId) {
+        var createDivElement = function(sessionId){
             var div = document.createElement('div');
-            div.setAttribute('id', 'video-streams-video-' + sessionId);
+            div.setAttribute('id', 'video-streams-video-'+sessionId);
             document.getElementById('video-streams-video').appendChild(div);
             return div;
         };
 
         //Get all active video streams from Parse
-        VideoStreamsService.getActiveStreams = function (clientId) {
+        VideoStreamsService.getActiveStreams = function(clientId){
             var query = new Parse.Query(VideoSession);
 
             query.equalTo('client', {
@@ -978,11 +976,11 @@
             query.containedIn("status", ['pending', 'active']);
             query.include("mobileUser");
 
-            query.find().then(function (results) {
+            query.find().then(function(results){
                 //Format each result for front-end
                 //keep them in modifiedStreams array
                 var modifiedStreams = [];
-                for (var i = 0; i < results.length; i++) {
+                for(var i=0; i<results.length; i++){
                     //Create a new strem and copy over values
                     //from current stream in results
                     var newStream = {};
@@ -1003,7 +1001,7 @@
                 }
                 //Send modified results to controller
                 $rootScope.$broadcast('active-streams-fetched', modifiedStreams);
-            }, function (error) {
+            }, function(error){
                 //TODO
                 //Manage error when couldn't fetch active video streams
                 var err = error;
@@ -1011,12 +1009,12 @@
         };
 
         //Restore active session if available if()
-        VideoStreamsService.checkActiveStream = function () {
-            if (!!VideoStreamsService.currentSession) {
+        VideoStreamsService.checkActiveStream = function(){
+            if(!!VideoStreamsService.currentSession){
                 var subscriber = VideoStreamsService.currentSession.subscribe(currStream, createDivElement(VideoStreamsService.currentSession.id),
-                    {insertMode: 'replace', height: '400.6', width: '591'},
-                    function (error) {
-                        if (!!error) {
+                    {insertMode:'replace', height:'400.6', width:'591'},
+                    function(error){
+                        if(!!error){
                             //TODO
                             //Handle error when couldn't subscribe to published streams
                             console.log(error);
@@ -1028,8 +1026,8 @@
         };
 
         //Stop current stream
-        VideoStreamsService.stopStream = function () {
-            if (!!VideoStreamsService.currentSession) {
+        VideoStreamsService.stopStream = function(){
+            if(!!VideoStreamsService.currentSession){
                 VideoStreamsService.currentSession.unsubscribe(currSubscriber);
                 // VideoStreamsService.currentSession.forceUnpublish(currStream);
                 currStream.destroy();
@@ -1038,30 +1036,30 @@
         };
 
         //Subscribe to streams in the current session
-        VideoStreamsService.subscribeToStream = function (stream, currentUser) {
+        VideoStreamsService.subscribeToStream = function(stream, currentUser){
 
             //Create OpenTok Session
             var session = OT.initSession(otKey, stream.sessionId);
 
             //If another session is active, disconnect
-            if (!!VideoStreamsService.currentSession) {
+            if(!!VideoStreamsService.currentSession){
                 VideoStreamsService.currentSession.unsubscribe(currSubscriber);
             }
 
-            if (session.isConnected()) {
+            if(session.isConnected()){
 
-                for (var i = 0; i < storedStreams.length; i++) {
+                for(var i =0; i < storedStreams.length; i++) {
                     var object = storedStreams[i];
-                    if (object.session.id == session.id) {
+                    if(object.session.id == session.id) {
                         currStream = object.stream;
                         break;
                     }
                 }
 
                 var subscriber = session.subscribe(currStream, createDivElement(session.id),
-                    {insertMode: 'replace', height: '400.6', width: '591'},
-                    function (error) {
-                        if (!!error) {
+                    {insertMode:'replace', height:'400.6', width:'591'},
+                    function(error){
+                        if(!!error){
                             //TODO
                             //Handle error when couldn't subscribe to published streams
                             console.log(error);
@@ -1073,14 +1071,14 @@
             }
 
             //Set up callback that handles mobileUser's streams
-            session.on("streamCreated", function (event) {
+            session.on("streamCreated", function(event){
 
                 storedStreams.push({session: session, stream: event.stream});
 
                 var subscriber = session.subscribe(event.stream, createDivElement(session.id),
-                    {insertMode: 'replace', height: '400.6', width: '591'},
-                    function (error) {
-                        if (!!error) {
+                    {insertMode:'replace', height:'400.6', width:'591'},
+                    function(error){
+                        if(!!error){
                             //TODO
                             //Handle error when couldn't subscribe to published streams
                             console.log(error);
@@ -1089,15 +1087,15 @@
 
                         var query = new Parse.Query(VideoSession);
                         query.get(stream.connectionId)
-                            .then(function (videoSession) {
+                            .then(function(videoSession){
                                 videoSession.set('officerUser', {
-                                    __type: "Pointer",
-                                    className: "User",
-                                    objectId: currentUser.objectId
+                                    __type:"Pointer",
+                                    className:"User",
+                                    objectId:currentUser.objectId
                                 });
                                 return videoSession.save();
                             })
-                            .then(function (videoSession) {
+                            .then(function(videoSession){
                                 //Session was upated with officer
                             });
 
@@ -1109,29 +1107,29 @@
             });
 
             //Set up callback that handles when a mobile user disconnects
-            session.on("streamDestroyed", function (event) {
+            session.on("streamDestroyed", function(event){
 
                 //Remove stream from storedStreams
-                for (var i = 0; i < storedStreams.length; i++) {
-                    if (storedStreams[i].stream.id === event.stream.id) {
+                for(var i = 0; i < storedStreams.length; i++) {
+                    if(storedStreams[i].stream.id === event.stream.id) {
                         storedStreams[i].session.disconnect();
                         storedStreams.splice(i, 1);
                         break;
                     }
                 }
 
-                if (currStream.id === event.stream.id) {
+                if(currStream.id === event.stream.id) {
                     currStream = null;
                     currSubscriber = null;
                     VideoStreamsService.currentSession = null;
                 }
 
-                $rootScope.$broadcast('stream-destroyed', {sessionId: event.target.sessionId});
+                $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
             });
 
             //TODO VERIFY
             //Set up callback that handles disconnection
-            session.on("sessionDisconnected", function (event) {
+            session.on("sessionDisconnected", function(event) {
 
                 // access to disconnected session: event.target
 
@@ -1141,8 +1139,8 @@
             });
 
             //Try and connect to the session
-            session.connect(stream.webClientToken, function (error) {
-                if (!!error) {
+            session.connect(stream.webClientToken, function(error){
+                if(!!error){
                     //TODO
                     //Handle error when couldn't connect to session
                     return;
@@ -1157,7 +1155,7 @@
 
     //Service to read uploaded images as url
     app.factory("fileReader", ['$q', '$log', function ($q, $log) {
-        var onLoad = function (reader, deferred, scope) {
+        var onLoad = function(reader, deferred, scope) {
             return function () {
                 scope.$apply(function () {
                     deferred.resolve(reader.result);
@@ -1173,7 +1171,7 @@
             };
         };
 
-        var onProgress = function (reader, scope) {
+        var onProgress = function(reader, scope) {
             return function (event) {
                 scope.$broadcast("fileProgress",
                     {
@@ -1183,7 +1181,7 @@
             };
         };
 
-        var getReader = function (deferred, scope) {
+        var getReader = function(deferred, scope) {
             var reader = new FileReader();
             reader.onload = onLoad(reader, deferred, scope);
             reader.onerror = onError(reader, deferred, scope);
@@ -1353,8 +1351,8 @@
     //all controls necessary for user management;
     //created at body tag so all other $scopes can
     //inherit from its $scope
-    app.controller('ApplicationController', ['usSpinnerService', '$rootScope', '$scope', 'USER_ROLES', 'AUTH_EVENTS', 'authenticator', 'Session',
-        function (usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session) {
+    app.controller('ApplicationController', ['usSpinnerService', '$rootScope', '$scope','USER_ROLES', 'AUTH_EVENTS','authenticator', 'Session',
+        function(usSpinnerService, $rootScope, $scope, USER_ROLES, AUTH_EVENTS, authenticator, Session){
             var controllerScope = $scope;
             $scope.currentUser = null;
             $scope.userRoles = USER_ROLES;
@@ -1371,7 +1369,7 @@
             };
 
             //TODO
-            $scope.$on(AUTH_EVENTS.loginSuccess, function (event, data) {
+            $scope.$on(AUTH_EVENTS.loginSuccess, function(event, data){
                 controllerScope.setCurrentUser(data[0]);
                 controllerScope.setCurrentClient(data[1], data[2]);
             });
@@ -1380,7 +1378,7 @@
     //Controller for login dialog and login
     //landing page
     app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', 'socket', 'ngDialog',
-        function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, socket, ngDialog) {
+        function($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, socket, ngDialog){
 
             var loginCtrl = this;
 
@@ -1400,15 +1398,15 @@
             //if not, throws appropiate errors, otherwise
             //proceeds to try and login; if login fails, shows
             //corresponding error
-            this.login = function () {
+            this.login = function(){
 
                 //No username/id entered, throw error
-                if (!this.credentials.userId) {
+                if(!this.credentials.userId){
                     errorFactory.showError('LOGIN-NO-USERID');
                     return;
                 }
                 //No password entered, throw error
-                if (!this.credentials.password) {
+                if(!this.credentials.password){
                     errorFactory.showError('LOGIN-NO-PASS');
                     return;
                 }
@@ -1418,7 +1416,7 @@
 
                 //Try and log in
                 authenticator.login(this.credentials).then(
-                    function (response) {
+                    function(response){
                         var user = response.data[0];
                         var client = response.data[1];
                         var regions = response.data[2];
@@ -1430,38 +1428,38 @@
                         $scope.closeThisDialog();
 
                     },
-                    function (error) {
+                    function(error){
                         //Login failed; //Stop Spinner
-                        errorFactory.showError('LOGIN-' + error.data.code);
+                        errorFactory.showError('LOGIN-'+error.data.code);
                         loginCtrl.submitting = false;
                     }
                 );
             };
 
-            loginCtrl.showResetPasswordForm = function () {
+            loginCtrl.showResetPasswordForm = function() {
                 loginCtrl.resetPasswordAvailable = false;
             };
 
-            loginCtrl.resetPassword = function () {
-                if (!this.resetPasswordAvailable) {
+            loginCtrl.resetPassword = function() {
+                if(!this.resetPasswordAvailable) {
                     loginCtrl.submitting = true;
                     Session.resetPassword(loginCtrl.credentials.email);
                 }
             };
 
-            loginCtrl.cancelResetPassword = function () {
+            loginCtrl.cancelResetPassword = function() {
                 loginCtrl.resetPasswordAvailable = true;
             };
 
-            socket.on('reset-password-success', function () {
+            socket.on('reset-password-success', function(){
                 loginCtrl.submitting = false;
 
-                //Show 
+                //Show
                 var messageDialog = ngDialog.open({
                     template: '../reset-pass.html',
                     className: 'ngdialog-theme-plain'
                 });
-                messageDialog.closePromise.then(function () {
+                messageDialog.closePromise.then(function(){
                     loginCtrl.resetPasswordAvailable = true;
                     //Resolve the promise, proceed to load
                     //the state and change active state in drawer
@@ -1471,7 +1469,7 @@
 
             });
 
-            socket.on('reset-password-failed', function () {
+            socket.on('reset-password-failed', function(){
                 loginCtrl.submitting = false;
                 loginCtrl.resetPasswordAvailable = true;
             });
@@ -1480,11 +1478,11 @@
 
     //Controller for the header; contains a button
     //that triggers drawer element when clicked
-    app.controller('HeaderController', ['snapRemote', function (snapRemote) {
+    app.controller('HeaderController', ['snapRemote', function(snapRemote){
 
         //Reveals (opens) the drawer by sliding
         //snap-content (main page view) to the right
-        this.openDrawer = function () {
+        this.openDrawer = function(){
             snapRemote.open("left");
         };
 
@@ -1492,56 +1490,56 @@
 
     //Controller for the drawer, which hides/shows
     //on button click contains navigation options
-    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', function ($scope, $rootScope, snapRemote, $state, socket, Session, $window) {
+    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', function($scope, $rootScope, snapRemote, $state, socket, Session, $window) {
         var drawer = this;
         this.newTips = 0;
-        this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
+        this.isAdmin = Session.userRoles.indexOf('admin')===-1? false : true;
         this.userFullName = Session.userFullName;
         this.clientAgency = Session.clientAgency;
         drawer.clientLogo = Session.clientLogo;
 
         //Drawer options with name and icon;
         //entries are off by default
-        this.entries = [
-            {name: 'Tip Feed', icon: 'glyphicon glyphicon-inbox', state: 'tipfeed'},
-            {name: 'Video Streams', icon: 'glyphicon glyphicon-facetime-video', state: 'video-streams'},
-            {name: 'Send Notification', icon: 'glyphicon glyphicon-send', state: 'regional-notifications'},
-            {name: 'Maps', icon: 'glyphicon glyphicon-map-marker', state: 'maps'},
-            {name: 'Wanted List', icon: 'glyphicon glyphicon-list-alt', state: 'most-wanted'},
-            {name: 'Data Analysis', icon: 'glyphicon glyphicon-stats', state: 'data-analysis'}
+        this.entries=[
+            {name:'Tip Feed', icon:'glyphicon glyphicon-inbox', state:'tipfeed'},
+            {name:'Video Streams', icon:'glyphicon glyphicon-facetime-video', state:'video-streams'},
+            {name:'Send Notification', icon:'glyphicon glyphicon-send', state:'regional-notifications'},
+            {name:'Maps', icon:'glyphicon glyphicon-map-marker', state:'maps'},
+            {name:'Wanted List', icon:'glyphicon glyphicon-list-alt', state:'most-wanted'},
+            {name:'Data Analysis', icon:'glyphicon glyphicon-stats', state:'data-analysis'}
         ];
 
         //Hides (closes) the drawer by sliding
         //snap-content (main page view) back to the left
-        this.closeDrawer = function () {
+        this.closeDrawer = function(){
             snapRemote.close();
         };
 
         //Navigates/changes/reloads view to the corresponding state (page)
-        this.changeState = function (state) {
-            if (state === "tipfeed") {
+        this.changeState = function(state){
+            if(state==="tipfeed"){
                 drawer.newTips = 0;
             }
-            $state.go(state, {newTips: 0}, {reload: true});
+            $state.go(state, {newTips:0}, {reload:true});
         };
 
-        this.logOut = function () {
+        this.logOut = function() {
             Session.destroy();
             $window.location.reload();
         };
 
-        socket.on('new-tip', function (data) {
-            if (data.clientId === Session.clientId) {
+        socket.on('new-tip', function(data){
+            if(data.clientId===Session.clientId){
                 drawer.newTips++;
                 $scope.$apply();
             }
         });
 
-        $scope.$on('update-user', function (event, data) {
+        $scope.$on('update-user', function(event, data){
             drawer.userFullName = Session.userFullName;
         });
 
-        $scope.$on('refresh-counter', function (event, data) {
+        $scope.$on('refresh-counter', function(event, data){
             drawer.newTips = 0;
             $scope.$apply();
         });
@@ -1553,30 +1551,30 @@
     //current video, chat with current mobile client,
     //information on current call and all other controls
     //to swap video calls
-    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', function ($scope, socket, VideoStreamsService) {
+    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', function($scope, socket, VideoStreamsService){
         var vidStrmCtrl = this;
         this.queue = [];
-        this.currentStream = {};
+        this.currentStream ={};
 
         VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
 
         VideoStreamsService.checkActiveStream();
 
-        $scope.$on('active-streams-fetched', function (event, data) {
+        $scope.$on('active-streams-fetched', function(event, data){
             vidStrmCtrl.queue = data;
             vidStrmCtrl.currentStream = data[0];
             $scope.$apply();
         });
 
-        socket.on('new-video-stream', function (data) {
+        socket.on('new-video-stream', function(data){
             var stream = data.stream;
             vidStrmCtrl.queue.unshift(stream);
         });
 
-        $scope.$on('stream-destroyed', function (event, data) {
-            for (var i = 0; i < vidStrmCtrl.queue.length; i++) {
+        $scope.$on('stream-destroyed', function(event, data){
+            for(var i = 0; i < vidStrmCtrl.queue.length; i++){
                 var stream = vidStrmCtrl.queue[i];
-                if (stream.sessionId === data.sessionId) {
+                if(stream.sessionId === data.sessionId){
                     vidStrmCtrl.queue.splice(i, 1);
                     break;
                 }
@@ -1588,12 +1586,12 @@
         //   $scope.$apply();
         // });
 
-        vidStrmCtrl.activateStream = function (stream) {
+        vidStrmCtrl.activateStream = function(stream){
             this.currentStream = stream;
             VideoStreamsService.subscribeToStream(stream, $scope.currentUser);
         };
 
-        vidStrmCtrl.stopStream = function () {
+        vidStrmCtrl.stopStream = function(){
             VideoStreamsService.stopStream();
         };
 
@@ -1603,8 +1601,8 @@
     //which lets you interact with tips, depends heavily
     //on paginatorService
 
-    app.controller('TipFeedController', ['$scope', '$rootScope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session',
-        function ($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session) {
+    app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session',
+        function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session){
 
             //Vars needed for pagination; paginatorSet contains
             //number of total pages, divided by groups of 10
@@ -1636,18 +1634,18 @@
 
             //No tips available; hide paginator and
             //feed and display appropiate text
-            $scope.$on('no-tips', function (event) {
+            $scope.$on('no-tips', function(event){
                 tipfeed.tipsAvailable = false;
             });
 
             //Stop tipfeed spinner
-            $scope.$on('hide-spinner', function (event) {
+            $scope.$on('hide-spinner', function(event){
                 usSpinnerService.stop('loading-tips-spinner');
                 tipfeed.showPaginator = true;
             });
 
             //Catch event when paginator has new tips
-            $scope.$on('new-batch', function (event, data) {
+            $scope.$on('new-batch', function(event, data){
                 //Change current tips being displayed
                 //and current page
                 tipfeed.currentTips = data[0];
@@ -1655,61 +1653,61 @@
             });
 
             //Catch event when page sets change (every 10 pages)
-            $scope.$on('paginator-set-update', function (event, data) {
+            $scope.$on('paginator-set-update', function(event, data){
                 tipfeed.paginatorSet = data[0];
                 tipfeed.lastPage = data[1];
             });
 
             //Catch event when paginator Service is fetching
             //new tips; discard current shown tips
-            $scope.$on('discard-current-tips', function () {
+            $scope.$on('discard-current-tips', function(){
                 tipfeed.currentTips = [];
                 usSpinnerService.spin('loading-tips-spinner');
                 tipfeed.showPaginator = false;
             });
 
             //Note that notification dialog is off
-            $scope.$on('notification-dialog-closed', function (event, data) {
+            $scope.$on('notification-dialog-closed', function(event, data){
                 tipfeed.notificationDialogIsOn = false;
             });
 
             //Note that attachment dialog is off
-            $scope.$on('attachment-dialog-closed', function (event, data) {
+            $scope.$on('attachment-dialog-closed', function(event, data){
                 tipfeed.attachmentDialogIsOn = false;
             });
 
             //Change page to passed value;
             //scroll to top
-            this.changePage = function (newPage) {
+            this.changePage = function(newPage){
                 paginatorService.changePage(newPage);
                 $anchorScroll();
             };
 
             //Change to next page;
             //scroll to top
-            this.nextPage = function () {
+            this.nextPage = function(){
                 paginatorService.nextPage();
                 $anchorScroll();
             };
 
             //Change to previous page;
             //scroll to top
-            this.prevPage = function () {
+            this.prevPage = function(){
                 paginatorService.prevPage();
                 $anchorScroll();
             };
 
             //Shows dialog that allows client to send
             //message and attachment to a specific user
-            this.showNotificationDialog = function (firstName, lastName, controlNumber, channel) {
+            this.showNotificationDialog = function(firstName, lastName, controlNumber, channel){
                 //Only show dialog if it, and attachmentDialog,
                 //are not showing
-                if (!this.notificationDialogIsOn && !this.attachmentDialogIsOn) {
+                if(!this.notificationDialogIsOn && !this.attachmentDialogIsOn){
                     //ngDialog can only handle stringified JSONs
                     var data = JSON.stringify({
-                        name: firstName + " " + lastName,
+                        name: firstName+" "+lastName,
                         controlNumber: controlNumber,
-                        channel: channel
+                        channel:channel
                     });
 
                     //Open dialog, and add it to the $scope
@@ -1720,7 +1718,7 @@
                         closeByDocument: false,
                         closeByEscape: false,
                         scope: $scope,
-                        data: data
+                        data:data
                     });
 
                     //NotificationDialog is now showing
@@ -1730,18 +1728,18 @@
 
             //Shows dialog that contains attachment which
             //triggered it; video, image or audio
-            this.showAttachmentDialog = function (tip, type) {
+            this.showAttachmentDialog = function(tip, type) {
 
                 this.attachmentType = type;
 
                 //Only show dialog if it, and notificationDialog,
                 //are not showing
-                if (!this.notificationDialogIsOn && !this.attachmentDialogIsOn) {
+                if(!this.notificationDialogIsOn && !this.attachmentDialogIsOn){
 
                     this.showMediaSpinner = true;
                     usSpinnerService.spin('loading-media-spinner');
                     var parseFile;
-                    if (type === 'IMG') {
+                    if(type === 'IMG') {
                         parseFile = tip.attachmentPhoto;
                     }
                     else if (type === 'VID') {
@@ -1753,16 +1751,16 @@
 
                     //Request decrypted media url
                     socket.emit('request-media-url', {
-                        parseFile: parseFile,
-                        passPhrase: tip.anonymous ? tip.anonymousPassword : tip.username,
-                        anonymous: tip.anonymous,
-                        type: type
+                        parseFile:parseFile,
+                        passPhrase:tip.anonymous? tip.anonymousPassword: tip.username,
+                        anonymous:tip.anonymous,
+                        type:type
                     });
 
                     //Receive url
-                    socket.on('response-media-url', function (address) {
+                    socket.on('response-media-url', function(address){
 
-                        if (tipfeed.attachmentDialogIsOn) {
+                        if(tipfeed.attachmentDialogIsOn) {
                             return;
                         }
 
@@ -1771,7 +1769,7 @@
 
                         //ngDialog can only handle stringified JSONs
                         var data = JSON.stringify({
-                            attachmentType: tipfeed.attachmentType,
+                            attachmentType:tipfeed.attachmentType,
                             address: address
                         });
 
@@ -1785,7 +1783,7 @@
                             className: 'ngdialog-attachment',
                             showClose: showClose,
                             scope: $scope,
-                            data: data
+                            data:data
                         });
 
                         //Attachment dialog is now showing
@@ -1794,44 +1792,44 @@
                 }
             };
 
-            socket.on('new-tip', function (data) {
-                if (data.clientId === Session.clientId) {
+            socket.on('new-tip', function(data){
+                if(data.clientId===Session.clientId){
                     tipfeed.counter++;
                     $scope.$apply();
                 }
             });
 
-            this.filterTips = function (filterDate, filterType) {
+            this.filterTips = function(filterDate, filterType) {
                 //If no values were selected, ignore button press
-                if (!filterDate && !filterType) {
+                if(!filterDate && !filterType) {
                     return;
                 }
-                var date = filterDate ? new Date(filterDate) : undefined;
-                var crimePosition = filterType ? parseInt(filterType) : undefined;
-                var dateBefore = filterDate ? new Date(filterDate) : undefined;
+                var date = filterDate? new Date(filterDate): undefined;
+                var crimePosition = filterType? parseInt(filterType): undefined;
+                var dateBefore = filterDate? new Date(filterDate): undefined;
                 dateBefore.setDate(dateBefore.getDate() - 1);
                 var filter = {
                     date: date,
                     dateBefore: dateBefore,
                     crimePosition: crimePosition
                 };
-                $rootScope.$broadcast('discard-current-tips', []);
+                $rootScope.$broadcast('discard-current-tips',[]);
                 paginatorService.initializeFeed(filter);
             };
 
-            this.loadNewTips = function () {
-                if (this.counter <= 0) {
+            this.loadNewTips = function(){
+                if(this.counter<=0){
                     return;
                 }
                 this.counter = 0;
-                $rootScope.$broadcast('refresh-counter', []);
+                $rootScope.$broadcast('refresh-counter',[]);
                 $state.go($state.current, {}, {reload: true});
             };
 
-            this.showSMSDialog = function (phone) {
+            this.showSMSDialog = function(phone) {
                 //ngDialog can only handle stringified JSONs
                 var data = JSON.stringify({
-                    phoneNumber: phone
+                    phoneNumber:phone
                 });
 
                 //Open dialog and pass control to AttachmentController
@@ -1840,7 +1838,7 @@
                     className: 'ngdialog-theme-plain',
                     showClose: true,
                     scope: $scope,
-                    data: data
+                    data:data
                 });
             };
         }]);
@@ -1848,7 +1846,7 @@
     //Controller for the tip's attachments; must display
     //video and images, and play audio files
     app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce', 'socket', 'usSpinnerService',
-        function ($scope, $rootScope, ngDialog, $sce, socket, usSpinnerService) {
+        function($scope, $rootScope, ngDialog, $sce, socket, usSpinnerService){
             //Needed so that attachment-dialog.html can open the media files from parse.
             this.trustAsResourceUrl = $sce.trustAsResourceUrl;
             this.address = $scope.$parent.ngDialogData.address;
@@ -1857,7 +1855,7 @@
 
             //Let TipFeed controller know this dialog turned off
             $scope.$on('ngDialog.closed', function (event, $dialog) {
-                if (thisDialogId === $dialog.attr('id')) {
+                if(thisDialogId===$dialog.attr('id')){
                     $rootScope.$broadcast('attachment-dialog-closed');
                 }
             });
@@ -1866,7 +1864,7 @@
     //Controller for Google map in the maps state;
     //sets map center and police station position
     //in map
-    app.controller('GoogleMapController', function () {
+    app.controller('GoogleMapController', function() {
 
         //This position variables will store the position
         //data so that the tip.center variable remain unchanged.
@@ -1880,20 +1878,20 @@
             // This marker is 25 pixels wide by 39 pixels tall.
             scaledSize: new google.maps.Size(25, 39),
             // The origin for this image is 0,0.
-            origin: new google.maps.Point(0, 0),
+            origin: new google.maps.Point(0,0),
             // The anchor for this image is the base of the flagpole.
-            anchor: new google.maps.Point(12.5, 39)
+            anchor: new google.maps.Point(12.5,39)
         };
 
         //Checks if the marker coordinates have changed
         //and returns the correct position.
-        this.getMarkerPosition = function (point) {
+        this.getMarkerPosition = function(point) {
 
-            if (point === undefined) {
+            if(point===undefined){
                 return markerPosition;
             }
             //Change the position if necessary.
-            if (markerPosition.latitude !== point.latitude || markerPosition.longitude !== point.longitude) {
+            if(markerPosition.latitude !== point.latitude || markerPosition.longitude !== point.longitude) {
                 this.zoom = 14;
                 markerPosition.latitude = point.latitude;
                 markerPosition.longitude = point.longitude;
@@ -1904,9 +1902,9 @@
 
         //Checks if the map center coordinates have changed
         // and returns the correct position.
-        this.getMapCenter = function (point) {
+        this.getMapCenter = function(point) {
 
-            if (point === undefined || point.latitude === undefined || point.longitude === undefined) {
+            if(point===undefined || point.latitude===undefined || point.longitude===undefined){
                 return mapCenter;
             }
             // Change the coords if necessary.
@@ -1919,16 +1917,16 @@
         };
 
         //TODO  Is this needed?
-        this.getMarkerIdKey = function (key, currentPage, index) {
+        this.getMarkerIdKey = function(key, currentPage, index) {
             markerKey++;
-            return "key" + key + markerKey;
+            return "key"+key+markerKey;
         };
     });
 
     //Controller for user follow-up notification; controls the
     //dialog that allows for message/attachment to be sent to users
     app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket',
-        function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket) {
+        function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket){
             //Get data from ngDialog directive
             this.name = $scope.$parent.ngDialogData.name;
             this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -1941,27 +1939,27 @@
 
             //Set focus on message box once dialog pops up
             $scope.$on('ngDialog.opened', function (event, $dialog) {
-                if (thisDialogId === $dialog.attr('id')) {
+                if(thisDialogId===$dialog.attr('id')){
                     document.getElementById("notification-message").focus();
                 }
             });
 
             //Let TipFeed controller know this dialog turned off
             $scope.$on('ngDialog.closed', function (event, $dialog) {
-                if (thisDialogId === $dialog.attr('id')) {
+                if(thisDialogId===$dialog.attr('id')){
                     $rootScope.$broadcast('notification-dialog-closed');
                 }
             });
 
             //Notification was successfully saved and pushed (sent)
-            $scope.$on('notification-success', function (notification) {
+            $scope.$on('notification-success',function(notification){
                 notificationCtrl.sending = false;
                 $scope.$apply();
                 $scope.closeThisDialog();
             });
 
             //Notification was saved, but not pushed
-            $scope.$on('notification-partial-success', function (notification) {
+            $scope.$on('notification-partial-success',function(notification){
                 //Right now same as success event, but might change
                 notificationCtrl.sending = false;
                 $scope.$apply();
@@ -1970,13 +1968,13 @@
 
             //Notification either wasn't saved, or did save
             //but push failed and error clause removed said save
-            $scope.$on('notification-error', function (notification) {
+            $scope.$on('notification-error',function(notification){
                 errorFactory.showError('NOTIF-FAILED');
                 notificationCtrl.sending = false;
                 $scope.$apply();
             });
 
-            socket.on('follow-up-notif-sent', function (data) {
+            socket.on('follow-up-notif-sent', function(data){
                 notificationCtrl.sending = false;
                 $scope.$apply();
                 $scope.closeThisDialog();
@@ -2002,15 +2000,15 @@
 //    };
 
             //Send the notification to the user
-            this.submitNotification = function () {
+            this.submitNotification = function(){
 
                 //If no title, show appropiate error and ignore
-                if (!this.title) {
+                if(!this.title){
                     errorFactory.showError('NOTIF-NO-TITLE');
                     return;
                 }
                 //If no message or attachment, show appropiate error and ignore
-                if (!this.message) {
+                if(!this.message){
                     errorFactory.showError('NOTIF-NO-MESSAGE');
                     return;
                 }
@@ -2032,7 +2030,7 @@
                 notification.title = this.title;
                 notification.message = this.message;
                 //If a file is present, attach it and set its type
-                if (this.file) {
+                if(this.file){
                     notification.attachment = this.file.base64;
                     notification.attachmentType = this.file.filetype.substring(0, 5);
                 }
@@ -2056,7 +2054,7 @@
     //Controller for user follow-up notification; controls the
     //dialog that allows for message/attachment to be sent to users
     app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session',
-        function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session) {
+        function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session){
             //Get data from ngDialog directive
             this.phone = $scope.$parent.ngDialogData.phoneNumber;
             // this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -2070,40 +2068,40 @@
 
             //Set focus on message box once dialog pops up
             $scope.$on('ngDialog.opened', function (event, $dialog) {
-                if (thisDialogId === $dialog.attr('id')) {
+                if(thisDialogId===$dialog.attr('id')){
                     document.getElementById("notification-message").focus();
                 }
             });
 
             //Send the notification to the user
-            this.sendSMS = function () {
+            this.sendSMS = function(){
 
                 //If no message or attachment, show appropiate error and ignore
-                if (!this.message) {
+                if(!this.message){
                     errorFactory.showError('SMS-NO-MESSAGE');
                     return;
                 }
 
-                if (!Session.clientPhoneNumber) {
+                if(!Session.clientPhoneNumber) {
                     return;
                 }
 
                 //Toggle sending animation
                 this.sending = true;
 
-                Parse.Cloud.run('sendSMS', {To: this.phone, From: Session.clientPhoneNumber, Body: this.message}, {
-                    success: function (result) {
+                Parse.Cloud.run('sendSMS', {To:this.phone, From:Session.clientPhoneNumber, Body:this.message}, {
+                    success: function(result) {
                         $rootScope.$broadcast('sms-success');
                     },
-                    error: function (error) {
-                        console.log('Error: ' + error.message);
+                    error: function(error) {
+                        console.log('Error: '+error.message);
                         smsCtrl.sending = false;
                     }
                 });
             };
 
             //SMS was successfully saved and sent
-            $scope.$on('sms-success', function () {
+            $scope.$on('sms-success',function(){
                 smsCtrl.sending = false;
                 $scope.$apply();
                 $scope.closeThisDialog();
@@ -2114,7 +2112,7 @@
     //Controller for user follow-up notification; controls the
     //dialog that allows for message/attachment to be sent to users
     app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
-        function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory) {
+        function($rootScope, $scope, parseNotificationService, ngDialog, errorFactory){
 
             this.sending = false;
             this.regions = $scope.currentRegions;
@@ -2122,18 +2120,18 @@
             var regionalNotificationCtrl = this;
 
             //Once a file is selected, prep file for upload to Parse
-            this.onFileSelect = function ($files) {
+            this.onFileSelect = function($files){
                 //Fetch file
                 this.file = $files[0];
 
                 //Set file type
-                if (this.file.type.match('image.*')) {
+                if(this.file.type.match('image.*')){
                     this.fileType = "image";
                 }
-                else if (this.file.type.match('video.*')) {
+                else if(this.file.type.match('video.*')){
                     this.fileType = "video";
                 }
-                else {
+                else{
                     this.fileType = "audio";
                 }
                 //Set file name
@@ -2141,32 +2139,32 @@
             };
 
             //Send the notification to the user
-            this.submitNotification = function () {
+            this.submitNotification = function(){
                 //If no title, show appropiate error and ignore
-                if (!this.title) {
+                if(!this.title){
                     errorFactory.showError('REGIONAL-NOTIF-NO-TITLE');
                     return;
                 }
                 //If no message or attachment, show appropiate error and ignore
-                if (!this.message) {
+                if(!this.message){
                     errorFactory.showError('REGIONAL-NOTIF-NO-MESSAGE');
                     return;
                 }
 
-                if (this.allRegions) {
+                if(this.allRegions){
                     parseNotificationService.channels.push($scope.$parent.currentClient.objectId);
                 }
-                else {
-                    for (var i = 0; i < this.regions.length; i++) {
-                        if (!!this.regions[i].selected) {
-                            for (var j = 0; j < this.regions[i].zipCodes.length; j++) {
-                                parseNotificationService.channels.push($scope.$parent.currentClient.objectId + "_" + this.regions[i].zipCodes[j]);
+                else{
+                    for(var i=0; i<this.regions.length;i++){
+                        if(!!this.regions[i].selected){
+                            for(var j=0; j< this.regions[i].zipCodes.length;j++){
+                                parseNotificationService.channels.push($scope.$parent.currentClient.objectId+"_"+this.regions[i].zipCodes[j]);
                             }
                         }
                     }
                 }
 
-                if (parseNotificationService.channels.length == 0) {
+                if(parseNotificationService.channels.length==0){
                     errorFactory.showError('REGIONAL-NOTIF-NO-REGION');
                     return;
                 }
@@ -2178,7 +2176,7 @@
                 notification.title = this.title;
                 notification.message = this.message;
                 //If a file is present, attach it and set its type
-                if (this.file) {
+                if(this.file){
                     notification.attachment = new Parse.File("attachment", this.file);
                     notification.attachmentType = this.fileType;
                 }
@@ -2189,13 +2187,13 @@
             };
 
             //Notification was successfully saved and pushed (sent)
-            $scope.$on('regional-notification-success', function (notification) {
+            $scope.$on('regional-notification-success',function(notification){
                 regionalNotificationCtrl.sending = false;
                 $scope.$apply();
             });
 
             //Notification was saved, but not pushed
-            $scope.$on('regional-notification-partial-success', function (notification) {
+            $scope.$on('regional-notification-partial-success',function(notification){
                 //Right now same as success event, but might change
                 regionalNotificationCtrl.sending = false;
                 $scope.$apply();
@@ -2203,7 +2201,7 @@
 
             //Notification either wasn't saved, or did save
             //but push failed and error clause removed said save
-            $scope.$on('regional-notification-error', function (notification) {
+            $scope.$on('regional-notification-error',function(notification){
                 errorFactory.showError('NOTIF-FAILED');
                 regionalNotificationCtrl.sending = false;
                 $scope.$apply();
@@ -2214,7 +2212,7 @@
     //Controller for error dialog which is reusable throughout the
     //app; decoupled from everything else
     app.controller('ErrorController', ['$scope', 'ERRORS', 'errorFactory',
-        function ($scope, ERRORS, errorFactory) {
+        function($scope, ERRORS, errorFactory){
             //Set controller title and message
             var error = ERRORS[$scope.$parent.ngDialogData.errorCode];
             this.title = error.title;
@@ -2363,198 +2361,14 @@
 
         }]);
 
-    //Service for managing the most wanted list. It can save, add
-    //or delete most wanted people to/from Parse
-    app.factory("PoliceStationsService", ['$rootScope', 'Session',
-        function ($rootScope, Session) {
-            var PoliceStationsService = {};
-
-            //Current stations downloaded from Parse
-            var stationsMarkers = [];
-
-            //Map info
-            PoliceStationsService.map = null;
-
-            //Boolean to know if the user is currently adding a new station.
-            PoliceStationsService.isAdding = false;
-
-            //'Hack' to avoid maps error where the marker info wasn't
-            //getting updated after editing it. It is a bug in the library.
-            PoliceStationsService.redrawMarkers = true;
-
-            //Download stations from Parse. If editedMarkerId is not undefined, the
-            //window for the edited marker will be open.
-            PoliceStationsService.getStationsMarkers = function (editedMarkerId) {
-                stationsMarkers = [];
-                var PoliceMap = Parse.Object.extend("PoliceMap");
-                var query = new Parse.Query(PoliceMap);
-                //Filter by clientId
-                query.equalTo('client', {
-                    __type: "Pointer",
-                    className: "Client",
-                    objectId: Session.clientId
-                });
-                query.find({
-                    success: function (results) {
-
-                        //Create markers for each station.
-                        for (var i = 0; i < results.length; i++) {
-                            var station = results[i];
-
-                            // Create a marker for each place.
-                            var marker = {
-                                id: station.id,
-                                place_id: station.attributes.placeId,
-                                latitude: station.attributes.latitude,
-                                longitude: station.attributes.longitude,
-                                name: station.attributes.stationName,
-                                address: station.attributes.address,
-                                email: station.attributes.email,
-                                phone: station.attributes.phone,
-                                description: station.attributes.description,
-                                options: {
-                                    draggable: false,
-                                    title: station.attributes.stationName,
-                                    visible: true
-                                },
-                                templateurl: 'window.tpl.html',
-                                show: editedMarkerId === station.id
-                            };
-                            marker.onClick = function () {
-                                marker.show = !marker.show;
-                            };
-                            stationsMarkers.push(marker);
-                        }
-
-                        //Send new markers to the controller.
-                        $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-
-                    },
-                    error: function (error) {
-                        console.log("Error receiving police stations from parse. " + error.message);
-                    }
-                });
-            };
-
-            //Return the desired marker contained in the array.
-            PoliceStationsService.getMarker = function (id) {
-                for (var i = 0; i < stationsMarkers.length; i++) {
-                    if (stationsMarkers[i].id === id)
-                        return stationsMarkers[i];
-                }
-            };
-
-            //Changes the station info in Parse after user saves the edited station
-            PoliceStationsService.updateStationInfo = function (stationInfo) {
-                var PoliceMap = Parse.Object.extend("PoliceMap");
-                var query = new Parse.Query(PoliceMap);
-                query.get(stationInfo.id, {
-                    success: function (station) {
-                        PoliceStationsService.saveStation(stationInfo, station);
-                    },
-                    error: function (station, error) {
-                        console.log("Error fetching police station");
-                    }
-                });
-            };
-
-            //Add temporary marker.
-            PoliceStationsService.addMarker = function (marker) {
-                stationsMarkers.push(marker);
-                $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-            };
-
-            //Cancels the addition of a new station. Removes the temp marker.
-            PoliceStationsService.cancel = function () {
-                stationsMarkers.pop();
-                PoliceStationsService.isAdding = false;
-                $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-            };
-
-            //Save new station to Parse or update a station in parse if the
-            //station object is not undefined.
-            PoliceStationsService.saveStation = function (stationInfo, station) {
-                PoliceStationsService.isAdding = false;
-
-                //If station object isn't received, a new station object is created.
-                if (!station) {
-                    var PoliceMap = Parse.Object.extend("PoliceMap");
-                    station = new PoliceMap();
-                    station.set("latitude", PoliceStationsService.getTempMarker().latitude);
-                    station.set("longitude", PoliceStationsService.getTempMarker().longitude);
-                    station.set("coordinates", new Parse.GeoPoint({
-                        latitude: PoliceStationsService.getTempMarker().latitude,
-                        longitude: PoliceStationsService.getTempMarker().longitude
-                    }));
-                    station.set("client", {
-                        __type: "Pointer",
-                        className: "Client",
-                        objectId: Session.clientId
-                    });
-                }
-
-                station.set("stationName", stationInfo.name);
-                station.set("address", stationInfo.address);
-                station.set("phone", stationInfo.phone);
-                station.set("description", stationInfo.description);
-                station.set("email", stationInfo.email);
-                station.save(null, {
-                    success: function (station) {
-                        // Execute any logic that should take place after the object is saved.
-                        PoliceStationsService.getStationsMarkers(station.id);
-                    },
-                    error: function (station, error) {
-                        // Execute any logic that should take place if the save fails.
-                        // error is a Parse.Error with an error code and message.
-                        console.log('Failed to create/update  Police Station on Parse. Error: ' + error.message);
-                    }
-                });
-            };
-
-            //Return the temp marker.
-            PoliceStationsService.getTempMarker = function () {
-                return stationsMarkers[stationsMarkers.length - 1];
-            };
-
-            //Remove the temp marker and update the map.
-            PoliceStationsService.removeTempMarker = function () {
-                stationsMarkers.splice(stationsMarkers.length - 1, 1);
-                $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-            };
-
-            //Delete a station from Parse.
-            PoliceStationsService.deleteStation = function (id) {
-                var PoliceMap = Parse.Object.extend("PoliceMap");
-                var query = new Parse.Query(PoliceMap);
-                query.get(id, {
-                    success: function (station) {
-                        station.destroy({
-                            success: function (myObject) {
-                                PoliceStationsService.getStationsMarkers();
-                            },
-                            error: function (myObject, error) {
-                                // The delete failed.
-                                // error is a Parse.Error with an error code and message.
-                            }
-                        });
-                    },
-                    error: function (station, error) {
-                        console.log("Error fetching police station");
-                    }
-                });
-            };
-
-            return PoliceStationsService;
-        }]);
-
     //Controller for Google map in the 'Maps' state.
-    app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'Session', function (PoliceStationsService, $scope, Session) {
+    app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'Session', function(PoliceStationsService, $scope, Session) {
 
         var mapCtrl = this;
 
         //Hack to avoid google-map directive bug when updating
         //marker's window.
-        mapCtrl.redrawMarkers = function () {
+        mapCtrl.redrawMarkers = function() {
             return PoliceStationsService.redrawMarkers;
         };
 
@@ -2567,15 +2381,12 @@
         var Client = Parse.Object.extend("Client");
         var clientQuery = new Parse.Query(Client);
         clientQuery.get(Session.clientId, {
-            success: function (client) {
-                if (!!client.attributes.location) {
-                    mapCtrl.map.center = {
-                        latitude: client.attributes.location._latitude,
-                        longitude: client.attributes.location._longitude
-                    };
+            success: function(client){
+                if(!!client.attributes.location) {
+                    mapCtrl.map.center = {latitude: client.attributes.location._latitude, longitude: client.attributes.location._longitude};
                 }
             },
-            error: function (object, error) {
+            error: function(object, error){
                 console.log("Error fetching client: " + error.message);
             }
         });
@@ -2585,8 +2396,8 @@
         mapCtrl.policeStationsMarkers = [];
 
         mapCtrl.searchbox = {
-            template: 'searchbox.tpl.html',
-            position: 'top-left',
+            template:'searchbox.tpl.html',
+            position:'top-left',
             options: {
                 bounds: {}
             },
@@ -2612,10 +2423,10 @@
 
         //Checks if an "$scope.$apply" is in progress before
         //starting a new one.
-        $scope.safeApply = function (fn) {
+        $scope.safeApply = function(fn) {
             var phase = this.$root.$$phase;
-            if (phase == '$apply' || phase == '$digest') {
-                if (fn && (typeof(fn) === 'function')) {
+            if(phase == '$apply' || phase == '$digest') {
+                if(fn && (typeof(fn) === 'function')) {
                     fn();
                 }
             } else {
@@ -2624,7 +2435,7 @@
         };
 
         //Receive the markers from Parse.
-        $scope.$on('stations-markers-fetched', function (event, markers) {
+        $scope.$on('stations-markers-fetched', function(event, markers){
             mapCtrl.policeStationsMarkers = markers;
             PoliceStationsService.redrawMarkers = false;
             $scope.safeApply();
@@ -2632,7 +2443,7 @@
         });
 
         //Check if the user is adding a new station.
-        mapCtrl.isAdding = function () {
+        mapCtrl.isAdding = function() {
             return PoliceStationsService.isAdding;
         };
 
@@ -2640,12 +2451,12 @@
 
     //The buttons on the map need a new controller for themselves.
     //This is it.
-    app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
+    app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function(PoliceStationsService, $scope, ngDialog) {
         var buttonCtrl = this;
 
         //Check if the user is adding a new station to
         //enable/disable the buttons.
-        buttonCtrl.isAdding = function () {
+        buttonCtrl.isAdding = function() {
             return PoliceStationsService.isAdding;
         };
 
@@ -2655,17 +2466,17 @@
                 template: '../new-station-form.html',
                 className: 'ngdialog-theme-plain',
                 closeByDocument: false,
-                closeByEscape: false,
+                closeByEscape:false,
                 showClose: true,
                 scope: $scope,
-                data: data
+                data:data
             });
         };
 
         //Add new temp marker to the map
-        buttonCtrl.newStationMarker = function () {
+        buttonCtrl.newStationMarker = function() {
             var marker = {
-                id: 'temp',
+                id:'temp',
                 name: "",
                 address: "",
                 email: "",
@@ -2679,9 +2490,9 @@
                     // This marker is 29 pixels wide by 40 pixels tall.
                     scaledSize: new google.maps.Size(32, 44),
                     // The origin for this image is 0,0.
-                    origin: new google.maps.Point(0, 0),
+                    origin: new google.maps.Point(0,0),
                     // The anchor for this image is the base of the flagpole at 0,32.
-                    anchor: new google.maps.Point(16, 44)
+                    anchor: new google.maps.Point(16,44)
                 },
                 options: {
                     draggable: true,
@@ -2694,14 +2505,14 @@
         };
 
         //Cancel the addition of a new station.
-        buttonCtrl.cancel = function () {
+        buttonCtrl.cancel = function() {
             PoliceStationsService.cancel();
         };
 
         //Edit station button inside the window of each marker.
-        buttonCtrl.editStation = function (id) {
+        buttonCtrl.editStation = function(id) {
             //Disable Edit button on temp markers.
-            if (id === "temp") {
+            if(id === "temp"){
                 return;
             }
 
@@ -2710,10 +2521,10 @@
             var data = JSON.stringify({
                 name: marker.name,
                 address: marker.address,
-                email: marker.email,
-                phone: marker.phone,
-                description: marker.description,
-                id: marker.id
+                email:marker.email,
+                phone:marker.phone,
+                description:marker.description,
+                id:marker.id
             });
 
             //Show the form to edit the police station
@@ -2722,7 +2533,7 @@
     }]);
 
     //Controller for the ngDialog pop-up for editing the station.
-    app.controller('StationDialogController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
+    app.controller('StationDialogController', ['PoliceStationsService', '$scope', 'ngDialog', function(PoliceStationsService, $scope, ngDialog) {
         var dialogCtrl = this;
 
         //Populate station data if we are opening the dialog
@@ -2742,9 +2553,9 @@
             };
         }
         //Save the info for the station
-        dialogCtrl.submit = function () {
+        dialogCtrl.submit = function() {
             //Do not submit if there is no name entered.
-            if (dialogCtrl.station.name === "") {
+            if(dialogCtrl.station.name==="") {
                 // TODO throw NO-NAME error.
                 return;
             }
@@ -2754,7 +2565,7 @@
 
             //Update edited marker. If the id is defined, means
             //that we are editing a previously saved station.
-            if (!!dialogCtrl.station.id) {
+            if(!!dialogCtrl.station.id) {
                 PoliceStationsService.updateStationInfo(dialogCtrl.station);
             }
             //Save new marker
@@ -2765,30 +2576,30 @@
         };
 
         //Delete station
-        dialogCtrl.delete = function () {
+        dialogCtrl.delete = function() {
             PoliceStationsService.deleteStation(dialogCtrl.station.id);
             $scope.closeThisDialog();
         };
     }]);
 
     //Controller for Administrator Panel
-    app.controller('AdminPanelController', ['socket', 'Session', function (socket, Session) {
+    app.controller('AdminPanelController', ['socket', 'Session', function(socket, Session){
 
         var adminPanelCtrl = this;
         this.sending = false;
 
         //Adds new SentiHelm user
-        this.addUser = function (newUser) {
+        this.addUser = function(newUser){
             this.sending = true;
-            socket.emit('add-new-officer', {newOfficer: newUser, clientId: Session.clientId});
+            socket.emit('add-new-officer', {newOfficer : newUser, clientId : Session.clientId});
         };
 
-        socket.on('new-officer-added', function (data) {
+        socket.on('new-officer-added', function(data){
             adminPanelCtrl.sending = false;
             adminPanelCtrl.successMessage = "SUCCEDED";
         });
 
-        socket.on('new-officer-failed', function (data) {
+        socket.on('new-officer-failed', function(data){
             adminPanelCtrl.sending = false;
             adminPanelCtrl.successMessage = "FAILED";
         });
@@ -2796,7 +2607,7 @@
     }]);
 
     //Controller for Profile page
-    app.controller('ProfileController', ['socket', 'Session', '$scope', function (socket, Session, $scope) {
+    app.controller('ProfileController', ['socket', 'Session', '$scope', function(socket, Session, $scope){
 
         var profileCtrl = this;
         profileCtrl.user = Session.user;
@@ -2807,119 +2618,113 @@
         profileCtrl.savingPass = false;
 
         //Adds new SentiHelm user
-        profileCtrl.saveUser = function (user) {
+        profileCtrl.saveUser = function(user){
             this.savingUser = true;
             profileCtrl.userChanged = false;
-            socket.emit('save-user', {user: user});
+            socket.emit('save-user', {user : user});
         };
 
-        profileCtrl.savePassword = function (prevPass, newPass, confirmPass) {
+        profileCtrl.savePassword = function(prevPass, newPass, confirmPass){
             this.savingPass = true;
             profileCtrl.passwordChanged = false;
 
-            socket.emit('save-user-password', {prevPass: prevPass, newPass: newPass, confirmPass: confirmPass});
+            socket.emit('save-user-password', {prevPass:prevPass, newPass:newPass, confirmPass:confirmPass});
 
         };
 
-        socket.on('save-user-success', function (data) {
+        socket.on('save-user-success', function(data){
             profileCtrl.savingUser = false;
             profileCtrl.userSuccessMessage = "Succeded";
             Session.updateUser(profileCtrl.user);
         });
 
-        socket.on('save-user-failed', function (data) {
+        socket.on('save-user-failed', function(data){
             profileCtrl.savingUser = false;
             profileCtrl.userSuccessMessage = "Failed";
         });
-        socket.on('save-user-password-success', function (data) {
+        socket.on('save-user-password-success', function(data){
             profileCtrl.savingPass = false;
             profileCtrl.passwordSuccessMessage = "Succeded";
         });
 
-        socket.on('save-user-password-failed', function (data) {
+        socket.on('save-user-password-failed', function(data){
             profileCtrl.savingPass = false;
             profileCtrl.passwordSuccessMessage = "Incorrect password";
         });
 
-        profileCtrl.userChange = function () {
+        profileCtrl.userChange = function() {
             profileCtrl.userChanged = true;
         };
 
-        profileCtrl.passwordChange = function () {
+        profileCtrl.passwordChange = function() {
             profileCtrl.passwordChanged = true;
         }
 
     }]);
 
     //Controller for Data Analysis page
-    app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function ($scope, DataAnalysisService) {
+    app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function($scope, DataAnalysisService){
 
         var analysisCtrl = this;
         analysisCtrl.loading = true;
+        analysisCtrl.currentYear = new Date().getFullYear();
+        analysisCtrl.previousAvailableYears = [];
+        analysisCtrl.selectedYear = analysisCtrl.currentYear;
+        analysisCtrl.yearInSelector = analysisCtrl.currentYear;
+        analysisCtrl.selectedMonth = null;
+        analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
+        analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
+        analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
+        var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+            "October", "November", "December"];
 
-        $scope.$on('data-analysis', function (event, charts) {
-            analysisCtrl.loading = false;
+        //Get years from current year to 2014
+        for (var i = 1; i <= analysisCtrl.currentYear-2014; i++) {
+            analysisCtrl.previousAvailableYears.push(analysisCtrl.currentYear-i);
+        }
+        //Initiate data analysis
+        DataAnalysisService.requestDataAnalysis(analysisCtrl.selectedYear);
+
+        //Receive the data from service
+        $scope.$on('data-analysis', function(event, charts){
             analysisCtrl.tipsDateChart = charts.tipsDateChart;
             analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
+            analysisCtrl.loading = false;
         });
 
-        // analysisCtrl.chartObject = DataAnalysisService.getData();
+        //Receive the data from service
+        $scope.$on('data-analysis-error', function(event, charts){
+            analysisCtrl.loading = false;
+            // analysisCtrl.tipsDateChart = charts.tipsDateChart;
+            // analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
+        });
+
+        var onSelectTipsDateChart = function () {
+            var selectedItem = $scope.$$childHead.chartWrapper.getChart().getSelection()[0];
+            //User selected one item.
+            if(selectedItem && selectedItem.row !== null && $scope.$$childHead.chart.type === "ColumnChart") {
+                analysisCtrl.loading = true;
+                analysisCtrl.selectedMonth = months[selectedItem.row];
+                DataAnalysisService.requestDataAnalysis(analysisCtrl.selectedYear, selectedItem.row);
+            }
+            $scope.$apply();
+        };
+
+        var callback = function(){
+            $scope.$$childHead.callback = onSelectTipsDateChart;
+        };
+
+        var settings = {callback: callback, packages: ['corechart']};
+
+        google.load('visualization', '1.0', settings);
+
+        analysisCtrl.selectYear = function(selectedYear) {
+            analysisCtrl.loading = true;
+            analysisCtrl.selectedMonth = null;
+            analysisCtrl.selectedYear = selectedYear;
+            DataAnalysisService.requestDataAnalysis(selectedYear);
+        };
 
     }]);
-
-    //Creates a Data analysis service which retreives the data from Parse 
-    //and organizes the data that will be used in the charts.
-    app.factory("DataAnalysisService", ['Session', '$rootScope', 'socket', 'usSpinnerService',
-        function (Session, $rootScope, socket, usSpinnerService) {
-
-            var analysisService = {};
-
-            socket.emit('analyze-data', {clientId: Session.clientId});
-            socket.on('analyze-data-response', function (charts) {
-                $rootScope.$broadcast('data-analysis', charts);
-                usSpinnerService.stop('analizing-data-spinner');
-            });
-
-            // var chartObject = {};
-            //  // $routeParams.chartType == BarChart or PieChart or ColumnChart...
-            // chartObject.type = 'PieChart';
-            // chartObject.options = {
-            //   'title': 'How Much Pizza I Ate Last Night'
-            // };
-            // chartObject.data = {
-            //   "cols": [
-            //     {id: "t", label: "Topping", type: "string"},
-            //     {id: "s", label: "Slices", type: "number"}
-            //   ], 
-            //   "rows": [
-            //     {c: [
-            //         {v: "Mushrooms"},
-            //         {v: 3},
-            //     ]},
-            //     {c: [
-            //         {v: "Onions"},
-            //         {v: 3},
-            //     ]},
-            //     {c: [
-            //         {v: "Olives"},
-            //         {v: 31}
-            //     ]},
-            //     {c: [
-            //         {v: "Zucchini"},
-            //         {v: 1},
-            //     ]},
-            //     {c: [
-            //         {v: "Pepperoni"},
-            //         {v: 2},
-            //     ]}
-            //   ]
-            // };
-
-            // analysisService.getData = function () {
-            //   return chartObject;
-            // };
-
-            return analysisService;
-        }]);
 
 })();
