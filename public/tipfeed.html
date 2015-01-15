@@ -21,7 +21,8 @@
       
       <div class="crime-filter">
         <label class="">Crime Type</label>
-        <select class="crime-type" ng-model="tipfeed.crimeTypeFilter">
+        <select class="crime-type" ng-init="tipfeed.crimeTypeFilter = -1" ng-model="tipfeed.crimeTypeFilter">
+          <option value="{{-1}}" selected="selected">None</option>
           <option value="{{$index}}" ng-repeat="crimetype in tipfeed.crimeTypes track by $index">{{crimetype}}</option>
         </select>
       </div>

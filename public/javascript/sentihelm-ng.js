@@ -1714,7 +1714,7 @@
       if(data.clientId===Session.clientId){
         drawer.newTips++;
         $scope.$apply();
-      } 
+      }
     });
 
     $scope.$on('update-user', function(event, data){
@@ -1912,6 +1912,10 @@
     //triggered it; video, image or audio
     this.showAttachmentDialog = function(tip, type) {
 
+      if(this.showMediaSpinner) {
+        return;
+      }
+
       this.attachmentType = type;
 
       //Only show dialog if it, and notificationDialog,
@@ -1983,19 +1987,24 @@
     
     this.filterTips = function(filterDate, filterType) {
       //If no values were selected, ignore button press
-      if(!filterDate && !filterType) {
-        return;
+      // if(!filterDate && parseInt(filterType)<0) {
+      //   return;
+      // }
+      //Get the crime type position if available
+      if(parseInt(filterType)>=0) {
+        var crimePosition = parseInt(filterType);
       }
-      var date = filterDate? new Date(filterDate): undefined;
-      var crimePosition = filterType? parseInt(filterType): undefined;
-      var dateBefore = filterDate? new Date(filterDate): undefined;
-      dateBefore.setDate(dateBefore.getDate() - 1);
+
+      if(filterDate) {
+        var date = new Date(filterDate);
+      }
+
       var filter = {
         date: date,
-        dateBefore: dateBefore,
         crimePosition: crimePosition
       }
       $rootScope.$broadcast('discard-current-tips',[]);
+      tipfeed.tipsAvailable = true;
       paginatorService.initializeFeed(filter);
     };
 
@@ -2830,6 +2839,7 @@
     analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
     analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
     analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
+    
     var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", 
                 "October", "November", "December"];
 

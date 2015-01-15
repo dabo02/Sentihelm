@@ -86,13 +86,13 @@ io.on('connect', function(socket){
   //get query data and fetch
   socket.on('request-batch', function(data){
 
-    //**************************Testing Encryption*****************************************/
     //Get filtering values: by clientId, date
     //and tips after or before given date
     var clientId = data.clientId;
     var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
     var isAfterDate = data.isAfterDate;
     var filter = data.filter;
+    var filterActivated = false;
 
     //Create query
     var tipQuery = new Parse.Query(TipReport);
@@ -114,29 +114,20 @@ io.on('connect', function(socket){
       tipQuery.skip(data.tipsToSkip);
     }
 
-    //If filter by crime type is activated
+    //If filter by crime type if activated
     if(!!filter && !isNaN(filter.crimePosition)) {
+      filterActivated = true;
       tipQuery.equalTo("crimeListPosition", filter.crimePosition); 
-
-
-      //Get crime type number of tips
-
-
-
     }
 
     //If filter by date is activated
     if(!!filter && !!filter.date) {
-
-      tipQuery.greaterThan("createdAt", filter.dateBefore);
-      // tipQuery.lessThan("createdAt", filter.dateAfter); //date.setDate(date.getDate() + 1);
-
-
-      //Do something
-
-
-      //Get num of tips on that date.
-
+      filterActivated = true;
+      filter.date = new Date(filter.date);
+      var dateAfter = new Date(filter.date);
+      dateAfter.setDate(dateAfter.getDate() + 1);
+      tipQuery.greaterThanOrEqualTo("createdAt", filter.date);
+      tipQuery.lessThanOrEqualTo("createdAt", dateAfter);
 
     }
     //Filter by date not activated
@@ -144,7 +135,6 @@ io.on('connect', function(socket){
       //Filter by date (before or after given date)
       isAfterDate ? tipQuery.greaterThan("createdAt", date) :
                     tipQuery.lessThan("createdAt", date);
-
 
       //If isAfterDate is false, query tips before said date in
       //descending order (newest to oldest, earliest date first);
@@ -157,21 +147,19 @@ io.on('connect', function(socket){
       }
     }
 
-    tipQuery.limit(10);
-
-    
-    // if(!!crimePosition) {
-    //   tipQuery.equalTo("crimeListPosition", crimePosition); 
-    // }
-
-    // if(!!onDate){
-    //   tipQuery.equalTo('createdAt', onDate);
-    // }
+    //If filter is not activated, limit the query to 10 and get the totalTipCount 
+    //from the Client parse object on one of the received tips. If filter is activated
+    //get the totalTipCount from the number of tips received from parse.
+    if(!filterActivated) {
+      tipQuery.limit(10);
+    }
+    else {
+      tipQuery.limit(1000);
+    }
 
     //Execute query
     tipQuery.find({
       success: function(tips){
-        var totalTips = 0;
 
         //Reverse the array if the tips are in ascending
         //order(oldest to newest)
@@ -179,6 +167,12 @@ io.on('connect', function(socket){
           tips.reverse();
         }
 
+        if(filterActivated) {
+          totalTips = tips.length;
+          if(totalTips > 10) {
+            tips = tips.slice(0, 10)
+          }
+        }
         var start = new Date().getTime();
         //Loop over the array to prepare the tip objects
         //for the front end
@@ -200,7 +194,7 @@ io.on('connect', function(socket){
           //Get the client object from the first tip to be
           //able to get the total tip count later on (all
           //tips have the same client).
-          if(i===0) {
+          if(i===0 && !filterActivated) {
             totalTips = tips[i].get('clientId').attributes.totalTipCount;
           }
           //Convert tip from Parse to Javascript object
@@ -804,12 +798,12 @@ function getChartsData(tips, month, year) {
   //Initialize # of Tips vs CrimeType chart
   tipsTypeChart.type = 'PieChart';
   tipsTypeChart.options = {
-    'title': 'Amount of Tips per Crime Type'
+    'title': 'Tip Count vs Crime Type'
   };
   tipsTypeChart.data = {
     "cols": [
       {id: "t", label: "Crime Type", type: "string"},
-      {id: "s", label: "Amount of Tips", type: "number"}
+      {id: "s", label: "Tip Count", type: "number"}
     ], 
     "rows": []
   };
@@ -829,12 +823,12 @@ function getChartsData(tips, month, year) {
     //Initialize # of Tips vs Date chart
     tipsDateChart.type = 'ColumnChart';
     tipsDateChart.options = {
-      'title': 'Amount of Tips per Month'
+      'title': 'Tip Count vs Month'
     };
     tipsDateChart.data = {
       "cols": [
         {id: "t", label: "Month", type: "string"},
-        {id: "s", label: "Amount of Tips", type: "number"}
+        {id: "s", label: "Tip Count", type: "number"}
       ], 
       "rows": []
     };
@@ -854,12 +848,12 @@ function getChartsData(tips, month, year) {
     //Initialize # of Tips vs Date chart
     tipsDateChart.type = 'LineChart';
     tipsDateChart.options = {
-      title: 'Amount of Tips per Date (UTC Time)'
+      title: 'Tip Count vs Date (UTC Time)'
     };
     tipsDateChart.data = {
       "cols": [
         {id: "t", label: "Date", type: "string"},
-        {id: "s", label: "Amount of Tips", type: "number"}
+        {id: "s", label: "Tip Count", type: "number"}
       ], 
       "rows": []
     };
