@@ -815,7 +815,10 @@
     socket.on('response-batch', function(data){
       if(!!data.totalTipCount){
         paginator.tips = data.tips;
-        paginator.totalTipCount = data.totalTipCount;
+        if(paginator.resetTotalTipCount) {
+          paginator.resetTotalTipCount = false;
+          paginator.totalTipCount = data.totalTipCount;
+        }
         paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount/10), 1);
         paginator.firstTipDateInArray = data.tips[0].createdAt;
         paginator.lastTipDateInArray = data.tips[data.tips.length-1].createdAt;
@@ -854,6 +857,7 @@
       paginator.paginatorSet = [];
       paginator.paginatorSetSize = 0;
       paginator.tips;
+      paginator.resetTotalTipCount = true;
 
       //Request tips
       socket.emit('request-batch', {
@@ -866,7 +870,7 @@
 
     //Change the page and ask server for tips present in new page;
     //let controller know the page has changed
-    paginator.changePage = function(newPage){
+    paginator.changePage = function(newPage, filter){
 
       var isAfterDate = this.currentPage > newPage;
 
@@ -877,40 +881,38 @@
           clientId: Session.clientId,
           lastTipDate: isAfterDate? paginator.firstTipDateInArray: paginator.lastTipDateInArray,
           isAfterDate: isAfterDate,
-          tipsToSkip: tipsToSkip
+          tipsToSkip: tipsToSkip,
+          filter: filter
         });
         $rootScope.$broadcast('discard-current-tips',[]);
       }
-      else {
-        var currentTips = this.tips;
-      }
-
-//      $rootScope.$broadcast('new-batch', [currentTips, paginator.currentPage]);
     };
 
     //Change to previous page; update references
-    paginator.prevPage = function(){
+    paginator.prevPage = function(filter){
       --this.currentPage;
-        socket.emit('request-batch', {
-          clientId: Session.clientId,
-          lastTipDate: paginator.firstTipDateInArray,
-          isAfterDate: true
-        });
+      socket.emit('request-batch', {
+        clientId: Session.clientId,
+        lastTipDate: paginator.firstTipDateInArray,
+        isAfterDate: true,
+        filter: filter
+      });
 
-        //Discard current shown tips and update paginator
-        $rootScope.$broadcast('discard-current-tips',[]);
+      //Discard current shown tips and update paginator
+      $rootScope.$broadcast('discard-current-tips',[]);
 
-        if(this.currentPage%10===0){
-          this.pageSetUpdater(this.lastPage, true);
-        }
+      if(this.currentPage%10===0){
+        this.pageSetUpdater(this.lastPage, true);
+      }
     };
 
     //Change to next page; update references
-    paginator.nextPage = function(){
+    paginator.nextPage = function(filter){
       socket.emit('request-batch', {
         clientId: Session.clientId,
         lastTipDate: paginator.lastTipDateInArray,
-        isAfterDate: false
+        isAfterDate: false,
+        filter: filter
       });
 
       //Discard current shown tips and update paginator
@@ -936,7 +938,7 @@
 
       //Let controller know the set has changed
       $rootScope.$broadcast('paginator-set-update',[paginator.paginatorSet, paginator.lastPage]);
-    }
+    };
 
     return paginator;
   }]);
@@ -1320,8 +1322,8 @@
     return mostWantedService;
   }]);
 
-  //Service for managing the most wanted list. It can save, add
-  //or delete most wanted people to/from Parse
+  //Service for the Maps state. It can save, add
+  //or delete police stations from the map.
   app.factory("PoliceStationsService", ['$rootScope', 'Session',
   function($rootScope, Session){
     var PoliceStationsService =  {};
@@ -1782,7 +1784,6 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
-
   app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session',
   function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session){
 
@@ -1797,6 +1798,7 @@
     this.paginatorSet = paginator.paginatorSet;
     this.showMediaSpinner = false;
     this.counter = 0;
+    this.filter = undefined;
 
     this.crimeTypes = ["Assault", "Child Abuse", "Elderly Abuse", "Domestic Violence", "Drugs", "Homicide", "Animal Abuse", 
                        "Robbery", "Sex Offenses", "Bullying", "Police Misconduct", "Bribery", "Vehicle Theft", "Vandalism",
@@ -1861,21 +1863,21 @@
     //Change page to passed value;
     //scroll to top
     this.changePage = function(newPage){
-      paginatorService.changePage(newPage);
+      paginatorService.changePage(newPage, this.filter);
       $anchorScroll();
     };
 
     //Change to next page;
     //scroll to top
     this.nextPage = function(){
-      paginatorService.nextPage();
+      paginatorService.nextPage(this.filter);
       $anchorScroll();
     };
 
     //Change to previous page;
     //scroll to top
     this.prevPage = function(){
-      paginatorService.prevPage();
+      paginatorService.prevPage(this.filter);
       $anchorScroll();
     };
 
@@ -1999,13 +2001,13 @@
         var date = new Date(filterDate);
       }
 
-      var filter = {
+      this.filter = {
         date: date,
         crimePosition: crimePosition
       }
       $rootScope.$broadcast('discard-current-tips',[]);
       tipfeed.tipsAvailable = true;
-      paginatorService.initializeFeed(filter);
+      paginatorService.initializeFeed(this.filter);
     };
 
     this.loadNewTips = function(){

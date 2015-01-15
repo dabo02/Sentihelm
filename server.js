@@ -104,7 +104,6 @@ io.on('connect', function(socket){
       objectId: clientId
     });
 
-
     //Tell parse to include the user and client objects
     //instead of just passing the pointers.
     tipQuery.include('user');
@@ -145,6 +144,9 @@ io.on('connect', function(socket){
       if (!isAfterDate) {
         tipQuery.descending("createdAt");
       }
+      else {
+        tipQuery.ascending("createdAt");
+      }
     }
 
     //If filter is not activated, limit the query to 10 and get the totalTipCount 
@@ -161,18 +163,20 @@ io.on('connect', function(socket){
     tipQuery.find({
       success: function(tips){
 
-        //Reverse the array if the tips are in ascending
-        //order(oldest to newest)
-        if (isAfterDate) {
-          tips.reverse();
-        }
-
+        //Get the total tip count if filter is activated
         if(filterActivated) {
           totalTips = tips.length;
           if(totalTips > 10) {
             tips = tips.slice(0, 10)
           }
         }
+
+        //Reverse the array if the tips are in ascending
+        //order(oldest to newest)
+        if (isAfterDate) {
+          tips.reverse();
+        }
+
         var start = new Date().getTime();
         //Loop over the array to prepare the tip objects
         //for the front end

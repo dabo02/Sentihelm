@@ -1,6 +1,6 @@
 .ngdialog.ngdialog-attachment {
-  padding-bottom: 160px;
-  padding-top: 160px;
+  padding-bottom: 30px;
+  padding-top: 100px;
 }
 
 .ngdialog.ngdialog-attachment .ngdialog-content {
@@ -10,10 +10,11 @@
   font-size: 1.1em;
   line-height: 1.5em;
   margin: 0 auto;
-  max-width: 100%;
+  max-width: 60%;
+  max-height: 100%;
   padding: 0;
   position: relative;
-  width: 40%;
+  /*width: 40%;*/
 }
 
 .ngdialog.ngdialog-attachment .ngdialog-content h1,
