@@ -6,8 +6,8 @@
     <div class="col-md-2 no-padding pointer" accept="image/*"
          ng-file-select="fileSelect({files: $files, index: index})">
         <a class="thumbnail no-margin no-border">
-            <img ng-src="{{person.attributes.photoUrl ||
-                            person.attributes.photo._url ||
+            <img ng-src="{{criminal.attributes.photoUrl ||
+                            criminal.attributes.photo._url ||
                             './resources/images/no-profile-pic.png'}}"
                  alt="...">
         </a>
@@ -19,7 +19,7 @@
 
         <div class="col-md-3">
             <input type="text" class="form-control" placeholder="Name"
-                   ng-model="person.attributes.name"
+                   ng-model="criminal.attributes.name"
                    ng-change="change({index:index})">
         </div>
         <br><br><br>
@@ -27,7 +27,7 @@
 
         <div class="col-md-3">
             <input class="form-control" placeholder="Alias"
-                   ng-model="person.attributes.alias"
+                   ng-model="criminal.attributes.alias"
                    ng-change="change({index:index})">
         </div>
     </div>
@@ -37,14 +37,14 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Birthdate"
-                   ng-model="person.attributes.birthdate"
+                   ng-model="criminal.attributes.birthdate"
                    ng-change="change({index:index})">
         </div>
         <label for="age" class="col-md-2 control-label">Age</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Age"
-                   ng-model="person.attributes.age"
+                   ng-model="criminal.attributes.age"
                    ng-change="change({index:index})">
         </div>
     </div>
@@ -54,14 +54,14 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Eye Color"
-                   ng-model="person.attributes.eyeColor"
+                   ng-model="criminal.attributes.eyeColor"
                    ng-change="change({index:index})">
         </div>
         <label for="hairColor" class="col-md-2 control-label">Hair Color</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Hair Color"
-                   ng-model="person.attributes.hairColor"
+                   ng-model="criminal.attributes.hairColor"
                    ng-change="change({index:index})">
         </div>
     </div>
@@ -71,14 +71,14 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Height"
-                   ng-model="person.attributes.height"
+                   ng-model="criminal.attributes.height"
                    ng-change="change({index:index})">
         </div>
         <label for="weight" class="col-md-2 control-label">Weight</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Weight"
-                   ng-model="person.attributes.weight"
+                   ng-model="criminal.attributes.weight"
                    ng-change="change({index:index})">
         </div>
     </div>
@@ -88,14 +88,14 @@
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Race"
-                   ng-model="person.attributes.race"
+                   ng-model="criminal.attributes.race"
                    ng-change="change({index:index})">
         </div>
         <label for="characteristics" class="col-md-2 control-label">Characteristics</label>
 
         <div class="col-md-2">
             <input class="form-control" placeholder="Characteristics"
-                   ng-model="person.attributes.characteristics"
+                   ng-model="criminal.attributes.characteristics"
                    ng-change="change({index:index})">
         </div>
     </div>
@@ -105,7 +105,7 @@
 
         <div class="col-md-6">
             <textarea style="resize:none" class="form-control" rows="4" id="global-notification-body"
-                      placeholder="Message" ng-model="person.attributes.summary"
+                      placeholder="Message" ng-model="criminal.attributes.summary"
                       ng-change="change({index:index})"></textarea>
         </div>
     </div>
