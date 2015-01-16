@@ -129,24 +129,22 @@ io.on('connect', function(socket){
       tipQuery.lessThanOrEqualTo("createdAt", dateAfter);
 
     }
-    //Filter by date not activated
-    else {
-      //Filter by date (before or after given date)
-      isAfterDate ? tipQuery.greaterThan("createdAt", date) :
-                    tipQuery.lessThan("createdAt", date);
 
-      //If isAfterDate is false, query tips before said date in
-      //descending order (newest to oldest, earliest date first);
-      //otherwise, query tips after date in ascending order, but
-      //reverse final results array or tips will be incorrectly
-      //displayed from oldest to newest (tips in page 1 will be tips
-      //corresponding to page 10, and vice versa)
-      if (!isAfterDate) {
-        tipQuery.descending("createdAt");
-      }
-      else {
-        tipQuery.ascending("createdAt");
-      }
+    //Filter by date (before or after given date)
+    isAfterDate ? tipQuery.greaterThan("createdAt", date) :
+                  tipQuery.lessThan("createdAt", date);
+
+    //If isAfterDate is false, query tips before said date in
+    //descending order (newest to oldest, earliest date first);
+    //otherwise, query tips after date in ascending order, but
+    //reverse final results array or tips will be incorrectly
+    //displayed from oldest to newest (tips in page 1 will be tips
+    //corresponding to page 10, and vice versa)
+    if (!isAfterDate) {
+      tipQuery.descending("createdAt");
+    }
+    else {
+      tipQuery.ascending("createdAt");
     }
 
     //If filter is not activated, limit the query to 10 and get the totalTipCount 
