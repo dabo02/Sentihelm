@@ -9,7 +9,7 @@
      * @requires none
      * @description Creates the module for the controllers and directives of most wanted
      * */
-    var mostWantedModule = angular.module('sh.mostwanted', []);
+    var mostWantedModule = angular.module('sh.mostwanted', [])
 
     /**
      * @ngdoc Directive
@@ -20,7 +20,7 @@
      * @scope
      * @description custom angular directive used in html as wanted-person
      * */
-    mostWantedModule.directive('wantedPerson', function ($rootScope) {
+        .directive('wantedPerson', function ($rootScope) {
         return {
             restrict: 'EA',
             scope: {
@@ -61,6 +61,26 @@
             }
 
         };
-    });
+    })
+        .filter('limitName', function () {
+        function limitName(inputName) {
+            var nameArray = inputName.split(' ');
+            var name = nameArray[0] + ' ' + nameArray[1];
+            return name;
+        }
+
+        return limitName;
+    })
+        .filter('limitSummary', function () {
+            function limitSummary(inputSummary) {
+                return inputSummary.split(' ').map(function (word, count) {
+                    if (count < 35) {
+                        return word;
+                    }
+                }).join(' ') + '...';
+            }
+
+            return limitSummary;
+        });
 
 })(window.angular);

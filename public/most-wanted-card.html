@@ -10,7 +10,7 @@
             <div class="btn btn-default col-xs-offset-12 edit-btn" ng-click="toggleEditing()">
                 <span class="glyphicon glyphicon-pencil"></span>
             </div>
-            <div class="col-xs-5"><em>Name:</em> {{criminal.attributes.name | limitTo:20}}</div>
+            <div class="col-xs-5"><em>Name:</em> {{criminal.attributes.name | limitName}}</div>
             <div class="col-xs-5"><em>Alias:</em> {{criminal.attributes.alias}}</div>
             <br/><br/>
 
@@ -20,7 +20,7 @@
             <br/>
 
             <div class="col-xs-9"><em>Wanted For:</em> {{criminal.attributes.summary || "Reasons:;
-                unknown." | limitTo: 200 | lowercase;}}
+                unknown." | limitSummary;}}
             </div>
             <br/><br/>
         </div>
