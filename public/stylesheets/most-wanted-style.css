@@ -56,6 +56,12 @@
     margin-left: 30px;
 }
 
-.wanted-card.profile {
-    margin-top: 15px;
+.wanted-card.thumbnail {
+}
+
+.wanted-card img.profile { /* Do not scale the image */
+    object-fit: scale-down;
+    object-position: center; /* Center the image within the element */
+    height: 130px;
+    width: 140px;
 }

@@ -2,8 +2,8 @@
     <div class="row">
         <div class="col-xs-1 most-wanted-ranking-number">{{index + 1}}</div>
 
-        <div class="no-margin no-border col-xs-2 no-padding pointer thumbnail profile">
-            <img ng-src="{{criminal.attributes.photoUrl || criminal.attributes.photo._url || './resources/images/no-profile-pic.png'}}"
+        <div class="no-margin no-border col-xs-2 no-padding pointer thumbnail">
+            <img class="profile" ng-src="{{criminal.attributes.photoUrl || criminal.attributes.photo._url || './resources/images/no-profile-pic.png'}}"
                  alt="..."/>
         </div>
         <div class="col-xs-8">
@@ -20,7 +20,7 @@
             <br/>
 
             <div class="col-xs-9"><em>Wanted For:</em> {{criminal.attributes.summary || "Reasons:;
-                unknown." | limitSummary;}}
+                unknown." | limitSummary;;}}
             </div>
             <br/><br/>
         </div>
