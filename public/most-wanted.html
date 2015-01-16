@@ -4,8 +4,7 @@
     <div class="most-wanted-mid-container">
         <ul class="container" ui-sortable="mostWantedCtrl.sortableOptions" ng-model="mostWantedCtrl.wantedArray">
 
-            <li ng-repeat="criminal in mostWantedCtrl.wantedArray track by $index"
-                class="wanted-list">
+            <li ng-repeat="criminal in mostWantedCtrl.wantedArray track by $index" class="wanted-list">
                 <!-- Add wanted-card and wanted-editor -->
                 <wanted-person criminal="criminal"
                                wanted-array="mostWantedCtrl.wantedArray"
