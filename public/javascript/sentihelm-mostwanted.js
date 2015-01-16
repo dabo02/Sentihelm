@@ -62,6 +62,12 @@
 
             };
         })
+
+        /**
+         * @ngdoc Filter
+         * @name limitName
+         * @description limits the name to only two words for neater fit.
+         * */
         .filter('limitName', function () {
             function limitName(inputName) {
                 var nameArray = inputName.split(' ');
@@ -71,6 +77,12 @@
 
             return limitName;
         })
+
+        /**
+         * @ngdoc Filter
+         * @name limitSummary
+         * @description limits the summary of a criminal to only 35 words.
+         * */
         .filter('limitSummary', function () {
             function limitSummary(inputSummary) {
                 return inputSummary.split(' ').map(function (word, count) {
