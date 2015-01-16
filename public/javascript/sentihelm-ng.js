@@ -1,5 +1,5 @@
 (function(){
-  var app = angular.module('sentihelm', ['ngSanitize', 'ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ngCsv']);
+  var app = angular.module('sentihelm', ['ngSanitize', 'ui.router','btford.socket-io','google-maps'.ns(), 'ngDialog','angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ngCsv', 'ngToast']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -1674,7 +1674,7 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', function($scope, $rootScope, snapRemote, $state, socket, Session, $window) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', function($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast) {
     var drawer = this;
     this.newTips = 0;
     this.isAdmin = Session.userRoles.indexOf('admin')===-1? false : true;
@@ -1715,6 +1715,10 @@
     socket.on('new-tip', function(data){
       if(data.clientId===Session.clientId){
         drawer.newTips++;
+        ngToast.create({
+          content: 'New tip received.',
+          class: 'info'
+        });
         $scope.$apply();
       }
     });
@@ -1735,7 +1739,7 @@
   //current video, chat with current mobile client,
   //information on current call and all other controls
   //to swap video calls
-  app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', function($scope, socket, VideoStreamsService){
+  app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', function($scope, socket, VideoStreamsService, ngToast){
     var vidStrmCtrl = this;
     this.queue = [];
     this.currentStream ={};
@@ -1753,6 +1757,10 @@
     socket.on('new-video-stream', function(data){
       var stream = data.stream;
       vidStrmCtrl.queue.unshift(stream);
+      ngToast.create({
+        content: 'New video stream available.',
+        class: 'info'
+      });
     });
 
     $scope.$on('stream-destroyed', function(event, data){
@@ -1784,8 +1792,8 @@
   //Controller for tipfeed route; handles the tip feed
   //which lets you interact with tips, depends heavily
   //on paginatorService
-  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session',
-  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session){
+  app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session', 'ngToast',
+  function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session, ngToast){
 
     //Vars needed for pagination; paginatorSet contains
     //number of total pages, divided by groups of 10
