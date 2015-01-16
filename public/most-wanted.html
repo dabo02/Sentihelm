@@ -1,39 +1,39 @@
 <div class="jumbotron vertical-center"
      style="background-color:white;"
      ng-controller="MostWantedController as mostWantedCtrl">
-  <div class="most-wanted-mid-container">
-    <ul class="container" ui-sortable="mostWantedCtrl.sortableOptions" ng-model="mostWantedCtrl.wantedArray">
+    <div class="most-wanted-mid-container">
+        <ul class="container" ui-sortable="mostWantedCtrl.sortableOptions" ng-model="mostWantedCtrl.wantedArray">
 
-      <li ng-repeat="criminal in mostWantedCtrl.wantedArray track by $index"
-          class="wanted-list">
-        <!-- Add wanted-card and wanted-editor -->
-        <wanted-person criminal="criminal"
-                       wanted-array="mostWantedCtrl.wantedArray"
-                       edited-people-indices="mostWantedCtrl.editedPeopleIndices"
-                       disable-new-button="mostWantedCtrl.disabledNewButton"
-                       change="mostWantedCtrl.onChange(index)"
-                       save="mostWantedCtrl.save(index)"
-                       confirm="mostWantedCtrl.showConfirmDialog(index)"
-                       file-select="mostWantedCtrl.onFileSelect(files, index)"
-                       index="$index">
-        </wanted-person>
-      </li>
+            <li ng-repeat="criminal in mostWantedCtrl.wantedArray track by $index"
+                class="wanted-list">
+                <!-- Add wanted-card and wanted-editor -->
+                <wanted-person criminal="criminal"
+                               wanted-array="mostWantedCtrl.wantedArray"
+                               edited-people-indices="mostWantedCtrl.editedPeopleIndices"
+                               disable-new-button="mostWantedCtrl.disabledNewButton"
+                               change="mostWantedCtrl.onChange(index)"
+                               save="mostWantedCtrl.save(index)"
+                               confirm="mostWantedCtrl.showConfirmDialog(index)"
+                               file-select="mostWantedCtrl.onFileSelect(files, index)"
+                               index="$index">
+                </wanted-person>
+            </li>
+            <!-- </li>
 
-      <div class="form-group">
-        <div class="col-md-4 col-md-offset-4">
-          <button type="submit" class="btn btn-primary" ng-click="mostWantedCtrl.add()"
-                  ng-disabled="mostWantedCtrl.disableNewButton">Add Most Wanted
-          </button>
+          </ul> -->
+        </ul>
+
+        <!--Show if NO most wanted are available-->
+        <div class="container" ng-if="mostWantedCtrl.wantedArray.length===0">
+            <h2 class="text-center">No Records Found</h2>
         </div>
-      </div>
-      <!-- </li>
 
-    </ul> -->
-    </ul>
+        <div class="form-group">
+            <div class="col-md-4 col-md-offset-4">
+                <button type="submit" class="btn btn-primary" ng-click="mostWantedCtrl.add()"
+                        ng-hide="mostWantedCtrl.disableNewButton">Add Most Wanted
+                </button>
+            </div>
+        </div>
 
-    <!--Show if NO most wanted are available-->
-    <div class="container" ng-if="mostWantedCtrl.wantedArray.length===0">
-      <h2 class="text-center">No Records Found</h2>
     </div>
-
-  </div>
