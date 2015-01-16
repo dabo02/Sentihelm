@@ -63,11 +63,11 @@
             };
         })
 
-        /**
-         * @ngdoc Filter
-         * @name limitName
-         * @description limits the name to only two words for neater fit.
-         * */
+    /**
+     * @ngdoc Filter
+     * @name limitName
+     * @description limits the name to only two words for neater fit.
+     * */
         .filter('limitName', function () {
             function limitName(inputName) {
                 var nameArray = inputName.split(' ');
@@ -78,26 +78,26 @@
             return limitName;
         })
 
-        /**
-         * @ngdoc Filter
-         * @name limitSummary
-         * @description limits the summary of a criminal to only 35 words.
-         * */
+    /**
+     * @ngdoc Filter
+     * @name limitSummary
+     * @description limits the summary of a criminal to only 35 words.
+     * */
         .filter('limitSummary', function () {
             function limitSummary(inputSummary) {
                 return inputSummary.split(' ').map(function (word, count) {
-                        var theWord = '';
-                        if (count < 35) {
-                            if (count === 0) {
-                                theWord = word[0].toUpperCase() + word.split('').slice(1).join('').toLowerCase();
-                            } else if (count === 34) {
-                                theWord = word + '...';
-                            } else {
-                                theWord = word.toLowerCase();
-                            }
-                            return theWord;
+                    var theWord = '';
+                    if (count < 35) {
+                        if (count === 0) {
+                            theWord = word[0].toUpperCase() + word.split('').slice(1).join('').toLowerCase();
+                        } else if (count === 34) {
+                            theWord = word + '...';
+                        } else {
+                            theWord = word.toLowerCase();
                         }
-                    }).join(' ');
+                        return theWord;
+                    }
+                }).join(' ');
             }
 
             return limitSummary;
