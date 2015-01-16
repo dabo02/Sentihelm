@@ -6,7 +6,7 @@
     <div class="col-md-2 no-padding pointer" accept="image/*"
          ng-file-select="fileSelect({files: $files, index: index})">
         <a class="thumbnail no-margin no-border">
-            <img ng-src="{{criminal.attributes.photoUrl ||
+            <img class="profile" ng-src="{{criminal.attributes.photoUrl ||
                             criminal.attributes.photo._url ||
                             './resources/images/no-profile-pic.png'}}"
                  alt="...">
