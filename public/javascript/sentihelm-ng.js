@@ -1,5 +1,5 @@
 (function(){
-    var app = angular.module('sentihelm', ['ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted']);
+    var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted','ngCsv', 'ngToast']);
 
     //Sets up all the states/routes the app will handle,
     //so as to have a one page app with deep-linking
@@ -1569,6 +1569,10 @@
         socket.on('new-video-stream', function(data){
             var stream = data.stream;
             vidStrmCtrl.queue.unshift(stream);
+            ngToast.create({
+                content: 'New video stream available.',
+                class: 'info'
+            });
         });
 
         $scope.$on('stream-destroyed', function(event, data){
@@ -1601,8 +1605,8 @@
     //which lets you interact with tips, depends heavily
     //on paginatorService
 
-    app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session',
-        function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session){
+    app.controller('TipFeedController', ['$scope', '$rootScope','socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session', 'ngToast',
+        function($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session, ngToast) {
 
             //Vars needed for pagination; paginatorSet contains
             //number of total pages, divided by groups of 10
@@ -1615,6 +1619,7 @@
             this.paginatorSet = paginator.paginatorSet;
             this.showMediaSpinner = false;
             this.counter = 0;
+            this.filter = undefined;
 
             this.crimeTypes = ["Assault", "Child Abuse", "Elderly Abuse", "Domestic Violence", "Drugs", "Homicide", "Animal Abuse",
                 "Robbery", "Sex Offenses", "Bullying", "Police Misconduct", "Bribery", "Vehicle Theft", "Vandalism",
@@ -1679,21 +1684,21 @@
             //Change page to passed value;
             //scroll to top
             this.changePage = function(newPage){
-                paginatorService.changePage(newPage);
+                paginatorService.changePage(newPage, this.filter);
                 $anchorScroll();
             };
 
             //Change to next page;
             //scroll to top
             this.nextPage = function(){
-                paginatorService.nextPage();
+                paginatorService.nextPage(this.filter);
                 $anchorScroll();
             };
 
             //Change to previous page;
             //scroll to top
             this.prevPage = function(){
-                paginatorService.prevPage();
+                paginatorService.prevPage(this.filter);
                 $anchorScroll();
             };
 
@@ -1729,6 +1734,10 @@
             //Shows dialog that contains attachment which
             //triggered it; video, image or audio
             this.showAttachmentDialog = function(tip, type) {
+
+                if(this.showMediaSpinner) {
+                    return;
+                }
 
                 this.attachmentType = type;
 
@@ -1801,20 +1810,25 @@
 
             this.filterTips = function(filterDate, filterType) {
                 //If no values were selected, ignore button press
-                if(!filterDate && !filterType) {
-                    return;
+                // if(!filterDate && parseInt(filterType)<0) {
+                //   return;
+                // }
+                //Get the crime type position if available
+                if(parseInt(filterType)>=0) {
+                    var crimePosition = parseInt(filterType);
                 }
-                var date = filterDate? new Date(filterDate): undefined;
-                var crimePosition = filterType? parseInt(filterType): undefined;
-                var dateBefore = filterDate? new Date(filterDate): undefined;
-                dateBefore.setDate(dateBefore.getDate() - 1);
-                var filter = {
+
+                if(filterDate) {
+                    var date = new Date(filterDate);
+                }
+
+                this.filter = {
                     date: date,
-                    dateBefore: dateBefore,
                     crimePosition: crimePosition
-                };
+                }
                 $rootScope.$broadcast('discard-current-tips',[]);
-                paginatorService.initializeFeed(filter);
+                tipfeed.tipsAvailable = true;
+                paginatorService.initializeFeed(this.filter);
             };
 
             this.loadNewTips = function(){
@@ -2276,8 +2290,8 @@
                 var mostWanted = MostWantedCtrl.wantedArray[index];
 
                 fileReader.readAsDataUrl(file, $scope)
-                    .then(function (result) {
-                        mostWanted.attributes.photoUrl = result;
+                    .then(function(result) {
+                        mostWanted.attributes.photoUrl =  result;
                         MostWantedCtrl.editedPeopleIndices[index] = true;
                     });
 
@@ -2289,8 +2303,6 @@
             this.add = function () {
                 this.wantedArray.push({attributes: {}});
                 this.disableNewButton = true;
-                // hack so that when adding a new person the wantedPerson directive knows weather to show or hide the editor
-                $rootScope.lastPersonAddedIndex = this.wantedArray.length - 1;
             };
 
             //Save new most wanted, or update an old one,
@@ -2303,8 +2315,6 @@
                 else {
                     MostWantedService.saveMostWanted(this.wantedArray[index], index);
                 }
-
-                console.log(this.wantedArray[index]);
             };
 
             // Delete most wanted from local array and from
