@@ -1,7 +1,4 @@
 <div  ng-controller="AttachmentController as attachCtrl" align="center">
-
-  <!--======SPINNER (LOADING)======-->
-<!--  <span ng-if='attachCtrl.showSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-media-spinner" spinner-start-active="1"></span>-->
   
   <div ng-show="attachCtrl.attachType === 'IMG'">
     <img ng-src={{attachCtrl.address}}  class="attachment-dialog">
