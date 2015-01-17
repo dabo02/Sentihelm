@@ -86,13 +86,13 @@ io.on('connect', function(socket){
   //get query data and fetch
   socket.on('request-batch', function(data){
 
-    //**************************Testing Encryption*****************************************/
     //Get filtering values: by clientId, date
     //and tips after or before given date
     var clientId = data.clientId;
     var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
     var isAfterDate = data.isAfterDate;
     var filter = data.filter;
+    var filterActivated = false;
 
     //Create query
     var tipQuery = new Parse.Query(TipReport);
@@ -104,7 +104,6 @@ io.on('connect', function(socket){
       objectId: clientId
     });
 
-
     //Tell parse to include the user and client objects
     //instead of just passing the pointers.
     tipQuery.include('user');
@@ -114,65 +113,61 @@ io.on('connect', function(socket){
       tipQuery.skip(data.tipsToSkip);
     }
 
-    //If filter by crime type is activated
+    //If filter by crime type if activated
     if(!!filter && !isNaN(filter.crimePosition)) {
+      filterActivated = true;
       tipQuery.equalTo("crimeListPosition", filter.crimePosition); 
-
-
-      //Get crime type number of tips
-
-
-
     }
 
     //If filter by date is activated
     if(!!filter && !!filter.date) {
-
-      tipQuery.greaterThan("createdAt", filter.dateBefore);
-      // tipQuery.lessThan("createdAt", filter.dateAfter); //date.setDate(date.getDate() + 1);
-
-
-      //Do something
-
-
-      //Get num of tips on that date.
-
+      filterActivated = true;
+      filter.date = new Date(filter.date);
+      var dateAfter = new Date(filter.date);
+      dateAfter.setDate(dateAfter.getDate() + 1);
+      tipQuery.greaterThanOrEqualTo("createdAt", filter.date);
+      tipQuery.lessThanOrEqualTo("createdAt", dateAfter);
 
     }
-    //Filter by date not activated
+
+    //Filter by date (before or after given date)
+    isAfterDate ? tipQuery.greaterThan("createdAt", date) :
+                  tipQuery.lessThan("createdAt", date);
+
+    //If isAfterDate is false, query tips before said date in
+    //descending order (newest to oldest, earliest date first);
+    //otherwise, query tips after date in ascending order, but
+    //reverse final results array or tips will be incorrectly
+    //displayed from oldest to newest (tips in page 1 will be tips
+    //corresponding to page 10, and vice versa)
+    if (!isAfterDate) {
+      tipQuery.descending("createdAt");
+    }
     else {
-      //Filter by date (before or after given date)
-      isAfterDate ? tipQuery.greaterThan("createdAt", date) :
-                    tipQuery.lessThan("createdAt", date);
-
-
-      //If isAfterDate is false, query tips before said date in
-      //descending order (newest to oldest, earliest date first);
-      //otherwise, query tips after date in ascending order, but
-      //reverse final results array or tips will be incorrectly
-      //displayed from oldest to newest (tips in page 1 will be tips
-      //corresponding to page 10, and vice versa)
-      if (!isAfterDate) {
-        tipQuery.descending("createdAt");
-      }
+      tipQuery.ascending("createdAt");
     }
 
-
-    tipQuery.limit(10);
-
-    
-    // if(!!crimePosition) {
-    //   tipQuery.equalTo("crimeListPosition", crimePosition); 
-    // }
-
-    // if(!!onDate){
-    //   tipQuery.equalTo('createdAt', onDate);
-    // }
+    //If filter is not activated, limit the query to 10 and get the totalTipCount 
+    //from the Client parse object on one of the received tips. If filter is activated
+    //get the totalTipCount from the number of tips received from parse.
+    if(!filterActivated) {
+      tipQuery.limit(10);
+    }
+    else {
+      tipQuery.limit(1000);
+    }
 
     //Execute query
     tipQuery.find({
       success: function(tips){
-        var totalTips = 0;
+
+        //Get the total tip count if filter is activated
+        if(filterActivated) {
+          totalTips = tips.length;
+          if(totalTips > 10) {
+            tips = tips.slice(0, 10)
+          }
+        }
 
         //Reverse the array if the tips are in ascending
         //order(oldest to newest)
@@ -201,7 +196,7 @@ io.on('connect', function(socket){
           //Get the client object from the first tip to be
           //able to get the total tip count later on (all
           //tips have the same client).
-          if(i===0) {
+          if(i===0 && !filterActivated) {
             totalTips = tips[i].get('clientId').attributes.totalTipCount;
           }
           //Convert tip from Parse to Javascript object
@@ -338,7 +333,7 @@ io.on('connect', function(socket){
 
   //Download data from parse and organize it.
   socket.on('analyze-data', function(data){
-    analyzeData(data.clientId);
+    analyzeData(data);
   });
 
 });
@@ -723,8 +718,24 @@ function resetPassword(email) {
   });
 }
 
+function analyzeData(data) {
+  var clientId = data.clientId;
+  var month = data.month;
+  var year = data.year;
+  var isMonthSelected = !isNaN(month);
 
-function analyzeData(clientId) {
+  //If not month was provided, set month to January
+  if(!isMonthSelected) {
+    month = 0;
+  }
+  //Make sure the values are integers
+  else if (typeof month == 'string' || month instanceof String) {
+    month = parseInt(month);
+  }
+  if (typeof year == 'string' || year instanceof String) {
+    year = parseInt(year);
+  }
+
   //Create query
   var tipQuery = new Parse.Query(TipReport);
   //Filter by clientId
@@ -734,23 +745,47 @@ function analyzeData(clientId) {
     objectId: clientId
   });
   tipQuery.limit(1000);
+  if(!isMonthSelected) {
+    tipQuery.greaterThanOrEqualTo("createdAt", new Date(year, month));
+    tipQuery.lessThanOrEqualTo("createdAt", new Date(year+1, month));
+  }
+  else {
+    tipQuery.greaterThanOrEqualTo("createdAt", new Date(year, month));
+    // If month is 11(December), upper bound will be january 1 of the next year
+    tipQuery.lessThanOrEqualTo("createdAt", new Date(month!==11?year: year+1, (month+1)%12));
+  }
   tipQuery.find({
     success: function(tips){
       var charts = {};
       charts.tipCount = tips.length;
 
-      charts = getChartsData(tips);
+      if(isMonthSelected) {
+        charts = getChartsData(tips, month, year);
+      }
+      else {
+        charts = getChartsData(tips);
+      }
 
       io.sockets.emit('analyze-data-response', charts);
     },
     error: function(error){
-
+      io.sockets.emit('analyze-data-error', error);
     }
   });
 
 }
 
-function getChartsData(tips) {
+//Create the charts. If month is defined, create the LineChart with the days of 
+//the month.
+function getChartsData(tips, month, year) {
+
+        //   var data = google.visualization.arrayToDataTable([
+        //   ['Year', 'Sales', 'Expenses'],
+        //   ['2004',  1000,      400],
+        //   ['2005',  1170,      460],
+        //   ['2006',  660,       1120],
+        //   ['2007',  1030,      540]
+        // ]);
 
   var crimeTypes = ["Assault", "Child Abuse", "Elderly Abuse", "Domestic Violence", "Drugs", "Homicide", "Animal Abuse", 
                      "Robbery", "Sex Offenses", "Bullying", "Police Misconduct", "Bribery", "Vehicle Theft", "Vandalism",
@@ -765,15 +800,16 @@ function getChartsData(tips) {
   //Initialize # of Tips vs CrimeType chart
   tipsTypeChart.type = 'PieChart';
   tipsTypeChart.options = {
-    'title': 'Crime Types Chart'
+    'title': 'Tip Count vs Crime Type'
   };
   tipsTypeChart.data = {
     "cols": [
       {id: "t", label: "Crime Type", type: "string"},
-      {id: "s", label: "Amount of Tips", type: "number"}
+      {id: "s", label: "Tip Count", type: "number"}
     ], 
     "rows": []
   };
+  tipsTypeChart.dataArray = [];
   for (var i=0; i<crimeTypes.length; i++) {
     tipsTypeChart.data.rows.push({
       c: [
@@ -781,78 +817,83 @@ function getChartsData(tips) {
         {v: 0}
       ]
     });
+    tipsTypeChart.dataArray.push({a: crimeTypes[i], b:0});
   }
 
-  //Initialize # of Tips vs Date chart
-  tipsDateChart.type = 'ColumnChart';
-  tipsDateChart.options = {
-    'title': 'Amount of Tips Chart'
-  };
-  tipsDateChart.data = {
-    "cols": [
-      {id: "t", label: "Date", type: "string"},
-      {id: "s", label: "Amount of Tips", type: "number"}
-    ], 
-    "rows": []
-  };
-  for (var i=0; i<months.length; i++) {
-    tipsDateChart.data.rows.push({
-      c: [
-        {v: months[i]},
-        {v: 0}
-      ]
-    });
+  //Create column chart with months of the year
+  if(isNaN(month)) {
+    //Initialize # of Tips vs Date chart
+    tipsDateChart.type = 'ColumnChart';
+    tipsDateChart.options = {
+      'title': 'Tip Count vs Month'
+    };
+    tipsDateChart.data = {
+      "cols": [
+        {id: "t", label: "Month", type: "string"},
+        {id: "s", label: "Tip Count", type: "number"}
+      ], 
+      "rows": []
+    };
+    tipsDateChart.dataArray = [];
+    for (var i=0; i<months.length; i++) {
+      tipsDateChart.data.rows.push({
+        c: [
+          {v: months[i]},
+          {v: 0}
+        ]
+      });
+      tipsDateChart.dataArray.push({a: months[i], b:0});
+    }
   }
+  //Create line chart with days of month
+  else {
+    //Initialize # of Tips vs Date chart
+    tipsDateChart.type = 'LineChart';
+    tipsDateChart.options = {
+      title: 'Tip Count vs Date (UTC Time)'
+    };
+    tipsDateChart.data = {
+      "cols": [
+        {id: "t", label: "Date", type: "string"},
+        {id: "s", label: "Tip Count", type: "number"}
+      ], 
+      "rows": []
+    };
+    tipsDateChart.dataArray = [];
 
+    var tempDate = new Date(year, month);
+    while(tempDate.getUTCMonth() === month) {
+      tipsDateChart.data.rows.push({
+        c: [
+          {v: tempDate.getUTCDate()},
+          {v: 0}
+        ]
+      });
+      tipsDateChart.dataArray.push({a: tempDate.getUTCDate(), b:0});
+      tempDate.setDate(tempDate.getUTCDate()+1);
+    }
+  }
 
   //Fill out data for both charts
   for (var i=0; i<tips.length; i++) {
     var crimePos = tips[i].attributes.crimeListPosition;
-    var monthPos = tips[i].createdAt.getMonth();
+    var monthPos = tips[i].createdAt.getUTCMonth();
+    var date = tips[i].createdAt.getUTCDate() - 1; //minus 1 to match the position on the array
     tipsTypeChart.data.rows[crimePos].c[1].v++;
-    tipsDateChart.data.rows[monthPos].c[1].v++;
+    tipsTypeChart.dataArray[crimePos].b++;
+    //Feel the column chart.
+    if(isNaN(month)) {
+      tipsDateChart.data.rows[monthPos].c[1].v++;
+      tipsDateChart.dataArray[monthPos].b++;
+    }
+    else {
+      tipsDateChart.data.rows[date].c[1].v++;
+      tipsDateChart.dataArray[date].b++;
+    }
   }
 
   return {
     tipsTypeChart: tipsTypeChart,
     tipsDateChart: tipsDateChart
   };
-}
-
-function getSampleChartData() {
-  var chartObject = {};
-   // $routeParams.chartType == BarChart or PieChart or ColumnChart...
-  chartObject.type = 'PieChart';
-  chartObject.options = {
-    'title': 'How Much Pizza I Ate Last Night'
-  };
-  chartObject.data = {
-    "cols": [
-      {id: "t", label: "Topping", type: "string"},
-      {id: "s", label: "Slices", type: "number"}
-    ], 
-    "rows": [
-      {c: [
-          {v: "Mushrooms"},
-          {v: 3},
-      ]},
-      {c: [
-          {v: "Onions"},
-          {v: 3},
-      ]},
-      {c: [
-          {v: "Olives"},
-          {v: 31}
-      ]},
-      {c: [
-          {v: "Zucchini"},
-          {v: 1},
-      ]},
-      {c: [
-          {v: "Pepperoni"},
-          {v: 2},
-      ]}
-    ]
-  };
-  return chartObject;
 }

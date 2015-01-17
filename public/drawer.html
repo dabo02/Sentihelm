@@ -7,6 +7,8 @@
 
   <ul class="list-group dark-gray-bg" role="menu">
 
+    <!--======Drawer button for Profile======-->
+    <!--=====================================-->
     <li class="list-group-item drawer-profile-item pointer"
      ng-click="drawerCtrl.changeState('profile')">
 
@@ -19,9 +21,10 @@
           <span style="margin-left:20px; font-size: 10;line-height: 2;">{{drawerCtrl.clientAgency}}</span>
         </div>
       </h5>
-
     </li>
 
+    <!--======Drawer buttons in ng-repeat======-->
+    <!--=======================================-->
     <li class="list-group-item dark-gray-bg drawer-item pointer"
      ng-repeat="item in drawerCtrl.entries"
      ng-click="drawerCtrl.changeState(item.state)"
@@ -35,6 +38,8 @@
 
     </li>
 
+    <!--======Drawer button for Admin Panel======-->
+    <!--=========================================-->
     <li class="list-group-item dark-gray-bg drawer-item pointer"
      ng-if="drawerCtrl.isAdmin"
      ng-click="drawerCtrl.changeState('admin-panel')">
@@ -45,6 +50,9 @@
       </h5>
       
     </li>
+
+    <!--======Log out button======-->
+    <!--==========================-->
     <li class="list-group-item dark-gray-bg drawer-item pointer"
      ng-click="drawerCtrl.logOut()">
 
@@ -52,9 +60,7 @@
         <span class="glyphicon glyphicon-off"></span>
         <span style="margin-left:10px;">Log Out</span>
       </h5>
-      
     </li>
 
   </ul>
-
 </div>

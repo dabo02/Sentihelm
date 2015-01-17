@@ -7,15 +7,15 @@
       <div ng-if="loginCtrl.resetPasswordAvailable">
 
         <div class="form-group">
-          <label class="col-sm-3 control-label">User ID</label>
+          <label for="login-username" class="col-sm-3 control-label">User ID</label>
           <div class="col-sm-7">
-            <input type="text" class="form-control" ng-model="loginCtrl.credentials.userId" placeholder="User ID"/>
+            <input id="login-username" type="text" class="form-control" ng-model="loginCtrl.credentials.userId" placeholder="User ID"/>
           </div>
         </div>
         <div class="form-group">
-          <label class="col-sm-3 control-label">Password</label>
+          <label for="login-password" class="col-sm-3 control-label">Password</label>
           <div class="col-sm-7">
-            <input type="password" class="form-control" type="password" ng-model="loginCtrl.credentials.password" placeholder="Password"/>
+            <input id="login-password" type="password" class="form-control" type="password" ng-model="loginCtrl.credentials.password" placeholder="Password"/>
           </div>
           <div class="col-sm-offset-3">
             <label class="col-sm-offset-1 col-sm-6 control-label pointer login-reset-pass-label" ng-click="loginCtrl.showResetPasswordForm()">
