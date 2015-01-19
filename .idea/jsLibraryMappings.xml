@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="file://$PROJECT_DIR$" libraries="{Sentinel node_modules}" />
+    <file url="file://$PROJECT_DIR$" libraries="{Node.js v0.10.35 Core Modules, Sentinel node_modules}" />
+    <file url="PROJECT" libraries="{Node.js v0.10.35 Core Modules, Sentinel node_modules, angular, angular-file-upload-DefinitelyTyped, angular-http-auth-DefinitelyTyped, angular-local-storage-DefinitelyTyped, angular-ui-DefinitelyTyped, angular-ui-bootstrap-DefinitelyTyped, angularLocalStorage-DefinitelyTyped, angularjs-DefinitelyTyped, async-DefinitelyTyped, body-parser-DefinitelyTyped, bootstrap-DefinitelyTyped, cookie-parser-DefinitelyTyped, debug-DefinitelyTyped, express-DefinitelyTyped, express-session-DefinitelyTyped, jquery-DefinitelyTyped, less-DefinitelyTyped, mongoose-DefinitelyTyped, morgan-DefinitelyTyped, parse-DefinitelyTyped, sjcl-DefinitelyTyped}" />
+    <includedPredefinedLibrary name="Node.js Globals" />
   </component>
 </project>
