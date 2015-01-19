@@ -1751,9 +1751,16 @@
 
 
   //Controller for the video-archive state
+  
+  
+  
   app.controller('VideoArchiveController', ['$scope', function($scope){
   
   	this.videoArchiveArray = [
+  		{ streamer: 'Brian Landron', watcher: 'Optivon', duration: '4 hours', creationDate: 'today', geoLocation:'(-18,-67)' },
+  		{ streamer: 'Brian Landron', watcher: 'Optivon', duration: '4 hours', creationDate: 'today', geoLocation:'(-18,-67)' },
+  		{ streamer: 'Brian Landron', watcher: 'Optivon', duration: '4 hours', creationDate: 'today', geoLocation:'(-18,-67)' },
+  		{ streamer: 'Brian Landron', watcher: 'Optivon', duration: '4 hours', creationDate: 'today', geoLocation:'(-18,-67)' },
   		{ streamer: 'Brian Landron', watcher: 'Optivon', duration: '4 hours', creationDate: 'today', geoLocation:'(-18,-67)' }
   	];
   	
