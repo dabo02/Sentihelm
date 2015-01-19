@@ -863,7 +863,7 @@
 
         //Change the page and ask server for tips present in new page;
         //let controller know the page has changed
-        paginator.changePage = function (newPage) {
+        paginator.changePage = function (newPage, filter) {
 
             var isAfterDate = this.currentPage > newPage;
 
@@ -875,6 +875,7 @@
                     lastTipDate: isAfterDate ? paginator.firstTipDateInArray : paginator.lastTipDateInArray,
                     isAfterDate: isAfterDate,
                     tipsToSkip: tipsToSkip
+                    filter: filter
                 });
                 $rootScope.$broadcast('discard-current-tips', []);
             } else {
@@ -885,12 +886,13 @@
         };
 
         //Change to previous page; update references
-        paginator.prevPage = function () {
+        paginator.prevPage = function (filter) {
             --this.currentPage;
             socket.emit('request-batch', {
                 clientId: Session.clientId,
                 lastTipDate: paginator.firstTipDateInArray,
-                isAfterDate: true
+                isAfterDate: true,
+                filter: filter
             });
 
             //Discard current shown tips and update paginator
@@ -902,11 +904,12 @@
         };
 
         //Change to next page; update references
-        paginator.nextPage = function () {
+        paginator.nextPage = function (fitler) {
             socket.emit('request-batch', {
                 clientId: Session.clientId,
                 lastTipDate: paginator.lastTipDateInArray,
-                isAfterDate: false
+                isAfterDate: false,
+                filter: filter
             });
 
             //Discard current shown tips and update paginator
@@ -1092,7 +1095,6 @@
                             console.log(error);
                             return;
                         }
-
 
                         var query = new Parse.Query(VideoSession);
                         query.get(stream.connectionId)
@@ -1781,6 +1783,10 @@
         socket.on('new-tip', function (data) {
             if (data.clientId === Session.clientId) {
                 drawer.newTips++;
+                ngToast.create({
+                    content: 'New tip received.',
+                    class: 'info'
+                });
                 $scope.$apply();
             }
         });
@@ -1854,7 +1860,6 @@
     //Controller for tipfeed route; handles the tip feed
     //which lets you interact with tips, depends heavily
     //on paginatorService
-
     app.controller('TipFeedController', ['$scope', '$rootScope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session', 'ngToast',
         function ($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session, ngToast) {
 
@@ -2966,6 +2971,7 @@
         analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
         analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
         analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
+
         var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
             "October", "November", "December"
         ];
@@ -2974,6 +2980,7 @@
         for (var i = 1; i <= analysisCtrl.currentYear - 2014; i++) {
             analysisCtrl.previousAvailableYears.push(analysisCtrl.currentYear - i);
         }
+
         //Initiate data analysis
         DataAnalysisService.requestDataAnalysis(analysisCtrl.selectedYear);
 
