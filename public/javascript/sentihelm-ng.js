@@ -904,7 +904,7 @@
         };
 
         //Change to next page; update references
-        paginator.nextPage = function (fitler) {
+        paginator.nextPage = function (filter) {
             socket.emit('request-batch', {
                 clientId: Session.clientId,
                 lastTipDate: paginator.lastTipDateInArray,
