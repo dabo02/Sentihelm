@@ -813,7 +813,10 @@
         socket.on('response-batch', function (data) {
             if (!!data.totalTipCount) {
                 paginator.tips = data.tips;
-                paginator.totalTipCount = data.totalTipCount;
+                if (paginator.resetTotalTipCount) {
+                    paginator.resetTotalTipCount = false;
+                    paginator.totalTipCount = data.totalTipCount;
+                }
                 paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount / 10), 1);
                 paginator.firstTipDateInArray = data.tips[0].createdAt;
                 paginator.lastTipDateInArray = data.tips[data.tips.length - 1].createdAt;
@@ -851,6 +854,7 @@
             paginator.paginatorSet = [];
             paginator.paginatorSetSize = 0;
             paginator.tips;
+            paginator.resetTotalTipCount = true;
 
             //Request tips
             socket.emit('request-batch', {
@@ -878,11 +882,7 @@
                     filter: filter
                 });
                 $rootScope.$broadcast('discard-current-tips', []);
-            } else {
-                var currentTips = this.tips;
             }
-
-            //      $rootScope.$broadcast('new-batch', [currentTips, paginator.currentPage]);
         };
 
         //Change to previous page; update references
@@ -1721,7 +1721,7 @@
 
     //Controller for the drawer, which hides/shows
     //on button click contains navigation options
-    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', function ($scope, $rootScope, snapRemote, $state, socket, Session, $window) {
+    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast) {
         var drawer = this;
         this.newTips = 0;
         this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
@@ -1807,7 +1807,7 @@
     //current video, chat with current mobile client,
     //information on current call and all other controls
     //to swap video calls
-    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', function ($scope, socket, VideoStreamsService) {
+    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', function ($scope, socket, VideoStreamsService, ngToast) {
         var vidStrmCtrl = this;
         this.queue = [];
         this.currentStream = {};
