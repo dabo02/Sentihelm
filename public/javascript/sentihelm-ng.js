@@ -874,7 +874,7 @@
                     clientId: Session.clientId,
                     lastTipDate: isAfterDate ? paginator.firstTipDateInArray : paginator.lastTipDateInArray,
                     isAfterDate: isAfterDate,
-                    tipsToSkip: tipsToSkip
+                    tipsToSkip: tipsToSkip,
                     filter: filter
                 });
                 $rootScope.$broadcast('discard-current-tips', []);
