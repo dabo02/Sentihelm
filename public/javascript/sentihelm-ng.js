@@ -168,6 +168,26 @@
           return routingService.checkUserStatus(this.data.authorizedRoles, "Administrator Panel");
         }
       }
+    })
+    
+    //video-archive endpoint/url
+    .state('video-archive',{
+      url:"/video-archive",
+      templateUrl:"/video-archive.html",
+      data: {
+        authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+      },
+      resolve: {
+        // Reads the Routing Service
+        routingService: 'RoutingService',
+
+        // Receives the Routing Service, checks if user is logged in,
+        // executes the login dialog if needed and waits for the dialog
+        // to close before loading the state.
+        authenticate: function(routingService) {
+          return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
+        }
+      }
     });
   }]);
 
@@ -1685,6 +1705,7 @@
     this.entries=[
       {name:'Tip Feed', icon:'glyphicon glyphicon-inbox', state:'tipfeed'},
       {name:'Video Streams', icon:'glyphicon glyphicon-facetime-video', state:'video-streams'},
+      {name:'Video Archive', icon:'glyphicon glyphicon-film', state:'video-archive'},
       {name:'Send Notification', icon:'glyphicon glyphicon-send', state:'regional-notifications'},
       {name:'Maps', icon:'glyphicon glyphicon-map-marker', state:'maps'},
       {name:'Wanted List', icon:'glyphicon glyphicon-list-alt', state:'most-wanted'},
@@ -1728,6 +1749,39 @@
 
   }]);
 
+
+  //Controller for the video-archive state
+  app.controller('VideoArchiveController', ['$scope', function($scope){
+  
+  	this.videoArchiveArray = [
+  		{ streamer: 'Brian Landron', watcher: 'Optivon', duration: '4 hours', creationDate: 'today', geoLocation:'(-18,-67)' }
+  	];
+  	
+  	/*
+  	this.fetchVideoArchive = function(){
+  	
+		var VideoArchive = Parse.Object.extend("VideoArchive");
+		var query = new Parse.Query(VideoArchive);
+		query.get("xWMyZ4YEGZ", {
+		  success: function(videoArchiveArray) {
+			// The object was retrieved successfully.
+			this.videoArchiveArray = angular.copy(videoArchiveArray);
+			
+		  },
+		  error: function(object, error) {
+			// The object was not retrieved successfully.
+			console.log("Error fetching video archive.");
+		  }
+		});
+		//callback(err, array);
+  	};
+
+  	this.fetchVideoArchiveArray();
+  	*/
+  }]);
+  
+  
+  
   //Controller for VideStreams route; controls
   //the video streams view, which contains queue,
   //current video, chat with current mobile client,
