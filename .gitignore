@@ -1,3 +1,4 @@
 .elasticbeanstalk/
 logs
 logs/*
+logs/**
