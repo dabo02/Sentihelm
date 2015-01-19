@@ -1721,7 +1721,7 @@
 
     //Controller for the drawer, which hides/shows
     //on button click contains navigation options
-    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast) {
+    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce) {
         var drawer = this;
         this.newTips = 0;
         this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
@@ -1780,15 +1780,35 @@
             $window.location.reload();
         };
 
+        $scope.log = function() {
+            console.log('clicked toast.');
+        };
+
+        //Increase counter of new tips in the drawer button. Display toast.
         socket.on('new-tip', function (data) {
             if (data.clientId === Session.clientId) {
                 drawer.newTips++;
+                //Open toast
                 ngToast.create({
                     content: 'New tip received.',
                     class: 'info'
                 });
                 $scope.$apply();
             }
+        });
+
+        //Display toast.
+        socket.on('new-video-stream', function (data) {
+            //Open toast.
+            ngToast.create({
+                //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
+                content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoStreams()">New video stream available.</a>'),
+                class: 'info',
+                dismissOnTimeout: $state.current.name !== 'video-streams'? false: true,
+                dismissButton: true,
+                compileContent: true,
+                dismissOnClick: false
+            });
         });
 
         $scope.$on('update-user', function (event, data) {
@@ -1802,6 +1822,21 @@
 
     }]);
 
+    //Controller for the toast that notifies the user that a 
+    //new video stream is available.
+    app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($scope, $state, ngToast) {
+        var toastCtrl = this;
+        toastCtrl.goToVideoStreams = function() {
+            if($state.current.name !== "video-streams") {
+                $state.go("video-streams", {
+                    newTips: 0
+                }, {
+                    reload: true
+                });
+            }
+        };
+    }]);
+
     //Controller for VideStreams route; controls
     //the video streams view, which contains queue,
     //current video, chat with current mobile client,
@@ -1811,6 +1846,9 @@
         var vidStrmCtrl = this;
         this.queue = [];
         this.currentStream = {};
+
+        // clear all toasts:
+        ngToast.dismiss();
 
         VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
 
@@ -1825,10 +1863,6 @@
         socket.on('new-video-stream', function (data) {
             var stream = data.stream;
             vidStrmCtrl.queue.unshift(stream);
-            ngToast.create({
-                content: 'New video stream available.',
-                class: 'info'
-            });
         });
 
         $scope.$on('stream-destroyed', function (event, data) {
