@@ -168,6 +168,26 @@
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Administrator Panel");
                     }
                 }
+            })
+
+            //video-archive endpoint/url
+            .state('video-archive', {
+                url: "/video-archive",
+                templateUrl: "/video-archive.html",
+                data: {
+                    authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+                },
+                resolve: {
+                    // Reads the Routing Service
+                    routingService: 'RoutingService',
+
+                    // Receives the Routing Service, checks if user is logged in,
+                    // executes the login dialog if needed and waits for the dialog
+                    // to close before loading the state.
+                    authenticate: function (routingService) {
+                        return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
+                    }
+                }
             });
     }]);
 
@@ -1744,6 +1764,10 @@
             icon: 'glyphicon glyphicon-send',
             state: 'regional-notifications'
         }, {
+            name: 'Video Archive',
+            icon: 'glyphicon glyphicon-film',
+            state: 'video-archive'
+        }, {
             name: 'Maps',
             icon: 'glyphicon glyphicon-map-marker',
             state: 'maps'
@@ -1780,7 +1804,7 @@
             $window.location.reload();
         };
 
-        $scope.log = function() {
+        $scope.log = function () {
             console.log('clicked toast.');
         };
 
@@ -1804,7 +1828,7 @@
                 //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
                 content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoStreams()">New video stream available.</a>'),
                 class: 'info',
-                dismissOnTimeout: $state.current.name !== 'video-streams'? false: true,
+                dismissOnTimeout: $state.current.name !== 'video-streams' ? false : true,
                 dismissButton: true,
                 compileContent: true,
                 dismissOnClick: false
@@ -1820,14 +1844,16 @@
             $scope.$apply();
         });
 
-    }]);
+    }
+    ])
+    ;
 
-    //Controller for the toast that notifies the user that a 
-    //new video stream is available.
+//Controller for the toast that notifies the user that a
+//new video stream is available.
     app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($scope, $state, ngToast) {
         var toastCtrl = this;
-        toastCtrl.goToVideoStreams = function() {
-            if($state.current.name !== "video-streams") {
+        toastCtrl.goToVideoStreams = function () {
+            if ($state.current.name !== "video-streams") {
                 $state.go("video-streams", {
                     newTips: 0
                 }, {
@@ -1837,11 +1863,77 @@
         };
     }]);
 
-    //Controller for VideStreams route; controls
-    //the video streams view, which contains queue,
-    //current video, chat with current mobile client,
-    //information on current call and all other controls
-    //to swap video calls
+//Controller for the video-archive state
+
+
+    app.controller('VideoArchiveController', ['$scope', function ($scope) {
+
+        this.videoArchiveArray = [
+            {
+                streamer: 'Brian Landron',
+                watcher: 'Optivon',
+                duration: '4 hours',
+                creationDate: 'today',
+                geoLocation: '(-18,-67)'
+            },
+            {
+                streamer: 'Brian Landron',
+                watcher: 'Optivon',
+                duration: '4 hours',
+                creationDate: 'today',
+                geoLocation: '(-18,-67)'
+            },
+            {
+                streamer: 'Brian Landron',
+                watcher: 'Optivon',
+                duration: '4 hours',
+                creationDate: 'today',
+                geoLocation: '(-18,-67)'
+            },
+            {
+                streamer: 'Brian Landron',
+                watcher: 'Optivon',
+                duration: '4 hours',
+                creationDate: 'today',
+                geoLocation: '(-18,-67)'
+            },
+            {
+                streamer: 'Brian Landron',
+                watcher: 'Optivon',
+                duration: '4 hours',
+                creationDate: 'today',
+                geoLocation: '(-18,-67)'
+            }
+        ];
+
+        /*
+         this.fetchVideoArchive = function(){
+
+         var VideoArchive = Parse.Object.extend("VideoArchive");
+         var query = new Parse.Query(VideoArchive);
+         query.get("xWMyZ4YEGZ", {
+         success: function(videoArchiveArray) {
+         // The object was retrieved successfully.
+         this.videoArchiveArray = angular.copy(videoArchiveArray);
+
+         },
+         error: function(object, error) {
+         // The object was not retrieved successfully.
+         console.log("Error fetching video archive.");
+         }
+         });
+         //callback(err, array);
+         };
+
+         this.fetchVideoArchiveArray();
+         */
+    }]);
+
+//Controller for VideStreams route; controls
+//the video streams view, which contains queue,
+//current video, chat with current mobile client,
+//information on current call and all other controls
+//to swap video calls
     app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', function ($scope, socket, VideoStreamsService, ngToast) {
         var vidStrmCtrl = this;
         this.queue = [];
@@ -1891,9 +1983,9 @@
 
     }]);
 
-    //Controller for tipfeed route; handles the tip feed
-    //which lets you interact with tips, depends heavily
-    //on paginatorService
+//Controller for tipfeed route; handles the tip feed
+//which lets you interact with tips, depends heavily
+//on paginatorService
     app.controller('TipFeedController', ['$scope', '$rootScope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session', 'ngToast',
         function ($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session, ngToast) {
 
@@ -2148,8 +2240,8 @@
         }
     ]);
 
-    //Controller for the tip's attachments; must display
-    //video and images, and play audio files
+//Controller for the tip's attachments; must display
+//video and images, and play audio files
     app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce', 'socket', 'usSpinnerService',
         function ($scope, $rootScope, ngDialog, $sce, socket, usSpinnerService) {
             //Needed so that attachment-dialog.html can open the media files from parse.
@@ -2167,9 +2259,9 @@
         }
     ]);
 
-    //Controller for Google map in the maps state;
-    //sets map center and police station position
-    //in map
+//Controller for Google map in the maps state;
+//sets map center and police station position
+//in map
     app.controller('GoogleMapController', function () {
 
         //This position variables will store the position
@@ -2235,8 +2327,8 @@
         };
     });
 
-    //Controller for user follow-up notification; controls the
-    //dialog that allows for message/attachment to be sent to users
+//Controller for user follow-up notification; controls the
+//dialog that allows for message/attachment to be sent to users
     app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket',
         function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket) {
             //Get data from ngDialog directive
@@ -2364,8 +2456,8 @@
         }
     ]);
 
-    //Controller for user follow-up notification; controls the
-    //dialog that allows for message/attachment to be sent to users
+//Controller for user follow-up notification; controls the
+//dialog that allows for message/attachment to be sent to users
     app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session',
         function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session) {
             //Get data from ngDialog directive
@@ -2427,8 +2519,8 @@
     ]);
 
 
-    //Controller for user follow-up notification; controls the
-    //dialog that allows for message/attachment to be sent to users
+//Controller for user follow-up notification; controls the
+//dialog that allows for message/attachment to be sent to users
     app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
         function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory) {
 
@@ -2525,8 +2617,8 @@
         }
     ]);
 
-    //Controller for error dialog which is reusable throughout the
-    //app; decoupled from everything else
+//Controller for error dialog which is reusable throughout the
+//app; decoupled from everything else
     app.controller('ErrorController', ['$scope', 'ERRORS', 'errorFactory',
         function ($scope, ERRORS, errorFactory) {
             //Set controller title and message
@@ -2549,7 +2641,7 @@
         }
     ]);
 
-    //Controller for the Most-Wanted state
+//Controller for the Most-Wanted state
     app.controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog', '$rootScope',
         function (MostWantedService, $scope, fileReader, ngDialog, $rootScope) {
 
@@ -2676,7 +2768,7 @@
         }
     ]);
 
-    //Controller for Google map in the 'Maps' state.
+//Controller for Google map in the 'Maps' state.
     app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'Session', function (PoliceStationsService, $scope, Session) {
 
         var mapCtrl = this;
@@ -2770,8 +2862,8 @@
 
     }]);
 
-    //The buttons on the map need a new controller for themselves.
-    //This is it.
+//The buttons on the map need a new controller for themselves.
+//This is it.
     app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
         var buttonCtrl = this;
 
@@ -2853,7 +2945,7 @@
         };
     }]);
 
-    //Controller for the ngDialog pop-up for editing the station.
+//Controller for the ngDialog pop-up for editing the station.
     app.controller('StationDialogController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
         var dialogCtrl = this;
 
@@ -2903,7 +2995,7 @@
         };
     }]);
 
-    //Controller for Administrator Panel
+//Controller for Administrator Panel
     app.controller('AdminPanelController', ['socket', 'Session', function (socket, Session) {
 
         var adminPanelCtrl = this;
@@ -2930,7 +3022,7 @@
 
     }]);
 
-    //Controller for Profile page
+//Controller for Profile page
     app.controller('ProfileController', ['socket', 'Session', '$scope', function (socket, Session, $scope) {
 
         var profileCtrl = this;
@@ -2992,7 +3084,7 @@
 
     }]);
 
-    //Controller for Data Analysis page
+//Controller for Data Analysis page
     app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function ($scope, DataAnalysisService) {
 
         var analysisCtrl = this;
@@ -3063,4 +3155,5 @@
 
     }]);
 
-})();
+})
+();
