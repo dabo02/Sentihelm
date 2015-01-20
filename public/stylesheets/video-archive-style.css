@@ -1,0 +1,21 @@
+.video-archive-entry {
+    background-color: #f2f2f2;
+    //border: 3px solid #ddd;
+    margin: 2% auto;
+    padding: 0.6em .8em 0em 1.5em;
+    width: 55%;
+    text-align:left;
+}
+
+.video-archive-entry em{
+    font-weight:bold;
+}
+
+.video-preview {
+	margin-left:10px;
+}
+
+.play-button {
+	text-align:center;
+	margin: 0 auto;
+}
