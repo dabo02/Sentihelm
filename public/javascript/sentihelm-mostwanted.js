@@ -70,9 +70,14 @@
      * */
         .filter('limitName', function () {
             function limitName(inputName) {
-                var nameArray = inputName.split(' ');
-                var name = nameArray[0] + ' ' + nameArray[1];
-                return name;
+                if (!inputName) {
+                    return '';
+                }
+                var nameArray = inputName.split(' '),
+                    first = nameArray[0] || '',  // fixes undefined error
+                    last = nameArray[1] || '';  // fixes undefined error
+                
+                return first + ' ' + last;
             }
 
             return limitName;
@@ -85,6 +90,9 @@
      * */
         .filter('limitSummary', function () {
             function limitSummary(inputSummary) {
+                if (!inputSummary) {
+                    return '';
+                }
                 return inputSummary.split(' ').map(function (word, count) {
                     var theWord = '';
                     if (count < 35) {

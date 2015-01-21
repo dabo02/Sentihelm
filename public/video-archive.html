@@ -1,0 +1,63 @@
+
+        
+<div class="jumbotron vertical-center video-archive-list" style="background-color:white;" ng-controller="VideoArchiveController as videoArchiveCtrl">
+
+	<!-- archive entry -->
+	<div class="most-wanted-mid-container">
+		<div class="video-archive-entry" ng-repeat="video in videoArchiveCtrl.videoArchiveArray track by $index">
+			<div class="row">
+				
+				<div class="col-xs-6 pointer thumbnail profile">
+					<img src="./resources/images/no-profile-pic.png" alt="..."/>
+				</div> 
+				
+				<div class="col-xs-6">
+				
+					<div class="row">
+						<div class="col-xs-12">
+							<em>Streamer:</em> {{video.streamer}}
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="col-xs-12">
+							<em>Watcher:</em> {{video.watcher}}
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="col-xs-12">
+							<em>Stream Duration:</em> {{video.duration}}
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="col-xs-12">
+							<em>Created On:</em> {{video.creationDate}}
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="col-xs-12">
+							<em>Geo-Location:</em> {{video.geoLocation}}
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12 play-button">
+							<div class="btn btn-success">Play <span class="glyphicon glyphicon-play-circle"></span></div>
+						</div>
+					</div>
+							
+				</div>
+				
+			</div>
+		</div>
+	</div>
+	<!-- end archive entry -->
+	
+	<!--Show if NO most wanted are available-->
+	<div class="container" ng-if="videoArchiveCtrl.videoArchiveArray.length===0">
+	  <h2 class="text-center">No Records Found</h2>
+	</div>
+	
+</div>
