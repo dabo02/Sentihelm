@@ -55,6 +55,8 @@
 .edit-btn {
     position: relative;
     right: -35px;
+    border-radius: 0;
+    border: none;
     /*float: right;*/
 }
 

@@ -74,7 +74,9 @@
                     return '';
                 }
                 var nameArray = inputName.split(' ');
-                var name = nameArray[0] + ' ' + nameArray[1];
+                var first = nameArray[0] || '';  // fixes undefined error
+                var last = nameArray[1] || '';  // fixes undefined error
+                var name = first + ' ' + last;
                 return name;
             }
 
