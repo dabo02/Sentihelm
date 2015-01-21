@@ -89,13 +89,14 @@
 }
 
 .tip {
-  margin: 2% 0;
-  width: 98%;
+  margin: 2% 0%;
+  margin-left: 2%;
+  width: 96%;
   height:25em;
   background-color:#DDD;
   color:#616161;
   border:0.1em solid #219fe9;
-  box-shadow:0.1em 0.1em 1em #4d4d4d;
+  box-shadow:0em 0em 1em #4d4d4d;
 }
 .tip:last-child, .tip::last-child{
   margin-bottom:0;
