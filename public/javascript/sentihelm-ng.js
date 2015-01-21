@@ -1,5 +1,5 @@
 (function () {
-    var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast']);
+    var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast', 'ngAudio']);
 
     //Sets up all the states/routes the app will handle,
     //so as to have a one page app with deep-linking
@@ -965,46 +965,12 @@
 
         //Get all active video streams from Parse
         VideoStreamsService.getActiveStreams = function (clientId) {
-            var query = new Parse.Query(VideoSession);
-
-            query.equalTo('client', {
-                __type: "Pointer",
-                className: "Client",
-                objectId: clientId
+            
+            socket.emit('get-active-streams', clientId);
+            socket.on('get-active-streams-response', function (streams) {
+                $rootScope.$broadcast('active-streams-fetched', streams);
             });
-            query.containedIn("status", ['pending', 'active']);
-            query.include("mobileUser");
 
-            query.find().then(function (results) {
-                //Format each result for front-end
-                //keep them in modifiedStreams array
-                var modifiedStreams = [];
-                for (var i = 0; i < results.length; i++) {
-                    //Create a new strem and copy over values
-                    //from current stream in results
-                    var newStream = {};
-                    newStream.connectionId = results[i].id;
-                    newStream.sessionId = results[i].attributes.sessionId;
-                    newStream.webClientToken = results[i].attributes.webClientToken;
-                    newStream.latitude = results[i].attributes.latitude;
-                    newStream.longitude = results[i].attributes.longitude;
-                    newStream.currentCliendId = results[i].attributes.client.id;
-                    newStream.userObjectId = results[i].attributes.mobileUser.id;
-                    newStream.firstName = results[i].attributes.mobileUser.attributes.firstName;
-                    newStream.lastName = results[i].attributes.mobileUser.attributes.lastName;
-                    newStream.email = results[i].attributes.mobileUser.attributes.email;
-                    newStream.phone = results[i].attributes.mobileUser.attributes.phoneNumber;
-
-                    //Add modified stream to collection
-                    modifiedStreams.push(newStream);
-                }
-                //Send modified results to controller
-                $rootScope.$broadcast('active-streams-fetched', modifiedStreams);
-            }, function (error) {
-                //TODO
-                //Manage error when couldn't fetch active video streams
-                var err = error;
-            });
         };
 
         //Restore active session if available if()
@@ -1721,13 +1687,15 @@
 
     //Controller for the drawer, which hides/shows
     //on button click contains navigation options
-    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce) {
+    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 
+        function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio) {
         var drawer = this;
         this.newTips = 0;
         this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
         this.userFullName = Session.userFullName;
         this.clientAgency = Session.clientAgency;
         drawer.clientLogo = Session.clientLogo;
+        drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
 
         //Drawer options with name and icon;
         //entries are off by default
@@ -1793,6 +1761,7 @@
                     content: 'New tip received.',
                     class: 'info'
                 });
+                drawer.sound.play();
                 $scope.$apply();
             }
         });
@@ -1809,6 +1778,7 @@
                 compileContent: true,
                 dismissOnClick: false
             });
+            drawer.sound.play();
         });
 
         $scope.$on('update-user', function (event, data) {
@@ -3005,6 +2975,7 @@
         analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
         analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
         analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
+        analysisCtrl.showErrorMessage = false;
 
         var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
             "October", "November", "December"
@@ -3023,11 +2994,13 @@
             analysisCtrl.tipsDateChart = charts.tipsDateChart;
             analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
             analysisCtrl.loading = false;
+            analysisCtrl.showErrorMessage = false;
         });
 
         //Receive the data from service
         $scope.$on('data-analysis-error', function (event, charts) {
             analysisCtrl.loading = false;
+            analysisCtrl.showErrorMessage = true;
             // analysisCtrl.tipsDateChart = charts.tipsDateChart;
             // analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
         });

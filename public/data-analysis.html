@@ -1,10 +1,10 @@
 <div ng-controller="DataAnalysisController as analysisCtrl">
 
-	<!-- WARNING: Be carefull while changing this html. Controller uses the $scope to access the charts. -->
+	<!-- WARNING: Be carefull while changing this html. Controller uses the $scope to access the chart objects. -->
 	<div class="data-analysis-mid-container">
 
 		<!-- CHARTS -->
-	    <div id="chart_div" class="data-analysis-mid-container" ng-show='!analysisCtrl.loading'>
+	    <div id="chart_div" class="data-analysis-mid-container" ng-show='!analysisCtrl.loading && !analysisCtrl.showErrorMessage'>
 
 	    	<!-- YEAR SELECTOR -->
 	        <label class="">Year</label>
@@ -32,5 +32,10 @@
 			<h2 class="text-center col-xs-offset-4 col-xs-4">Analizing Data</h2>
 		</div>
 
+		<div class="container vertical-center" ng-if="analysisCtrl.showErrorMessage">
+			<h2 class="text-center col-xs-offset-4 col-xs-4">Error Parsing the Data</h2>
+		</div>
+
 	</div>
+
 </div>
