@@ -1220,12 +1220,10 @@
                 clientQuery.get(Session.clientId, {
                     success: function (client) {
                         clientParseObj = client;
-                        var tempMostWantedArray = client.get('mostWantedList');
+                        delete mostWantedArray;
 
                         // Performming deep copy, as reference to object dies once this function, exits
-                        angular.forEach(tempMostWantedArray, function (mostWantedPerson) {
-                            mostWantedArray.push(mostWantedPerson);
-                        });
+                        angular.copy(client.get('mostWantedList'), mostWantedArray);
 
                         $rootScope.$broadcast('MostWantedList', mostWantedArray);
                     },
