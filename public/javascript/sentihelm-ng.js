@@ -1866,67 +1866,42 @@
 //Controller for the video-archive state
 
 
-    app.controller('VideoArchiveController', ['$scope', function ($scope) {
+    app.controller('VideoArchiveController', ['$scope', 'Session', function ($scope, Session) {
 
         this.videoArchiveArray = [
-            {
+            /*{
                 streamer: 'Brian Landron',
                 watcher: 'Optivon',
                 duration: '4 hours',
                 creationDate: 'today',
                 geoLocation: '(-18,-67)'
-            },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            }
+            }*/
         ];
 
-        /*
+        
          this.fetchVideoArchive = function(){
 
-         var VideoArchive = Parse.Object.extend("VideoArchive");
-         var query = new Parse.Query(VideoArchive);
-         query.get("xWMyZ4YEGZ", {
-         success: function(videoArchiveArray) {
-         // The object was retrieved successfully.
-         this.videoArchiveArray = angular.copy(videoArchiveArray);
+			 var VideoSession = Parse.Object.extend("VideoSession");
+			 var videoArchiveQuery = new Parse.Query(VideoSession);
+			 //videoArchiveQuery.include('mobileUser', 'officerUser');
+			 //videoArchiveQuery.equalTo('archiveStatus', ['uploaded','available']);
+			 //videoArchiveQuery.limit(3);
+			 videoArchiveQuery.get(Session.clientId, {
+				 success: function(videos) {
+					 // The object was retrieved successfully.
+					 console.log("video archive fetched");
+					 //this.videoArchiveArray = angular.copy(videos);
 
-         },
-         error: function(object, error) {
-         // The object was not retrieved successfully.
-         console.log("Error fetching video archive.");
-         }
-         });
-         //callback(err, array);
+				 },
+				 error: function(object, error) {
+					 // The object was not retrieved successfully.
+					 console.log("Error fetching video archive.");
+				 }
+			 });
          };
 
-         this.fetchVideoArchiveArray();
-         */
+         this.fetchVideoArchive();
+         
     }]);
 
 //Controller for VideStreams route; controls
