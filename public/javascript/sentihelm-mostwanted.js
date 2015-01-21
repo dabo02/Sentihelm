@@ -73,11 +73,11 @@
                 if (!inputName) {
                     return '';
                 }
-                var nameArray = inputName.split(' ');
-                var first = nameArray[0] || '';  // fixes undefined error
-                var last = nameArray[1] || '';  // fixes undefined error
-                var name = first + ' ' + last;
-                return name;
+                var nameArray = inputName.split(' '),
+                    first = nameArray[0] || '',  // fixes undefined error
+                    last = nameArray[1] || '';  // fixes undefined error
+                
+                return first + ' ' + last;
             }
 
             return limitName;
