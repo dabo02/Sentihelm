@@ -52,8 +52,12 @@
     font-style: normal;
 }
 
-.wanted-card.edit-btn {
-    margin-left: 30px;
+.edit-btn {
+    position: relative;
+    right: -35px;
+    border-radius: 0;
+    border: none;
+    /*float: right;*/
 }
 
 img.profile{ /* Do not scale the image */
@@ -68,7 +72,9 @@ img.profile{ /* Do not scale the image */
     float: right;
     border-radius: 0;
     height: 45px;
-    padding-top: 15px;
+    padding-top: 10px;
     border: none;
     /*background-color: #c0c0c0;*/
+    font-size: 15pt;
 }
+
