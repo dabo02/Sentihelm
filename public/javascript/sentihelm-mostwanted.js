@@ -70,6 +70,9 @@
      * */
         .filter('limitName', function () {
             function limitName(inputName) {
+                if (!inputName) {
+                    return '';
+                }
                 var nameArray = inputName.split(' ');
                 var name = nameArray[0] + ' ' + nameArray[1];
                 return name;
@@ -85,6 +88,9 @@
      * */
         .filter('limitSummary', function () {
             function limitSummary(inputSummary) {
+                if (!inputSummary) {
+                    return '';
+                }
                 return inputSummary.split(' ').map(function (word, count) {
                     var theWord = '';
                     if (count < 35) {
