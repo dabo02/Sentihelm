@@ -1969,6 +1969,9 @@
             this.showMediaSpinner = false;
             this.counter = 0;
             this.filter = undefined;
+            this.noCrimeType = -1;
+            this.crimeTypeFilter = this.noCrimeType;
+
 
             this.crimeTypes = ["Assault", "Child Abuse", "Elderly Abuse", "Domestic Violence", "Drugs", "Homicide", "Animal Abuse",
                 "Robbery", "Sex Offenses", "Bullying", "Police Misconduct", "Bribery", "Vehicle Theft", "Vandalism",
