@@ -62,3 +62,13 @@ img.profile{ /* Do not scale the image */
     height: 130px;
     width: 140px;
 }
+
+.most-wanted-move-handle {
+    margin: 7% 15px auto 0px;
+    float: right;
+    border-radius: 0;
+    height: 45px;
+    padding-top: 15px;
+    border: none;
+    /*background-color: #c0c0c0;*/
+}

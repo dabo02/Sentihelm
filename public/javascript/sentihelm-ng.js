@@ -2665,6 +2665,7 @@
             }
 
             this.sortableOptions = {
+                handle: '.most-wanted-move-handle',
                 update: listUpdating,
                 stop: listSettled
             };
@@ -2700,6 +2701,7 @@
                     attributes: {}
                 });
                 this.disableNewButton = true;
+                $rootScope.lastPersonAddedIndex = this.wantedArray.length - 1;
             };
 
             //Save new most wanted, or update an old one,
