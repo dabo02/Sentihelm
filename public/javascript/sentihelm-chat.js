@@ -4,7 +4,32 @@
 
 (function (angular, undefined) {
     angular.module('sh.chat', [])
-        .controller('ChatController', ['$scope', function ($scope) {
-            
+        .factory('messageService', function () {
+            var Message = (function (){
+                function Message() {
+
+                }
+
+                return Message;
+            })();
+
+            return {
+                Message: Message
+            };
+        })
+        .controller('ChatController', ['$scope', 'messageService', function ($scope) {
+            var self = this;
+
+            this.send = function () {
+
+            };
+
+            this.recieve = function () {
+
+            }
+
+            this.save = function () {
+
+            }
         }]);
 })(window.angular);
