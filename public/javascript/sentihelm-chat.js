@@ -7,7 +7,7 @@
         .factory('chatSocket', function (socketFactory) {
             return socketFactory({
                 prefix: 'chat-',
-                ioSocket: io.connect('')  // connect to chat server
+                ioSocket: io.connect(':4770')  // connect to chat server
             });
         })
         .controller('ChatManagerController', ['chatSocket', function (chatSocket) {
