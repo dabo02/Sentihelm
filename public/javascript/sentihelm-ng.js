@@ -584,8 +584,8 @@
     //Creates an injectable socket service that
     //works just like socket.io's client library
     app.factory('socket', function (socketFactory) {
-        // var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-        var ioSocket = io.connect('http://localhost:80');
+        var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+        //var ioSocket = io.connect('http://localhost:80');
 
         socket = socketFactory({
             ioSocket: ioSocket
@@ -1729,11 +1729,11 @@
             name: 'Send Notification',
             icon: 'glyphicon glyphicon-send',
             state: 'regional-notifications'
-        }, {
+        }, /*{
             name: 'Video Archive',
             icon: 'glyphicon glyphicon-film',
             state: 'video-archive'
-        }, {
+        }, */{
             name: 'Maps',
             icon: 'glyphicon glyphicon-map-marker',
             state: 'maps'
