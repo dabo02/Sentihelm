@@ -15,36 +15,36 @@
 				
 					<div class="row">
 						<div class="col-xs-12">
-							<em>Streamer:</em> {{video.mobileUser.username}}
+							<em>Streamer:</em> {{video.attributes.mobileUser.attributes.username}}
 						</div>
 					</div>
 					
 					<div class="row">
 						<div class="col-xs-12">
-							<em>Watcher:</em> {{video.officerUser.username}}
+							<em>Watcher:</em> {{video.attributes.officerUser.attributes.username}}
 						</div>
 					</div>
 					
 					<div class="row">
 						<div class="col-xs-12">
-							<em>Stream Duration:</em> {{video.duration}}
+							<em>Stream Duration:</em> {{video.attributes.duration}}
 						</div>
 					</div>
 					
 					<div class="row">
 						<div class="col-xs-12">
-							<em>Created On:</em> {{video.creationAt}}
+							<em>Created On:</em> {{video.createdAt}}
 						</div>
 					</div>
 					
 					<div class="row">
 						<div class="col-xs-12">
-							<em>Geo-Location:</em> {{video.latitude + ", " + video.longitude}}
+							<em>Geo-Location:</em> {{video.attributes.latitude + ", " + video.attributes.longitude}}
 						</div>
 					</div>
 					<div class="row">
 						<div class="col-xs-12 play-button">
-							<div class="btn btn-success" ng-clock="showVideo(video)">Play <span class="glyphicon glyphicon-play-circle"></span></div>
+							<div class="btn btn-success" ng-click="videoArchiveCtrl.showVideo(video)">Play <span class="glyphicon glyphicon-play-circle"></span></div>
 						</div>
 					</div>
 							
@@ -55,7 +55,7 @@
 	</div>
 	<!-- end archive entry -->
 	
-	<!--Show if NO most wanted are available-->
+	<!--Show if NO video archives are available -->
 	<div class="container" ng-if="videoArchiveCtrl.videoArchiveArray.length===0">
 	  <h2 class="text-center">No Records Found</h2>
 	</div>

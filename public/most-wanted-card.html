@@ -1,5 +1,8 @@
 <div class="container-fluid wanted-card">
     <div class="row">
+        <div class="btn btn-default most-wanted-move-handle" ng-hide="editingList">
+            <span class="glyphicon glyphicon-align-justify"></span>
+        </div>
         <div class="col-xs-1 most-wanted-ranking-number">{{index + 1}}</div>
 
         <div class="no-margin no-border col-xs-2 no-padding pointer thumbnail">
@@ -7,7 +10,7 @@
                  alt="..."/>
         </div>
         <div class="col-xs-8">
-            <div class="btn btn-default col-xs-offset-12 edit-btn" ng-click="toggleEditing()">
+            <div class="btn btn-default col-xs-offset-12 edit-btn" ng-click="toggleEditing()" ng-hide="editingList">
                 <span class="glyphicon glyphicon-pencil"></span>
             </div>
             <div class="col-xs-5"><em>Name:</em> {{criminal.attributes.name | limitName}}</div>

@@ -221,7 +221,7 @@ io.on('connect', function(socket){
           //the front end; coordinates for map, tip control
           //number, and formatted date
           tips[i].center = {latitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLatitude.base64), longitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLongitude.base64)};
-          tips[i].controlNumber = tips[i].objectId;
+          tips[i].controlNumber = tips[i].objectId + "-" + tips[i].controlNumber;
           var tempDate = (new Date(tips[i].createdAt));
           tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
           tips[i].date = tempDate;
@@ -334,6 +334,11 @@ io.on('connect', function(socket){
   //Download data from parse and organize it.
   socket.on('analyze-data', function(data){
     analyzeData(data);
+  });
+
+  //Check for active streams on the VideoSession table on parse.
+  socket.on('get-active-streams', function(clientId){
+    getActiveVideoStreams(clientId);
   });
 
 });
@@ -903,4 +908,54 @@ function getChartsData(tips, month, year) {
     tipsTypeChart: tipsTypeChart,
     tipsDateChart: tipsDateChart
   };
+}
+
+//Get all active video streams from Parse
+function getActiveVideoStreams(clientId) {
+
+  var VideoSession = Parse.Object.extend("VideoSession");
+  var query = new Parse.Query(VideoSession);
+
+  query.equalTo('client', {
+      __type: "Pointer",
+      className: "Client",
+      objectId: clientId
+  });
+  query.containedIn("status", ['pending', 'active']);
+  query.include("mobileUser");
+
+  query.find().then(function (results) {
+      //Format each result for front-end
+      //keep them in modifiedStreams array
+      var modifiedStreams = [];
+      for (var i = 0; i < results.length; i++) {
+
+        var streamUser = results[i].attributes.mobileUser;
+        var passPhrase = passwordGenerator.generatePassword(streamUser.attributes.username, false);
+
+        //Create a new strem and copy over values
+        //from current stream in results
+        var newStream = {};
+        newStream.connectionId = results[i].id;
+        newStream.sessionId = results[i].attributes.sessionId;
+        newStream.webClientToken = results[i].attributes.webClientToken;
+        newStream.latitude = results[i].attributes.latitude;
+        newStream.longitude = results[i].attributes.longitude;
+        newStream.currentCliendId = results[i].attributes.client.id;
+        newStream.userObjectId = results[i].attributes.mobileUser.id;
+        newStream.firstName = encryptionManager.decrypt(passPhrase, streamUser.attributes.firstName.base64);
+        newStream.lastName = encryptionManager.decrypt(passPhrase, streamUser.attributes.lastName.base64);
+        newStream.email = streamUser.attributes.email;
+        newStream.phone = encryptionManager.decrypt(passPhrase, streamUser.attributes.phoneNumber.base64);
+
+        //Add modified stream to collection
+        modifiedStreams.push(newStream);
+      }
+      //Send modified results to controller
+      io.sockets.emit('get-active-streams-response', modifiedStreams);
+  }, function (error) {
+      //TODO
+      //Manage error when couldn't fetch active video streams
+      var err = error;
+  });
 }

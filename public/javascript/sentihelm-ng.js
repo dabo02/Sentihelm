@@ -1,10 +1,12 @@
 (function () {
-    var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast']);
+    var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast', 'ngAudio']);
 
     //Sets up all the states/routes the app will handle,
     //so as to have a one page app with deep-linking
-    app.config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', function ($stateProvider, $urlRouterProvider, USER_ROLES) {
-
+    app.config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', '$sceDelegateProvider', function ($stateProvider, $urlRouterProvider, USER_ROLES, $sceDelegateProvider) {
+		
+		$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://s3.amazonaws.com/stream-archive/44755992/**']);
+		
         // For any unmatched url, redirect to /tipfeed
         $urlRouterProvider.otherwise("/tipfeed");
 
@@ -985,46 +987,12 @@
 
         //Get all active video streams from Parse
         VideoStreamsService.getActiveStreams = function (clientId) {
-            var query = new Parse.Query(VideoSession);
-
-            query.equalTo('client', {
-                __type: "Pointer",
-                className: "Client",
-                objectId: clientId
+            
+            socket.emit('get-active-streams', clientId);
+            socket.on('get-active-streams-response', function (streams) {
+                $rootScope.$broadcast('active-streams-fetched', streams);
             });
-            query.containedIn("status", ['pending', 'active']);
-            query.include("mobileUser");
 
-            query.find().then(function (results) {
-                //Format each result for front-end
-                //keep them in modifiedStreams array
-                var modifiedStreams = [];
-                for (var i = 0; i < results.length; i++) {
-                    //Create a new strem and copy over values
-                    //from current stream in results
-                    var newStream = {};
-                    newStream.connectionId = results[i].id;
-                    newStream.sessionId = results[i].attributes.sessionId;
-                    newStream.webClientToken = results[i].attributes.webClientToken;
-                    newStream.latitude = results[i].attributes.latitude;
-                    newStream.longitude = results[i].attributes.longitude;
-                    newStream.currentCliendId = results[i].attributes.client.id;
-                    newStream.userObjectId = results[i].attributes.mobileUser.id;
-                    newStream.firstName = results[i].attributes.mobileUser.attributes.firstName;
-                    newStream.lastName = results[i].attributes.mobileUser.attributes.lastName;
-                    newStream.email = results[i].attributes.mobileUser.attributes.email;
-                    newStream.phone = results[i].attributes.mobileUser.attributes.phoneNumber;
-
-                    //Add modified stream to collection
-                    modifiedStreams.push(newStream);
-                }
-                //Send modified results to controller
-                $rootScope.$broadcast('active-streams-fetched', modifiedStreams);
-            }, function (error) {
-                //TODO
-                //Manage error when couldn't fetch active video streams
-                var err = error;
-            });
         };
 
         //Restore active session if available if()
@@ -1741,13 +1709,15 @@
 
     //Controller for the drawer, which hides/shows
     //on button click contains navigation options
-    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce) {
+    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 
+        function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio) {
         var drawer = this;
         this.newTips = 0;
         this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
         this.userFullName = Session.userFullName;
         this.clientAgency = Session.clientAgency;
         drawer.clientLogo = Session.clientLogo;
+        drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
 
         //Drawer options with name and icon;
         //entries are off by default
@@ -1760,13 +1730,13 @@
             icon: 'glyphicon glyphicon-facetime-video',
             state: 'video-streams'
         }, {
-            name: 'Send Notification',
-            icon: 'glyphicon glyphicon-send',
-            state: 'regional-notifications'
-        }, {
             name: 'Video Archive',
             icon: 'glyphicon glyphicon-film',
             state: 'video-archive'
+        }, {
+            name: 'Send Notification',
+            icon: 'glyphicon glyphicon-send',
+            state: 'regional-notifications'
         }, {
             name: 'Maps',
             icon: 'glyphicon glyphicon-map-marker',
@@ -1817,6 +1787,7 @@
                     content: 'New tip received.',
                     class: 'info'
                 });
+                drawer.sound.play();
                 $scope.$apply();
             }
         });
@@ -1833,6 +1804,7 @@
                 compileContent: true,
                 dismissOnClick: false
             });
+            drawer.sound.play();
         });
 
         $scope.$on('update-user', function (event, data) {
@@ -1866,43 +1838,58 @@
 //Controller for the video-archive state
 
 
-    app.controller('VideoArchiveController', ['$scope', 'Session', function ($scope, Session) {
+app.controller('VideoArchiveController', ['$scope', 'Session', 'ngDialog', function ($scope, Session, ngDialog) {
 
-        this.videoArchiveArray = [
-            /*{
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            }*/
-        ];
+	var videoArchiveCtrl = this;
+	videoArchiveCtrl.videoArchiveArray = [];
 
-        
-         this.fetchVideoArchive = function(){
+	
+	videoArchiveCtrl.fetchVideoArchive = function(){
 
-			 var VideoSession = Parse.Object.extend("VideoSession");
-			 var videoArchiveQuery = new Parse.Query(VideoSession);
-			 //videoArchiveQuery.include('mobileUser', 'officerUser');
-			 //videoArchiveQuery.equalTo('archiveStatus', ['uploaded','available']);
-			 //videoArchiveQuery.limit(3);
-			 videoArchiveQuery.get(Session.clientId, {
-				 success: function(videos) {
-					 // The object was retrieved successfully.
-					 console.log("video archive fetched");
-					 //this.videoArchiveArray = angular.copy(videos);
+		var VideoSession = Parse.Object.extend("VideoSession");
+		var videoArchiveQuery = new Parse.Query(VideoSession);
+		videoArchiveQuery.include('mobileUser', 'officerUser');
+		videoArchiveQuery.containedIn('archiveStatus', ['uploaded','available']);
+		videoArchiveQuery.equalTo('client', {
+			__type: "Pointer",
+			className: "Client",
+			objectId: Session.clientId
+		});
+		//videoArchiveQuery.limit(3);
+		videoArchiveQuery.find({
+			success: function(videos) {
+				videoArchiveCtrl.videoArchiveArray = angular.copy(videos);	 
+			},
+			error: function(object, error) {
+				// The object was not retrieved successfully.
+				console.log("Error fetching video archive.");
+			}
+		});
+	};
+	
+	videoArchiveCtrl.showVideo = function(video){
+		
+		videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
+		
+		//ngDialog can only handle stringified JSONs
+		var data = JSON.stringify({
+			attachmentType: 'VID',
+			address: videoUrl
+		});
+		
+		//Open dialog and pass control to AttachmentController
+		$scope.attachmentDialog = ngDialog.open({
+			template: '../attachment-dialog.html',
+			className: 'ngdialog-attachment',
+			showClose: true,
+			scope: $scope,
+			data: data
+		});
+	}
 
-				 },
-				 error: function(object, error) {
-					 // The object was not retrieved successfully.
-					 console.log("Error fetching video archive.");
-				 }
-			 });
-         };
-
-         this.fetchVideoArchive();
-         
-    }]);
+	videoArchiveCtrl.fetchVideoArchive();
+	 
+}]);
 
 //Controller for VideStreams route; controls
 //the video streams view, which contains queue,
@@ -2640,6 +2627,7 @@
             }
 
             this.sortableOptions = {
+                handle: '.most-wanted-move-handle',
                 update: listUpdating,
                 stop: listSettled
             };
@@ -2675,6 +2663,7 @@
                     attributes: {}
                 });
                 this.disableNewButton = true;
+                $rootScope.lastPersonAddedIndex = this.wantedArray.length - 1;
             };
 
             //Save new most wanted, or update an old one,
@@ -3072,6 +3061,7 @@
         analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
         analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
         analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
+        analysisCtrl.showErrorMessage = false;
 
         var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
             "October", "November", "December"
@@ -3090,11 +3080,13 @@
             analysisCtrl.tipsDateChart = charts.tipsDateChart;
             analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
             analysisCtrl.loading = false;
+            analysisCtrl.showErrorMessage = false;
         });
 
         //Receive the data from service
         $scope.$on('data-analysis-error', function (event, charts) {
             analysisCtrl.loading = false;
+            analysisCtrl.showErrorMessage = true;
             // analysisCtrl.tipsDateChart = charts.tipsDateChart;
             // analysisCtrl.tipsTypeChart = charts.tipsTypeChart;
         });
