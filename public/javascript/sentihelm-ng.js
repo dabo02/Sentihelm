@@ -584,8 +584,8 @@
     //Creates an injectable socket service that
     //works just like socket.io's client library
     app.factory('socket', function (socketFactory) {
-        var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-        //var ioSocket = io.connect('http://localhost:80');
+        //var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
+        var ioSocket = io.connect('http://localhost:80');
 
         socket = socketFactory({
             ioSocket: ioSocket
