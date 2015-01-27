@@ -119,7 +119,7 @@ io.on('connect', function (socket) {
             tipQuery.equalTo("crimeListPosition", filter.crimePosition);
         }
 
-        //If filter by date is activated
+        //If filter by date is   activated
         if (!!filter && !!filter.date) {
             filterActivated = true;
             filter.date = new Date(filter.date);

@@ -7,7 +7,7 @@
         .factory('chatSocket', function (socketFactory) {
             return socketFactory({
                 prefix: 'chat-',
-                ioSocket: io.connect(':4770')  // connect to chat server
+                ioSocket: io.connect('/chat')  // connect to chat server
             });
         })
         .controller('ChatManagerController', ['chatSocket', function (chatSocket) {
@@ -17,14 +17,25 @@
             /**
              * @class Message
              * @param messageData {object} is of format { 'sender': '', 'receiver': '', 'message': '', 'dateTime': 1234567890 }
-             * @return new Instace of message
+             * @throws Error
+             * @return new Instance of message
              * */
             var Message = (function () {
                 function Message(messageData) {
+                    var self = this;
                     this.sender = messageData.sender || null;
                     this.receiver = messageData.receiver || null;
                     this.message = messageData.message || null;
                     this.dateTime = messageData.dateTime || +new Date();
+
+                    /**
+                     * Iterates over all the properties of the message, checking if they're all set.
+                     * */
+                    for (var item in Object.keys(this)) {
+                        if (this.hasOwnProperty(item) && this[item] == null) {
+                            throw new Error("Can't create message. Property: " + item + " has not been set.");
+                        }
+                    }
                 }
 
                 Message.prototype.toJSON = function () {

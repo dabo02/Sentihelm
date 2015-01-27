@@ -26,5 +26,6 @@
     <orderEntry type="library" name="morgan-DefinitelyTyped" level="application" />
     <orderEntry type="library" name="Node.js v0.10.35 Core Modules" level="application" />
     <orderEntry type="library" name="parse-DefinitelyTyped" level="application" />
+    <orderEntry type="library" name="socket.io-DefinitelyTyped" level="application" />
   </component>
 </module>
