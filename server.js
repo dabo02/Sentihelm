@@ -79,6 +79,13 @@ app.use(bodyParser());
 //static content in the specified directory (for CSS/JS).
 app.use(express.static(__dirname + '/public'));
 
+// ======================= Chat Server ==========================
+var runChatServer = require('./lib/chat_server');
+
+runChatServer(server, Parse, Client, User);
+
+// ===================== End Chat Server =========================
+
 //Setup socket.io that communicates with front end
 io.on('connect', function (socket) {
 
@@ -119,7 +126,7 @@ io.on('connect', function (socket) {
             tipQuery.equalTo("crimeListPosition", filter.crimePosition);
         }
 
-        //If filter by date is activated
+        //If filter by date is   activated
         if (!!filter && !!filter.date) {
             filterActivated = true;
             filter.date = new Date(filter.date);

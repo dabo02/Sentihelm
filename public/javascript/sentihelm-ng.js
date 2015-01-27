@@ -1,5 +1,5 @@
 (function () {
-    var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast', 'ngAudio']);
+    var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast', 'ngAudio', 'sh.chat']);
 
     //Sets up all the states/routes the app will handle,
     //so as to have a one page app with deep-linking
@@ -821,7 +821,7 @@
     //Creates a paginator service which
     //handles tip-feed pagination and
     //updates tip- feedcontroller accordingly
-    app.factory('paginatorService', ['socket', '$rootScope', 'Session', function (socket, $rootScope, Session) {
+    app.factory('tipFeedPaginationService', ['socket', '$rootScope', 'Session', function (socket, $rootScope, Session) {
 
         //Set up the paginator object
         var paginator = {};
@@ -985,7 +985,7 @@
 
         //Get all active video streams from Parse
         VideoStreamsService.getActiveStreams = function (clientId) {
-            
+
             socket.emit('get-active-streams', clientId);
             socket.on('get-active-streams-response', function (streams) {
                 $rootScope.$broadcast('active-streams-fetched', streams);
@@ -1705,7 +1705,7 @@
 
     //Controller for the drawer, which hides/shows
     //on button click contains navigation options
-    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 
+    app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio',
         function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio) {
         var drawer = this;
         this.newTips = 0;
@@ -1953,9 +1953,9 @@
 
 //Controller for tipfeed route; handles the tip feed
 //which lets you interact with tips, depends heavily
-//on paginatorService
-    app.controller('TipFeedController', ['$scope', '$rootScope', 'socket', 'ngDialog', 'paginatorService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session', 'ngToast',
-        function ($scope, $rootScope, socket, ngDialog, paginatorService, usSpinnerService, $location, $anchorScroll, $state, Session, ngToast) {
+//on tipFeedPaginationService
+    app.controller('TipFeedController', ['$scope', '$rootScope', 'socket', 'ngDialog', 'tipFeedPaginationService', 'usSpinnerService', '$location', '$anchorScroll', '$state', 'Session', 'ngToast',
+        function ($scope, $rootScope, socket, ngDialog, tipFeedPaginationService, usSpinnerService, $location, $anchorScroll, $state, Session, ngToast) {
 
             //Vars needed for pagination; paginatorSet contains
             //number of total pages, divided by groups of 10
@@ -1963,9 +1963,9 @@
             this.showFilter = true;
             this.tipsAvailable = true;
             this.currentTips = [];
-            this.currentPage = paginator.currentPage;
-            this.lastPage = paginator.lastPage;
-            this.paginatorSet = paginator.paginatorSet;
+            this.currentPage = tipFeedPaginationService.currentPage;
+            this.lastPage = tipFeedPaginationService.lastPage;
+            this.paginatorSet = tipFeedPaginationService.paginatorSet;
             this.showMediaSpinner = false;
             this.counter = 0;
             this.filter = undefined;
@@ -1988,7 +1988,7 @@
             this.attachmentDialogIsOn = false;
 
             //Get tips on page load/refresh
-            paginatorService.initializeFeed();
+            tipFeedPaginationService.initializeFeed();
 
             //No tips available; hide paginator and
             //feed and display appropiate text
@@ -2037,21 +2037,21 @@
             //Change page to passed value;
             //scroll to top
             this.changePage = function (newPage) {
-                paginatorService.changePage(newPage, this.filter);
+                tipFeedPaginationService.changePage(newPage, this.filter);
                 $anchorScroll();
             };
 
             //Change to next page;
             //scroll to top
             this.nextPage = function () {
-                paginatorService.nextPage(this.filter);
+                tipFeedPaginationService.nextPage(this.filter);
                 $anchorScroll();
             };
 
             //Change to previous page;
             //scroll to top
             this.prevPage = function () {
-                paginatorService.prevPage(this.filter);
+                tipFeedPaginationService.prevPage(this.filter);
                 $anchorScroll();
             };
 
@@ -2179,7 +2179,7 @@
                 }
                 $rootScope.$broadcast('discard-current-tips', []);
                 tipfeed.tipsAvailable = true;
-                paginatorService.initializeFeed(this.filter);
+                tipFeedPaginationService.initializeFeed(this.filter);
             };
 
             this.loadNewTips = function () {
