@@ -82,7 +82,7 @@ app.use(express.static(__dirname + '/public'));
 // ======================= Chat Server ==========================
 var runChatServer = require('./lib/chat_server');
 
-runChatServer(server, Parse, Client, User);
+runChatServer(io, server, Parse, Client, User);
 
 // ===================== End Chat Server =========================
 
