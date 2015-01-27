@@ -6,8 +6,7 @@
     angular.module('sh.chat', ['btford.socket-io'])
         .factory('chatSocket', function (socketFactory) {
             return socketFactory({
-                prefix: 'chat-',
-                ioSocket: io.connect('/chat')  // connect to chat server
+                ioSocket: io.connect('http://localhost/chat/otF8BLkDg8')  // connect to chat server
             });
         })
         .controller('ChatManagerController', ['chatSocket', function (chatSocket) {
@@ -54,15 +53,19 @@
 
             this.send = function (message) {
 
-            }
+            };
 
             this.receive = function (message) {
 
-            }
+            };
 
-            chatSocket.on('chat-new-message', function (message) {
-                ChatManagerController.receive(message);
+
+            chatSocket.on('test-back', function (data) {
+                "use strict";
+               console.log(data);
             });
+
+            chatSocket.emit('test', 'hola hola hola');
 
         }]);
 })(window.angular);
