@@ -21,16 +21,23 @@
 
       </div>
     </div>
+    <form name="messageForm" ng-controller="ChatController as chat" novalidate>
+      <div id="video-streams-chat" >
+          <div id="video-streams-chat-log">
+            <div ng-repeat="message in chat.messages" ng-class="{sent: message.fromMe}">
+                <span class="message-heading"><em>{{message.from}}</em> at {{message.dateTime | date:'short'}}</span>
+                <p>
+                    - {{message.message}}
+                </p>
+            </div>
+          </div>
 
-    <div id="video-streams-chat">
-      <div id="video-streams-chat-log">
+          <div  id="video-streams-chat-controls" >
+            <input name="message" ng-model="chat.message" type="text" minlength="1" required id="message-box"/> <button type="submit" ng-click="messageForm.$valid && chat.send()">Send</button>
+          </div>
+        </div>
+    </form>
 
-      </div>
-
-      <form id="video-streams-chat-controls">
-        <div ng-controller="ChatManagerController"></div>
-      </form>
-    </div>
 
     <div id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
       <ui-gmap-google-map center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})" zoom="mapCtrl.zoom" draggable="true" ng-if="videoStreamsCtrl.currentStream" ng-cloak>
