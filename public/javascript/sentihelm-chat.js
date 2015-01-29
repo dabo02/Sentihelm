@@ -1,19 +1,48 @@
 /**
- * Created by marti_000 on 1/26/2015.
+ * Created by Victor A. Martinez on 1/26/2015.
  */
 
 (function (angular, undefined) {
     'use strict';
     angular.module('sh.chat', ['btford.socket-io'])
-        .factory('chatSocket', function (socketFactory) {
+        .factory('chatSocket', function (socketFactory, Session) {
+
+            var namespace = '/chat/' + Session.clientId,
+                server = 'http://10.10.80.6:80';
+
             return socketFactory({
-                ioSocket: io.connect('http://10.10.80.6:80/chat/otF8BLkDg8')  // connect to chat server
+                ioSocket: io.connect(server + namespace)  // connect to chat server
             });
         })
         .controller('ChatController', ['chatSocket', 'Session', function (chatSocket, Session) {
             var ChatController = this;
-            this.messages = [];
             this.message = '';
+            this.rooms = [];
+            this.currentRoom = '';
+            this.receiver;
+
+            function getUserName(id, c) {
+
+                new Parse.Query(User)
+                    .equalTo('objectId', id)
+                    .find()
+                    .then(function (results) {
+                        c(null, results[0].username);
+                    }, function (err) {
+                        c(err);
+                    });
+            }
+
+            function getRoom(username) {
+                var room = '';
+                ChatController.rooms.forEach(function (room) {
+                    if (room.with === username) {
+                        room = room.name;
+                    }
+                });
+
+                return room;
+            }
 
             /**
              * @class Message
@@ -47,24 +76,32 @@
                         dateTime: this.dateTime
                     };
 
-                    return JSON.stringify(m);
+                    return m;
                 };
 
                 return Message;
             })();
 
             this.send = function () {
-                chatSocket.emit('test', {
-                    clientId: Session.clientId,
-                    message: ChatController.message,
-                    dateTime: +new Date()
+                //chatSocket.emit('test', {
+                //    clientId: Session.clientId,
+                //    message: ChatController.message,
+                //    dateTime: +new Date()
+                //});
+
+                var message = new Message({
+                    sender: Session.clientId,
+                    receiver: this.receiver,
+                    message: this.message
                 });
+
+                chatSocket.emit('message-sent', message.toJSON());
 
                 this.message = '';
             };
 
             this.receive = function (data) {
-                var isMe = data.clientId === Session.clientId,
+                var isMe = data.sender === Session.clientId,
                     messageObject = {
                         from: '',
                         fromMe: isMe,
@@ -75,14 +112,39 @@
                 if (isMe) {
                     messageObject.from = Session.user.username;
                 } else {
-                    messageObject.from = "Define";
+                    getUserName(data.sender, function (err, user) {
+                        messageObject.from = user;
+                    });
                 }
 
-                ChatController.messages.push(messageObject);
+                ChatController.rooms[getRoom(messageObject.user)].messages.push(messageObject);
             };
 
+            this.changeRoom = function (username) {
+                this.currentRoom = getRoom(username);
+            };
 
-            chatSocket.on('test-back', ChatController.receive);
+            function onNewRoom(room, username) {
+                ChatController.rooms.push({
+                    name: room,
+                    with: username,
+                    messages: []
+                });
+            }
+
+            function connectionSucess() {
+                console.log('We are connected to chat server');
+            }
+
+
+            chatSocket.on('new-message', ChatController.receive);
+            chatSocket.on('new-room', onNewRoom);
+            chatSocket.on('successful-connect', connectionSucess);
+
+            chatSocket.emit('connect', {
+                username: Session.user.username,
+                role: 'admin'
+            })
 
         }]);
 })(window.angular);
