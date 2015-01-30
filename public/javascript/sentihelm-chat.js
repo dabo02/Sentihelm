@@ -8,7 +8,7 @@
         .factory('chatSocket', function (socketFactory, Session) {
 
             var namespace = '/chat/' + Session.clientId,
-                server = 'http://10.10.80.6:80';
+                server = 'http://localhost:80';
 
             return socketFactory({
                 ioSocket: io.connect(server + namespace)  // connect to chat server
@@ -19,7 +19,8 @@
             this.message = '';
             this.rooms = [];
             this.currentRoom = '';
-            this.receiver;
+            this.receiver = '';
+            this.canSend = false;
 
             function getUserName(id, c) {
 
@@ -35,13 +36,19 @@
 
             function getRoom(username) {
                 var room = '';
-                ChatController.rooms.forEach(function (room) {
-                    if (room.with === username) {
-                        room = room.name;
-                    }
-                });
+                if (ChatController.rooms.length > 0) {
+                    ChatController.rooms.forEach(function (room) {
+                        if (room.with === username) {
+                            room = room.name;
+                        }
+                    });
+                    ChatController.canSend = true;
+                    return room;
+                } else {
+                    ChatController.canSend = false;
+                }
 
-                return room;
+
             }
 
             /**
@@ -117,11 +124,23 @@
                     });
                 }
 
-                ChatController.rooms[getRoom(messageObject.user)].messages.push(messageObject);
+                getUserName(data.reciever, function (err, user) {
+                    ChatController.rooms[getRoom(user)].messages.push(messageObject);
+                });
             };
 
             this.changeRoom = function (username) {
                 this.currentRoom = getRoom(username);
+                if (typeof this.currentRoom === 'string') {
+
+                    new Parse.Query(User)
+                        .include('objectId')
+                        .equalTo('username', username)
+                        .find()
+                        .then(function (results) {
+                            ChatController.reciever = results[0].objectId;
+                        });
+                }
             };
 
             function onNewRoom(room, username) {
@@ -141,10 +160,12 @@
             chatSocket.on('new-room', onNewRoom);
             chatSocket.on('successful-connect', connectionSucess);
 
-            chatSocket.emit('connect', {
-                username: Session.user.username,
-                role: 'admin'
-            })
+            chatSocket.on('init', function () {
+                chatSocket.emit('connection', {
+                    username: Session.user.username,
+                    role: 'admin'
+                });
+            });
 
         }]);
 })(window.angular);

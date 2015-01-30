@@ -33,7 +33,7 @@
 
           <div  id="video-streams-chat-controls" >
             <input type="text" ng-model="chat.room" hidden>
-            <input name="message" ng-model="chat.message" type="text" minlength="1" required id="message-box"/> <button type="submit" ng-click="messageForm.$valid && chat.send()">Send</button>
+            <input name="message" ng-model="chat.message" type="text" minlength="1" required id="message-box" ng-disabled="!chat.canSend"/> <button ng-disabled="!chat.canSend" type="submit" ng-click="messageForm.$valid && chat.send()" class="send">Send</button>
           </div>
         </div>
     </form>
