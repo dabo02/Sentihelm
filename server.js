@@ -518,7 +518,7 @@ app.post('/start-archive', function(request, response){
     //    return;
     //}
 
-    var videoSession = request.body;
+    var videoSession = JSON.parse(request.body.data);
 
     opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
         if (err){

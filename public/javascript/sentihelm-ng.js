@@ -1902,7 +1902,7 @@
 //current video, chat with current mobile client,
 //information on current call and all other controls
 //to swap video calls
-    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', function ($scope, socket, VideoStreamsService, ngToast) {
+    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', '$rootScope', function ($scope, socket, VideoStreamsService, ngToast, $rootScope) {
         var vidStrmCtrl = this;
         this.queue = [];
         this.currentStream = {};
@@ -1929,6 +1929,7 @@
             for (var i = 0; i < vidStrmCtrl.queue.length; i++) {
                 var stream = vidStrmCtrl.queue[i];
                 if (stream.sessionId === data.sessionId) {
+                    $rootScope.$emit('delete-stream', vidStrmCtrl.queue[i].userObjectId);  // to anounce which one got deleted
                     vidStrmCtrl.queue.splice(i, 1);
                     break;
                 }

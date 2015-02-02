@@ -2,47 +2,50 @@
  * Created by Victor A. Martinez on 1/26/2015.
  */
 
-/**
- * @class Message
- * @param messageData {object} is of format { 'sender': '', 'receiver': '', 'message': '', 'dateTime': 1234567890 }
- * @throws Error
- * @return new Instance of message
- * */
 
-var Message = (function () {
-    function Message(messageData) {
-        var self = this;
-        this.sender = messageData.sender || Session.user.clientId;
-        this.receiver = messageData.receiver || null;
-        this.message = messageData.message || null;
-        this.dateTime = 123;
-
-        /**
-         * Iterates over all the properties of the message, checking if they're all set.
-         * */
-        for (var item in Object.keys(this)) {
-            if (this.hasOwnProperty(item) && this[item] == null) {
-                throw new Error("Can't create message. Property: " + item + " has not been set.");
-            }
-        }
-    }
-
-    Message.prototype.toJSONObject = function () {
-        var m = {
-            sender: this.sender,
-            receiver: this.receiver,
-            message: this.message,
-            dateTime: this.dateTime
-        };
-
-        return m;
-    };
-
-    return Message;
-})();
 
 (function (angular, undefined) {
     'use strict';
+    /**
+     * @class Message
+     * @param messageData {object} is of format { 'sender': '', 'receiver': '', 'message': '', 'dateTime': 1234567890 }
+     * @throws Error
+     * @return new Instance of message
+     * */
+
+    var Message = (function () {
+            function Message(messageData) {
+                var self = this;
+                this.sender = messageData.sender || Session.user.clientId;
+                this.receiver = messageData.receiver || null;
+                this.message = messageData.message || null;
+                this.dateTime = 123;
+
+                /**
+                 * Iterates over all the properties of the message, checking if they're all set.
+                 * */
+                for (var item in Object.keys(this)) {
+                    if (this.hasOwnProperty(item) && this[item] == null) {
+                        throw new Error("Can't create message. Property: " + item + " has not been set.");
+                    }
+                }
+            }
+
+            Message.prototype.toJSONObject = function () {
+                var m = {
+                    sender: this.sender,
+                    receiver: this.receiver,
+                    message: this.message,
+                    dateTime: this.dateTime
+                };
+
+                return m;
+            };
+
+            return Message;
+        })(),
+        User = Parse.Object.extend("User");
+
     angular.module('sh.chat', ['btford.socket-io'])
         .factory('chatSocket', function (socketFactory, Session) {
 
@@ -53,57 +56,58 @@ var Message = (function () {
                 ioSocket: io.connect(server + namespace)  // connect to chat server
             });
         })
-        .controller('ChatController', ['chatSocket', 'Session', function (chatSocket, Session) {
+        .controller('ChatController', ['chatSocket', 'Session', '$rootScope', function (chatSocket, Session, $rootScope) {
             var ChatController = this;
             this.message = '';
-            this.rooms = [];
+            this.rooms = {};
             this.currentRoom = '';
             this.receiver = '';
             this.canSend = false;
 
             function getUserName(id) {
-                var username = null;
-                ChatController.rooms.forEach(function (room) {
-                    if (room.with.id === id) {
-                        username = room.with.username;
-                    }
-                });
+                var room;
 
-                return username;
+                for (room in ChatController.rooms) {
+                    if (ChatController.rooms.hasOwnProperty(room) && ChatController.rooms[room].with.id === id) {
+                        return ChatController.rooms[room].with.username;
+                    }
+                }
+
             }
 
             function getRoom(username) {
-                var roomName = '';
-                if (ChatController.rooms.length > 0) {
-                    ChatController.rooms.forEach(function (room, index) {
-                        if (room.with === username) {
-                            roomName = Object.keys(room)[index];
-                        }
-                    });
-                    ChatController.canSend = true;
-                    return roomName;
-                } else {
-                    ChatController.canSend = false;
-                    return null;
+                var room;
+                for (room in ChatController.rooms) {
+                    if (ChatController.rooms.hasOwnProperty(room) && ChatController.rooms[room].with.username === username) {
+                        return room;
+                    }
                 }
-
 
             }
 
-            function onNewRoom(room, username) {
-                new Parse.Query(User)
-                    .include('objectId')
-                    .equalTo('username', username)
-                    .find()
-                    .then(function (results) {
-                        ChatController.rooms[room] = {
-                            with: {
-                                username: username,
-                                id: results[0].clientId
-                            },
-                            messages: []
-                        };
-                    });
+            function onNewRoom(room, username, id) {
+                //new Parse.Query(User)
+                //    .include('objectId')
+                //    .equalTo('username', username)
+                //    .find()
+                //    .then(function (results) {
+                //        console.log("Getting room for: %s", username);
+                //        console.log("Room: %s", room);
+                //        ChatController.rooms[room] = {
+                //            with: {
+                //                username: username,
+                //                id: results[0].clientId
+                //            },
+                //            messages: []
+                //        };
+                //    });
+                ChatController.rooms[room] = {
+                    with: {
+                        username: username,
+                        id: id
+                    },
+                    messages: []
+                };
             }
 
             function connectionSuccess() {
@@ -130,7 +134,7 @@ var Message = (function () {
 
             this.receive = function (data) {
                 var sender = data.sender,
-                    receiver = data.reciever,
+                    receiver = data.receiver,
                     message = data.message,
                     dateTime = data.dateTime,
                     messageObject = {
@@ -151,18 +155,37 @@ var Message = (function () {
                     messageObject.from = username;
                 }
 
-                this.rooms[getRoom(username)].messages.push(messageObject);
+                ChatController.rooms[getRoom(username)].messages.push(messageObject);
             };
 
-            this.changeRoom = function (username) {
-                this.currentRoom = getRoom(username);
+            this.changeRoom = function (id) {
+                var username = getUserName(id),
+                    room = getRoom(username);
+                this.currentRoom = room;
                 if (typeof this.currentRoom === 'string') {
                     this.receiver = this.rooms[this.currentRoom].with.id;
+                    this.canSend = true;
+                    chatSocket.emit('change-room', room);
                 } else {
                     // TODO implement method that requests a chat with a user if not already chatting.
                     //this.requestChat(username);
+                    this.canSend = false;
                 }
             };
+
+            this.save = function(id) {
+                // TODO SAVE
+                var username = getUserName(id),
+                    room = getRoom(username);
+
+                // remove room from memory
+                delete ChatController.rooms[room];
+                ChatController.canSend = false;
+            };
+
+            $rootScope.$on('delete-stream', function (event, id) {
+                ChatController.save(id);
+            });
 
             chatSocket.on('new-message', ChatController.receive);
             chatSocket.on('new-room', onNewRoom);
