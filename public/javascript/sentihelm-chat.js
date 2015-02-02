@@ -56,7 +56,8 @@
                 ioSocket: io.connect(server + namespace)  // connect to chat server
             });
         })
-        .controller('ChatController', ['chatSocket', 'Session', '$rootScope', function (chatSocket, Session, $rootScope) {
+        .controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', function (chatSocket, Session, $rootScope,
+                                                                                                                      $location, $anchorScroll) {
             var ChatController = this;
             this.message = '';
             this.rooms = {};
@@ -143,7 +144,8 @@
                         message: message,
                         dateTime: dateTime
                     },
-                    username;
+                    username,
+                    room;
 
                 if (sender == Session.user.objectId) {
                     messageObject.from = Session.user.username;
@@ -155,21 +157,35 @@
                     messageObject.from = username;
                 }
 
-                ChatController.rooms[getRoom(username)].messages.push(messageObject);
+                room = getRoom(username);
+
+                ChatController.rooms[room].messages.push(messageObject);
+
+                if (room === ChatController.currentRoom) {
+                    $location.hash('chat-bottom');
+                    $anchorScroll();
+                }
             };
 
             this.changeRoom = function (id) {
                 var username = getUserName(id),
                     room = getRoom(username);
-                this.currentRoom = room;
-                if (typeof this.currentRoom === 'string') {
-                    this.receiver = this.rooms[this.currentRoom].with.id;
-                    this.canSend = true;
-                    chatSocket.emit('change-room', room);
+
+                if (typeof room === 'string') {
+                    ChatController.receiver = this.rooms[room].with.id;
+                    ChatController.canSend = true;
+
+                    if (ChatController.currentRoom !== room) {
+                        chatSocket.emit('change-room', room);
+                        ChatController.currentRoom = room;
+                        $location.hash('chat-bottom');
+                        $anchorScroll();
+                    }
+
                 } else {
                     // TODO implement method that requests a chat with a user if not already chatting.
                     //this.requestChat(username);
-                    this.canSend = false;
+                    ChatController.canSend = false;
                 }
             };
 
@@ -192,7 +208,7 @@
             chatSocket.on('successful-connect', connectionSuccess);
 
             chatSocket.on('init', function () {
-                chatSocket.emit('connection', {
+                chatSocket.emit('start', {
                     username: Session.user.username,
                     role: 'admin'
                 });
