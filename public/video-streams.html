@@ -30,7 +30,7 @@
                              ng-class="{sent: message.fromMe}">
                             <span class="message-heading"><em>{{message.from}}</em> at {{message.dateTime | date:'short'}}</span>
 
-                            <p>
+                            <p class="chat-message">
                                 - {{message.message}}
                             </p>
                         </div>
@@ -38,9 +38,11 @@
                     </div>
 
                     <div id="video-streams-chat-controls">
-                        <input type="text" ng-model="chat.room" hidden>
-                        <input name="message" ng-model="chat.message" type="text" minlength="1" required
-                               id="message-box" ng-disabled="!chat.canSend"/>
+                        <input name="message" ng-model="chat.message"
+                               type="text" minlength="1" required
+                               id="message-box"
+                               ng-disabled="!chat.canSend"
+                               placeholder="Enter message here..."/>
                         <button ng-disabled="!chat.canSend" type="submit" ng-click="messageForm.$valid && chat.send()"
                                 class="send">Send
                         </button>

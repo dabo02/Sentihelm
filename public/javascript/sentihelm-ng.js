@@ -583,9 +583,9 @@
 
     //Creates an injectable socket service that
     //works just like socket.io's client library
-    app.factory('socket', function (socketFactory) {
+    app.factory('socket', function (socketFactory, $location) {
         //var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-        var ioSocket = io.connect('http://localhost:80');
+        var ioSocket = io.connect($location.host());
 
         socket = socketFactory({
             ioSocket: ioSocket
@@ -977,9 +977,13 @@
         //Used to create a new div inside the video-streams-video
         //div to subscribe the stream to it.
         var createDivElement = function (sessionId) {
-            var div = document.createElement('div');
+            var div = document.createElement('div'),
+                node = document.getElementById('video-streams-video');
             div.setAttribute('id', 'video-streams-video-' + sessionId);
-            document.getElementById('video-streams-video').appendChild(div);
+            while (node.hasChildNodes()) {
+                node.removeChild(node.firstChild);
+            }
+            node .appendChild(div);
             return div;
         };
 

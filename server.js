@@ -562,7 +562,7 @@ server.listen((process.env.PORT || 80), function () {
 //  HELPER FUNCTIONS
 //=========================================
 
-//Creates and saves a notification, then calls 
+//Creates and saves a notification, then calls
 //pushNotification, which alerts all mobile devices
 function saveAndPushNotification(notificationData) {
     var passPhrase = "";
@@ -825,7 +825,7 @@ function analyzeData(data) {
 
 }
 
-//Create the charts. If month is defined, create the LineChart with the days of 
+//Create the charts. If month is defined, create the LineChart with the days of
 //the month.
 function getChartsData(tips, month, year) {
 

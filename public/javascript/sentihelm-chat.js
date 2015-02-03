@@ -9,7 +9,7 @@
     var User = Parse.Object.extend("User");
 
     angular.module('sh.chat', ['btford.socket-io'])
-        .factory('messageFactory', function () {
+        .factory('messageFactory', ['Session', function (Session) {
             /**
              * @class Message
              * @param messageData {object} is of format { 'sender': '', 'receiver': '', 'message': '', 'dateTime': 1234567890 }
@@ -19,7 +19,7 @@
 
             function Message(messageData) {
                 var self = Object.create(null);
-                self.sender = messageData.sender || Session.user.clientId;
+                self.sender = messageData.sender || Session.user.objectId;
                 self.receiver = messageData.receiver || null;
                 self.message = messageData.message || null;
                 self.dateTime = Date.now();
@@ -28,21 +28,24 @@
                     return JSON.stringify(self);
                 };
 
+                if (!self.receiver) {
+                    throw Error("No receiver set, please do so.");
+                }
+
                 return self;
             }
 
             return Message;
+        }])
+        .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 
-        })
-        .factory('chatSocket', function (socketFactory, Session) {
+                var namespace = '/chat/' + Session.clientId,
+                    server = $location.host();
 
-            var namespace = '/chat/' + Session.clientId,
-                server = 'http://localhost:80';
-
-            return socketFactory({
-                ioSocket: io.connect(server + namespace)  // connect to chat server
-            });
-        })
+                return socketFactory({
+                    ioSocket: io.connect(server + namespace)  // connect to chat server
+                });
+        }])
         .controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', 'messageFactory',
             function (chatSocket, Session, $rootScope, $location, $anchorScroll, messageFactory) {
                 var ChatController = this;
@@ -65,21 +68,6 @@
                     return username;
 
                 }
-
-                //
-                //function getRoom(username) {
-                //    var roomName = '';
-                //
-                //    Object.key(ChatController.rooms).forEach(function (room) {
-                //        var currentRoom = ChatController.rooms[room];
-                //        if (currentRoom.with.username === username) {
-                //            roomName = room;
-                //        }
-                //    });
-                //
-                //    return roomName;
-                //
-                //}
 
                 function getRoom(username, id) {
                     var prop = username ? 'username' : (id ? 'id' : null),
@@ -115,7 +103,6 @@
 
                 this.send = function () {
                     var message = messageFactory({
-                        sender: Session.user.objectId,
                         receiver: ChatController.receiver,
                         message: ChatController.message
                     });
@@ -162,7 +149,7 @@
                 this.changeRoom = function (id) {
                     var room = getRoom(null, id);
 
-                    if (typeof room === 'string') {
+                    if (room) {
                         ChatController.receiver = this.rooms[room].with.id;
                         ChatController.canSend = true;
 
@@ -177,6 +164,7 @@
                         // TODO implement method that requests a chat with a user if not already chatting.
                         //this.requestChat(username);
                         ChatController.canSend = false;
+                        ChatController.currentRoom = '';
                     }
                 };
 
@@ -190,7 +178,10 @@
                 };
 
                 $rootScope.$on('delete-stream', function (event, id) {
-                    ChatController.save(id);
+                    ChatController.message = '';
+                    if (ChatController.rooms[getRoom(null, id)].messages.length > 0) {
+                        ChatController.save(id);
+                    }
                 });
 
                 chatSocket.on('new-message', ChatController.receive);

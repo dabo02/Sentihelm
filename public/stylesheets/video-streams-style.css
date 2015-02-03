@@ -145,3 +145,9 @@
   float: right;
   text-align: right;
 }
+
+
+.chat-message {
+  word-wrap: break-word;
+  word-break: break-all;
+}
