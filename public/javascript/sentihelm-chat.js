@@ -10,32 +10,17 @@
 
     angular.module('sh.chat', ['btford.socket-io'])
         .factory('messageFactory', ['Session', function (Session) {
-            /**
-             * @class Message
-             * @param messageData {object} is of format { 'sender': '', 'receiver': '', 'message': '', 'dateTime': 1234567890 }
-             * @throws Error
-             * @return new Instance of message
-             * */
-
-            function Message(messageData) {
-                var self = Object.create(null);
-                self.sender = messageData.sender || Session.user.objectId;
-                self.receiver = messageData.receiver || null;
-                self.message = messageData.message || null;
-                self.dateTime = Date.now();
-
-                self.toString = function() {
-                    return JSON.stringify(self);
-                };
-
-                if (!self.receiver) {
+            return function (messageData) {
+                if (!messageData.receiver) {
                     throw Error("No receiver set, please do so.");
                 }
-
-                return self;
+                return {
+                    sender: messageData.sender || Session.user.objectId,
+                    receiver: messageData.receiver || undefined,
+                    message: messageData.message || undefined,
+                    dateTime: Date.now()
+                };
             }
-
-            return Message;
         }])
         .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 

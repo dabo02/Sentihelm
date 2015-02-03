@@ -597,7 +597,7 @@
     //be called anywhere in the app, be it with
     //pre-made errors fount in ERROR_CODES constant
     //or newly created errors via methods offered
-    app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERRORS', function (ngDialog, $rootScope, ERRORS) {
+    app.factory('errorFactory', ['ngDialog', function (ngDialog) {
 
         var errorFactory = {};
 
