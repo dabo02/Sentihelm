@@ -55,9 +55,9 @@
                 }
 
                 function getRoom(username, id) {
-                    var prop = username ? 'username' : (id ? 'id' : null),
+                    var prop = username ? 'username' : (id ? 'id' : undefined),
                         roomName = '',
-                        comparative = username || id || null;
+                        comparative = username || id || undefined;
 
                     if (prop && comparative) {
                         Object.keys(ChatController.rooms).forEach(function (room) {
@@ -69,7 +69,7 @@
                         return roomName;
                     }
 
-                    return null;
+                    return undefined;
                 }
 
                 function onNewRoom(room, username, id) {
@@ -87,14 +87,21 @@
                 }
 
                 this.send = function () {
-                    var message = messageFactory({
-                        receiver: ChatController.receiver,
-                        message: ChatController.message
-                    });
 
-                    chatSocket.emit('message-sent', message);
+                    try {
+                        chatSocket.emit('message-sent', messageFactory({
+                            receiver: ChatController.receiver,
+                            message: ChatController.message
+                        }));
+                    } catch (e) {
+                        console.log(e.message);
+                        ChatController.rooms[getRoom(undefined, ChatController.receiver)].messages.push({
+                            dateTime: Date.now(),
+                            message: e.message
+                        });
+                    }
 
-                    this.message = '';
+                    ChatController.message = '';
                 };
 
                 this.receive = function (data) {
@@ -132,7 +139,7 @@
                 };
 
                 this.changeRoom = function (id) {
-                    var room = getRoom(null, id);
+                    var room = getRoom(undefined, id);
 
                     if (room) {
                         ChatController.receiver = this.rooms[room].with.id;
@@ -155,7 +162,7 @@
 
                 this.save = function (id) {
                     // TODO SAVE
-                    var room = getRoom(null, id);
+                    var room = getRoom(undefined, id);
 
                     // remove room from memory
                     delete ChatController.rooms[room];
@@ -164,7 +171,7 @@
 
                 $rootScope.$on('delete-stream', function (event, id) {
                     ChatController.message = '';
-                    if (ChatController.rooms[getRoom(null, id)].messages.length > 0) {
+                    if (ChatController.rooms[getRoom(undefined, id)].messages.length > 0) {
                         ChatController.save(id);
                     }
                 });
