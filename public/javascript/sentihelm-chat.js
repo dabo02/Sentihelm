@@ -40,12 +40,6 @@
                 this.receiver = '';
                 this.canSend = false;
 
-                chatSocket.on('init', onInit);
-                chatSocket.on('successful-connect', onConnectionSuccess);
-                $rootScope.$on('delete-stream', onDeleteStream);
-                chatSocket.on('new-message', this.onNewMessage);
-                chatSocket.on('new-room', this.onNewRoom);
-                
                 // Private
                 function getUserName(id) {
                     var username = '';
@@ -198,6 +192,12 @@
                     delete this.rooms[room];
                     this.canSend = false;
                 };
+
+                chatSocket.on('init', onInit);
+                chatSocket.on('successful-connect', onConnectionSuccess);
+                $rootScope.$on('delete-stream', onDeleteStream);
+                chatSocket.on('new-message', this.onNewMessage);
+                chatSocket.on('new-room', this.onNewRoom);
             }
         ]);
 })
