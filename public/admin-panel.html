@@ -5,31 +5,46 @@
 	</h1>
 	<br>
 
-	<form role="form">
+	<form role="form" name="addOfficerForm" novalidate>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-fname" class="dark-gray">First Name</label>
-			<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="adminPanelCtrl.newUser.fname">
+			<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="adminPanelCtrl.newUser.fname" required/>
 		</div>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-lname" class="dark-gray">Last Name</label>
-			<input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="adminPanelCtrl.newUser.lname">
+			<input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="adminPanelCtrl.newUser.lname" required/>
 		</div>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-email" class="dark-gray">Email</label>
-			<input type="text" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.newUser.email">
+			<input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.newUser.email" required/>
 		</div>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-username" class="dark-gray">Username</label>
-			<input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.newUser.username">
+			<input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.newUser.username" name="username" required/>
 		</div>
+
+        <div class="form-group col-sm-4 col-sm-offset-4">
+            <label for="new-officer-phone" class="dark-gray">Phone Number</label>
+            <input type="text" class="form-control" id="new-officer-phone" placeholder="Phone Number" ng-model="adminPanelCtrl.newUser.phoneNumber" required/>
+        </div>
+
+        <div class="form-group col-sm-4 col-sm-offset-4">
+            <label for="new-officer-zip-code" class="dark-gray">Zip Code</label>
+            <input type="number" min="0" max="99999" class="form-control" id="new-officer-zip-code" placeholder="Zip Code" ng-model="adminPanelCtrl.newUser.zipCode" required/>
+        </div>
+
+        <div class="form-group col-sm-4 col-sm-offset-4">
+            <label for="new-officer-state" class="dark-gray">State</label>
+            <input type="text" class="form-control" id="new-officer-state" placeholder="State" ng-model="adminPanelCtrl.newUser.state" required/>
+        </div>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-password" class="dark-gray">Password</label>
-			<input type="password" class="form-control" id="new-officer-password" placeholder="Password" ng-model="adminPanelCtrl.newUser.password">
+			<input type="password" class="form-control" id="new-officer-password" placeholder="Password" ng-model="adminPanelCtrl.newUser.password" required/>
 		</div>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
@@ -40,7 +55,7 @@
 			</select>	
 		</div>
 
-		<button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
+		<button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="addOfficerForm.$valid && adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
 			<span ng-hide="adminPanelCtrl.sending">{{adminPanelCtrl.successMessage || "Add User"}}</span>
 			<div class="spinner" ng-show="adminPanelCtrl.sending">
 		        <div class="bounce1"></div>

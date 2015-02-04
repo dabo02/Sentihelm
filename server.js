@@ -609,6 +609,9 @@ function addNewOfficer(officerData, clientId) {
     var encryptedFirstName = encryptionManager.encrypt(passPhrase, officerData.fname);
     var encryptedLastName = encryptionManager.encrypt(passPhrase, officerData.lname);
     var hashedPassword = passwordGenerator.md5(officerData.password);
+    var encryptedPhoneNumber = encryptionManager.encrypt(passPhrase, officerData.phoneNumber);
+    var encryptedZipCode = encryptionManager.encrypt(passPhrase, officerData.zipCode.toString());
+    var encryptedState = encryptionManager.encrypt(passPhrase, officerData.state);
 
     //Create new officer
     var officer = new Parse.User();
@@ -619,6 +622,18 @@ function addNewOfficer(officerData, clientId) {
     officer.set('lastName', {
         __type: "Bytes",
         base64: encryptedLastName
+    });
+    officer.set('phoneNumber', {
+        __type: 'Bytes',
+        base64: encryptedPhoneNumber
+    });
+    officer.set('zipCode', {
+        __type: 'Bytes',
+        base64: encryptedZipCode
+    });
+    officer.set('state', {
+        __type: 'Bytes',
+        base64: encryptedState
     });
 
     // officer.set('firstName', encryptedFirstName);
@@ -637,8 +652,10 @@ function addNewOfficer(officerData, clientId) {
     officer.signUp().then(function (newOfficer) {
         //Successfuly added; alert front-end
         io.sockets.emit('new-officer-added');
+        console.log("Sign up succesful..");
     }, function (error) {
         //Failed adding officer; alert front-end
+        console.log(error);
         io.sockets.emit('new-officer-failed', {error: error});
     });
 };
