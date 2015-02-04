@@ -583,9 +583,9 @@
 
     //Creates an injectable socket service that
     //works just like socket.io's client library
-    app.factory('socket', function (socketFactory) {
+    app.factory('socket', function (socketFactory, $location) {
         //var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-        var ioSocket = io.connect('http://localhost:80');
+        var ioSocket = io.connect($location.host());
 
         socket = socketFactory({
             ioSocket: ioSocket
@@ -597,7 +597,7 @@
     //be called anywhere in the app, be it with
     //pre-made errors fount in ERROR_CODES constant
     //or newly created errors via methods offered
-    app.factory('errorFactory', ['ngDialog', '$rootScope', 'ERRORS', function (ngDialog, $rootScope, ERRORS) {
+    app.factory('errorFactory', ['ngDialog', function (ngDialog) {
 
         var errorFactory = {};
 
@@ -977,9 +977,13 @@
         //Used to create a new div inside the video-streams-video
         //div to subscribe the stream to it.
         var createDivElement = function (sessionId) {
-            var div = document.createElement('div');
+            var div = document.createElement('div'),
+                node = document.getElementById('video-streams-video');
             div.setAttribute('id', 'video-streams-video-' + sessionId);
-            document.getElementById('video-streams-video').appendChild(div);
+            while (node.hasChildNodes()) {
+                node.removeChild(node.firstChild);
+            }
+            node .appendChild(div);
             return div;
         };
 
@@ -1902,7 +1906,7 @@
 //current video, chat with current mobile client,
 //information on current call and all other controls
 //to swap video calls
-    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', function ($scope, socket, VideoStreamsService, ngToast) {
+    app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', '$rootScope', function ($scope, socket, VideoStreamsService, ngToast, $rootScope) {
         var vidStrmCtrl = this;
         this.queue = [];
         this.currentStream = {};
@@ -1929,6 +1933,7 @@
             for (var i = 0; i < vidStrmCtrl.queue.length; i++) {
                 var stream = vidStrmCtrl.queue[i];
                 if (stream.sessionId === data.sessionId) {
+                    $rootScope.$emit('delete-stream', vidStrmCtrl.queue[i].userObjectId);  // to anounce which one got deleted
                     vidStrmCtrl.queue.splice(i, 1);
                     break;
                 }

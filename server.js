@@ -507,6 +507,31 @@ app.post('/request-video-connection', function (request, response) {
 
 });
 
+//Receive request to start archiving a video session
+//and store the archiveId
+app.post('/start-archive', function(request, response){
+
+    console.log('In /start-archive');
+
+    //Check if password is valid
+    //if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+    //    return;
+    //}
+
+    var videoSession = JSON.parse(request.body.data);
+
+    opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
+        if (err){
+            response.send(400,err.message);
+            return console.log(err);
+        }
+        // The id property is useful to save off into a database
+        console.log("new archive:" + archive.id);
+        //TODO Update archive id in Parse VideoSession object
+    });
+
+});
+
 //Landing/login page
 app.get('/', function (request, response) {
     response.sendfile(__dirname + '/public/index.html');
@@ -516,6 +541,8 @@ app.get('/', function (request, response) {
 app.get('*', function (request, response) {
     response.send(404, "Error 404: Not Found");
 });
+
+
 
 //=========================================
 //  START WEB SERVER
@@ -535,7 +562,7 @@ server.listen((process.env.PORT || 80), function () {
 //  HELPER FUNCTIONS
 //=========================================
 
-//Creates and saves a notification, then calls 
+//Creates and saves a notification, then calls
 //pushNotification, which alerts all mobile devices
 function saveAndPushNotification(notificationData) {
     var passPhrase = "";
@@ -815,7 +842,7 @@ function analyzeData(data) {
 
 }
 
-//Create the charts. If month is defined, create the LineChart with the days of 
+//Create the charts. If month is defined, create the LineChart with the days of
 //the month.
 function getChartsData(tips, month, year) {
 

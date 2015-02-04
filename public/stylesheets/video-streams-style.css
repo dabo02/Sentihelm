@@ -90,3 +90,64 @@
   display:block;
   margin-top:25%;
 }
+
+#video-streams-chat-log {
+  overflow-y: auto;
+  background-color: #ecf0f1;
+  border-right: solid #000 1px;
+}
+
+#video-streams-chat-log div {
+  position: relative;
+  width: 50%;
+  background-color: #bdc3c7;
+  float: left;
+  padding: 2px 1%;
+  margin: 1% 2%;
+  color: white;
+  font-size: 13px;
+  border-radius: 5px;
+  border: 1px solid #7f8c8d;
+}
+
+#video-streams-chat-log div p {
+  clear: both;
+}
+
+#video-streams-chat-log div.sent {
+  float: right;
+  background-color: #3498db;
+  border: 1px solid #2980b9;
+}
+
+#video-streams-chat-log em {
+  font-weight: bold;
+}
+
+#message-box {
+  width:90%;
+  height: 35px;
+  float: left;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+
+.send {
+  width: 10%;
+  float: left;
+  height: 35px;
+  border: 1px solid #2980b9;
+  background: #3498db;
+}
+
+.message-heading {
+  float: right;
+  text-align: right;
+}
+
+
+.chat-message {
+  word-wrap: break-word;
+  word-break: break-all;
+}
