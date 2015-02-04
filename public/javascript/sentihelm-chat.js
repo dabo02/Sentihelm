@@ -24,12 +24,12 @@
         }])
         .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 
-                var namespace = '/chat/' + Session.clientId,
-                    server = $location.host();
+            var namespace = '/chat/' + Session.clientId,
+                server = $location.host();
 
-                return socketFactory({
-                    ioSocket: io.connect(server + namespace)  // connect to chat server
-                });
+            return socketFactory({
+                ioSocket: io.connect(server + namespace)  // connect to chat server
+            });
         }])
         .controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', 'messageFactory',
             function (chatSocket, Session, $rootScope, $location, $anchorScroll, messageFactory) {
@@ -40,6 +40,13 @@
                 this.receiver = '';
                 this.canSend = false;
 
+                chatSocket.on('init', onInit);
+                chatSocket.on('successful-connect', onConnectionSuccess);
+                $rootScope.$on('delete-stream', onDeleteStream);
+                chatSocket.on('new-message', this.onNewMessage);
+                chatSocket.on('new-room', this.onNewRoom);
+                
+                // Private
                 function getUserName(id) {
                     var username = '';
 
@@ -54,6 +61,7 @@
 
                 }
 
+                // Priavate
                 function getRoom(username, id) {
                     var prop = username ? 'username' : (id ? 'id' : undefined),
                         roomName = '',
@@ -72,39 +80,59 @@
                     return undefined;
                 }
 
-                function onNewRoom(room, username, id) {
-                    ChatController.rooms[room] = {
+                // Private
+                function onInit() {
+                    chatSocket.emit('start', {
+                        username: Session.user.username,
+                        role: 'admin'
+                    });
+                }
+
+                // Private
+                function onConnectionSuccess() {
+                    console.log('We are connected to chat server');
+                }
+
+                // Private
+                function onDeleteStream(event, id) {
+                    ChatController.message = '';
+                    if (ChatController.rooms[getRoom(undefined, id)].messages.length > 0) {
+                        ChatController.save(id);
+                    }
+                }
+
+                // Public
+                this.send = function () {
+
+                    try {
+                        chatSocket.emit('message-sent', messageFactory({
+                            receiver: this.receiver,
+                            message: this.message
+                        }));
+                    } catch (e) {
+                        console.log(e.message);
+                        this.rooms[getRoom(undefined, this.receiver)].messages.push({
+                            dateTime: Date.now(),
+                            message: e.message
+                        });
+                    }
+
+                    this.message = '';
+                };
+
+                // Public
+                this.onNewRoom = function (room, username, id) {
+                    this.rooms[room] = {
                         with: {
                             username: username,
                             id: id
                         },
                         messages: []
                     };
-                }
-
-                function connectionSuccess() {
-                    console.log('We are connected to chat server');
-                }
-
-                this.send = function () {
-
-                    try {
-                        chatSocket.emit('message-sent', messageFactory({
-                            receiver: ChatController.receiver,
-                            message: ChatController.message
-                        }));
-                    } catch (e) {
-                        console.log(e.message);
-                        ChatController.rooms[getRoom(undefined, ChatController.receiver)].messages.push({
-                            dateTime: Date.now(),
-                            message: e.message
-                        });
-                    }
-
-                    ChatController.message = '';
                 };
 
-                this.receive = function (data) {
+                // Public
+                this.onNewMessage = function (data) {
                     var sender = data.sender,
                         receiver = data.receiver,
                         message = data.message,
@@ -130,24 +158,25 @@
 
                     room = getRoom(username);
 
-                    ChatController.rooms[room].messages.push(messageObject);
+                    this.rooms[room].messages.push(messageObject);
 
-                    if (room === ChatController.currentRoom) {
+                    if (room === this.currentRoom) {
                         $location.hash('chat-bottom');
                         $anchorScroll();
                     }
                 };
 
+                // Public
                 this.changeRoom = function (id) {
                     var room = getRoom(undefined, id);
 
                     if (room) {
-                        ChatController.receiver = this.rooms[room].with.id;
-                        ChatController.canSend = true;
+                        this.receiver = this.rooms[room].with.id;
+                        this.canSend = true;
 
-                        if (ChatController.currentRoom !== room) {
+                        if (this.currentRoom !== room) {
                             chatSocket.emit('change-room', room);
-                            ChatController.currentRoom = room;
+                            this.currentRoom = room;
                             $location.hash('chat-bottom');
                             $anchorScroll();
                         }
@@ -155,40 +184,21 @@
                     } else {
                         // TODO implement method that requests a chat with a user if not already chatting.
                         //this.requestChat(username);
-                        ChatController.canSend = false;
-                        ChatController.currentRoom = '';
+                        this.canSend = false;
+                        this.currentRoom = '';
                     }
                 };
 
+                // Public
                 this.save = function (id) {
                     // TODO SAVE
                     var room = getRoom(undefined, id);
 
                     // remove room from memory
-                    delete ChatController.rooms[room];
-                    ChatController.canSend = false;
+                    delete this.rooms[room];
+                    this.canSend = false;
                 };
-
-                $rootScope.$on('delete-stream', function (event, id) {
-                    ChatController.message = '';
-                    if (ChatController.rooms[getRoom(undefined, id)].messages.length > 0) {
-                        ChatController.save(id);
-                    }
-                });
-
-                chatSocket.on('new-message', ChatController.receive);
-                chatSocket.on('new-room', onNewRoom);
-                chatSocket.on('successful-connect', connectionSuccess);
-
-                chatSocket.on('init', function () {
-                    chatSocket.emit('start', {
-                        username: Session.user.username,
-                        role: 'admin'
-                    });
-                });
-
             }
-        ])
-    ;
+        ]);
 })
 (window.angular);
