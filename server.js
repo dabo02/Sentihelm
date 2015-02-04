@@ -89,6 +89,14 @@ runChatServer(io, Parse, Client, User);
 //Setup socket.io that communicates with front end
 io.on('connect', function (socket) {
 
+    socket.on('register-room', function (room) {
+        "use strict";
+        socket.join(room, function (err) {
+            if (!err) {
+                socket.room = room;
+            }
+        });
+    });
     //Front-end requested a new batch of tips;
     //get query data and fetch
     socket.on('request-batch', function (data) {
@@ -336,11 +344,6 @@ io.on('connect', function (socket) {
         saveUserPassword(data);
     });
 
-    //Save user to Sentihelm
-    socket.on('reset-password', function (data) {
-        resetPassword(data.email);
-    });
-
     //Download data from parse and organize it.
     socket.on('analyze-data', function (data) {
         analyzeData(data);
@@ -406,6 +409,27 @@ app.post('/login', function (request, response) {
     });
 });
 
+// Reset-password
+app.post('/reset-password', function (request, response) {
+    "use strict";
+    var email = request.body.email;
+
+    if (email) {
+        Parse.User.requestPasswordReset(email, {
+            success: function () {
+                // Password reset request was sent successfully
+                response.send(200);
+            },
+            error: function (error) {
+                // Show the error message somewhere
+                response.send(401);
+            }
+        });
+    }
+
+    response.send(401);
+});
+
 //Recieve new-tip event form Parse,
 //and pass it along to front-end
 app.post('/new-tip', function (request, response) {
@@ -413,7 +437,7 @@ app.post('/new-tip', function (request, response) {
     var pass = tip.pass;
     var clientId = tip.clientId;
     if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
-        io.sockets.emit('new-tip', {
+        io.on().emit('new-tip', {
             tip: tip,
             clientId: clientId
         });
@@ -754,19 +778,6 @@ function saveUserPassword(data) {
     }
 };
 
-//Reset password using Parse website
-function resetPassword(email) {
-    Parse.User.requestPasswordReset(email, {
-        success: function () {
-            // Password reset request was sent successfully
-            io.sockets.emit('reset-password-success');
-        },
-        error: function (error) {
-            // Show the error message somewhere
-            io.sockets.emit('reset-password-failed');
-        }
-    });
-}
 
 function analyzeData(data) {
     var clientId = data.clientId;
