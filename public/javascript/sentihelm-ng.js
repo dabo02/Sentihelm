@@ -1133,7 +1133,6 @@
             session.on("sessionDisconnected", function (event) {
 
                 // access to disconnected session: event.target
-
                 //TODO Change broadcast so it manages when video call is
                 //changed for another one
                 // $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
@@ -1148,6 +1147,8 @@
                 }
                 //Save current session
                 VideoStreamsService.currentSession = session;
+
+
             });
         };
 
@@ -1838,37 +1839,31 @@
 //Controller for the video-archive state
 
 
-app.controller('VideoArchiveController', ['$scope', 'Session', 'ngDialog', function ($scope, Session, ngDialog) {
+app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', function ($scope, Session, socket, ngDialog, usSpinnerService) {
 
 	var videoArchiveCtrl = this;
 	videoArchiveCtrl.videoArchiveArray = [];
+    videoArchiveCtrl.videoWatchStatuses = ['All', 'Watched', 'Unwatched'];
+    videoArchiveCtrl.videosAvailable = true;
+    //videoArchiveCtrl.showMediaSpinner = true;
 
 	
 	videoArchiveCtrl.fetchVideoArchive = function(){
 
-		var VideoSession = Parse.Object.extend("VideoSession");
-		var videoArchiveQuery = new Parse.Query(VideoSession);
-		videoArchiveQuery.include('mobileUser', 'officerUser');
-		videoArchiveQuery.containedIn('archiveStatus', ['uploaded','available']);
-		videoArchiveQuery.equalTo('client', {
-			__type: "Pointer",
-			className: "Client",
-			objectId: Session.clientId
-		});
-		//videoArchiveQuery.limit(3);
-		videoArchiveQuery.find({
-			success: function(videos) {
-				videoArchiveCtrl.videoArchiveArray = angular.copy(videos);	 
-			},
-			error: function(object, error) {
-				// The object was not retrieved successfully.
-				console.log("Error fetching video archive.");
-			}
-		});
+	    socket.emit('fetch-video-archive', Session.clientId);
+
+        socket.on('on-video-archive-fetch', function(videos){
+
+            videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
+            if(videoArchiveCtrl.videoArchiveArray.length===0){
+                videoArchiveCtrl.videosAvailable = false;
+            }
+            usSpinnerService.stop('loading-video-archive-spinner');
+        });
 	};
 	
 	videoArchiveCtrl.showVideo = function(video){
-		
+
 		videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
 		
 		//ngDialog can only handle stringified JSONs
@@ -1885,6 +1880,26 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'ngDialog', funct
 			scope: $scope,
 			data: data
 		});
+
+		//Update VideoSession's lastWatcher
+		var VideoSession = Parse.Object.extend("VideoSession");
+        var videoSessionQuery = new Parse.Query(VideoSession);
+        videoSessionQuery.get(video.id, {
+            success: function(videoSession) {
+                videoSession.set('hasBeenWatched', true);
+                videoSession.set('lastWatcher', {
+                  __type: "Pointer",
+                  className: "User",
+                  objectId: Session.userId
+                });
+                videoSession.save();
+                videoArchiveCtrl.fetchVideoArchive();
+            },
+            error: function(object, error) {
+                // The object was not retrieved successfully.
+                console.log("Error fetching video for lastWatcher update.");
+            }
+        });
 	}
 
 	videoArchiveCtrl.fetchVideoArchive();
@@ -1917,6 +1932,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'ngDialog', funct
         socket.on('new-video-stream', function (data) {
             var stream = data.stream;
             vidStrmCtrl.queue.unshift(stream);
+//            vidStrmCtrl.currentSessionId = stream.sessionId;
         });
 
         $scope.$on('stream-destroyed', function (event, data) {

@@ -341,7 +341,32 @@ io.on('connect', function(socket){
     getActiveVideoStreams(clientId);
   });
 
+  socket.on('fetch-video-archive', function(clientId){
+
+    var VideoSession = Parse.Object.extend("VideoSession");
+    var videoArchiveQuery = new Parse.Query(VideoSession);
+    videoArchiveQuery.include('mobileUser', 'officerUser', 'lastWatcher');
+    videoArchiveQuery.containedIn('archiveStatus', ['uploaded','available']);
+    videoArchiveQuery.equalTo('client', {
+        __type: "Pointer",
+        className: "Client",
+        objectId: clientId
+    });
+    //videoArchiveQuery.limit(3);
+    videoArchiveQuery.find({
+        success: function(videos) {
+            socket.emit('on-video-archive-fetch', JSON.stringify(videos));
+        },
+        error: function(object, error) {
+            // The object was not retrieved successfully.
+            console.log("Error fetching video archive.");
+        }
+    });
+  })
+
 });
+
+//end socket scope
 
 //=========================================
 //  SET UP ROUTING
@@ -410,6 +435,60 @@ app.post('/new-tip', function(request, response){
     response.send(200);
   }
 });
+
+//Receive request to start archiving a video session
+//and store the archiveId
+app.post('/start-archive', function(request, response){
+
+    //Check if password is valid
+    if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+        return;
+    }
+
+    var videoSession = request.body;
+
+    opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
+      if (err){
+          response.send(400,error);
+          return console.log(err);
+      }
+      // The id property is useful to save off into a database
+      console.log("new archive:" + archive.id);
+
+      videoSessionQuery.get(video.id, {
+          success: function(videoSession) {
+              videoSession.set('lastWatcher', {
+                __type: "Pointer",
+                className: "User",
+                objectId: Session.userId
+              });
+              videoSession.save();
+              videoArchiveCtrl.fetchVideoArchive();
+          },
+          error: function(object, error) {
+              // The object was not retrieved successfully.
+              console.log("Error fetching video for lastWatcher update.");
+          }
+      });
+    });
+
+});
+
+//Recieve  request to start archiving a video session
+//and pass it along to front-end
+app.post('/opentok-callback', function(request, response){
+
+    //Check if password is valid
+    if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+        return;
+    }
+
+    var videoArchive = request.body;
+
+    //TODO Fetch Parse VideoSession object and update its attributes
+
+});
+
 
 //Recieve a request for a video stream connection;
 //get data form mobile client, save session info in
@@ -481,12 +560,7 @@ app.post('/request-video-connection', function(request, response){
       });
       io.sockets.emit('new-video-stream', {stream: stream});
       
-    /*  opentok.startArchive(stream.sessionId, { name: 'archive: ' + stream.sessionId }, function(err, archive) {
-		  if (err) return console.log(err);
-
-		  // The id property is useful to save off into a database
-		  console.log("new archive:" + archive.id);
-		});*/
+    /*  */
     }, function(error, videoSession){
       //TODO
       //Handle error when couldn't save video session
