@@ -548,7 +548,7 @@
 
         authenticator.isAuthenticated = function () {
             Session.restoreSession();
-
+            socket.emit('start-session', Session.clientId);
             //Return true if userId is set; false otherwise
             return !!Session.userId;
         };
@@ -568,14 +568,6 @@
                 }
             }
 
-            socket.emit('start-session', {
-                clientId: Session.clientId,
-                user: {
-                    username: Session.user.username,
-                    objectId: Session.user.objectId
-                }
-            });
-
             return false;
 
             // return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
@@ -594,11 +586,9 @@
     app.factory('socket', function (socketFactory, $location) {
         //var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
         var ioSocket = io.connect($location.host());
-
-        socket = socketFactory({
+        return socketFactory({
             ioSocket: ioSocket
         });
-        return socket;
     });
 
     //Creates an error delivering service that can
@@ -1648,6 +1638,7 @@
                         var regions = response.data[2];
                         //Login was successful, create Session
                         Session.create(user, user.roles, client, regions);
+                        socket.emit('start-session', Session.clientId);
                         Session.store(user, client);
                         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
                         loginCtrl.submitting = false;
