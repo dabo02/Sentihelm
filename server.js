@@ -683,7 +683,7 @@ function addNewOfficer(officerData, clientId) {
     }, function (error) {
         //Failed adding officer; alert front-end
         console.log(error);
-        io.sockets.emit('new-officer-failed', {error: error});
+        io.sockets.emit('new-officer-failed', {error: error.message});
     });
 };
 
