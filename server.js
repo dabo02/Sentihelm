@@ -333,12 +333,12 @@ io.on('connect', function (socket) {
         var clientId = data.clientId;
         addNewOfficer(officer, clientId).then(function (newOfficer) {
             //Successfuly added; alert front-end
-            io.sockets.emit('new-officer-added');
+            socket.emit('new-officer-added');
             console.log("Sign up succesful..");
         }, function (error) {
             //Failed adding officer; alert front-end
             console.log(error);
-            io.sockets.emit('new-officer-failed', {error: error});
+            socket.emit('new-officer-failed', {error: error.message});
         });
     });
 

@@ -2970,7 +2970,7 @@
     }]);
 
 //Controller for Administrator Panel
-    app.controller('AdminPanelController', ['socket', 'Session', function (socket, Session) {
+    app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', function (socket, Session, $anchorScroll) {
 
         var adminPanelCtrl = this;
         this.sending = false;
