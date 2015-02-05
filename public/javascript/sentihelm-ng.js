@@ -1859,6 +1859,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 videoArchiveCtrl.videosAvailable = false;
             }
             usSpinnerService.stop('loading-video-archive-spinner');
+           // alert(videoArchiveCtrl.videoArchiveArray[0].get('duration'));
         });
 	};
 	

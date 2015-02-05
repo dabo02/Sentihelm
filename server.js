@@ -352,10 +352,12 @@ io.on('connect', function(socket){
         className: "Client",
         objectId: clientId
     });
+
     //videoArchiveQuery.limit(3);
     videoArchiveQuery.find({
         success: function(videos) {
-            socket.emit('on-video-archive-fetch', JSON.stringify(videos));
+            console.log("ARchiver first name: " + videos[0].get('mobileUser').get('firstName'));
+            socket.emit('on-video-archive-fetch', videos);
         },
         error: function(object, error) {
             // The object was not retrieved successfully.
