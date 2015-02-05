@@ -1,4 +1,5 @@
 (function () {
+    'use strict';
     var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast', 'ngAudio', 'sh.chat']);
 
     //Sets up all the states/routes the app will handle,
@@ -329,7 +330,7 @@
             onClose: function () {
                 //Do nothing
 
-            },
+            }
         },
         'NO-AUTH': {
             title: 'You do Not Have Access to This Page',
@@ -463,15 +464,15 @@
 
         session.store = function (user, client) {
 
-            var userObj = {};
-            for (var property in user) {
+            var userObj = {}, property;
+            for (property in user) {
                 if (user.hasOwnProperty(property)) {
                     userObj[property] = user[property];
                 }
             }
 
             var clientObj = {};
-            for (var property in client) {
+            for (property in client) {
                 if (client.hasOwnProperty(property)) {
                     clientObj[property] = client[property];
                 }
@@ -529,9 +530,7 @@
         session.resetPassword = function (email, cb) {
             'use strict';
             //Request tips
-            $http.post('/reset-password', {email: email}, function (data, status) {
-                cb(status);
-            });
+            return $http.post('/reset-password', {email: email});
         };
 
         return session;
@@ -569,6 +568,14 @@
                 }
             }
 
+            socket.emit('start-session', {
+                clientId: Session.clientId,
+                user: {
+                    username: Session.user.username,
+                    objectId: Session.user.objectId
+                }
+            });
+
             return false;
 
             // return (this.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
@@ -584,9 +591,9 @@
 
     //Creates an injectable socket service that
     //works just like socket.io's client library
-    app.factory('socket', function (socketFactory, $location, Session) {
+    app.factory('socket', function (socketFactory, $location) {
         //var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-        var ioSocket = io.connect($location.host() + '/' + Session.clientId);
+        var ioSocket = io.connect($location.host());
 
         socket = socketFactory({
             ioSocket: ioSocket
@@ -1225,7 +1232,7 @@
                 clientQuery.get(Session.clientId, {
                     success: function (client) {
                         clientParseObj = client;
-                        delete mostWantedArray;
+                        mostWantedArray = [];
 
                         // Performming deep copy, as reference to object dies once this function, exits
                         angular.copy(client.get('mostWantedList'), mostWantedArray);
@@ -1662,8 +1669,8 @@
             loginCtrl.resetPassword = function () {
                 if (!this.resetPasswordAvailable) {
                     loginCtrl.submitting = true;
-                    Session.resetPassword(loginCtrl.credentials.email, function (status) {
-                        "use strict";
+                    Session.resetPassword(loginCtrl.credentials.email).then(function (data, status) {
+
                         if (status === 200) {
                             loginCtrl.submitting = false;
 
