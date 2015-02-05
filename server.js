@@ -88,9 +88,13 @@ runChatServer(io, Parse, Client, User);
 
 //Setup socket.io that communicates with front end
 io.on('connect', function (socket) {
-
     //Front-end requested a new batch of tips;
     //get query data and fetch
+    socket.on('start-session', function (clientId) {
+        "use strict";
+        socket.join(clientId);
+    });
+
     socket.on('request-batch', function (data) {
 
         //Get filtering values: by clientId, date
@@ -315,42 +319,132 @@ io.on('connect', function (socket) {
 
     //Encrypt and send follow-up.
     socket.on('new-follow-up-notif', function (data) {
-        saveAndPushNotification(data.notificationData);
+        saveAndPushNotification(data.notificationData)
+            .then(function () {
+                socket.emit('follow-up-notif-sent');
+            }, function (error) {
+                console.log(error.message);
+            });
     });
 
     //Add a new officer to Sentihelm
     socket.on('add-new-officer', function (data) {
         var officer = data.newOfficer;
         var clientId = data.clientId;
-        addNewOfficer(officer, clientId);
+        addNewOfficer(officer, clientId).then(function (newOfficer) {
+            //Successfuly added; alert front-end
+            io.sockets.emit('new-officer-added');
+            console.log("Sign up succesful..");
+        }, function (error) {
+            //Failed adding officer; alert front-end
+            console.log(error);
+            io.sockets.emit('new-officer-failed', {error: error});
+        });
     });
 
     //Save user to Sentihelm
     socket.on('save-user', function (data) {
         var user = data.user;
-        saveUser(user);
+        saveUser(user).then(function (user) {
+            // Execute any logic that should take place after the object is saved.
+            socket.emit('save-user-success');
+        }, function (user, error) {
+            // Execute any logic that should take place if the save fails.
+            // error is a Parse.Error with an error code and message.
+            if (error.message === 'user-session-timeout') {
+                socket.emit('user-session-timeout');
+            } else {
+                socket.emit('save-user-failed');
+            }
+        });
     });
 
     //Save password to Sentihelm
     socket.on('save-user-password', function (data) {
-        saveUserPassword(data);
-    });
-
-    //Save user to Sentihelm
-    socket.on('reset-password', function (data) {
-        resetPassword(data.email);
+        saveUserPassword(data).then(function (user) {
+            // Execute any logic that should take place after the object is saved.
+            socket.emit('save-user-password-success');
+        }, function (user, error) {
+            // Execute any logic that should take place if the save fails.
+            // error is a Parse.Error with an error code and message.
+            if (error.message === 'user-session-timeout') {
+                socket.emit('user-session-timeout');
+            } else {
+                socket.emit('save-user-password-failed');
+            }
+        });
     });
 
     //Download data from parse and organize it.
     socket.on('analyze-data', function (data) {
-        analyzeData(data);
+        analyzeData(data).then(function (tips) {
+            var charts = {},
+                year = data.year,
+                month = data.month,
+                isMonthSelected = !isNaN(month);
+
+            charts.tipCount = tips.length;
+
+            if (isMonthSelected) {
+                charts = getChartsData(tips, month, year);
+            }
+            else {
+                charts = getChartsData(tips);
+            }
+
+            socket.emit('analyze-data-response', charts);
+        }, function (error) {
+            socket.emit('analyze-data-error', error);
+        });
     });
 
     //Check for active streams on the VideoSession table on parse.
     socket.on('get-active-streams', function (clientId) {
-        getActiveVideoStreams(clientId);
+        getActiveVideoStreams(clientId).then(function (streams) {
+                //Format each result for front-end
+                //keep them in modifiedStreams array
+                var modifiedStreams = [];
+
+                streams.forEach(function (stream) {
+                    "use strict";
+                    var streamUser = stream.attributes.mobileUser,
+                        passPhrase = passwordGenerator.generatePassword(streamUser.attributes.username, false);
+
+                    //Create a new strem and copy over values
+                    //from current stream in results
+                    var newStream = {};
+                    newStream.connectionId = stream.id;
+                    newStream.sessionId = stream.attributes.sessionId;
+                    newStream.webClientToken = stream.attributes.webClientToken;
+                    newStream.latitude = stream.attributes.latitude;
+                    newStream.longitude = stream.attributes.longitude;
+                    newStream.currentCliendId = stream.attributes.client.id;
+                    newStream.userObjectId = stream.attributes.mobileUser.id;
+                    newStream.firstName = encryptionManager.decrypt(passPhrase, streamUser.attributes.firstName.base64);
+                    newStream.lastName = encryptionManager.decrypt(passPhrase, streamUser.attributes.lastName.base64);
+                    newStream.email = streamUser.attributes.email;
+                    newStream.phone = encryptionManager.decrypt(passPhrase, streamUser.attributes.phoneNumber.base64);
+
+                    //Add modified stream to collection
+                    modifiedStreams.push(newStream);
+                });
+                //Send modified results to controller
+                socket.emit('get-active-streams-response', modifiedStreams);
+            },
+            function (error) {
+                //TODO
+                //Manage error when couldn't fetch active video streams
+                var err = error;
+            });
+        ;
     });
 
+    socket.on('disconnect', function () {
+        "use strict";
+       socket.rooms.forEach(function (room) {
+           socket.leave(room);
+       });
+    });
 });
 
 //=========================================
@@ -406,6 +500,27 @@ app.post('/login', function (request, response) {
     });
 });
 
+// Reset-password
+app.post('/reset-password', function (request, response) {
+    "use strict";
+    var email = request.body.email;
+
+    if (email) {
+        Parse.User.requestPasswordReset(email, {
+            success: function () {
+                // Password reset request was sent successfully
+                response.send(200);
+            },
+            error: function (error) {
+                // Show the error message somewhere
+                response.send(401);
+            }
+        });
+    }
+
+    response.send(401);
+});
+
 //Recieve new-tip event form Parse,
 //and pass it along to front-end
 app.post('/new-tip', function (request, response) {
@@ -413,7 +528,7 @@ app.post('/new-tip', function (request, response) {
     var pass = tip.pass;
     var clientId = tip.clientId;
     if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
-        io.sockets.emit('new-tip', {
+        io.to(clientId).emit('new-tip', {
             tip: tip,
             clientId: clientId
         });
@@ -489,7 +604,7 @@ app.post('/request-video-connection', function (request, response) {
                 sessionId: session.sessionId,
                 token: clientToken
             });
-            io.sockets.emit('new-video-stream', {stream: stream});
+            io.to(connection.currentClientId).emit('new-video-stream', {stream: stream});
 
             /*  opentok.startArchive(stream.sessionId, { name: 'archive: ' + stream.sessionId }, function(err, archive) {
              if (err) return console.log(err);
@@ -509,7 +624,7 @@ app.post('/request-video-connection', function (request, response) {
 
 //Receive request to start archiving a video session
 //and store the archiveId
-app.post('/start-archive', function(request, response){
+app.post('/start-archive', function (request, response) {
 
     console.log('In /start-archive');
 
@@ -520,9 +635,9 @@ app.post('/start-archive', function(request, response){
 
     var videoSession = JSON.parse(request.body.data);
 
-    opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
-        if (err){
-            response.send(400,err.message);
+    opentok.startArchive(videoSession.sessionId, {name: 'archive: ' + videoSession.sessionId}, function (err, archive) {
+        if (err) {
+            response.send(400, err.message);
             return console.log(err);
         }
         // The id property is useful to save off into a database
@@ -543,7 +658,6 @@ app.get('*', function (request, response) {
 });
 
 
-
 //=========================================
 //  START WEB SERVER
 //=========================================
@@ -554,7 +668,6 @@ app.get('*', function (request, response) {
 //testing purposes. Log listening port.
 
 server.listen((process.env.PORT || 80), function () {
-    ;
     console.log(notice('WEB SERVER RUNNING ON PORT %s\n'), server.address().port)
 });
 
@@ -567,7 +680,7 @@ server.listen((process.env.PORT || 80), function () {
 function saveAndPushNotification(notificationData) {
     var passPhrase = "";
     var query = new Parse.Query(Parse.User);
-    query.get(notificationData.userId).
+    return query.get(notificationData.userId).
 
         then(function (user) {
             var username = user.attributes.username;
@@ -600,14 +713,8 @@ function saveAndPushNotification(notificationData) {
             return pushNotification(notification);
         }, function (error) {
             var err = error;
-        }).
-
-        then(function () {
-            io.sockets.emit('follow-up-notif-sent');
-        }, function (error) {
-            var err = error;
         });
-};
+}
 
 //Sends the already saved notification to the user; if pushing
 //failed, tries to revert save or continues as partial success
@@ -676,16 +783,8 @@ function addNewOfficer(officerData, clientId) {
     });
 
     //Save/Signup new officer
-    officer.signUp().then(function (newOfficer) {
-        //Successfuly added; alert front-end
-        io.sockets.emit('new-officer-added');
-        console.log("Sign up succesful..");
-    }, function (error) {
-        //Failed adding officer; alert front-end
-        console.log(error);
-        io.sockets.emit('new-officer-failed', {error: error});
-    });
-};
+    return officer.signUp();
+}
 
 //Save edited user
 function saveUser(editedUser) {
@@ -704,8 +803,12 @@ function saveUser(editedUser) {
     // var ParseUser = new Parse.Query(User);
     var user = Parse.User.current();
     if (!user) {
-        io.sockets.emit('user-session-timeout');
-        return;
+        return {
+            then: function (success, error) {
+                "use strict";
+                error(user, Error("user-session-timeout"));
+            }
+        };
     }
 
     user.set('firstName', {
@@ -719,26 +822,20 @@ function saveUser(editedUser) {
     user.set('email', email);
     // officer.set('userPassword', hashedPassword);
     // officer.set('roles', [officerData.role]);
-    user.save(null, {
-        success: function (user) {
-            // Execute any logic that should take place after the object is saved.
-            io.sockets.emit('save-user-success');
-        },
-        error: function (user, error) {
-            // Execute any logic that should take place if the save fails.
-            // error is a Parse.Error with an error code and message.
-            io.sockets.emit('save-user-failed');
-        }
-    });
-};
+    return user.save();
+}
 
 //Save/change user password
 function saveUserPassword(data) {
 
     var user = Parse.User.current();
     if (!user) {
-        io.sockets.emit('user-session-timeout');
-        return;
+        return {
+            then: function (success, error) {
+                "use strict";
+                error(user, Error('user-session-timeout'));
+            }
+        };
     }
 
     var prevPass = data.prevPass;
@@ -752,38 +849,20 @@ function saveUserPassword(data) {
         //Throw pass incorrect
         user.set("password", newPass);
         user.set("userPassword", passwordGenerator.md5(newPass));
-        user.save(null, {
-            success: function (user) {
-                // Execute any logic that should take place after the object is saved.
-                io.sockets.emit('save-user-password-success');
-            },
-            error: function (user, error) {
-                // Execute any logic that should take place if the save fails.
-                // error is a Parse.Error with an error code and message.
-                io.sockets.emit('save-user-password-failed');
-            }
-        });
+        return user.save();
     }
     else {
         //Incorrect password
         io.sockets.emit('save-user-password-failed');
-
+        return {
+            then: function (s, e) {
+                "use strict";
+                e(user, Error('save-user-password-failed'));
+            }
+        }
     }
 };
 
-//Reset password using Parse website
-function resetPassword(email) {
-    Parse.User.requestPasswordReset(email, {
-        success: function () {
-            // Password reset request was sent successfully
-            io.sockets.emit('reset-password-success');
-        },
-        error: function (error) {
-            // Show the error message somewhere
-            io.sockets.emit('reset-password-failed');
-        }
-    });
-}
 
 function analyzeData(data) {
     var clientId = data.clientId;
@@ -821,24 +900,7 @@ function analyzeData(data) {
         // If month is 11(December), upper bound will be january 1 of the next year
         tipQuery.lessThanOrEqualTo("createdAt", new Date(month !== 11 ? year : year + 1, (month + 1) % 12));
     }
-    tipQuery.find({
-        success: function (tips) {
-            var charts = {};
-            charts.tipCount = tips.length;
-
-            if (isMonthSelected) {
-                charts = getChartsData(tips, month, year);
-            }
-            else {
-                charts = getChartsData(tips);
-            }
-
-            io.sockets.emit('analyze-data-response', charts);
-        },
-        error: function (error) {
-            io.sockets.emit('analyze-data-error', error);
-        }
-    });
+    return tipQuery.find();
 
 }
 
@@ -979,38 +1041,5 @@ function getActiveVideoStreams(clientId) {
     query.containedIn("status", ['pending', 'active']);
     query.include("mobileUser");
 
-    query.find().then(function (results) {
-        //Format each result for front-end
-        //keep them in modifiedStreams array
-        var modifiedStreams = [];
-        for (var i = 0; i < results.length; i++) {
-
-            var streamUser = results[i].attributes.mobileUser;
-            var passPhrase = passwordGenerator.generatePassword(streamUser.attributes.username, false);
-
-            //Create a new strem and copy over values
-            //from current stream in results
-            var newStream = {};
-            newStream.connectionId = results[i].id;
-            newStream.sessionId = results[i].attributes.sessionId;
-            newStream.webClientToken = results[i].attributes.webClientToken;
-            newStream.latitude = results[i].attributes.latitude;
-            newStream.longitude = results[i].attributes.longitude;
-            newStream.currentCliendId = results[i].attributes.client.id;
-            newStream.userObjectId = results[i].attributes.mobileUser.id;
-            newStream.firstName = encryptionManager.decrypt(passPhrase, streamUser.attributes.firstName.base64);
-            newStream.lastName = encryptionManager.decrypt(passPhrase, streamUser.attributes.lastName.base64);
-            newStream.email = streamUser.attributes.email;
-            newStream.phone = encryptionManager.decrypt(passPhrase, streamUser.attributes.phoneNumber.base64);
-
-            //Add modified stream to collection
-            modifiedStreams.push(newStream);
-        }
-        //Send modified results to controller
-        io.sockets.emit('get-active-streams-response', modifiedStreams);
-    }, function (error) {
-        //TODO
-        //Manage error when couldn't fetch active video streams
-        var err = error;
-    });
+    return query.find();
 }

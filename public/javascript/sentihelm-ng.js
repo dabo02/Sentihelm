@@ -1,4 +1,5 @@
 (function () {
+    'use strict';
     var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'sh.mostwanted', 'ngCsv', 'ngToast', 'ngAudio', 'sh.chat']);
 
     //Sets up all the states/routes the app will handle,
@@ -329,7 +330,7 @@
             onClose: function () {
                 //Do nothing
 
-            },
+            }
         },
         'NO-AUTH': {
             title: 'You do Not Have Access to This Page',
@@ -424,7 +425,7 @@
 
     //Creates a session service that can create
     //and destroy a session which manages (logged in) users
-    app.factory('Session', ['$window', '$rootScope', 'AUTH_EVENTS', 'socket', function ($window, $rootScope, AUTH_EVENTS, socket) {
+    app.factory('Session', ['$window', '$rootScope', 'AUTH_EVENTS', '$http', function ($window, $rootScope, AUTH_EVENTS, $http) {
 
         var session = {};
 
@@ -463,15 +464,15 @@
 
         session.store = function (user, client) {
 
-            var userObj = {};
-            for (var property in user) {
+            var userObj = {}, property;
+            for (property in user) {
                 if (user.hasOwnProperty(property)) {
                     userObj[property] = user[property];
                 }
             }
 
             var clientObj = {};
-            for (var property in client) {
+            for (property in client) {
                 if (client.hasOwnProperty(property)) {
                     clientObj[property] = client[property];
                 }
@@ -526,11 +527,10 @@
             $rootScope.$broadcast('update-user', []);
         };
 
-        session.resetPassword = function (email) {
+        session.resetPassword = function (email, cb) {
+            'use strict';
             //Request tips
-            socket.emit('reset-password', {
-                email: email
-            });
+            return $http.post('/reset-password', {email: email});
         };
 
         return session;
@@ -548,7 +548,7 @@
 
         authenticator.isAuthenticated = function () {
             Session.restoreSession();
-
+            socket.emit('start-session', Session.clientId);
             //Return true if userId is set; false otherwise
             return !!Session.userId;
         };
@@ -586,11 +586,9 @@
     app.factory('socket', function (socketFactory, $location) {
         //var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
         var ioSocket = io.connect($location.host());
-
-        socket = socketFactory({
+        return socketFactory({
             ioSocket: ioSocket
         });
-        return socket;
     });
 
     //Creates an error delivering service that can
@@ -983,7 +981,7 @@
             while (node.hasChildNodes()) {
                 node.removeChild(node.firstChild);
             }
-            node .appendChild(div);
+            node.appendChild(div);
             return div;
         };
 
@@ -1224,7 +1222,7 @@
                 clientQuery.get(Session.clientId, {
                     success: function (client) {
                         clientParseObj = client;
-                        delete mostWantedArray;
+                        mostWantedArray = [];
 
                         // Performming deep copy, as reference to object dies once this function, exits
                         angular.copy(client.get('mostWantedList'), mostWantedArray);
@@ -1640,6 +1638,7 @@
                         var regions = response.data[2];
                         //Login was successful, create Session
                         Session.create(user, user.roles, client, regions);
+                        socket.emit('start-session', Session.clientId);
                         Session.store(user, client);
                         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
                         loginCtrl.submitting = false;
@@ -1661,36 +1660,33 @@
             loginCtrl.resetPassword = function () {
                 if (!this.resetPasswordAvailable) {
                     loginCtrl.submitting = true;
-                    Session.resetPassword(loginCtrl.credentials.email);
+                    Session.resetPassword(loginCtrl.credentials.email).then(function (data, status) {
+
+                        if (status === 200) {
+                            loginCtrl.submitting = false;
+
+                            //Show
+                            ngDialog.open({
+                                template: '../reset-pass.html',
+                                className: 'ngdialog-theme-plain'
+                            }).closePromise.then(function () {
+                                    loginCtrl.resetPasswordAvailable = true;
+                                    //Resolve the promise, proceed to load
+                                    //the state and change active state in drawer
+                                    return Promise.resolve("");
+                                });
+                        } else {
+                            loginCtrl.submitting = false;
+                            loginCtrl.resetPasswordAvailable = true;
+                            console.log("Error %s status code", status);
+                        }
+                    });
                 }
             };
 
             loginCtrl.cancelResetPassword = function () {
                 loginCtrl.resetPasswordAvailable = true;
             };
-
-            socket.on('reset-password-success', function () {
-                loginCtrl.submitting = false;
-
-                //Show
-                var messageDialog = ngDialog.open({
-                    template: '../reset-pass.html',
-                    className: 'ngdialog-theme-plain'
-                });
-                messageDialog.closePromise.then(function () {
-                    loginCtrl.resetPasswordAvailable = true;
-                    //Resolve the promise, proceed to load
-                    //the state and change active state in drawer
-                    return Promise.resolve("");
-                });
-
-
-            });
-
-            socket.on('reset-password-failed', function () {
-                loginCtrl.submitting = false;
-                loginCtrl.resetPasswordAvailable = true;
-            });
 
         }
     ]);
@@ -1711,112 +1707,112 @@
     //on button click contains navigation options
     app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio',
         function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio) {
-        var drawer = this;
-        this.newTips = 0;
-        this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
-        this.userFullName = Session.userFullName;
-        this.clientAgency = Session.clientAgency;
-        drawer.clientLogo = Session.clientLogo;
-        drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
+            var drawer = this;
+            this.newTips = 0;
+            this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
+            this.userFullName = Session.userFullName;
+            this.clientAgency = Session.clientAgency;
+            drawer.clientLogo = Session.clientLogo;
+            drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
 
-        //Drawer options with name and icon;
-        //entries are off by default
-        this.entries = [{
-            name: 'Tip Feed',
-            icon: 'glyphicon glyphicon-inbox',
-            state: 'tipfeed'
-        }, {
-            name: 'Video Streams',
-            icon: 'glyphicon glyphicon-facetime-video',
-            state: 'video-streams'
-        }, {
-            name: 'Send Notification',
-            icon: 'glyphicon glyphicon-send',
-            state: 'regional-notifications'
-        }, /*{
-            name: 'Video Archive',
-            icon: 'glyphicon glyphicon-film',
-            state: 'video-archive'
-        }, */{
-            name: 'Maps',
-            icon: 'glyphicon glyphicon-map-marker',
-            state: 'maps'
-        }, {
-            name: 'Wanted List',
-            icon: 'glyphicon glyphicon-list-alt',
-            state: 'most-wanted'
-        }, {
-            name: 'Data Analysis',
-            icon: 'glyphicon glyphicon-stats',
-            state: 'data-analysis'
-        }];
-
-        //Hides (closes) the drawer by sliding
-        //snap-content (main page view) back to the left
-        this.closeDrawer = function () {
-            snapRemote.close();
-        };
-
-        //Navigates/changes/reloads view to the corresponding state (page)
-        this.changeState = function (state) {
-            if (state === "tipfeed") {
-                drawer.newTips = 0;
-            }
-            $state.go(state, {
-                newTips: 0
+            //Drawer options with name and icon;
+            //entries are off by default
+            this.entries = [{
+                name: 'Tip Feed',
+                icon: 'glyphicon glyphicon-inbox',
+                state: 'tipfeed'
             }, {
-                reload: true
+                name: 'Video Streams',
+                icon: 'glyphicon glyphicon-facetime-video',
+                state: 'video-streams'
+            }, {
+                name: 'Send Notification',
+                icon: 'glyphicon glyphicon-send',
+                state: 'regional-notifications'
+            }, /*{
+             name: 'Video Archive',
+             icon: 'glyphicon glyphicon-film',
+             state: 'video-archive'
+             }, */{
+                name: 'Maps',
+                icon: 'glyphicon glyphicon-map-marker',
+                state: 'maps'
+            }, {
+                name: 'Wanted List',
+                icon: 'glyphicon glyphicon-list-alt',
+                state: 'most-wanted'
+            }, {
+                name: 'Data Analysis',
+                icon: 'glyphicon glyphicon-stats',
+                state: 'data-analysis'
+            }];
+
+            //Hides (closes) the drawer by sliding
+            //snap-content (main page view) back to the left
+            this.closeDrawer = function () {
+                snapRemote.close();
+            };
+
+            //Navigates/changes/reloads view to the corresponding state (page)
+            this.changeState = function (state) {
+                if (state === "tipfeed") {
+                    drawer.newTips = 0;
+                }
+                $state.go(state, {
+                    newTips: 0
+                }, {
+                    reload: true
+                });
+            };
+
+            this.logOut = function () {
+                Session.destroy();
+                $window.location.reload();
+            };
+
+            $scope.log = function () {
+                console.log('clicked toast.');
+            };
+
+            //Increase counter of new tips in the drawer button. Display toast.
+            socket.on('new-tip', function (data) {
+                if (data.clientId === Session.clientId) {
+                    drawer.newTips++;
+                    //Open toast
+                    ngToast.create({
+                        content: 'New tip received.',
+                        class: 'info'
+                    });
+                    drawer.sound.play();
+                    $scope.$apply();
+                }
             });
-        };
 
-        this.logOut = function () {
-            Session.destroy();
-            $window.location.reload();
-        };
-
-        $scope.log = function () {
-            console.log('clicked toast.');
-        };
-
-        //Increase counter of new tips in the drawer button. Display toast.
-        socket.on('new-tip', function (data) {
-            if (data.clientId === Session.clientId) {
-                drawer.newTips++;
-                //Open toast
+            //Display toast.
+            socket.on('new-video-stream', function (data) {
+                //Open toast.
                 ngToast.create({
-                    content: 'New tip received.',
-                    class: 'info'
+                    //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
+                    content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoStreams()">New video stream available.</a>'),
+                    class: 'info',
+                    dismissOnTimeout: $state.current.name !== 'video-streams' ? false : true,
+                    dismissButton: true,
+                    compileContent: true,
+                    dismissOnClick: false
                 });
                 drawer.sound.play();
-                $scope.$apply();
-            }
-        });
-
-        //Display toast.
-        socket.on('new-video-stream', function (data) {
-            //Open toast.
-            ngToast.create({
-                //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
-                content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoStreams()">New video stream available.</a>'),
-                class: 'info',
-                dismissOnTimeout: $state.current.name !== 'video-streams' ? false : true,
-                dismissButton: true,
-                compileContent: true,
-                dismissOnClick: false
             });
-            drawer.sound.play();
-        });
 
-        $scope.$on('update-user', function (event, data) {
-            drawer.userFullName = Session.userFullName;
-        });
+            $scope.$on('update-user', function (event, data) {
+                drawer.userFullName = Session.userFullName;
+            });
 
-        $scope.$on('refresh-counter', function (event, data) {
-            drawer.newTips = 0;
-            $scope.$apply();
-        });
+            $scope.$on('refresh-counter', function (event, data) {
+                drawer.newTips = 0;
+                $scope.$apply();
+            });
 
-    }
+        }
     ])
     ;
 
