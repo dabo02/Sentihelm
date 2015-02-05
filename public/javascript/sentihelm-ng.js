@@ -2974,9 +2974,11 @@
 
         var adminPanelCtrl = this;
         this.sending = false;
+         adminPanelCtrl.hasError = false;
 
         //Adds new SentiHelm user
         this.addUser = function (newUser) {
+            adminPanelCtrl.successMessage = "";
             this.sending = true;
             socket.emit('add-new-officer', {
                 newOfficer: newUser,
@@ -2986,12 +2988,16 @@
 
         socket.on('new-officer-added', function (data) {
             adminPanelCtrl.sending = false;
-            adminPanelCtrl.successMessage = "SUCCEDED";
+            adminPanelCtrl.successMessage = "SUCCESS: you have created a new user.";
+            adminPanelCtrl.hasError = false;
+            $anchorScroll();
         });
 
         socket.on('new-officer-failed', function (data) {
             adminPanelCtrl.sending = false;
-            adminPanelCtrl.successMessage = "FAILED";
+            adminPanelCtrl.successMessage = "FAILED: " + data.error + ".";
+            adminPanelCtrl.hasError =  true;
+            $anchorScroll();
         });
 
     }]);

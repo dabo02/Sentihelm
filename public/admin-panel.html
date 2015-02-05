@@ -1,10 +1,12 @@
-<div class="container mid" ng-controller="AdminPanelController as adminPanelCtrl">
 
+<div class="container mid" ng-controller="AdminPanelController as adminPanelCtrl">
+    <a id="top"></a>
 	<h1 class="text-center">
 		Create New User
 	</h1>
 	<br>
-
+    <h3 class="text-center"  ng-class="{'green':!adminPanelCtrl.hasError, 'red':adminPanelCtrl.hasError}" ng-show="!adminPanelCtrl.sending">{{adminPanelCtrl.successMessage}}</h3>
+    <br>
 	<form role="form" name="addOfficerForm" novalidate>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
@@ -56,7 +58,7 @@
 		</div>
 
 		<button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="addOfficerForm.$valid && adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
-			<span ng-hide="adminPanelCtrl.sending">{{adminPanelCtrl.successMessage || "Add User"}}</span>
+			<span ng-hide="adminPanelCtrl.sending">Add User</span>
 			<div class="spinner" ng-show="adminPanelCtrl.sending">
 		        <div class="bounce1"></div>
 		        <div class="bounce2"></div>
