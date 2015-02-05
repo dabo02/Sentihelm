@@ -1,5 +1,5 @@
 <component name="libraryTable">
-  <library name="cryptojs-DefinitelyTyped" type="javaScript">
+  <library name="cryptojs-DefinitelyTyped">
     <CLASSES>
       <root url="file://$USER_HOME$/.IntelliJIdea14/system/extLibs/http_github.com_borisyankov_DefinitelyTyped_raw_master_cryptojs_cryptojs.d.ts" />
     </CLASSES>
