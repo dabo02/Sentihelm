@@ -34,11 +34,11 @@
         .controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', 'messageFactory',
             function (chatSocket, Session, $rootScope, $location, $anchorScroll, messageFactory) {
                 var ChatController = this;
-                this.message = '';
-                this.rooms = {};
-                this.currentRoom = '';
-                this.receiver = '';
-                this.canSend = false;
+                ChatController.message = '';
+                ChatController.rooms = {};
+                ChatController.currentRoom = '';
+                ChatController.receiver = '';
+                ChatController.canSend = false;
 
                 // Private
                 function getUserName(id) {
@@ -96,27 +96,27 @@
                 }
 
                 // Public
-                this.send = function () {
+                ChatController.send = function () {
 
                     try {
                         chatSocket.emit('message-sent', messageFactory({
-                            receiver: this.receiver,
-                            message: this.message
+                            receiver: ChatController.receiver,
+                            message: ChatController.message
                         }));
                     } catch (e) {
                         console.log(e.message);
-                        this.rooms[getRoom(undefined, this.receiver)].messages.push({
+                        ChatController.rooms[getRoom(undefined, ChatController.receiver)].messages.push({
                             dateTime: Date.now(),
                             message: e.message
                         });
                     }
 
-                    this.message = '';
+                    ChatController.message = '';
                 };
 
                 // Public
-                this.onNewRoom = function (room, username, id) {
-                    this.rooms[room] = {
+                ChatController.onNewRoom = function (room, username, id) {
+                    ChatController.rooms[room] = {
                         with: {
                             username: username,
                             id: id
@@ -126,7 +126,7 @@
                 };
 
                 // Public
-                this.onNewMessage = function (data) {
+                ChatController.onNewMessage = function (data) {
                     var sender = data.sender,
                         receiver = data.receiver,
                         message = data.message,
@@ -152,52 +152,52 @@
 
                     room = getRoom(username);
 
-                    this.rooms[room].messages.push(messageObject);
+                    ChatController.rooms[room].messages.push(messageObject);
 
-                    if (room === this.currentRoom) {
+                    if (room === ChatController.currentRoom) {
                         $location.hash('chat-bottom');
                         $anchorScroll();
                     }
                 };
 
                 // Public
-                this.changeRoom = function (id) {
+                ChatController.changeRoom = function (id) {
                     var room = getRoom(undefined, id);
 
                     if (room) {
-                        this.receiver = this.rooms[room].with.id;
-                        this.canSend = true;
+                        ChatController.receiver = ChatController.rooms[room].with.id;
+                        ChatController.canSend = true;
 
-                        if (this.currentRoom !== room) {
+                        if (ChatController.currentRoom !== room) {
                             chatSocket.emit('change-room', room);
-                            this.currentRoom = room;
+                            ChatController.currentRoom = room;
                             $location.hash('chat-bottom');
                             $anchorScroll();
                         }
 
                     } else {
                         // TODO implement method that requests a chat with a user if not already chatting.
-                        //this.requestChat(username);
-                        this.canSend = false;
-                        this.currentRoom = '';
+                        //ChatController.requestChat(username);
+                        ChatController.canSend = false;
+                        ChatController.currentRoom = '';
                     }
                 };
 
                 // Public
-                this.save = function (id) {
+                ChatController.save = function (id) {
                     // TODO SAVE
                     var room = getRoom(undefined, id);
 
                     // remove room from memory
-                    delete this.rooms[room];
-                    this.canSend = false;
+                    delete ChatController.rooms[room];
+                    ChatController.canSend = false;
                 };
 
                 chatSocket.on('init', onInit);
                 chatSocket.on('successful-connect', onConnectionSuccess);
                 $rootScope.$on('delete-stream', onDeleteStream);
-                chatSocket.on('new-message', this.onNewMessage);
-                chatSocket.on('new-room', this.onNewRoom);
+                chatSocket.on('new-message', ChatController.onNewMessage);
+                chatSocket.on('new-room', ChatController.onNewRoom);
             }
         ]);
 })
