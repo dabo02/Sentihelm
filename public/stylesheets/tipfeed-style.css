@@ -34,6 +34,7 @@
 .active-counter{
   background-color: #219fe9;
   cursor: pointer;
+    color: #333;
 }
 
 /**********TIP FILTER**********/
