@@ -94,8 +94,10 @@
 
                 // Private
                 function onDeleteStream(event, id) {
+                    var roomName = getRoom(undefined, id);
                     ChatController.message = '';
-                    if (ChatController.rooms[getRoom(undefined, id)].messages.length > 0) {
+                    if (ChatController.rooms.hasOwnProperty(roomName) &&
+                        ChatController.rooms[roomName].messages.length > 0) {
                         ChatController.save(id);
                     }
                 }
