@@ -27,6 +27,15 @@
             var namespace = '/chat/' + Session.clientId,
                 server = $location.host();
 
+            function onInit() {
+                chatSocket.emit('start', {
+                    username: Session.user.username,
+                    role: 'admin'
+                });
+            }
+
+            chatSocket.on('init', onInit);
+
             return socketFactory({
                 ioSocket: io.connect(server + namespace)  // connect to chat server
             });
@@ -75,12 +84,7 @@
                 }
 
                 // Private
-                function onInit() {
-                    chatSocket.emit('start', {
-                        username: Session.user.username,
-                        role: 'admin'
-                    });
-                }
+
 
                 // Private
                 function onConnectionSuccess() {
@@ -193,7 +197,6 @@
                     ChatController.canSend = false;
                 };
 
-                chatSocket.on('init', onInit);
                 chatSocket.on('successful-connect', onConnectionSuccess);
                 $rootScope.$on('delete-stream', onDeleteStream);
                 chatSocket.on('new-message', ChatController.onNewMessage);
