@@ -25,20 +25,21 @@
         .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 
             var namespace = '/chat/' + Session.clientId,
-                server = $location.host();
+                server = $location.host(),
+                socket = socketFactory({
+                    ioSocket: io.connect(server + namespace)  // connect to chat server
+                });
 
             function onInit() {
-                chatSocket.emit('start', {
+                socket.emit('start', {
                     username: Session.user.username,
                     role: 'admin'
                 });
             }
 
-            chatSocket.on('init', onInit);
+            socket.on('init', onInit);
 
-            return socketFactory({
-                ioSocket: io.connect(server + namespace)  // connect to chat server
-            });
+            return socket;
         }])
         .controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', 'messageFactory',
             function (chatSocket, Session, $rootScope, $location, $anchorScroll, messageFactory) {
