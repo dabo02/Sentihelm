@@ -33,7 +33,7 @@
 
 .active-counter{
     background-color: #9a9a9a;
-  cursor: pointer;
+    cursor: pointer;
     color: #fff;
 }
 
@@ -99,7 +99,7 @@
   border:0.1em solid #219fe9;
   box-shadow:0em 0em 1em #4d4d4d;
 }
-.tip:last-child, .tip::last-child{
+.tip:last-child, .tip:last-child{
   margin-bottom:0;
 }
 
