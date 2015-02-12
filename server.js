@@ -624,28 +624,68 @@ app.post('/request-video-connection', function (request, response) {
 
 //Receive request to start archiving a video session
 //and store the archiveId
-app.post('/start-archive', function (request, response) {
+app.post('/start-archive', function(request, response){
 
-    console.log('In /start-archive');
-
-    //Check if password is valid
-    //if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
-    //    return;
-    //}
+    //TODO why is the password check not being used?
+    /*/Check if password is valid
+    if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+        return;
+    }*/
 
     var videoSession = JSON.parse(request.body.data);
 
-    opentok.startArchive(videoSession.sessionId, {name: 'archive: ' + videoSession.sessionId}, function (err, archive) {
-        if (err) {
-            response.send(400, err.message);
-            return console.log(err);
-        }
-        // The id property is useful to save off into a database
-        console.log("new archive:" + archive.id);
-        //TODO Update archive id in Parse VideoSession object
+    opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
+      if (err){
+          response.send(400,err);
+          return console.log(err + " Session id: " + videoSession.sessionId);
+      }
+
+      var videoSessionQuery = new Parse.Query(VideoSession);
+      videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
+      videoSessionQuery.find({
+          success: function(videoSession) {
+              videoSession[0].set('archiveId', archive.id);
+              videoSession[0].save();
+          },
+          error: function(object, error) {
+              // The object was not retrieved successfully.
+              console.log("Error fetching video for archive ID update.");
+          }
+      });
     });
 
 });
+
+//Recieve  request to start archiving a video session
+//and pass it along to front-end
+app.post('/opentok-callback', function(request, response){
+
+    //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
+
+    var opentokCallbackJSON = request.body.data;
+
+    var videoSessionQuery = new Parse.Query(VideoSession);
+
+    //How sure are we about associating a single OpenTok Session Id to each instance of our VideoSession class in Parse..?
+    videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
+
+
+    videoSessionQuery.find({
+        success: function(videoSession) {
+            videoSession[0].set('archiveStatus', archive.status);
+            videoSession[0].set('duration', archive.duration);
+            videoSession[0].set('reason', archive.reason);
+            videoSession[0].set('archiveSize', archive.size);
+            videoSession[0].save();
+        },
+        error: function(object, error) {
+            // The object was not retrieved successfully.
+            console.log("Error fetching video for archive ID update on Opentok callback.");
+        }
+    });
+
+});
+
 
 //Landing/login page
 app.get('/', function (request, response) {
