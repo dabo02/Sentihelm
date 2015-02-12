@@ -633,7 +633,7 @@ app.post('/start-archive', function(request, response){
         return;
     }*/
 
-    var videoSession = JSON.parse(request.body);
+    var videoSession = JSON.parse(request.body.data);
 
     opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
       if (err){
@@ -664,7 +664,7 @@ app.post('/opentok-callback', function(request, response){
     //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
     console.log("\n\nIn opentok-callback...\n\n");
 
-    var opentokCallbackJSON = request.body.data;
+    var opentokCallbackJSON = JSON.parse(request.body);
 
     var videoSessionQuery = new Parse.Query(VideoSession);
     videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
