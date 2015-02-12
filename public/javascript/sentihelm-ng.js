@@ -1847,22 +1847,66 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     videoArchiveCtrl.videosAvailable = true;
     //videoArchiveCtrl.showMediaSpinner = true;
 
+    //pagination variables
+    videoArchiveCtrl.currentPageNum = 1;
+    videoArchiveCtrl.lastPageNum = 0;
+    videoArchiveCtrl.paginatedVideoArchiveArray = [];
+
 	
 	videoArchiveCtrl.fetchVideoArchive = function(){
 
-	    socket.emit('fetch-video-archive', Session.clientId);
-
-        socket.on('on-video-archive-fetch', function(videos){
-
-            videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
-            if(videoArchiveCtrl.videoArchiveArray.length===0){
-                videoArchiveCtrl.videosAvailable = false;
-            }
-            usSpinnerService.stop('loading-video-archive-spinner');
-           // alert(videoArchiveCtrl.videoArchiveArray[0].get('duration'));
+        var VideoSession = Parse.Object.extend("VideoSession");
+        var videoArchiveQuery = new Parse.Query(VideoSession);
+        videoArchiveQuery.include('mobileUser', 'officerUser', 'lastWatcher');
+        videoArchiveQuery.containedIn('archiveStatus', ['uploaded','available']);
+        videoArchiveQuery.equalTo('client', {
+            __type: "Pointer",
+            className: "Client",
+            objectId: Session.clientId
         });
-	};
-	
+
+        //videoArchiveQuery.limit(3);
+        videoArchiveQuery.find({
+            success: function(videos) {
+                videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
+                if(videoArchiveCtrl.videoArchiveArray.length===0){
+                    videoArchiveCtrl.videosAvailable = false;
+                }
+                usSpinnerService.stop('loading-video-archive-spinner');
+                videoArchiveCtrl.lastPageNum = Math.ceil(videoArchiveCtrl.videoArchiveArray.length / 10);
+                videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
+            },
+            error: function(object, error) {
+                // The object was not retrieved successfully.
+                console.log("Error fetching video archive.");
+            }
+        });
+    };
+
+    videoArchiveCtrl.getPage = function(pageNum){
+
+        if(pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum){
+            return;
+        }
+
+        videoArchiveCtrl.currentPageNum = pageNum;
+        var limit = 10;
+        var skip = (videoArchiveCtrl.currentPageNum - 1) * limit;
+        var paginationIndex = 0;
+        var lastPosition = 0;
+
+        if(videoArchiveCtrl.currentPageNum === videoArchiveCtrl.lastPageNum){
+            lastPosition = skip + videoArchiveCtrl.videoArchiveArray.length % limit;
+        }
+        else{
+            lastPosition = skip + limit;
+        }
+
+        for(i = skip; i < lastPosition; i++){
+            videoArchiveCtrl.paginatedVideoArchiveArray[paginationIndex++] = videoArchiveCtrl.videoArchiveArray[i];
+        }
+    }
+
 	videoArchiveCtrl.showVideo = function(video){
 
 		videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
@@ -1893,8 +1937,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                   className: "User",
                   objectId: Session.userId
                 });
-                videoSession.save();
-                videoArchiveCtrl.fetchVideoArchive();
+                videoSession.save().then(videoArchiveCtrl.fetchVideoArchive());
             },
             error: function(object, error) {
                 // The object was not retrieved successfully.

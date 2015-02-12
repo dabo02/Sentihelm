@@ -15,7 +15,7 @@
                 <div class="crime-filter col-xs-6">
                     <label>Watch Status</label>
                     <select class="crime-type" ng-model="videoArchiveCtrl.watchStatusFilter">
-                        <option value="{{$index}}" ng-repeat="status in videoArchiveCtrl.videoWatchStatuses track by $index">
+                        <option value="{{$index}}" ng-repeat="status in videoArchiveCtrl.videoWatchStatuses">
                             {{status}}
                         </option>
                     </select>
@@ -43,7 +43,7 @@
                 <!--ANCHOR MARKER FOR SCROLLING TO TOP WHEN PAGE CHANGES-->
                 <a id="top"></a>
 
-                <li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray track by $index" ng-show="video" ng-class="{'orange-border':!video.hasBeenWatched}">
+                <li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.paginatedVideoArchiveArray" ng-show="video" ng-class="{'orange-border':!video.attributes.hasBeenWatched}">
 
                     <!-------------------->
                     <!------TIP HEAD------>
@@ -56,12 +56,12 @@
         </span>
 
                         <!------NAME------>
-        <span class="user" ng-class="{orange:!video.hasBeenWatched, white:video.hasBeenWatched}">
-          {{video.mobileUser.attributes.username}}
+        <span class="user" ng-class="{orange:!video.attributes.hasBeenWatched, white:video.attributes.hasBeenWatched}">
+          {{video.attributes.mobileUser.attributes.username}}
         </span>
 
                         <!------CONTROL NUMBER------>
-                        <div class="control-number" ng-class="{'orange-border':!video.hasBeenWatched}">
+                        <div class="control-number" ng-class="{'orange-border':!video.attributes.hasBeenWatched}">
                             {{video.id}}
                         </div>
 
@@ -78,29 +78,29 @@
                         <div class="center">
 
                             <!------ATTACHMENTS------>
-                            <div class="attachments" ng-class="{'orange-border':!video.hasBeenWatched}">
+                            <div class="attachments" ng-class="{'orange-border':!video.attributes.hasBeenWatched}">
 
                                 <a id="videoAtt" ng-click="videoArchiveCtrl.showVideo(video)">
                                     <img src="./resources/images/videoAtt.png"
-                                         ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
+                                         ng-class="{'orange-bg':!video.attributes.hasBeenWatched, 'light-blue-bg':video.attributes.hasBeenWatched}"/>
                                 </a>
-                                <a id="imageAtt" ng-href="https://s3.amazonaws.com/stream-archive/44755992/{{video.archiveId}}/archive.mp4" download="" >
-                                    <img src="./resources/images/downloadAtt.png" ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
+                                <a id="imageAtt" ng-href="https://s3.amazonaws.com/stream-archive/44755992/{{video.attributes.archiveId}}/archive.mp4" download="" >
+                                    <img src="./resources/images/downloadAtt.png" ng-class="{'orange-bg':!video.attributes.hasBeenWatched, 'light-blue-bg':video.attributes.hasBeenWatched}"/>
                                 </a>
                             </div>
 
                             <!------CRIME DESCRIPTION------>
-                            <div class="crime-description" ng-class="{'orange-border':!video.hasBeenWatched}">
+                            <div class="crime-description" ng-class="{'orange-border':!video.attributes.hasBeenWatched}">
                                 <div class="row">
                                     <div class="col-xs-12">
                                         <div class="row">
-                                            <h2 ng-class="{'orange':!video.hasBeenWatched, 'light-blue':video.hasBeenWatched}">
-                                                {{video.hasBeenWatched ? 'Watched' : 'Un-watched'}}
+                                            <h2 ng-class="{'orange':!video.attributes.hasBeenWatched, 'light-blue':video.attributes.hasBeenWatched}">
+                                                {{video.attributes.hasBeenWatched ? 'Watched' : 'Un-watched'}}
                                             </h2>
                                         </div><br>
-                                        <div class="row"><em>Watched Live By:</em> {{video.officerUser.attributes.username}}</div>
-                                        <div class="row"><em>Last Watched By:</em> {{video.lastWatcher.attributes.username}}</div>
-                                        <div class="row"><em>Stream Duration:</em> {{video.duration >= 60 ? video.duration / 60 + '' + ((video.duration / 60) == 1 ? ' minute' : ' minutes') : video.duration + '' + (video.duration == 1 ? ' second' : ' seconds')}}</div>
+                                        <div class="row"><em>Watched Live By:</em> {{video.attributes.officerUser.attributes.username}}</div>
+                                        <div class="row"><em>Last Watched By:</em> {{video.attributes.lastWatcher.attributes.username}}</div>
+                                        <div class="row"><em>Stream Duration:</em> {{video.attributes.duration >= 60 ? video.attributes.duration / 60 + '' + ((video.attributes.duration / 60) == 1 ? ' minute' : ' minutes') : video.attributes.duration + '' + (video.attributes.duration == 1 ? ' second' : ' seconds')}}</div>
                                     </div>
                                 </div>
                             </div>
@@ -111,8 +111,8 @@
                         <div class="right" ng-controller="GoogleMapController as mapCtrl">
                             <div class="map-canvas" id="{{tip.controlNumber}}">
                                 <!------GOOGLE MAP------>
-                                <ui-gmap-google-map center="mapCtrl.getMapCenter({latitude: video.latitude, longitude: video.longitude})" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
-                                    <ui-gmap-markers models="{id: video.id, latitude: video.latitude, longitude: video.longitude, options: {draggable: false, title: 'Stream Location', visible: true}}" coords="'self'" options="'options'"></ui-gmap-markers>
+                                <ui-gmap-google-map center="mapCtrl.getMapCenter({latitude: video.attributes.latitude, longitude: video.attributes.longitude})" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+                                    <ui-gmap-markers models="{id: video.attributes.id, latitude: video.attributes.latitude, longitude: video.attributes.longitude, options: {draggable: false, title: 'Stream Location', visible: true}}" coords="'self'" options="'options'"></ui-gmap-markers>
                                 </ui-gmap-google-map>
                             </div>
                         </div>
@@ -120,19 +120,6 @@
                     <!-- END TIP -->
                 </li>
             </ul>
-            <!--<div class="row">
-                <div class="col-xs-6">
-                    <div class="row"><em>Streamer:</em> {{video.mobileUser.attributes.username}}</div>
-                    <div class="row"><em>Watched Live By:</em> {{video.officerUser.attributes.username}}</div>
-                    <div class="row"><em>Last Watched By:</em> {{video.lastWatcher.attributes.username}}</div>
-                </div>
-
-                <div class="col-xs-6">
-                    <div class="row"><em>Stream Duration:</em> {{video.duration >= 60 ? video.duration / 60 + '' + ((video.duration / 60) == 1 ? ' minute' : ' minutes') : video.duration + '' + (video.duration == 1 ? ' second' : ' seconds')}}</div>
-                    <div class="row"><em>Created On:</em> {{video.createdAt | date:'short'}}</div>
-                    <div class="row"><em>Geo-Location:</em> <a on-clic="videoArchiveCtrl.showVideoMap(video)"> {{video.latitude | number:2}}, {{video.longitude | number:2}}</a></div>
-                </div>
-			</div>-->
 	</div>
 	<!-- end archive main content -->
 	
