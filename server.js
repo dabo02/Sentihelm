@@ -664,7 +664,7 @@ app.post('/opentok-callback', function(request, response){
     //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
     console.log("\n\nIn opentok-callback...\n\n");
 
-    var opentokCallbackJSON = JSON.parse(request.body);
+    var opentokCallbackJSON = request.body;
 
     var videoSessionQuery = new Parse.Query(VideoSession);
     videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
