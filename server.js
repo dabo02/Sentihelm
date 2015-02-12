@@ -661,7 +661,7 @@ app.post('/start-archive', function(request, response){
 app.post('/opentok-callback', function(request, response){
 
     //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
-
+    console.log("\nIN opentok-callback...\n");
     var opentokCallbackJSON = request.body.data;
 
     var videoSessionQuery = new Parse.Query(VideoSession);
