@@ -670,10 +670,10 @@ app.post('/opentok-callback', function(request, response){
     videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
     videoSessionQuery.find({
         success: function(videoSessions) {
-            videoSessions[0].set('archiveStatus', archive.status);
-            videoSessions[0].set('duration', archive.duration);
-            videoSessions[0].set('reason', archive.reason);
-            videoSessions[0].set('archiveSize', archive.size);
+            videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
+            videoSessions[0].set('duration', opentokCallbackJSON.duration);
+            videoSessions[0].set('reason', opentokCallbackJSON.reason);
+            videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
             videoSessions[0].save();
         },
         error: function(object, error) {
