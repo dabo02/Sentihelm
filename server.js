@@ -626,13 +626,14 @@ app.post('/request-video-connection', function (request, response) {
 //and store the archiveId
 app.post('/start-archive', function(request, response){
 
+    console.log("\n\nIn start-archive...\n\n");
     //TODO why is the password check not being used?
     /*/Check if password is valid
     if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
         return;
     }*/
 
-    var videoSession = JSON.parse(request.body.data);
+    var videoSession = JSON.parse(request.body);
 
     opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
       if (err){
@@ -643,9 +644,9 @@ app.post('/start-archive', function(request, response){
       var videoSessionQuery = new Parse.Query(VideoSession);
       videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
       videoSessionQuery.find({
-          success: function(videoSession) {
-              videoSession[0].set('archiveId', archive.id);
-              videoSession[0].save();
+          success: function(videoSessions) {
+              videoSessions[0].set('archiveId', archive.id);
+              videoSessions[0].save();
           },
           error: function(object, error) {
               // The object was not retrieved successfully.
@@ -661,22 +662,19 @@ app.post('/start-archive', function(request, response){
 app.post('/opentok-callback', function(request, response){
 
     //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
-    console.log("\nIN opentok-callback...\n");
+    console.log("\n\nIn opentok-callback...\n\n");
+
     var opentokCallbackJSON = request.body.data;
 
     var videoSessionQuery = new Parse.Query(VideoSession);
-
-    //How sure are we about associating a single OpenTok Session Id to each instance of our VideoSession class in Parse..?
     videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
-
-
     videoSessionQuery.find({
-        success: function(videoSession) {
-            videoSession[0].set('archiveStatus', archive.status);
-            videoSession[0].set('duration', archive.duration);
-            videoSession[0].set('reason', archive.reason);
-            videoSession[0].set('archiveSize', archive.size);
-            videoSession[0].save();
+        success: function(videoSessions) {
+            videoSessions[0].set('archiveStatus', archive.status);
+            videoSessions[0].set('duration', archive.duration);
+            videoSessions[0].set('reason', archive.reason);
+            videoSessions[0].set('archiveSize', archive.size);
+            videoSessions[0].save();
         },
         error: function(object, error) {
             // The object was not retrieved successfully.
