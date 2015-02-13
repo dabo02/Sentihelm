@@ -839,11 +839,11 @@
                     paginator.resetTotalTipCount = false;
                     paginator.totalTipCount = data.totalTipCount;
                 }
-                paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount / 10), 1);
+                paginator.lastVideo = Math.max(Math.ceil(paginator.totalTipCount / 10), 1);
                 paginator.firstTipDateInArray = data.tips[0].createdAt;
                 paginator.lastTipDateInArray = data.tips[data.tips.length - 1].createdAt;
                 if (paginator.currentPage === 1) {
-                    paginator.pageSetUpdater(paginator.lastPage, false);
+                    paginator.pageSetUpdater(paginator.lastVideo, false);
                 }
                 //        paginator.changePage(paginator.currentPage);
                 $rootScope.$broadcast('new-batch', [paginator.tips, paginator.currentPage]);
@@ -872,7 +872,7 @@
             //and size of said array
             paginator.totalTipCount = 0;
             paginator.currentPage = 1;
-            paginator.lastPage = 1;
+            paginator.lastVideo = 1;
             paginator.paginatorSet = [];
             paginator.paginatorSetSize = 0;
             paginator.tips;
@@ -921,7 +921,7 @@
             $rootScope.$broadcast('discard-current-tips', []);
 
             if (this.currentPage % 10 === 0) {
-                this.pageSetUpdater(this.lastPage, true);
+                this.pageSetUpdater(this.lastVideo, true);
             }
         };
 
@@ -939,7 +939,7 @@
             ++this.currentPage;
 
             if ((this.currentPage - 1) % 10 === 0) {
-                this.pageSetUpdater(this.lastPage - (this.currentPage - 1), false);
+                this.pageSetUpdater(this.lastVideo - (this.currentPage - 1), false);
             }
         };
 
@@ -956,7 +956,7 @@
             }
 
             //Let controller know the set has changed
-            $rootScope.$broadcast('paginator-set-update', [paginator.paginatorSet, paginator.lastPage]);
+            $rootScope.$broadcast('paginator-set-update', [paginator.paginatorSet, paginator.lastVideo]);
         };
 
         return paginator;
@@ -1894,32 +1894,37 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         var limit = 10;
         var skip = (videoArchiveCtrl.currentPageNum - 1) * limit;
         var paginationIndex = 0;
-        var lastPosition = 0;
+        var lastVideo = 0;
 
         if(videoArchiveCtrl.currentPageNum === videoArchiveCtrl.lastPageNum){
-            lastPosition = skip + videoArchiveCtrl.videoArchiveArray.length % limit;
+            lastVideo = skip + videoArchiveCtrl.videoArchiveArray.length % limit;
         }
         else{
-            lastPosition = skip + limit;
+            lastVideo = skip + limit;
         }
 
-        for(i = skip; i < lastPosition; i++){
+        for(i = skip; i < lastVideo; i++){
             videoArchiveCtrl.paginatedVideoArchiveArray[paginationIndex++] = videoArchiveCtrl.videoArchiveArray[i];
         }
 
         videoArchiveCtrl.refreshPageNumbers(limit);
     }
 
-    videoArchiveCtrl.refreshPageNumbers = function(limit){
+    videoArchiveCtrl.refreshPageNumbers = function(limit, lastPageNum){
 
-        var firstNum = (videoArchiveCtrl.currentPageNum / 10) * limit + 1;
-        var lastNum;
+        var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / 10) * limit;
+        var firstNum =  baseNum + 1;
+        var lastNum = 0;
 
         if(videoArchiveCtrl.currentPageNum % 10 === 0){
             lastNum = videoArchiveCtrl.currentPageNum;
         }
+        else if(baseNum + limit > lastPageNum){
+            lastNum = lastPageNum;
+        }
+
         else{
-            lastNum = (videoArchiveCtrl.currentPageNum / 10) * limit + limit;
+            lastNum = baseNum + limit;
         }
 
         for(i = firstNum; i <= lastNum; i++){
@@ -2038,7 +2043,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             this.tipsAvailable = true;
             this.currentTips = [];
             this.currentPage = paginator.currentPage;
-            this.lastPage = paginator.lastPage;
+            this.lastVideo = paginator.lastVideo;
             this.paginatorSet = paginator.paginatorSet;
             this.showMediaSpinner = false;
             this.counter = 0;
@@ -2084,7 +2089,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             //Catch event when page sets change (every 10 pages)
             $scope.$on('paginator-set-update', function (event, data) {
                 tipfeed.paginatorSet = data[0];
-                tipfeed.lastPage = data[1];
+                tipfeed.lastVideo = data[1];
             });
 
             //Catch event when paginator Service is fetching
