@@ -1853,7 +1853,6 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     videoArchiveCtrl.paginatedVideoArchiveArray = [];
     videoArchiveCtrl.pageNumbers = [];
 
-	
 	videoArchiveCtrl.fetchVideoArchive = function(){
 
         var VideoSession = Parse.Object.extend("VideoSession");
@@ -1866,7 +1865,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             objectId: Session.clientId
         });
 
-        //videoArchiveQuery.limit(3);
+        videoArchiveQuery.limit(1000);
         videoArchiveQuery.find({
             success: function(videos) {
                 videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
@@ -1910,21 +1909,20 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         videoArchiveCtrl.refreshPageNumbers(limit);
     }
 
-    videoArchiveCtrl.refreshPageNumbers = function(limit, lastPageNum){
+    videoArchiveCtrl.refreshPageNumbers = function(limit){
 
-        var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / 10) * limit;
-        var firstNum =  baseNum + 1;
+        var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / 10);
+        var firstNum =  videoArchiveCtrl.currentPageNum % 10 === 0 ? (baseNum - 1) * limit + 1 : baseNum  * limit + 1;
         var lastNum = 0;
 
         if(videoArchiveCtrl.currentPageNum % 10 === 0){
             lastNum = videoArchiveCtrl.currentPageNum;
         }
-        else if(baseNum + limit > lastPageNum){
-            lastNum = lastPageNum;
+        else if(baseNum + limit > videoArchiveCtrl.lastPageNum){
+            lastNum = videoArchiveCtrl.lastPageNum;
         }
-
         else{
-            lastNum = baseNum + limit;
+            lastNum = baseNum * limit + limit;
         }
 
         for(i = firstNum; i <= lastNum; i++){
