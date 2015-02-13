@@ -1851,6 +1851,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     videoArchiveCtrl.currentPageNum = 1;
     videoArchiveCtrl.lastPageNum = 0;
     videoArchiveCtrl.paginatedVideoArchiveArray = [];
+    videoArchiveCtrl.pageNumbers = [];
 
 	
 	videoArchiveCtrl.fetchVideoArchive = function(){
@@ -1904,6 +1905,25 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
         for(i = skip; i < lastPosition; i++){
             videoArchiveCtrl.paginatedVideoArchiveArray[paginationIndex++] = videoArchiveCtrl.videoArchiveArray[i];
+        }
+
+        videoArchiveCtrl.refreshPageNumbers(limit);
+    }
+
+    videoArchiveCtrl.refreshPageNumbers = function(limit){
+
+        var firstNum = (videoArchiveCtrl.currentPageNum / 10) * limit + 1;
+        var lastNum;
+
+        if(videoArchiveCtrl.currentPageNum % 10 === 0){
+            lastNum = videoArchiveCtrl.currentPageNum;
+        }
+        else{
+            lastNum = (videoArchiveCtrl.currentPageNum / 10) * limit + limit;
+        }
+
+        for(i = firstNum; i <= lastNum; i++){
+            videoArchiveCtrl.pageNumbers[i] = i;
         }
     }
 
