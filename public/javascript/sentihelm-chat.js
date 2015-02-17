@@ -27,7 +27,7 @@
             var namespace = '/chat/' + Session.clientId,
                 server = $location.host(),
                 socket = socketFactory({
-                    ioSocket: io.connect(server + namespace)  // connect to chat server
+                    ioSocket: io.connect(server + namespace) // connect to chat server
                 });
 
             function onInit() {
@@ -54,12 +54,13 @@
                 function getUserName(id) {
                     var username = '';
 
-                    Object.keys(ChatController.rooms).forEach(function (room) {
-                        var currentRoom = ChatController.rooms[room];
-                        if (currentRoom.with.id === id) {
-                            username = currentRoom.with.username;
-                        }
-                    });
+                    Object.keys(ChatController.rooms)
+                        .forEach(function (room) {
+                            var currentRoom = ChatController.rooms[room];
+                            if (currentRoom.with.id === id) {
+                                username = currentRoom.with.username;
+                            }
+                        });
 
                     return username;
 
@@ -72,12 +73,13 @@
                         comparative = username || id || undefined;
 
                     if (prop && comparative) {
-                        Object.keys(ChatController.rooms).forEach(function (room) {
-                            var currentRoom = ChatController.rooms[room];
-                            if (currentRoom.with[prop] === comparative) {
-                                roomName = room;
-                            }
-                        });
+                        Object.keys(ChatController.rooms)
+                            .forEach(function (room) {
+                                var currentRoom = ChatController.rooms[room];
+                                if (currentRoom.with[prop] === comparative) {
+                                    roomName = room;
+                                }
+                            });
                         return roomName;
                     }
 
@@ -157,12 +159,14 @@
                         messageObject.from = username;
                     }
 
+                    messageObject.id = 'm' + Math.round(Math.random() * 1000 + 1 + Date.now());
+
                     room = getRoom(username);
 
                     ChatController.rooms[room].messages.push(messageObject);
 
                     if (room === ChatController.currentRoom) {
-                        $location.hash('chat-bottom');
+                        $location.hash(messageObject.id);
                         $anchorScroll();
                     }
                 };
@@ -199,6 +203,8 @@
                     delete ChatController.rooms[room];
                     ChatController.canSend = false;
                 };
+
+                chatSocket.emit('change-space', 'video-streams');
 
                 chatSocket.on('successful-connect', onConnectionSuccess);
                 $rootScope.$on('delete-stream', onDeleteStream);
