@@ -157,12 +157,14 @@
                         messageObject.from = username;
                     }
 
+                    messageObject.id = 'm' + Math.round(Math.random() * 1000 + 1 + Date.now());
+
                     room = getRoom(username);
 
                     ChatController.rooms[room].messages.push(messageObject);
 
                     if (room === ChatController.currentRoom) {
-                        $location.hash('chat-bottom');
+                        $location.hash(messageObject.id);
                         $anchorScroll();
                     }
                 };
