@@ -1794,7 +1794,7 @@
             }
         });
 
-        //Display toast.
+        //Display toast for new stream
         socket.on('new-video-stream', function (data) {
             //Open toast.
             ngToast.create({
@@ -1802,6 +1802,21 @@
                 content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoStreams()">New video stream available.</a>'),
                 class: 'info',
                 dismissOnTimeout: $state.current.name !== 'video-streams' ? false : true,
+                dismissButton: true,
+                compileContent: true,
+                dismissOnClick: false
+            });
+            drawer.sound.play();
+        });
+
+        //Display toast for succesful archive creation
+        socket.on('new-video-archive', function (data) {
+            //Open toast.
+            ngToast.create({
+                //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
+                content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoArchive()">Video stored in archive successfully.</a>'),
+                class: 'success',
+                dismissOnTimeout: $state.current.name !== 'video-archive' ? false : true,
                 dismissButton: true,
                 compileContent: true,
                 dismissOnClick: false
@@ -1835,6 +1850,12 @@
                 });
             }
         };
+
+        toastCtrl.goToVideoArchive = function(){
+            if($state.current.name !== 'video-archive'){
+                $state.go("video-archive", {}, {reload: true});
+            }
+        }
     }]);
 
 //Controller for the video-archive state
@@ -1844,7 +1865,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
 	var videoArchiveCtrl = this;
 	videoArchiveCtrl.videoArchiveArray;
-    videoArchiveCtrl.videoWatchStatuses = ['All', 'Watched', 'Unwatched'];
+    videoArchiveCtrl.videoWatchStatuses = ['Watched', 'Unwatched', 'All'];
     videoArchiveCtrl.videosAvailable = true;
 
     //pagination variables
@@ -1878,7 +1899,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         videoArchiveQuery.descending("createdAt");
 
         if(videoArchiveCtrl.videoDateFilter){
-             videoArchiveQuery.greaterThanOrEqualTo('createdAt', videoArchiveCtrl.videoDateFilter)
+             videoArchiveQuery.greaterThanOrEqualTo('createdAt', new Date(videoArchiveCtrl.videoDateFilter));
         }
 
         if(videoArchiveCtrl.watchStatusFilter && videoArchiveCtrl.watchStatusFilter != "All"){
@@ -1886,7 +1907,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 videoArchiveQuery.equalTo('hasBeenWatched', true);
              }
              else{
-                videoArchiveQuery.equalTo('hasBeenWatched', false);
+                videoArchiveQuery.equalTo('hasBeenWatched', undefined);
              }
         }
 

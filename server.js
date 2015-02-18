@@ -469,7 +469,12 @@ app.post('/opentok-callback', function(request, response){
             videoSessions[0].set('duration', archive.duration);
             videoSessions[0].set('reason', archive.reason);
             videoSessions[0].set('archiveSize', archive.size);
-            videoSessions[0].save();
+            videoSessions[0].save().then(function(){
+
+                if(archive.status){
+                    io.sockets.emit('new-video-archive');
+                }
+            });
         },
         error: function(object, error) {
             // The object was not retrieved successfully.
