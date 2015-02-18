@@ -1,3 +1,20 @@
+
+.video-archive-mid-container {
+    position: fixed;
+    top: 15%;
+    left: 17.5%;
+    width: 65%;
+    height: 75%;
+    overflow-y: auto;
+    text-align: center;
+}
+
+#video-archive-list {
+  width: 65%;
+  min-width: 850px;
+  margin: 0 auto;
+}
+
 .video-archive-entry {
     background-color: #f2f2f2;
     //border: 3px solid #ddd;
@@ -45,4 +62,12 @@
 .video-archive-entry .watchStatus{
     float: center;
     text-align: center;
+}
+
+.video-archive-paginator-container{
+  margin-top:10px;
+  text-align:center;
+  position: relative;
+  top: 300px;
+  width: 100%;
 }

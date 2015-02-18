@@ -1842,18 +1842,28 @@
 app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', function ($scope, Session, socket, ngDialog, usSpinnerService) {
 
 	var videoArchiveCtrl = this;
-	videoArchiveCtrl.videoArchiveArray = [];
+	videoArchiveCtrl.videoArchiveArray;
     videoArchiveCtrl.videoWatchStatuses = ['All', 'Watched', 'Unwatched'];
     videoArchiveCtrl.videosAvailable = true;
-    //videoArchiveCtrl.showMediaSpinner = true;
 
     //pagination variables
     videoArchiveCtrl.currentPageNum = 1;
-    videoArchiveCtrl.lastPageNum = 0;
-    videoArchiveCtrl.paginatedVideoArchiveArray = [];
-    videoArchiveCtrl.pageNumbers = [];
+    videoArchiveCtrl.lastPageNum;
+    videoArchiveCtrl.pageNumbers;
+    videoArchiveCtrl.limit = 10;
+    videoArchiveCtrl.skip;
+    videoArchiveCtrl.videoTotal;
 
-	videoArchiveCtrl.fetchVideoArchive = function(){
+    videoArchiveCtrl.getPage = function(pageNum){
+
+        if(pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum){
+            return;
+        }
+
+        usSpinnerService.spin('loading-video-archive-spinner');
+        videoArchiveCtrl.videoArchiveArray = [];
+        videoArchiveCtrl.currentPageNum = pageNum;
+        videoArchiveCtrl.skip = (videoArchiveCtrl.currentPageNum - 1) * videoArchiveCtrl.limit;
 
         var VideoSession = Parse.Object.extend("VideoSession");
         var videoArchiveQuery = new Parse.Query(VideoSession);
@@ -1864,8 +1874,10 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             className: "Client",
             objectId: Session.clientId
         });
-
-        videoArchiveQuery.limit(1000);
+        videoArchiveQuery.descending("createdAt");
+        videoArchiveQuery.skip(videoArchiveCtrl.skip);
+        //todo add skip hack and filters
+        videoArchiveQuery.limit(videoArchiveCtrl.limit);
         videoArchiveQuery.find({
             success: function(videos) {
                 videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
@@ -1873,60 +1885,48 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                     videoArchiveCtrl.videosAvailable = false;
                 }
                 usSpinnerService.stop('loading-video-archive-spinner');
-                videoArchiveCtrl.lastPageNum = Math.ceil(videoArchiveCtrl.videoArchiveArray.length / 10);
-                videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
+                //videoArchiveCtrl.lastPageNum = Math.ceil(videoArchiveCtrl.videoArchiveArray.length / 10);
             },
             error: function(object, error) {
                 // The object was not retrieved successfully.
                 console.log("Error fetching video archive.");
             }
         });
-    };
 
-    videoArchiveCtrl.getPage = function(pageNum){
-
-        if(pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum){
-            return;
-        }
-
-        videoArchiveCtrl.currentPageNum = pageNum;
-        var limit = 10;
-        var skip = (videoArchiveCtrl.currentPageNum - 1) * limit;
-        var paginationIndex = 0;
-        var lastVideo = 0;
-
-        if(videoArchiveCtrl.currentPageNum === videoArchiveCtrl.lastPageNum){
-            lastVideo = skip + videoArchiveCtrl.videoArchiveArray.length % limit;
-        }
-        else{
-            lastVideo = skip + limit;
-        }
-
-        for(i = skip; i < lastVideo; i++){
-            videoArchiveCtrl.paginatedVideoArchiveArray[paginationIndex++] = videoArchiveCtrl.videoArchiveArray[i];
-        }
-
-        videoArchiveCtrl.refreshPageNumbers(limit);
+        videoArchiveQuery.count({
+            success: function(count) {
+                videoArchiveCtrl.lastPageNum = Math.ceil(count/10);
+                videoArchiveCtrl.videoTotal = count;
+            },
+            error: function(object, error) {
+                // The object was not retrieved successfully.
+                console.log("Error counting video archives.");
+            }
+        }).then(function(){
+            videoArchiveCtrl.refreshPageNumbers();
+        });
     }
 
-    videoArchiveCtrl.refreshPageNumbers = function(limit){
-
-        var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / 10);
-        var firstNum =  videoArchiveCtrl.currentPageNum % 10 === 0 ? (baseNum - 1) * limit + 1 : baseNum  * limit + 1;
+    videoArchiveCtrl.refreshPageNumbers = function(){
+        //todo fix page numbers for when there are less than 10 pages left to display numbers for
+        var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / videoArchiveCtrl.limit);
+        var firstNum =  videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0 ? (baseNum - 1) * videoArchiveCtrl.limit + 1 : baseNum  * videoArchiveCtrl.limit + 1;
         var lastNum = 0;
 
-        if(videoArchiveCtrl.currentPageNum % 10 === 0){
+        if(videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0){
             lastNum = videoArchiveCtrl.currentPageNum;
         }
-        else if(baseNum + limit > videoArchiveCtrl.lastPageNum){
+        else if(baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit > videoArchiveCtrl.lastPageNum){
             lastNum = videoArchiveCtrl.lastPageNum;
         }
         else{
-            lastNum = baseNum * limit + limit;
+            lastNum = baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit;
         }
 
-        for(i = firstNum; i <= lastNum; i++){
-            videoArchiveCtrl.pageNumbers[i] = i;
+        videoArchiveCtrl.pageNumbers = [];
+
+        for(i = 0, j = firstNum; j <= lastNum; i++, j++){
+            videoArchiveCtrl.pageNumbers[i] = j;
         }
     }
 
@@ -1969,7 +1969,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         });
 	}
 
-	videoArchiveCtrl.fetchVideoArchive();
+	videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
 	 
 }]);
 

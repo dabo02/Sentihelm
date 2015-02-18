@@ -1,9 +1,10 @@
 
         
-<div class="jumbotron vertical-center video-archive-list" style="background-color:white;" ng-controller="VideoArchiveController as videoArchiveCtrl">
+<div class="vertical-center" id="video-archive-list" style="background-color:white;" ng-controller="VideoArchiveController as videoArchiveCtrl">
 
 	<!-- archive main content -->
-	<div class="most-wanted-mid-container">
+	<div class="video-archive-mid-container">
+        <h1>Video Archives</h1><br>
         <div class="tip-filter-container row">
             <div class="filter-controls">
 
@@ -26,15 +27,7 @@
             </div>
         </div>
 
-        <!--Show if NO video archives are available -->
-        <div class="container" ng-if="!videoArchiveCtrl.videosAvailable">
-            <h2 class="text-center">No Records Found</h2>
-        </div>
 
-        <!--======SPINNER (LOADING)======-->
-        <span  us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-video-archive-spinner" spinner-start-active="1">
-
-        </span>
 
 
             <!--======TIP FEED======-->
@@ -42,8 +35,18 @@
             <ul id="tip-feed" >
                 <!--ANCHOR MARKER FOR SCROLLING TO TOP WHEN PAGE CHANGES-->
                 <a id="top"></a>
+                <!--Show if NO video archives are available -->
+                <div class="container" ng-if="!videoArchiveCtrl.videosAvailable">
+                    <h2 class="text-center">No Records Found</h2>
+                </div>
 
-                <li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.paginatedVideoArchiveArray" ng-show="video" ng-class="{'orange-border':!video.attributes.hasBeenWatched}">
+                <!--======SPINNER (LOADING)======-->
+        <span  us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-video-archive-spinner" spinner-start-active="1">
+
+        </span>
+                <p ng-show="videoArchiveCtrl.videosAvailable">Page {{videoArchiveCtrl.currentPageNum}} of {{videoArchiveCtrl.lastPageNum}}</p>
+                <p ng-show="videoArchiveCtrl.videosAvailable">Showing Videos {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}}</p>
+                <li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray" ng-show="video" ng-class="{'orange-border':!video.attributes.hasBeenWatched}">
 
                     <!-------------------->
                     <!------TIP HEAD------>
@@ -100,7 +103,7 @@
                                         </div><br>
                                         <div class="row"><em>Watched Live By:</em> {{video.attributes.officerUser.attributes.username}}</div>
                                         <div class="row"><em>Last Watched By:</em> {{video.attributes.lastWatcher.attributes.username}}</div>
-                                        <div class="row"><em>Stream Duration:</em> {{video.attributes.duration >= 60 ? video.attributes.duration / 60 + '' + ((video.attributes.duration / 60) == 1 ? ' minute' : ' minutes') : video.attributes.duration + '' + (video.attributes.duration == 1 ? ' second' : ' seconds')}}</div>
+                                        <div class="row"><em>Stream Duration:</em> {{(video.attributes.duration >= 60 ? video.attributes.duration / 60 + '' + ((video.attributes.duration / 60) == 1 ? ' minute' : ' minutes') : video.attributes.duration + '' + (video.attributes.duration == 1 ? ' second' : ' seconds')) | number}}</div>
                                     </div>
                                 </div>
                             </div>
@@ -122,7 +125,30 @@
             </ul>
 	</div>
 	<!-- end archive main content -->
-	
+<br>
+
+    <!--=====PAGINATOR======-->
+    <!--====================-->
+    <div ng-if="videoArchiveCtrl.videosAvailable" class="video-archive-paginator-container">
+        <ul id="paginator">
+
+
+            <li id="page-previous" class="paginator-control" ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum===1}" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum - 1)">
+                <span class="fa fa-chevron-left fa-lg"></span>
+            </li>
+
+
+            <li class="paginator-control" ng-repeat="pageNumber in videoArchiveCtrl.pageNumbers" ng-class="{'light-blue': videoArchiveCtrl.currentPageNum === pageNumber}" ng-click="videoArchiveCtrl.getPage(pageNumber)">
+                {{pageNumber}}
+            </li>
+
+
+            <li id="page-next" class="paginator-control" ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum === videoArchiveCtrl.lastPageNum}" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum + 1)">
+                <span class="fa fa-chevron-right fa-lg"></span>
+            </li>
+
+        </ul>
+    </div>
 
 	
 </div>

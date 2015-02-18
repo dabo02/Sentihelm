@@ -414,6 +414,7 @@ app.post('/new-tip', function(request, response){
 
 //Receive request to start archiving a video session
 //and store the archiveId
+//TODO ask for start-archive post status in sentiguard ios
 app.post('/start-archive', function(request, response){
 
     console.log("Starting Archive...\n");
