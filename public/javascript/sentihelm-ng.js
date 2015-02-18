@@ -1087,6 +1087,7 @@
                         var query = new Parse.Query(VideoSession);
                         query.get(stream.connectionId)
                             .then(function (videoSession) {
+                                videoSession.set('hasBeenWatched', true);
                                 videoSession.set('officerUser', {
                                     __type: "Pointer",
                                     className: "User",
@@ -1875,8 +1876,22 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             objectId: Session.clientId
         });
         videoArchiveQuery.descending("createdAt");
+
+        if(videoArchiveCtrl.videoDateFilter){
+             videoArchiveQuery.greaterThanOrEqualTo('createdAt', videoArchiveCtrl.videoDateFilter)
+        }
+
+        if(videoArchiveCtrl.watchStatusFilter && videoArchiveCtrl.watchStatusFilter != "All"){
+             if(videoArchiveCtrl.watchStatusFilter === "Watched"){
+                videoArchiveQuery.equalTo('hasBeenWatched', true);
+             }
+             else{
+                videoArchiveQuery.equalTo('hasBeenWatched', false);
+             }
+        }
+
         videoArchiveQuery.skip(videoArchiveCtrl.skip);
-        //todo add skip hack and filters
+        //todo add skip hack
         videoArchiveQuery.limit(videoArchiveCtrl.limit);
         videoArchiveQuery.find({
             success: function(videos) {
