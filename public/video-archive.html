@@ -103,7 +103,10 @@
                                         </div><br>
                                         <div class="row"><em>Watched Live By:</em> {{video.attributes.officerUser.attributes.username}}</div>
                                         <div class="row"><em>Last Watched By:</em> {{video.attributes.lastWatcher.attributes.username}}</div>
-                                        <div class="row"><em>Stream Duration:</em> {{(video.attributes.duration >= 60 ? video.attributes.duration / 60 + '' + ((video.attributes.duration / 60) == 1 ? ' minute' : ' minutes') : video.attributes.duration + '' + (video.attributes.duration == 1 ? ' second' : ' seconds')) | number}}</div>
+                                        <div class="row" ng-if="video.attributes.duration>=60"><em>Stream Duration:</em> {{video.attributes.duration / 60 | number : 2}} {{video.attributes.duration / 60 == 1 ? ' minute' : ' minutes'}}
+                                        </div>
+                                        <div class="row" ng-if="video.attributes.duration<60"><em>Stream Duration:</em> {{video.attributes.duration}} {{video.attributes.duration == 1 ? ' second' : ' seconds'}}
+                                        </div>
                                     </div>
                                 </div>
                             </div>

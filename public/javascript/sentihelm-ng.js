@@ -1882,6 +1882,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             return;
         }
 
+        var parseSkipLimit = 10000;
         usSpinnerService.spin('loading-video-archive-spinner');
         videoArchiveCtrl.videoArchiveArray = [];
         videoArchiveCtrl.currentPageNum = pageNum;
@@ -1911,8 +1912,13 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
              }
         }
 
+        //parse skip limit hack
+        if(videoArchiveCtrl.skip > parseSkipLimit){
+            videoArchiveQuery.lessThanOrEqualTo("createdAt", videoArchiveCtrl.videoArchiveArray[videoArchiveCtrl.limit - 1].createdAt)
+            videoArchiveCtrl.skip = 0;
+        }
+
         videoArchiveQuery.skip(videoArchiveCtrl.skip);
-        //todo add skip hack
         videoArchiveQuery.limit(videoArchiveCtrl.limit);
         videoArchiveQuery.find({
             success: function(videos) {
