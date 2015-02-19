@@ -118,7 +118,7 @@
                             <div class="map-canvas" id="{{tip.controlNumber}}">
                                 <!------GOOGLE MAP------>
                                 <ui-gmap-google-map center="mapCtrl.getMapCenter({latitude: video.attributes.latitude, longitude: video.attributes.longitude})" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
-                                    <ui-gmap-markers models="{id: video.attributes.id, latitude: video.attributes.latitude, longitude: video.attributes.longitude, options: {draggable: false, title: 'Stream Location', visible: true}}" coords="'self'" options="'options'"></ui-gmap-markers>
+                                    <ui-gmap-markers models="[{id: video.id, latitude: video.attributes.latitude, longitude: video.attributes.longitude, options: {draggable: false, title: 'Stream Location', visible: true}}]" coords="'self'" options="'options'"></ui-gmap-markers>
                                 </ui-gmap-google-map>
                             </div>
                         </div>

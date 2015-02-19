@@ -2011,6 +2011,21 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         });
 	}
 
+	videoArchiveCtrl.getMapMarkers = function(){
+	    /*var markers = [{
+            id: tips[i].objectId,
+            latitude: tips[i].center.latitude,
+            longitude: tips[i].center.longitude,
+            options: {
+              draggable: false,
+              title: "Crime Location",
+              visible: true
+            }
+        }];
+
+        return markers;*/
+	}
+
 	videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
 	 
 }]);
