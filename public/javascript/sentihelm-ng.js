@@ -1977,14 +1977,14 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
         videoArchiveCtrl.pageNumbers = [];
 
-        for(i = 0, j = firstNum; j <= lastNum; i++, j++){
+        for(var i = 0, j = firstNum; j <= lastNum; i++, j++){
             videoArchiveCtrl.pageNumbers[i] = j;
         }
     }
 
 	videoArchiveCtrl.showVideo = function(video){
 
-		videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
+		var videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
 
 		//ngDialog can only handle stringified JSONs
 		var data = JSON.stringify({
@@ -2902,7 +2902,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             center: {
                 latitude: 0,
                 longitude: 0
-            },
+            }
         };
 
         //Get region center-location from Parse
