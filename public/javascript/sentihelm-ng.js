@@ -1985,16 +1985,13 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
 	videoArchiveCtrl.showVideo = function(video){
 
-        AWS.config.update({accessKeyId: 'AKIAJHF7SSPW7FVJ3KWQ', secretAccessKey: '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'});
+        AWS.config.update({accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q', secretAccessKey: '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'});
         AWS.config.region = 'us-east-1';
-
         var s3 = new AWS.S3();
 
         // This URL will expire in one minute (60 seconds)
         var params = {Bucket: 'stream-archive', Key: '44755992/' + video.attributes.archiveId + '/archive.mp4', Expires: 500};
         var videoUrl = s3.getSignedUrl('getObject', params);
-
-		//var videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
 
 		//ngDialog can only handle stringified JSONs
 		var data = JSON.stringify({
@@ -2029,21 +2026,6 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 console.log("Error fetching video for lastWatcher update.");
             }
         });
-	}
-
-	videoArchiveCtrl.getMapMarkers = function(){
-	    /*var markers = [{
-            id: tips[i].objectId,
-            latitude: tips[i].center.latitude,
-            longitude: tips[i].center.longitude,
-            options: {
-              draggable: false,
-              title: "Crime Location",
-              visible: true
-            }
-        }];
-
-        return markers;*/
 	}
 
 	videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
