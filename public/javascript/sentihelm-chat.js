@@ -8,7 +8,7 @@
     'use strict';
     var User = Parse.Object.extend("User");
 
-    angular.module('sh.chat', ['btford.socket-io'])
+    angular.module('sentihelm', ['btford.socket-io'])
         .factory('messageFactory', ['Session', function (Session) {
             return function (messageData) {
                 if (!messageData.receiver) {
@@ -41,11 +41,30 @@
 
             return socket;
         }])
-        .factory('tipChatService', ['chatSocket', 'Session', function (chatSocket, Session) {
+        .factory('tipChatService', ['chatSocket', function (chatSocket) {
             var tipChatService = {
+                activeChats: [],
+                retrieveAll: function () {
+                    chatSocket.emit('get-all-logs');
+                    chatSocket.on('get-all-logs-result', function (data) {
+                        tipChatService.activeChats = angular.copy(data);
+                    });
+                },
+                addTipToQueue: function (tipId) {
+                    chatSocket.emit('add-tip-to-logs', tipId);
+                    chatSocket.on('add-tip-to-log-success', function () {
+                        
+                    });
+                },
+                addMessageToTipChat: function (controlNumber, messageObject) {
+                    chatSocket.emit('add-message-to-log', controlNumber, messageObject);
+                    chatSocket.on('add-message-to-log-success', function () {
 
+                    });
+                }
             };
 
+            tipChatService.retrieveAll();
 
             return tipChatService;
         }])
@@ -220,7 +239,12 @@
                 chatSocket.on('new-room', ChatController.onNewRoom);
             }
         ])
-        .controller('TipChatController', ['$scope', 'TipChatService', 'chatSocket', function ($scope, TipChatService, chatSocket) {
-        }]);
-})
-(window.angular);
+        // TipChatController extends ChatController
+        .controller('TipChatController', ['$scope', '$controller', 'TipChatService', 'chatSocket',
+            function ($scope, $controller, TipChatService, chatSocket) {
+                var Base = $controller('ChatController', { $scope: $scope }),
+                    TipChatController = this;
+
+                angular.extend(Base, TipChatController);
+            }]);
+})(window.angular);
