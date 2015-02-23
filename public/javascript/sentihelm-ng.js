@@ -189,6 +189,26 @@
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
                     }
                 }
+            })
+            .state('tip-chat', {
+                url: '/chat-logs',
+                templateUrl: '/tip-chat.html',
+                data: {
+                    // only users with chat permissions can use this route.
+                    authorizedRoles: [USER_ROLES.chat]
+                },
+                resolve: {
+                    // Reads the Routing Service
+                    routingService: 'RoutingService',
+
+                    // Receives the Routing Service, checks if user is logged in,
+                    // executes the login dialog if needed and waits for the dialog
+                    // to close before loading the state.
+                    authenticate: function (routingService) {
+                        return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
+                    }
+                }
+
             });
     }]);
 
@@ -232,7 +252,8 @@
         all: '*',
         demo: 'demo',
         user: 'manager',
-        admin: 'admin'
+        admin: 'admin',
+        chat: 'chat'
     });
 
     //All errors are contained in this constant;
@@ -1725,6 +1746,10 @@
                 name: 'Video Streams',
                 icon: 'glyphicon glyphicon-facetime-video',
                 state: 'video-streams'
+            }, {
+                name: 'Tip Chat Logs',
+                icon: 'glyphicon glyphicon-envelope',
+                state: 'tip-chat'
             }, {
                 name: 'Send Notification',
                 icon: 'glyphicon glyphicon-send',

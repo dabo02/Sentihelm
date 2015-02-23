@@ -41,6 +41,14 @@
 
             return socket;
         }])
+        .factory('tipChatService', ['chatSocket', 'Session', function (chatSocket, Session) {
+            var tipChatService = {
+
+            };
+
+
+            return tipChatService;
+        }])
         .controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', 'messageFactory',
             function (chatSocket, Session, $rootScope, $location, $anchorScroll, messageFactory) {
                 var ChatController = this;
@@ -211,6 +219,8 @@
                 chatSocket.on('new-message', ChatController.onNewMessage);
                 chatSocket.on('new-room', ChatController.onNewRoom);
             }
-        ]);
+        ])
+        .controller('TipChatController', ['$scope', 'TipChatService', 'chatSocket', function ($scope, TipChatService, chatSocket) {
+        }]);
 })
 (window.angular);
