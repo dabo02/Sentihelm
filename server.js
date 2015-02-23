@@ -447,6 +447,8 @@ io.on('connect', function (socket) {
     });
 });
 
+//end socket scope
+
 //=========================================
 //  SET UP ROUTING
 //=========================================
@@ -536,6 +538,79 @@ app.post('/new-tip', function (request, response) {
     }
 });
 
+//Receive request to start archiving a video session
+//and store the archiveId
+//TODO ask for start-archive post status in sentiguard ios
+app.post('/start-archive', function(request, response){
+
+    console.log("Starting Archive...\n");
+    //Check if password is valid
+    if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+        return;
+    }
+
+    var videoSession = JSON.parse(request.body.data);
+
+    opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
+      if (err){
+          response.send(400,err);
+          return console.log(err + " Session id: " + videoSession.sessionId);
+      }
+
+      var videoSessionQuery = new Parse.Query(VideoSession);
+      videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
+      videoSessionQuery.find({
+          success: function(videoSessions) {
+              videoSessions[0].set('archiveId', archive.id);
+              videoSessions[0].save();
+          },
+          error: function(object, error) {
+              // The object was not retrieved successfully.
+              console.log("Error fetching video for archive ID update.");
+          }
+      });
+    });
+
+});
+
+//Recieve  request to start archiving a video session
+//and pass it along to front-end
+app.post('/opentok-callback', function(request, response){
+
+    //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
+
+    var opentokCallbackJSON = request.body.data;
+
+    console.log("Opentok callback json:\n\n" + opentokCallbackJSON);
+
+    var videoSessionQuery = new Parse.Query(VideoSession);
+
+    //How sure are we about associating a single OpenTok Session Id to each instance of our VideoSession class in Parse..?
+    videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
+
+
+    videoSessionQuery.find({
+        success: function(videoSessions) {
+            videoSessions[0].set('archiveStatus', archive.status);
+            videoSessions[0].set('duration', archive.duration);
+            videoSessions[0].set('reason', archive.reason);
+            videoSessions[0].set('archiveSize', archive.size);
+            videoSessions[0].save().then(function(){
+
+                if(archive.status){
+                    io.sockets.emit('new-video-archive');
+                }
+            });
+        },
+        error: function(object, error) {
+            // The object was not retrieved successfully.
+            console.log("Error fetching video for archive ID update on Opentok callback.");
+        }
+    });
+
+});
+
+
 //Recieve a request for a video stream connection;
 //get data form mobile client, save session info in
 //Parse and pass on to front-end
@@ -619,71 +694,40 @@ app.post('/request-video-connection', function (request, response) {
         });
 
     });
+    videoSession.set('client', {
+      __type:"Pointer",
+      className:"Client",
+      objectId:connection.currentClientId
+    });
 
-});
-
-//Receive request to start archiving a video session
-//and store the archiveId
-app.post('/start-archive', function(request, response){
-
-    console.log("\n\nIn start-archive...\n\n");
-    //TODO why is the password check not being used?
-    /*/Check if password is valid
-    if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
-        return;
-    }*/
-
-    var videoSession = JSON.parse(request.body.data);
-
-    opentok.startArchive(videoSession.sessionId, { name: 'archive: ' + videoSession.sessionId }, function(err, archive) {
-      if (err){
-          response.send(400,err);
-          return console.log(err + " Session id: " + videoSession.sessionId);
-      }
-
-      var videoSessionQuery = new Parse.Query(VideoSession);
-      videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
-      videoSessionQuery.find({
-          success: function(videoSessions) {
-              videoSessions[0].set('archiveId', archive.id);
-              videoSessions[0].save();
-          },
-          error: function(object, error) {
-              // The object was not retrieved successfully.
-              console.log("Error fetching video for archive ID update.");
-          }
+    //Save video session, respond to
+    //mobile client with sessionId and token,
+    //and pass connection on to front-end
+    videoSession.save().then(function(videoSession){
+      var stream = connection;
+      stream.sessionId = session.sessionId;
+      stream.connectionId = videoSession.id;
+      stream.webClientToken = webToken;
+      response.send(200, {
+        objectId: videoSession.id,
+        sessionId: session.sessionId,
+        token: clientToken
       });
+      io.sockets.emit('new-video-stream', {stream: stream});
+      
+    /*  opentok.startArchive(stream.sessionId, { name: 'archive: ' + stream.sessionId }, function(err, archive) {
+		  if (err) return console.log(err);
+
+		  // The id property is useful to save off into a database
+		  console.log("new archive:" + archive.id);
+		});*/
+    }, function(error, videoSession){
+      //TODO
+      //Handle error when couldn't save video session
+      var err = error;
     });
 
 });
-
-//Recieve  request to start archiving a video session
-//and pass it along to front-end
-app.post('/opentok-callback', function(request, response){
-
-    //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
-    console.log("\n\nIn opentok-callback...\n\n");
-
-    var opentokCallbackJSON = request.body;
-
-    var videoSessionQuery = new Parse.Query(VideoSession);
-    videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
-    videoSessionQuery.find({
-        success: function(videoSessions) {
-            videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
-            videoSessions[0].set('duration', opentokCallbackJSON.duration);
-            videoSessions[0].set('reason', opentokCallbackJSON.reason);
-            videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
-            videoSessions[0].save();
-        },
-        error: function(object, error) {
-            // The object was not retrieved successfully.
-            console.log("Error fetching video for archive ID update on Opentok callback.");
-        }
-    });
-
-});
-
 
 //Landing/login page
 app.get('/', function (request, response) {
@@ -694,7 +738,6 @@ app.get('/', function (request, response) {
 app.get('*', function (request, response) {
     response.send(404, "Error 404: Not Found");
 });
-
 
 //=========================================
 //  START WEB SERVER
@@ -720,9 +763,9 @@ function saveAndPushNotification(notificationData) {
     var query = new Parse.Query(Parse.User);
     return query.get(notificationData.userId).
 
-        then(function (user) {
-            var username = user.attributes.username;
-            passPhrase = passwordGenerator.generatePassword(username);
+  then(function(user){
+    var username = user.attributes.username;
+    passPhrase = passwordGenerator.generatePassword(username);
 
             var notification = new PushNotification();
             notification.set("userId", notificationData.userId);
@@ -753,6 +796,7 @@ function saveAndPushNotification(notificationData) {
             var err = error;
         });
 }
+
 
 //Sends the already saved notification to the user; if pushing
 //failed, tries to revert save or continues as partial success
@@ -901,6 +945,19 @@ function saveUserPassword(data) {
     }
 };
 
+//Reset password using Parse website
+function resetPassword(email) {
+  Parse.User.requestPasswordReset(email, {
+    success: function() {
+      // Password reset request was sent successfully
+      io.sockets.emit('reset-password-success');
+    },
+    error: function(error) {
+      // Show the error message somewhere
+      io.sockets.emit('reset-password-failed');
+    }
+  });
+}
 
 function analyzeData(data) {
     var clientId = data.clientId;
