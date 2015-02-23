@@ -6,7 +6,8 @@
     //so as to have a one page app with deep-linking
     app.config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', '$sceDelegateProvider', function ($stateProvider, $urlRouterProvider, USER_ROLES, $sceDelegateProvider) {
 
-		$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://s3.amazonaws.com/stream-archive/44755992/**']);
+		//$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://s3.amazonaws.com/stream-archive/44755992/**']);
+		$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44755992/**']);
 
         // For any unmatched url, redirect to /tipfeed
         $urlRouterProvider.otherwise("/tipfeed");
@@ -1984,7 +1985,16 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
 	videoArchiveCtrl.showVideo = function(video){
 
-		var videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
+        AWS.config.update({accessKeyId: 'AKIAJHF7SSPW7FVJ3KWQ', secretAccessKey: '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'});
+        AWS.config.region = 'us-east-1';
+
+        var s3 = new AWS.S3();
+
+        // This URL will expire in one minute (60 seconds)
+        var params = {Bucket: 'stream-archive', Key: '44755992/' + video.attributes.archiveId + '/archive.mp4', Expires: 500};
+        var videoUrl = s3.getSignedUrl('getObject', params);
+
+		//var videoUrl = 'https://s3.amazonaws.com/stream-archive/44755992/' + video.attributes.archiveId + '/archive.mp4';
 
 		//ngDialog can only handle stringified JSONs
 		var data = JSON.stringify({
@@ -2012,7 +2022,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                   className: "User",
                   objectId: Session.userId
                 });
-                videoSession.save().then(videoArchiveCtrl.fetchVideoArchive());
+                videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
             },
             error: function(object, error) {
                 // The object was not retrieved successfully.
