@@ -3112,6 +3112,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         this.sending = false;
          adminPanelCtrl.hasError = false;
 
+        adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
+
         //Adds new SentiHelm user
         this.addUser = function (newUser) {
             adminPanelCtrl.successMessage = "";
@@ -3142,12 +3144,15 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     app.controller('ProfileController', ['socket', 'Session', '$scope', function (socket, Session, $scope) {
 
         var profileCtrl = this;
+        profileCtrl.hasError = false;
         profileCtrl.user = Session.user;
-        profileCtrl.userChanged = false;
-        profileCtrl.passwordChanged = false;
 
         profileCtrl.savingUser = false;
         profileCtrl.savingPass = false;
+
+        profileCtrl.showPasswordChanger = false;
+
+        profileCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
 
         //Adds new SentiHelm user
         profileCtrl.saveUser = function (user) {
@@ -3172,31 +3177,39 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
         socket.on('save-user-success', function (data) {
             profileCtrl.savingUser = false;
-            profileCtrl.userSuccessMessage = "Succeded";
+            profileCtrl.successMessage = "Succeeded";
+            profileCtrl.hasError = false;
             Session.updateUser(profileCtrl.user);
         });
 
         socket.on('save-user-failed', function (data) {
             profileCtrl.savingUser = false;
-            profileCtrl.userSuccessMessage = "Failed";
+            profileCtrl.successMessage = "Failed";
+            profileCtrl.hasError = true;
         });
         socket.on('save-user-password-success', function (data) {
             profileCtrl.savingPass = false;
-            profileCtrl.passwordSuccessMessage = "Succeded";
+            profileCtrl.successMessage = "Succeeded";
+            profileCtrl.hasError = false;
         });
 
         socket.on('save-user-password-failed', function (data) {
             profileCtrl.savingPass = false;
-            profileCtrl.passwordSuccessMessage = "Incorrect password";
+            profileCtrl.successMessage = "Incorrect password";
+            profileCtrl.hasError = true;
         });
 
-        profileCtrl.userChange = function () {
-            profileCtrl.userChanged = true;
+        profileCtrl.changePassword = function(){
+            profileCtrl.showPasswordChanger = true;
+            profileCtrl.successMessage = "";
+            profileCtrl.hasError = false;
         };
 
-        profileCtrl.passwordChange = function () {
-            profileCtrl.passwordChanged = true;
-        }
+        profileCtrl.editProfile = function(){
+            profileCtrl.showPasswordChanger = false;
+            profileCtrl.successMessage = "";
+            profileCtrl.hasError = false;
+        };
 
     }]);
 
