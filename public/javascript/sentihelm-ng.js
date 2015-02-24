@@ -3112,6 +3112,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         this.sending = false;
          adminPanelCtrl.hasError = false;
 
+        adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
+
         //Adds new SentiHelm user
         this.addUser = function (newUser) {
             adminPanelCtrl.successMessage = "";
@@ -3149,6 +3151,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         profileCtrl.savingPass = false;
 
         profileCtrl.showPasswordChanger = false;
+
+        profileCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
 
         //Adds new SentiHelm user
         profileCtrl.saveUser = function (user) {

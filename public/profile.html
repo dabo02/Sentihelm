@@ -45,10 +45,12 @@
 
         <div class="form-group col-sm-4 col-sm-offset-4">
             <label for="new-officer-state" class="dark-gray">State</label>
-            <input type="text" class="form-control" id="new-officer-state" placeholder="State" ng-model="profileCtrl.user.state" required/>
+            <select id="new-officer-state" class="form-control" ng-model="profileCtrl.user.state" ng-init="profileCtrl.user.state='Select'" required>
+                <option ng-repeat="state in profileCtrl.states" value="{{state}}">{{state}}</option>
+            </select>
         </div>
 
-        <button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="editProfileForm.$valid && profileCtrl.saveUser(profileCtrl.user)">
+        <button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="editProfileForm.$valid && profileCtrl.user.state!=='Select' && profileCtrl.saveUser(profileCtrl.user)">
             <span ng-hide="profileCtrl.savingUser">Save Profile</span>
             <div class="spinner" ng-show="profileCtrl.savingUser">
                 <div class="bounce1"></div>
