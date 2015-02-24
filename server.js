@@ -485,6 +485,9 @@ app.post('/login', function (request, response) {
                     var passPhrase = passwordGenerator.generatePassword(user.attributes.username);
                     user.attributes.firstName = encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
                     user.attributes.lastName = encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
+                    user.attributes.phoneNumber = encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
+                    user.attributes.zipCode = parseInt(encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64), 10);
+                    user.attributes.state = encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
 
                     answer.push(user);
                     answer.push(client);
