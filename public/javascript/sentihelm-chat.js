@@ -53,10 +53,13 @@
                         }
                     });
                 },
-                addTipToQueue: function (tipId) {
+                addTipToQueue: function (tipId, cb) {
                     chatSocket.emit('add-tip-to-logs', tipId);
                     chatSocket.on('add-tip-to-log-success', function (tipInfo) {
                         tipChatService.activeChats.push(tipInfo);
+                        if (typeof cb === 'function') {
+                            cb(null, tipInfo);
+                        }
                     });
                 }
             };
@@ -254,7 +257,8 @@
                                 username: tipChat.tipUsername,
                                 id: tipChat.userObjectId
                             },
-                            messages: angular.copy(tipChat.messages)
+                            messages: angular.copy(tipChat.messages),
+                            controlNumber: tipChat.controlNumber
                         }
                     });
                 }
@@ -275,7 +279,10 @@
                     });
 
                     if (!found) {
-                        Base.onNewRoom.call(TipChatController, roomName, username, id);
+                        TipChatService.addTipToQueue(data.tipId, function (tipChatInfo) {
+                            Base.onNewRoom.call(TipChatController, roomName, username, id);
+                            TipChatController.rooms[roomName].controlNumber = tipChatInfo.controlNumber;
+                        });
                     }
                 };
 

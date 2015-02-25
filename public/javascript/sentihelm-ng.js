@@ -252,8 +252,7 @@
         all: '*',
         demo: 'demo',
         user: 'manager',
-        admin: 'admin',
-        chat: 'chat'
+        admin: 'admin'
     });
 
     //All errors are contained in this constant;
