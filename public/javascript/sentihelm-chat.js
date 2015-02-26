@@ -242,7 +242,7 @@
         // TipChatController extends ChatController
         .controller('TipChatController', ['$scope', '$controller', 'TipChatService', 'chatSocket',
             function ($scope, $controller, TipChatService, chatSocket) {
-                var Base = $controller('ChatController', { $scope: $scope }),
+                var Base = $controller('ChatController', {$scope: $scope}),
                     TipChatController = this;
 
                 angular.extend(Base, TipChatController);
@@ -258,17 +258,24 @@
                                 id: tipChat.userObjectId
                             },
                             messages: angular.copy(tipChat.messages),
-                            controlNumber: tipChat.controlNumber
+                            controlNumber: tipChat.controlNumber,
+                            tipObjectId: tipChat.tipObjectId
                         }
                     });
                 }
 
-                TipChatController.onNewMessage = function(data) {
+                TipChatController.onNewMessage = function (data) {
                     Base.onNewMessage.call(TipChatController, data);
                 };
 
-                TipChatController.onNewRoom = function(roomName, username, id) {
-                    var found = false;
+                TipChatController.onNewRoom = function (roomName, username, id) {
+                    var found = false,
+                        data = {},
+                        tipId = undefined;
+
+                    if (arguments.length > 3) {
+                        tipId = arguments[3];
+                    }
                     Object.keys(TipChatController.rooms).forEach(function (lookingAt) {
                         var room = TipChatController.rooms[lookingAt];
                         if (room.with.id === id && room.with.username === username) {
@@ -278,16 +285,49 @@
                         }
                     });
 
-                    if (!found) {
-                        TipChatService.addTipToQueue(data.tipId, function (tipChatInfo) {
+                    if (!found && tipId) {
+                        TipChatService.addTipToQueue(tipId, function (tipChatInfo) {
                             Base.onNewRoom.call(TipChatController, roomName, username, id);
                             TipChatController.rooms[roomName].controlNumber = tipChatInfo.controlNumber;
+                            TipChatController.rooms[roomName].tipObjectId = tipId;
                         });
                     }
                 };
 
                 TipChatController.changeRoom = function (id) {
-                    Base.changeRoom.call(TipChatController, id);
+                    var pushNotificationObject = {},
+                        pushTries = 0;
+
+                    function sendPush() {
+                        Parse.Push.send(pushNotificationObject)
+                            .then(function () {
+                                console.log('Successfully sent push notification to user %s', pushNotificationObject.channels[0]);
+                            }, function (error) {
+                                if (pushTries < 5) {
+                                    pushTries += 1;
+                                    console.log(error.message);
+                                    sendPush();
+                                }
+                            });
+                    }
+
+
+                    if (TipChatController.rooms.hasOwnProperty(id)) {
+                        if (TipChatController.rooms[id].controlNumber === id) {
+                            pushNotificationObject = {
+                                channels: ['user_' + TipChatController.rooms[id].with.id],
+                                data: {
+                                    type: 'chat',
+                                    tipObjectId: TipChatController.rooms[id].tipObjectId
+                                }
+                            };
+
+                            sendPush();
+
+                        } else {
+                            Base.changeRoom.call(TipChatController, id);
+                        }
+                    }
                 };
 
                 chatSocket.on('new-message', TipChatController.onNewMessage);
