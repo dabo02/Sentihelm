@@ -205,7 +205,7 @@
                     // executes the login dialog if needed and waits for the dialog
                     // to close before loading the state.
                     authenticate: function (routingService) {
-                        return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
+                        return routingService.checkUserStatus(this.data.authorizedRoles, "Chat Logs");
                     }
                 }
 

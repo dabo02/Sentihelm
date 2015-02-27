@@ -1,0 +1,14 @@
+<div ng-controller="TipChatController as tipChatCtrl">
+    <section>
+        <ul class="active-chat-list">
+            <li class="active-chat-item"
+                ng-repeat="(roomName, roomObject) tipChatCtrl.rooms"
+                ng-hide="roomObject.hide === true">
+                <a href="#" ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber, roomObject.with.id)">{{roomObject.with.username}}</a>
+            </li>
+        </ul>
+    </section>
+    <section>
+
+    </section>
+</div>
