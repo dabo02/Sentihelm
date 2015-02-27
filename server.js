@@ -697,38 +697,6 @@ app.post('/request-video-connection', function (request, response) {
         });
 
     });
-    videoSession.set('client', {
-      __type:"Pointer",
-      className:"Client",
-      objectId:connection.currentClientId
-    });
-
-    //Save video session, respond to
-    //mobile client with sessionId and token,
-    //and pass connection on to front-end
-    videoSession.save().then(function(videoSession){
-      var stream = connection;
-      stream.sessionId = session.sessionId;
-      stream.connectionId = videoSession.id;
-      stream.webClientToken = webToken;
-      response.send(200, {
-        objectId: videoSession.id,
-        sessionId: session.sessionId,
-        token: clientToken
-      });
-      io.sockets.emit('new-video-stream', {stream: stream});
-      
-    /*  opentok.startArchive(stream.sessionId, { name: 'archive: ' + stream.sessionId }, function(err, archive) {
-		  if (err) return console.log(err);
-
-		  // The id property is useful to save off into a database
-		  console.log("new archive:" + archive.id);
-		});*/
-    }, function(error, videoSession){
-      //TODO
-      //Handle error when couldn't save video session
-      var err = error;
-    });
 
 });
 
