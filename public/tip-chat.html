@@ -3,8 +3,8 @@
         <ul class="active-chat-list">
             <li class="active-chat-item"
                 ng-repeat="(roomName, roomObject) in tipChatCtrl.rooms"
-                ng-hide="roomObject.hide === true">
-                <a href="#" ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber, roomObject.with.id)">{{roomObject.with.username}}</a>
+                ng-hide="roomObject.hide === true"
+                ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber, roomObject.with.id)">{{roomObject.with.username}}
             </li>
         </ul>
     </section>

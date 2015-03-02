@@ -41,19 +41,19 @@
 
             return socket;
         }])
-        .factory('tipChatService', ['chatSocket', function (chatSocket) {
+        .factory('tipChatService', ['chatSocket', '$http', 'Session', function (chatSocket, $http, Session) {
             var tipChatService = {
                 activeChats: [],
                 retrieveAll: function (cb) {
-                    chatSocket.emit('get-all-logs', 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@');
-                    console.log('getting-logs')
-                    chatSocket.on('get-all-logs-result', function (data) {
-                        tipChatService.activeChats = angular.copy(data);
-                        console.log(tipChatService.activeChats);
-                        if (typeof cb === 'function') {
-                            cb();
-                        }
-                    });
+                    $http.post('/get-all-logs/' + Session.clientId, { password: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@' })
+                        .success(function (data) {
+                            tipChatService.activeChats = angular.copy(data);
+                            if (typeof cb === 'function') {
+                                cb();
+                            }
+                         });
+
+
                 },
                 addTipToQueue: function (tipId, cb) {
                     chatSocket.emit('add-tip-to-logs', tipId);
@@ -209,7 +209,7 @@
 
                     room = getRoom(username);
 
-                    ChatController.rooms[room].messages.push(messageObject);
+                    this.rooms[room].messages.push(messageObject);
 
                     if (room === ChatController.currentRoom) {
                         $location.hash(messageObject.id);
