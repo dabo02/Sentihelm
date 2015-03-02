@@ -584,8 +584,6 @@ app.post('/opentok-callback', function(request, response){
 
     var opentokCallbackJSON = request.body.data;
 
-    console.log("Opentok callback json:\n\n" + opentokCallbackJSON);
-
     var videoSessionQuery = new Parse.Query(VideoSession);
 
     //How sure are we about associating a single OpenTok Session Id to each instance of our VideoSession class in Parse..?
@@ -598,12 +596,7 @@ app.post('/opentok-callback', function(request, response){
             videoSessions[0].set('duration', archive.duration);
             videoSessions[0].set('reason', archive.reason);
             videoSessions[0].set('archiveSize', archive.size);
-            videoSessions[0].save().then(function(){
-
-                if(archive.status){
-                    io.sockets.emit('new-video-archive');
-                }
-            });
+            videoSessions[0].save();
         },
         error: function(object, error) {
             // The object was not retrieved successfully.

@@ -1793,7 +1793,7 @@
                 }
             });
 
-            //Display toast.
+            //Display toast for new stream
             socket.on('new-video-stream', function (data) {
                 //Open toast.
                 ngToast.create({
@@ -1807,21 +1807,7 @@
                 });
                 drawer.sound.play();
             });
-
-        //Display toast for new stream
-        socket.on('new-video-stream', function (data) {
-            //Open toast.
-            ngToast.create({
-                //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
-                content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoStreams()">New video stream available.</a>'),
-                class: 'info',
-                dismissOnTimeout: $state.current.name !== 'video-streams' ? false : true,
-                dismissButton: true,
-                compileContent: true,
-                dismissOnClick: false
-            });
-        });
-
+        /*
         //Display toast for succesful archive creation
         socket.on('new-video-archive', function (data) {
             //Open toast.
@@ -1836,6 +1822,7 @@
             });
             drawer.sound.play();
         });
+        */
 
         $scope.$on('update-user', function (event, data) {
             drawer.userFullName = Session.userFullName;
@@ -1961,7 +1948,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     }
 
     videoArchiveCtrl.refreshPageNumbers = function(){
-        //todo fix page numbers for when there are less than 10 pages left to display numbers for
+
         var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / videoArchiveCtrl.limit);
         var firstNum =  videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0 ? (baseNum - 1) * videoArchiveCtrl.limit + 1 : baseNum  * videoArchiveCtrl.limit + 1;
         var lastNum = 0;
