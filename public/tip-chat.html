@@ -2,8 +2,8 @@
     <section class="col-md-3" id="active-tip-chats">
         <ul class="active-chat-list">
             <li class="active-chat-item"
-                ng-repeat="(roomName, roomObject) in tipChatCtrl.rooms"
-                ng-hide="roomObject.hide === true"
+                ng-repeat="(roomName, roomObject) in tipChatCtrl."
+                ng-show="roomObject.show === true"
                 ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber, roomObject.with.id)">{{roomObject.with.username}}
             </li>
         </ul>
