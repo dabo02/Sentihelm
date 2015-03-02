@@ -28,7 +28,8 @@
                     <div id="video-streams-chat-log">
                         <div ng-repeat="message in chat.rooms[chat.currentRoom].messages"
                              ng-class="{sent: message.fromMe}"
-                             id="{{message.id}}">
+                             id="{{message.id}}"
+                             class="message">
                             <span class="message-heading"><em>{{message.from}}</em> at {{message.dateTime | date:'short'}}</span>
 
                             <p class="chat-message">

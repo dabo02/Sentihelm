@@ -195,7 +195,7 @@
                 templateUrl: '/tip-chat.html',
                 data: {
                     // only users with chat permissions can use this route.
-                    authorizedRoles: [USER_ROLES.chat]
+                    authorizedRoles: [USER_ROLES.demo, USER_ROLES.manager]
                 },
                 resolve: {
                     // Reads the Routing Service

@@ -8,7 +8,7 @@
     'use strict';
     var User = Parse.Object.extend("User");
 
-    angular.module('sentihelm', ['btford.socket-io'])
+    angular.module('sentihelm')
         .factory('messageFactory', ['Session', function (Session) {
             return function (messageData) {
                 if (!messageData.receiver) {
@@ -45,9 +45,11 @@
             var tipChatService = {
                 activeChats: [],
                 retrieveAll: function (cb) {
-                    chatSocket.emit('get-all-logs');
+                    chatSocket.emit('get-all-logs', 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@');
+                    console.log('getting-logs')
                     chatSocket.on('get-all-logs-result', function (data) {
                         tipChatService.activeChats = angular.copy(data);
+                        console.log(tipChatService.activeChats);
                         if (typeof cb === 'function') {
                             cb();
                         }
@@ -257,28 +259,34 @@
             }
         ])
         // TipChatController extends ChatController
-        .controller('TipChatController', ['$scope', '$controller', 'TipChatService', 'chatSocket',
-            function ($scope, $controller, TipChatService, chatSocket) {
+        .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket',
+            function ($scope, $controller, tipChatService, chatSocket) {
                 var Base = $controller('ChatController', {$scope: $scope}),
                     TipChatController = this;
 
                 angular.extend(Base, TipChatController);
 
+                TipChatController.rooms = {};
+
                 /**
                  * This gets called whenever we're done retrieving all messages from every active tip chat.
                  * */
                 function onRetrieveAllDone() {
-                    TipChatService.activeChats.forEach(function (tipChat) {
+                    tipChatService.activeChats.forEach(function (tipChat) {
                         if (TipChatController.rooms.hasOwnProperty(tipChat.controlNumber) !== true) {
                             TipChatController.rooms[tipChat.controlNumber] = {
                                 with: {
                                     username: tipChat.tipUsername,
                                     id: tipChat.userObjectId
                                 },
-                                messages: angular.copy(tipChat.messages),
+                                messages: [],
                                 controlNumber: tipChat.controlNumber,
                                 tipObjectId: tipChat.tipObjectId
                             }
+
+                            tipChat.messages.forEach(function (message) {
+                                TipChatController.onNewMessage(message);
+                            });
                         }
                     });
                 }
@@ -304,7 +312,7 @@
                     });
 
                     if (!found && tipId) {
-                        TipChatService.addTipToQueue(tipId, function (tipChatInfo) {
+                        tipChatService.addTipToQueue(tipId, function (tipChatInfo) {
                             Base.onNewRoom.call(TipChatController, roomName, username, id);
                             TipChatController.rooms[roomName].controlNumber = tipChatInfo.controlNumber;
                             TipChatController.rooms[roomName].tipObjectId = tipId;
@@ -362,6 +370,6 @@
                     onRetrieveAllDone();
                 });
 
-                TipChatService.retrieveAll(onRetrieveAllDone);
+                tipChatService.retrieveAll(onRetrieveAllDone);
             }]);
 })(window.angular);

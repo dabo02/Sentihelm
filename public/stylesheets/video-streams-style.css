@@ -97,7 +97,7 @@
   border-right: solid #000 1px;
 }
 
-#video-streams-chat-log div {
+.message div {
   position: relative;
   width: 50%;
   background-color: #bdc3c7;
@@ -110,17 +110,17 @@
   border: 1px solid #7f8c8d;
 }
 
-#video-streams-chat-log div p {
+.message div p {
   clear: both;
 }
 
-#video-streams-chat-log div.sent {
+.message div.sent {
   float: right;
   background-color: #3498db;
   border: 1px solid #2980b9;
 }
 
-#video-streams-chat-log em {
+.message em {
   font-weight: bold;
 }
 

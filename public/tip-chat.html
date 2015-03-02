@@ -1,14 +1,39 @@
-<div ng-controller="TipChatController as tipChatCtrl">
-    <section>
+<div ng-controller="TipChatController as tipChatCtrl" id="tip-chat">
+    <section class="col-md-3" id="active-tip-chats">
         <ul class="active-chat-list">
             <li class="active-chat-item"
-                ng-repeat="(roomName, roomObject) tipChatCtrl.rooms"
+                ng-repeat="(roomName, roomObject) in tipChatCtrl.rooms"
                 ng-hide="roomObject.hide === true">
                 <a href="#" ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber, roomObject.with.id)">{{roomObject.with.username}}</a>
             </li>
         </ul>
     </section>
-    <section>
+    <section class="col-md-8" id="tip-chat-form">
+        <form name="tip-chat-form" novalidate id="tip-chat-inner-form">
+            <div id="tip-chat-log">
+                <div ng-repeat="message in tipChatCtrl.rooms[chat.currentRoom].messages"
+                     ng-class="{sent: message.fromMe}"
+                     id="{{message.id}}"
+                     class="message">
+                    <span class="message-heading"><em>{{message.from}}</em> at {{message.dateTime | date:'short'}}</span>
 
+                    <p class="chat-message">
+                        - {{message.message}}
+                    </p>
+                </div>
+                <a id="chat-bottom"></a>
+            </div>
+
+            <div id="tip-chat-controls">
+                <input name="message" ng-model="tipChatCtrl.message"
+                       type="text" minlength="1" required
+                       id="message-box"
+                       ng-disabled="!tipChatCtrl.canSend"
+                       placeholder="Enter message here..."/>
+                <button ng-disabled="!tipChatCtrl.canSend" type="submit" ng-click="tip-chat-from.$valid && tipChatCtrl.send()"
+                        class="send">Send
+                </button>
+            </div>
+        </form>
     </section>
 </div>
