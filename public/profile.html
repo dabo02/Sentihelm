@@ -23,15 +23,15 @@
 			<input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="profileCtrl.user.lastName" required/>
 		</div>
 
+        <div class="form-group col-sm-4 col-sm-offset-4">
+            <label for="new-officer-username" class="dark-gray">Username</label>
+            <input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="profileCtrl.user.username" name="username" disabled/>
+        </div>
+
 		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-email" class="dark-gray">Email</label>
 			<input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="profileCtrl.user.email" required/>
 		</div>
-
-        <div class="form-group col-sm-4 col-sm-offset-4">
-            <label for="new-officer-username" class="dark-gray">Username</label>
-            <input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="profileCtrl.user.username" name="username" required/>
-        </div>
 
         <div class="form-group col-sm-4 col-sm-offset-4">
             <label for="new-officer-phone" class="dark-gray">Phone Number</label>

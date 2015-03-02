@@ -842,9 +842,11 @@ function saveUser(editedUser) {
     //Encrypted/Hashed Values
     var encryptedFirstName = encryptionManager.encrypt(passPhrase, editedUser.firstName);
     var encryptedLastName = encryptionManager.encrypt(passPhrase, editedUser.lastName);
-    var email = editedUser.email;
+    var encryptedPhoneNumber = encryptionManager.encrypt(passPhrase, editedUser.phoneNumber);
+    var encryptedZipCode = encryptionManager.encrypt(passPhrase, editedUser.zipCode.toString());
+    var encryptedState = encryptionManager.encrypt(passPhrase, editedUser.state);
 
-    // var hashedPassword = passwordGenerator.md5(officerData.password);
+    var email = editedUser.email;
 
     // var ParseUser = new Parse.Query(User);
     var user = Parse.User.current();
@@ -866,8 +868,19 @@ function saveUser(editedUser) {
         base64: encryptedLastName
     });
     user.set('email', email);
-    // officer.set('userPassword', hashedPassword);
-    // officer.set('roles', [officerData.role]);
+    user.set('phoneNumber', {
+        __type: "Bytes",
+        base64: encryptedPhoneNumber
+    });
+    user.set('zipCode', {
+        __type: "Bytes",
+        base64: encryptedZipCode
+    });
+    user.set('state', {
+        __type: "Bytes",
+        base64: encryptedState
+    });
+
     return user.save();
 }
 
