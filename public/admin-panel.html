@@ -7,7 +7,51 @@
 	<br>
     <h3 class="text-center"  ng-class="{'green':!adminPanelCtrl.hasError, 'red':adminPanelCtrl.hasError}" ng-show="!adminPanelCtrl.sending">{{adminPanelCtrl.successMessage}}</h3>
     <br>
-	<form role="form" name="addOfficerForm" novalidate>
+
+    <div class="row-fluid">
+        <ul class="nav nav-tabs nav-justified">
+            <li class="active"><a>All</a></li>
+            <li><a>Users</a></li>
+            <li><a>Employees</a></li>
+            <li><a>Administrators</a></li>
+            <li><a>Logged In</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <div class="tab-pane active">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Registered</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Lilia</td>
+                        <td>me@me.com</td>
+                        <td>User</td>
+                        <td>
+                            <div class="btn-group">
+                                <ul class="pull-right">
+                                    <li><a href="#"><i class="icon-envelope"></i> Email</a></li>
+                                    <li><a href="#"><i class="icon-edit"></i> Edit</a></li>
+                                    <li><a href="#"><i class="icon-trash"></i> Delete</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+	<form ng-show="adminPanelCtrl.showNewOfficerForm" role="form" name="addOfficerForm" novalidate>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
 			<label for="new-officer-fname" class="dark-gray">First Name</label>
