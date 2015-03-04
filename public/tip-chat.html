@@ -8,10 +8,10 @@
             </li>
         </ul>
     </section>
-    <section class="col-md-8" id="tip-chat-form">
-        <form name="tip-chat-form" novalidate id="tip-chat-inner-form">
+    <section class="col-md-8" id="tip_chat_form">
+        <form name="tip_chat_form" novalidate id="tip-chat-inner-form">
             <div id="tip-chat-log">
-                <div ng-repeat="message in tipChatCtrl.rooms[chat.currentRoom].messages"
+                <div ng-repeat="message in tipChatCtrl.rooms[tipChatCtrl.currentRoom].messages"
                      ng-class="{sent: message.fromMe}"
                      id="{{message.id}}"
                      class="message">
@@ -30,7 +30,7 @@
                        id="message-box"
                        ng-disabled="!tipChatCtrl.canSend"
                        placeholder="Enter message here..."/>
-                <button ng-disabled="!tipChatCtrl.canSend" type="submit" ng-click="tip-chat-from.$valid && tipChatCtrl.send()"
+                <button ng-disabled="!tipChatCtrl.canSend" type="submit" ng-click="tip_chat_form.$valid && tipChatCtrl.send()"
                         class="send">Send
                 </button>
             </div>

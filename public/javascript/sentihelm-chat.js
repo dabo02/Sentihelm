@@ -45,13 +45,13 @@
             var tipChatService = {
                 activeChats: [],
                 retrieveAll: function (cb) {
-                    $http.post('/get-all-logs/' + Session.clientId, { password: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@' })
+                    $http.post('/get-all-logs/' + Session.clientId, {password: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@'})
                         .success(function (data) {
                             tipChatService.activeChats = angular.copy(data);
                             if (typeof cb === 'function') {
                                 cb();
                             }
-                         });
+                        });
 
 
                 },
@@ -259,14 +259,51 @@
             }
         ])
         // TipChatController extends ChatController
-        .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket',
-            function ($scope, $controller, tipChatService, chatSocket) {
+        .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory',
+            function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory) {
                 var Base = $controller('ChatController', {$scope: $scope}),
                     TipChatController = this;
 
                 angular.extend(Base, TipChatController);
 
                 TipChatController.rooms = {};
+
+                // Private
+                function getUserName(id) {
+                    var username = '';
+
+                    Object.keys(TipChatController.rooms)
+                        .forEach(function (room) {
+                            var currentRoom = TipChatController.rooms[room];
+                            if (currentRoom.with.id === id) {
+                                username = currentRoom.with.username;
+                            }
+                        });
+
+                    return username;
+
+                }
+
+                // Priavate
+                function getRoom(username, id) {
+                    var prop = username ? 'username' : (id ? 'id' : undefined),
+                        roomName = '',
+                        comparative = username || id || undefined;
+
+                    if (prop && comparative) {
+                        Object.keys(TipChatController.rooms)
+                            .forEach(function (room) {
+                                var currentRoom = TipChatController.rooms[room];
+                                if (currentRoom.with[prop] === comparative) {
+                                    roomName = room;
+                                }
+                            });
+                        return roomName;
+                    }
+
+                    return undefined;
+                }
+
 
                 /**
                  * This gets called whenever we're done retrieving all messages from every active tip chat.
@@ -277,14 +314,17 @@
                             TipChatController.rooms[tipChat.controlNumber] = {
                                 with: {
                                     username: tipChat.tipUsername,
-                                    id: tipChat.userObjectId
+                                    id: tipChat.tipUserId
                                 },
                                 messages: [],
                                 controlNumber: tipChat.controlNumber,
                                 tipObjectId: tipChat.tipObjectId
-                            }
+                            };
+
+                            console.log(TipChatController.rooms);
 
                             tipChat.messages.forEach(function (message) {
+                                console.log(message);
                                 TipChatController.onNewMessage(message);
                             });
                         }
@@ -292,16 +332,48 @@
                 }
 
                 TipChatController.onNewMessage = function (data) {
-                    Base.onNewMessage.call(TipChatController, data);
+                    var sender = data.sender,
+                        receiver = data.receiver,
+                        message = data.message,
+                        dateTime = data.dateTime,
+                        messageObject = {
+                            from: '',
+                            fromMe: false,
+                            message: message,
+                            dateTime: dateTime
+                        },
+                        username,
+                        room;
+
+                    if (sender == Session.user.objectId) {
+                        messageObject.from = Session.user.username;
+                        messageObject.fromMe = true;
+
+                        username = getUserName(receiver);
+                        room = getRoom(null, receiver);
+                    } else {
+                        username = getUserName(sender);
+                        room = getRoom(null, sender);
+                        messageObject.from = username;
+                    }
+
+                    messageObject.id = Math.round(Math.random() * 1000 + 1 + Date.now()).toString();
+
+                    console.log(room);
+
+                    if (room) {
+                        TipChatController.rooms[room].messages.push(messageObject);
+
+                        if (room === TipChatController.currentRoom) {
+                            $location.hash(messageObject.id);
+                            $anchorScroll();
+                        }
+                    }
                 };
 
-                TipChatController.onNewRoom = function (roomName, username, id) {
-                    var found = false,
-                        tipId = undefined;
+                TipChatController.onNewRoom = function (roomName, username, id, tipId) {
+                    var found = false;
 
-                    if (arguments.length > 3) {
-                        tipId = arguments[3];
-                    }
                     Object.keys(TipChatController.rooms).forEach(function (lookingAt) {
                         var room = TipChatController.rooms[lookingAt];
                         if (room.with.id === id && room.with.username === username) {
@@ -313,7 +385,15 @@
 
                     if (!found && tipId) {
                         tipChatService.addTipToQueue(tipId, function (tipChatInfo) {
-                            Base.onNewRoom.call(TipChatController, roomName, username, id);
+                            (function (room, username, id) {
+                                ChatController.rooms[room] = {
+                                    with: {
+                                        username: username,
+                                        id: id
+                                    },
+                                    messages: []
+                                };
+                            })(roomName, username, id);
                             TipChatController.rooms[roomName].controlNumber = tipChatInfo.controlNumber;
                             TipChatController.rooms[roomName].tipObjectId = tipId;
                         });
@@ -322,7 +402,11 @@
 
                 TipChatController.changeRoom = function (controlNumber, userId) {
                     var pushNotificationObject = {},
-                        pushTries = 0;
+                        pushTries = 0,
+                        hasControlNumber = TipChatController.rooms.hasOwnProperty(controlNumber),
+                        room = '';
+
+                    console.log(userId);
 
                     function sendPush() {
                         return Parse.Push.send(pushNotificationObject)
@@ -341,26 +425,67 @@
                     }
 
 
-                    if (TipChatController.rooms.hasOwnProperty(controlNumber)) {
-                        if (TipChatController.rooms[id].controlNumber === controlNumber) {
+                    if (hasControlNumber === true) {
+                        if (TipChatController.rooms[controlNumber].controlNumber === controlNumber) {
                             pushNotificationObject = {
-                                channels: ['user_' + TipChatController.rooms[controlNumber].with.id],
+                                channels: ['user_' + userId],
                                 data: {
-                                    type: 'chat',
-                                    tipObjectId: TipChatController.rooms[controlNumber].tipObjectId
+                                    isChatNotification: true,
+                                    tipId: TipChatController.rooms[controlNumber].tipObjectId
                                 }
                             };
 
                             sendPush().then(function () {
-                                TipChatController.rooms[id].hide = true;
+                                TipChatController.rooms[controlNumber].hide = true;
                             }, function (error) {
 
                             });
 
+                        }
+                    } else {
+
+                        room = getRoom(undefined, userId);
+
+                        if (room.length > 0) {
+                            TipChatController.receiver = userId;
+                            TipChatController.canSend = true;
+
+                            if (TipChatController.currentRoom !== room) {
+                                chatSocket.emit('change-room', room);
+                                TipChatController.currentRoom = room;
+                                $location.hash('chat-bottom');
+                                $anchorScroll();
+                            }
+
                         } else {
-                            Base.changeRoom.call(TipChatController, userId);
+                            // TODO implement method that requests a chat with a user if not already chatting.
+                            //ChatController.requestChat(username);
+                            TipChatController.canSend = false;
+                            TipChatController.currentRoom = '';
                         }
                     }
+                };
+
+                TipChatController.send = function () {
+                    var m = {};
+
+                    try {
+                        m = messageFactory({
+                            receiver: TipChatController.receiver,
+                            message: TipChatController.message
+                        });
+
+                        m.tipId = TipChatController.rooms[TipChatController.currentRoom].tipObjectId;
+                        chatSocket.emit('message-sent', m);
+                    } catch (e) {
+                        console.log(e.message);
+                        TipChatController.rooms[getRoom(undefined, TipChatController.receiver)].messages.push({
+                            dateTime: Date.now(),
+                            message: e.message
+                        });
+                    }
+
+                    TipChatController.message = '';
                 };
 
                 chatSocket.on('new-message', TipChatController.onNewMessage);
@@ -371,5 +496,8 @@
                 });
 
                 tipChatService.retrieveAll(onRetrieveAllDone);
-            }]);
-})(window.angular);
+            }
+        ])
+    ;
+})
+(window.angular);
