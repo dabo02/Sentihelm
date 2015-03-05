@@ -42,44 +42,43 @@
             return socket;
         }])
         .factory('tipChatService', ['chatSocket', '$http', 'Session', function (chatSocket, $http, Session) {
-            var tipChatService = {
-                activeChats: [],
-                retrieveAll: function (cb) {
-                    $http.post('/get-all-logs/' + Session.clientId, {password: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@'})
-                        .success(function (data) {
-                            tipChatService.activeChats = angular.copy(data);
-                            if (typeof cb === 'function') {
-                                cb();
-                            }
+            var password = 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
+
+                tipChatService = {
+                    activeChats: [],
+                    retrieveAll: function (cb) {
+                        $http.post('/get-all-logs/' + Session.clientId, {password: password})
+                            .success(function (data) {
+                                tipChatService.activeChats = angular.copy(data);
+                                if (typeof cb === 'function') {
+                                    cb();
+                                }
+                            });
+
+
+                    },
+                    addTipToQueue: function (tipId, id) {
+                        return $http.post('/add-tip-to-queue/' + Session.clientId, {
+                            password: password,
+                            tipId: tipId,
+                            userObjectId: id
+                        }).then(function (dd) {
+                            return dd.data;
                         });
-
-
-                },
-                addTipToQueue: function (tipId, cb) {
-                    chatSocket.emit('add-tip-to-logs', tipId);
-                    chatSocket.on('add-tip-to-log-success', function (tipInfo) {
-                        tipChatService.activeChats.push(tipInfo);
-                        if (typeof cb === 'function') {
-                            cb(null, tipInfo);
-                        }
-                    });
-                }
-            };
+                    }
+                };
 
             tipChatService.retrieveAll();
 
-            function onNewRoom(roomName, username, id, tipId) {
-                var found = false;
+            function onNewRoom() {
+                var found = false,
+                    tipId = arguments[3];
                 if (tipId != undefined) {
                     tipChatService.activeChats.forEach(function (activeChat) {
                         if (activeChat.tipObjectId === tipId) {
                             found = true;
                         }
                     });
-
-                    if (!found) {
-                        tipChatService.addTipToQueue(tipId);
-                    }
                 }
             }
 
@@ -372,31 +371,50 @@
                 };
 
                 TipChatController.onNewRoom = function (roomName, username, id, tipId) {
-                    var found = false;
+                    var found = false,
+                        room = {},
+                        rn = "";
 
-                    Object.keys(TipChatController.rooms).forEach(function (lookingAt) {
-                        var room = TipChatController.rooms[lookingAt];
-                        if (room.with.id === id && room.with.username === username) {
-                            TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[lookingAt]);
-                            delete TipChatController.rooms[lookingAt];
+                    //Object.keys(TipChatController.rooms).forEach(function (lookingAt) {
+                    //    var room = TipChatController.rooms[lookingAt];
+                    //    if (room.with.id === id && room.with.username === username && room.tipId === tipId) {
+                    //        TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[lookingAt]);
+                    //        delete TipChatController.rooms[lookingAt];
+                    //        found = true;
+                    //    }
+                    //});
+
+                    for (rn in TipChatController.rooms) {
+                        room = TipChatController.rooms[rn];
+                        if (room.with.id === id && room.with.username === username && room.tipObjectId === tipId) {
+                            TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[rn]);
+                            delete TipChatController.rooms[rn];
                             found = true;
+                            TipChatController.rooms[roomName].hide = false;
+                            break;
                         }
-                    });
+                    }
 
-                    if (!found && tipId) {
-                        tipChatService.addTipToQueue(tipId, function (tipChatInfo) {
-                            (function (room, username, id) {
-                                ChatController.rooms[room] = {
+
+
+                    if (room == undefined && tipId) {
+                        tipChatService.addTipToQueue(tipId, id)
+                            .then(function (tipChatInfo) {
+                                var room = {
                                     with: {
                                         username: username,
                                         id: id
                                     },
                                     messages: []
                                 };
-                            })(roomName, username, id);
-                            TipChatController.rooms[roomName].controlNumber = tipChatInfo.controlNumber;
-                            TipChatController.rooms[roomName].tipObjectId = tipId;
-                        });
+
+                                room.controlNumber = tipChatInfo.controlNumber;
+                                room.tipObjectId = tipChatInfo.tipId;
+                                room.hide = false;
+
+                                // make sure to keep a deep copy for persistence
+                                TipChatController.rooms[roomName] = angular.copy(room);
+                            });
                     }
                 };
 
