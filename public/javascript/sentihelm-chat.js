@@ -372,7 +372,7 @@
 
                 TipChatController.onNewRoom = function (roomName, username, id, tipId) {
                     var found = false,
-                        room = {},
+                        roomObject = undefined,
                         rn = "";
 
                     //Object.keys(TipChatController.rooms).forEach(function (lookingAt) {
@@ -385,8 +385,8 @@
                     //});
 
                     for (rn in TipChatController.rooms) {
-                        room = TipChatController.rooms[rn];
-                        if (room.with.id === id && room.with.username === username && room.tipObjectId === tipId) {
+                        roomObject = TipChatController.rooms[rn];
+                        if (roomObject.with.id === id && roomObject.with.username === username && roomObject.tipObjectId === tipId) {
                             TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[rn]);
                             delete TipChatController.rooms[rn];
                             found = true;
@@ -397,7 +397,7 @@
 
 
 
-                    if (room == undefined && tipId) {
+                    if (roomObject == undefined && tipId) {
                         tipChatService.addTipToQueue(tipId, id)
                             .then(function (tipChatInfo) {
                                 var room = {
@@ -413,7 +413,13 @@
                                 room.hide = false;
 
                                 // make sure to keep a deep copy for persistence
-                                TipChatController.rooms[roomName] = angular.copy(room);
+                                TipChatController.rooms[room.controlNumber] = angular.copy(room);
+
+                                tipChatService.retrieveAll(function () {
+                                    onRetrieveAllDone();
+                                    TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[room.controlNumber]);
+                                    delete  TipChatController.rooms[room.controlNumber];
+                                });
                             });
                     }
                 };
