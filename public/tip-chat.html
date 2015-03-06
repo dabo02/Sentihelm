@@ -4,7 +4,11 @@
             <li class="active-chat-item"
                 ng-repeat="(roomName, roomObject) in tipChatCtrl.rooms"
                 ng-hide="roomObject.hide === true"
-                ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber, roomObject.with.id)">{{roomObject.with.username}}
+                ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber, roomObject.with.id)">
+
+                <h5><em>User:</em> {{roomObject.with.username}}</h5>
+
+                <span><em>Crime Type:</em> {{roomObject.crimeType}} <br/> <em>Control Number:</em> {{roomObject.controlNumber}}</span>
             </li>
         </ul>
     </section>
@@ -30,7 +34,8 @@
                        id="message-box"
                        ng-disabled="!tipChatCtrl.canSend"
                        placeholder="Enter message here..."/>
-                <button ng-disabled="!tipChatCtrl.canSend" type="submit" ng-click="tip_chat_form.$valid && tipChatCtrl.send()"
+                <button ng-disabled="!tipChatCtrl.canSend" type="submit"
+                        ng-click="tip_chat_form.$valid && tipChatCtrl.send()"
                         class="send">Send
                 </button>
             </div>
