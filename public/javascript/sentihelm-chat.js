@@ -388,6 +388,9 @@
                             if (TipChatController.currentRoom === rn) {
                                 TipChatController.currentRoom = roomName;
                             }
+
+                            TipChatController.rooms[roomName].new = true;
+
                             break;
                         }
                     }
@@ -399,6 +402,8 @@
 
                                 addTipRoom(roomName, username, id, tObject);
                             });
+
+                        TipChatController.rooms[roomName].new = true;
                     }
                 };
 
@@ -420,12 +425,19 @@
                             TipChatController.receiver = TipChatController.rooms[roomName].with.id;
 
                             if (roomName !== controlNumber) {
-                                chatSocket.send('change-room', roomName);
+                                chatSocket.emit('change-room', roomName);
+                            } else {
+                                chatSocket.emit('change-room', null);
                             }
 
-                            break;
+                            return;
                         }
                     }
+
+                };
+
+                TipChatController.getClass = function (room) {
+
                 };
 
                 TipChatController.send = function () {
