@@ -49,12 +49,9 @@
                 tipChatService = {
                     activeChats: [],
                     retrieveAll: function (cb) {
-                        $http.post(chatLogsUrl + '/retrieve', { password: password })
+                        return $http.post(chatLogsUrl + '/retrieve', { password: password })
                             .success(function (data) {
                                 tipChatService.activeChats = angular.copy(data);
-                                if (typeof cb === 'function') {
-                                    cb();
-                                }
                             });
 
 
@@ -270,7 +267,19 @@
                 TipChatController.canSend = false;
 
 
-                // Private
+                function addTipRoom(roomName, username, id, tObject) {
+                    TipChatController.rooms[roomName] = {
+                        with: {
+                            username: username,
+                            id: id
+                        },
+                        messages: [],
+                        controlNumber: tObject.controlNumber,
+                        tipObjectId: tObject.tipObjectId,
+                        crimeType: tObject.crimeType
+                    };
+                }
+
                 function getUserName(id) {
                     var username = '';
 
@@ -286,7 +295,6 @@
 
                 }
 
-                // Priavate
                 function getRoom(controlNumber, tipId) {
                     for (var roomName in TipChatController.rooms) {
                         if (roomName === controlNumber || TipChatController.rooms[roomName].controlNumber === controlNumber || TipChatController.rooms[roomName].tipObjectId === tipId) {
@@ -304,16 +312,8 @@
                 function onRetrieveAllDone() {
                     tipChatService.activeChats.forEach(function (tipChat) {
                         if (!TipChatController.rooms.hasOwnProperty(tipChat.controlNumber)) {
-                            TipChatController.rooms[tipChat.controlNumber] = {
-                                with: {
-                                    username: tipChat.tipUsername,
-                                    id: tipChat.tipUserId
-                                },
-                                messages: [],
-                                controlNumber: tipChat.controlNumber,
-                                tipObjectId: tipChat.tipObjectId,
-                                crimeType: tipChat.crimeType
-                            };
+
+                            addTipRoom(tipChat.controlNumber, tipChat.tipUsername, tipChat.tipUserId, tipChat);
 
                             console.log(TipChatController.rooms);
 
@@ -396,16 +396,8 @@
                     if (!found && tipId) {
                         tipChatService.addTipToQueue(tipId, id)
                             .then(function (tObject) {
-                                tipChatService.retrieveAll(function () {
-                                    onRetrieveAllDone();
 
-                                    TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[tObject.controlNumber]);
-                                    delete TipChatController.rooms[tObject.controlNumber];
-                                    if (TipChatController.currentRoom === tObject.controlNumber) {
-                                        TipChatController.currentRoom = roomName;
-                                    }
-
-                                });
+                                addTipRoom(roomName, username, id, tObject);
                             });
                     }
                 };
@@ -430,6 +422,8 @@
                             if (roomName !== controlNumber) {
                                 chatSocket.send('change-room', roomName);
                             }
+
+                            break;
                         }
                     }
                 };
@@ -455,9 +449,8 @@
                 chatSocket.on('new-message', TipChatController.onNewMessage);
                 chatSocket.on('new-room', TipChatController.onNewRoom);
 
-                tipChatService.retrieveAll(onRetrieveAllDone);
+                tipChatService.retrieveAll().then(onRetrieveAllDone);
             }
         ])
     ;
-})
-(window.angular);
+})(window.angular);
