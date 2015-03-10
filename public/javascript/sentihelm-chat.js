@@ -44,10 +44,12 @@
         .factory('tipChatService', ['chatSocket', '$http', 'Session', function (chatSocket, $http, Session) {
             var password = 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
 
+                chatLogsUrl = '/chat-logs/' + Session.clientId,
+
                 tipChatService = {
                     activeChats: [],
                     retrieveAll: function (cb) {
-                        $http.post('/get-all-logs/' + Session.clientId, {password: password})
+                        $http.post(chatLogsUrl + '/retrieve', { password: password })
                             .success(function (data) {
                                 tipChatService.activeChats = angular.copy(data);
                                 if (typeof cb === 'function') {
@@ -58,7 +60,7 @@
 
                     },
                     addTipToQueue: function (tipId, id) {
-                        return $http.post('/add-tip-to-queue/' + Session.clientId, {
+                        return $http.post(chatLogsUrl + '/add', {
                             password: password,
                             tipId: tipId,
                             userObjectId: id
@@ -260,12 +262,13 @@
         // TipChatController extends ChatController
         .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory',
             function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory) {
-                var Base = $controller('ChatController', {$scope: $scope}),
-                    TipChatController = this;
-
-                angular.extend(Base, TipChatController);
-
+                var TipChatController = this;
+                TipChatController.message = '';
                 TipChatController.rooms = {};
+                TipChatController.currentRoom = '';
+                TipChatController.receiver = '';
+                TipChatController.canSend = false;
+
 
                 // Private
                 function getUserName(id) {
@@ -284,20 +287,11 @@
                 }
 
                 // Priavate
-                function getRoom(username, id) {
-                    var prop = username ? 'username' : (id ? 'id' : undefined),
-                        roomName = '',
-                        comparative = username || id || undefined;
-
-                    if (prop && comparative) {
-                        Object.keys(TipChatController.rooms)
-                            .forEach(function (room) {
-                                var currentRoom = TipChatController.rooms[room];
-                                if (currentRoom.with[prop] === comparative) {
-                                    roomName = room;
-                                }
-                            });
-                        return roomName;
+                function getRoom(controlNumber, tipId) {
+                    for (var roomName in TipChatController.rooms) {
+                        if (roomName === controlNumber || TipChatController.rooms[roomName].controlNumber === controlNumber || TipChatController.rooms[roomName].tipObjectId === tipId) {
+                            return roomName;
+                        }
                     }
 
                     return undefined;
@@ -309,7 +303,7 @@
                  * */
                 function onRetrieveAllDone() {
                     tipChatService.activeChats.forEach(function (tipChat) {
-                        if (TipChatController.rooms.hasOwnProperty(tipChat.controlNumber) !== true) {
+                        if (!TipChatController.rooms.hasOwnProperty(tipChat.controlNumber)) {
                             TipChatController.rooms[tipChat.controlNumber] = {
                                 with: {
                                     username: tipChat.tipUsername,
@@ -325,6 +319,7 @@
 
                             tipChat.messages.forEach(function (message) {
                                 console.log(message);
+                                message.tipId = tipChat.tipObjectId;
                                 TipChatController.onNewMessage(message);
                             });
                         }
@@ -348,14 +343,12 @@
                     if (sender == Session.user.objectId) {
                         messageObject.from = Session.user.username;
                         messageObject.fromMe = true;
-
-                        username = getUserName(receiver);
-                        room = getRoom(null, receiver);
                     } else {
                         username = getUserName(sender);
-                        room = getRoom(null, sender);
                         messageObject.from = username;
                     }
+
+                    room = getRoom(undefined, data.tipId);
 
                     messageObject.id = Math.round(Math.random() * 1000 + 1 + Date.now()).toString();
 
@@ -392,107 +385,52 @@
                             delete TipChatController.rooms[rn];
                             found = true;
                             TipChatController.rooms[roomName].hide = false;
+                            if (TipChatController.currentRoom === rn) {
+                                TipChatController.currentRoom = roomName;
+                            }
                             break;
                         }
                     }
 
 
-                    if (roomObject == undefined && tipId) {
+                    if (!found && tipId) {
                         tipChatService.addTipToQueue(tipId, id)
-                            .then(function (tipChatInfo) {
-                                var room = {
-                                    with: {
-                                        username: username,
-                                        id: id
-                                    },
-                                    messages: []
-                                };
-
-                                room.controlNumber = tipChatInfo.controlNumber;
-                                room.tipObjectId = tipChatInfo.tipId;
-                                room.hide = false;
-
-                                // make sure to keep a deep copy for persistence
-                                TipChatController.rooms[room.controlNumber] = angular.copy(room);
-
+                            .then(function (tObject) {
                                 tipChatService.retrieveAll(function () {
                                     onRetrieveAllDone();
-                                    TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[room.controlNumber]);
-                                    delete  TipChatController.rooms[room.controlNumber];
-                                    if (TipChatController.currentRoom === room.controlNumber) {
+
+                                    TipChatController.rooms[roomName] = angular.copy(TipChatController.rooms[tObject.controlNumber]);
+                                    delete TipChatController.rooms[tObject.controlNumber];
+                                    if (TipChatController.currentRoom === tObject.controlNumber) {
                                         TipChatController.currentRoom = roomName;
                                     }
+
                                 });
                             });
                     }
                 };
 
-                TipChatController.changeRoom = function (controlNumber, userId) {
-                    var pushNotificationObject = {},
-                        pushTries = 0,
-                        hasControlNumber = TipChatController.rooms.hasOwnProperty(controlNumber),
-                        room = '';
+                TipChatController.changeRoom = function (controlNumber) {
 
-                    console.log(userId);
+                    TipChatController.canSend = false;
 
-                    function sendPush() {
-                        return Parse.Push.send(pushNotificationObject)
-                            .then(function () {
-                                console.log('Successfully sent push notification to user %s', pushNotificationObject.channels[0]);
-                                return "success";
-                            }, function (error) {
-                                if (pushTries < 5) {
-                                    pushTries += 1;
-                                    console.log(error.message);
-                                    return sendPush();
-                                } else {
-                                    return this.reject(Error("Couldn't sent push"));
-                                }
-                            });
-                    }
-
-
-                    //if (hasControlNumber === true) {
-                    //    if (TipChatController.rooms[controlNumber].controlNumber === controlNumber) {
-                    //        pushNotificationObject = {
-                    //            channels: ['user_' + userId],
-                    //            data: {
-                    //                isChatNotification: true,
-                    //                tipId: TipChatController.rooms[controlNumber].tipObjectId
-                    //            }
-                    //        };
-                    //
-                    //        sendPush().then(function () {
-                    //            TipChatController.rooms[controlNumber].hide = true;
-                    //        }, function (error) {
-                    //
-                    //        });
-                    //
-                    //    }
-                    //} else {
-
-                    room = getRoom(undefined, userId);
-
-                    if (room.length > 0) {
-                        TipChatController.receiver = userId;
-                        TipChatController.canSend = true;
-
-                        if (TipChatController.currentRoom !== room) {
-                            if (room !== TipChatController.rooms[room].controlNumber) {
-                                chatSocket.emit('change-room', room);
+                    for (var roomName in TipChatController.rooms) {
+                        if (TipChatController.rooms[roomName].controlNumber === controlNumber) {
+                            TipChatController.currentRoom = roomName;
+                            var messages = TipChatController.rooms[roomName].messages;
+                            if (messages.length > 0) {
+                                $location.hash(messages[messages.length - 1].id);
                             }
-                            TipChatController.currentRoom = room;
-                            var length = TipChatController.rooms[TipChatController.currentRoom].messages.length,
-                                id = TipChatController.rooms[TipChatController.currentRoom].messages[length - 1].id;
-                            $location.hash(id);
                             $anchorScroll();
-                        }
 
-                    } else {
-                        // TODO implement method that requests a chat with a user if not already chatting.
-                        //ChatController.requestChat(username);
-                        TipChatController.canSend = false;
-                        TipChatController.currentRoom = '';
+                            TipChatController.canSend = true;
+
+                            TipChatController.receiver = TipChatController.rooms[roomName].with.id;
+
+                            if (roomName !== controlNumber) {
+                                chatSocket.send('change-room', roomName);
+                            }
+                        }
                     }
                 };
 
@@ -509,10 +447,6 @@
                         chatSocket.emit('message-sent', m);
                     } catch (e) {
                         console.log(e.message);
-                        TipChatController.rooms[getRoom(undefined, TipChatController.receiver)].messages.push({
-                            dateTime: Date.now(),
-                            message: e.message
-                        });
                     }
 
                     TipChatController.message = '';
@@ -520,10 +454,6 @@
 
                 chatSocket.on('new-message', TipChatController.onNewMessage);
                 chatSocket.on('new-room', TipChatController.onNewRoom);
-
-                $scope.$watchCollection(tipChatService.activeChats, function () {
-                    onRetrieveAllDone();
-                });
 
                 tipChatService.retrieveAll(onRetrieveAllDone);
             }
