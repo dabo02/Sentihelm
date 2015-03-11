@@ -112,3 +112,15 @@
 .active-chat-item h5 {
     margin: 5px 0 10px;
 }
+
+.new-room {
+    list-style-type: none;
+    width: 100%;
+    padding-top: 5%;
+    color: #ffffff;
+    text-align: center;
+    margin: 2% auto;
+    padding-bottom: 5%;
+    cursor: pointer;
+    background-color: #096d9f;
+}

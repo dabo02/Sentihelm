@@ -1,10 +1,11 @@
 <div ng-controller="TipChatController as tipChatCtrl" id="tip-chat">
     <section class="col-md-3" id="active-tip-chats">
         <ul id="active-chat-list" class="col-md-12">
-            <li class="active-chat-item"
+            <li
                 ng-repeat="(roomName, roomObject) in tipChatCtrl.rooms"
                 ng-hide="roomObject.hide === true"
-                ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber)">
+                ng-click="tipChatCtrl.changeRoom(roomObject.controlNumber)"
+                ng-class="tipChatCtrl.getClass(roomObject)">
 
                 <h5><em>User:</em> {{roomObject.with.username}}</h5>
 
