@@ -1,0 +1,48 @@
+.admin-panel-main-container{
+    padding-top: 30px;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    border-top-color: transparent;
+}
+
+.admin-panel-navbar{
+    margin: 0 auto;
+    width: 80%;
+}
+
+.user-list{
+    margin: 20px auto 0 auto;
+    width: 90%;
+}
+
+#add-user-button{
+    width: 50px;
+    height: 50px;
+    padding-top: 17px;
+    padding-left: 19px;
+    background-color: #e7e7e7;
+}
+
+.main-menu-list-item{
+    border: 1px solid #ddd;
+    border-radius: 0;
+    background: #eee;
+}
+
+.selected-filter{
+    border-bottom: none;
+    background: none;
+}
+
+.nav-tabs.nav-justified>li>a {
+    border-bottom: none;
+}
+
+.nav-tabs.nav-justified>li>a:hover {
+    background: none;
+}
+
+.admin-panel-action-form{
+    margin-left: auto;
+    margin-right: auto;
+}

@@ -1910,7 +1910,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
              }
         }
 
-        //parse skip limit hack
+        //parse skip limit hack for fetching more than 11,001 records..
         if(videoArchiveCtrl.skip > parseSkipLimit){
             videoArchiveQuery.lessThanOrEqualTo("createdAt", videoArchiveCtrl.videoArchiveArray[videoArchiveCtrl.limit - 1].createdAt)
             videoArchiveCtrl.skip = 0;
@@ -3093,13 +3093,126 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     }]);
 
 //Controller for Administrator Panel
-    app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', function (socket, Session, $anchorScroll) {
+    app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', function (socket, Session, $anchorScroll, $location, usSpinnerService) {
 
         var adminPanelCtrl = this;
         this.sending = false;
-         adminPanelCtrl.hasError = false;
+        adminPanelCtrl.hasError = false;
+
+        adminPanelCtrl.viewingAll = true;
+        adminPanelCtrl.viewingUsers = false;
+        adminPanelCtrl.viewingEmployees = false;
+        adminPanelCtrl.viewingAdministrators = false;
+        adminPanelCtrl.viewingLoggedIn = false;
+        adminPanelCtrl.addingUser = false;
 
         adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
+
+        adminPanelCtrl.adminPanelUsersArray = [];
+
+        //pagination variables
+        adminPanelCtrl.currentPageNum = 1;
+        adminPanelCtrl.lastPageNum;
+        adminPanelCtrl.pageNumbers;
+        adminPanelCtrl.limit = 10;
+        adminPanelCtrl.skip;
+        adminPanelCtrl.userTotal;
+        adminPanelCtrl.usersAvailable;
+
+        adminPanelCtrl.getPage = function(pageNum){
+
+            if(pageNum < 1 || pageNum > adminPanelCtrl.lastPageNum){
+                return;
+            }
+
+            var parseSkipLimit = 10000;
+            usSpinnerService.spin('loading-video-archive-spinner');
+            adminPanelCtrl.adminPanelUsersArray = [];
+            adminPanelCtrl.currentPageNum = pageNum;
+            adminPanelCtrl.skip = (adminPanelCtrl.currentPageNum - 1) * adminPanelCtrl.limit;
+
+            var User = Parse.Object.extend("_User");
+            var adminPanelQuery = new Parse.Query(User);
+            //adminPanelQuery.containedIn('roles', ['employee','admin']);
+            adminPanelQuery.equalTo('homeClient', {
+                __type: "Pointer",
+                className: "Client",
+                objectId: Session.clientId
+            });
+            adminPanelQuery.descending("createdAt");
+            /*
+            if(adminPanelCtrl.videoDateFilter){
+                 adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(adminPanelCtrl.videoDateFilter));
+            }
+
+            if(adminPanelCtrl.watchStatusFilter && adminPanelCtrl.watchStatusFilter != "All"){
+                 if(adminPanelCtrl.watchStatusFilter === "Watched"){
+                    adminPanelQuery.equalTo('hasBeenWatched', true);
+                 }
+                 else{
+                    adminPanelQuery.equalTo('hasBeenWatched', undefined);
+                 }
+            }
+            */
+            //parse skip limit hack for fetching more than 11,001 records..
+            if(adminPanelCtrl.skip > parseSkipLimit){
+                adminPanelQuery.lessThanOrEqualTo("createdAt", adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt)
+                adminPanelCtrl.skip = 0;
+            }
+
+            adminPanelQuery.skip(adminPanelCtrl.skip);
+            adminPanelQuery.limit(adminPanelCtrl.limit);
+            adminPanelQuery.find({
+                success: function(users) {
+                    adminPanelCtrl.adminPanelUsersArray = angular.copy(users);
+                    if(adminPanelCtrl.adminPanelUsersArray.length===0){
+                        adminPanelCtrl.usersAvailable = false;
+                    }
+                    usSpinnerService.stop('loading-video-archive-spinner');
+                    //adminPanelCtrl.lastPageNum = Math.ceil(adminPanelCtrl.adminPanelUsersArray.length / 10);
+                },
+                error: function(object, error) {
+                    // The object was not retrieved successfully.
+                    console.log("Error fetching video archive.");
+                }
+            });
+
+            adminPanelQuery.count({
+                success: function(count) {
+                    adminPanelCtrl.lastPageNum = Math.ceil(count/10);
+                    adminPanelCtrl.userTotal = count;
+                },
+                error: function(object, error) {
+                    // The object was not retrieved successfully.
+                    console.log("Error counting video archives.");
+                }
+            }).then(function(){
+                adminPanelCtrl.refreshPageNumbers();
+            });
+        }
+
+        adminPanelCtrl.refreshPageNumbers = function(){
+
+            var baseNum = Math.floor(adminPanelCtrl.currentPageNum / adminPanelCtrl.limit);
+            var firstNum =  adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0 ? (baseNum - 1) * adminPanelCtrl.limit + 1 : baseNum  * adminPanelCtrl.limit + 1;
+            var lastNum = 0;
+
+            if(adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0){
+                lastNum = adminPanelCtrl.currentPageNum;
+            }
+            else if(baseNum * adminPanelCtrl.limit + adminPanelCtrl.limit > adminPanelCtrl.lastPageNum){
+                lastNum = adminPanelCtrl.lastPageNum;
+            }
+            else{
+                lastNum = baseNum * adminPanelCtrl.limit + adminPanelCtrl.limit;
+            }
+
+            adminPanelCtrl.pageNumbers = [];
+
+            for(var i = 0, j = firstNum; j <= lastNum; i++, j++){
+                adminPanelCtrl.pageNumbers[i] = j;
+            }
+        }
 
         //Adds new SentiHelm user
         this.addUser = function (newUser) {
@@ -3115,6 +3228,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             adminPanelCtrl.sending = false;
             adminPanelCtrl.successMessage = "SUCCESS: you have created a new user.";
             adminPanelCtrl.hasError = false;
+            $location.hash('top');
             $anchorScroll();
         });
 
@@ -3122,8 +3236,53 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             adminPanelCtrl.sending = false;
             adminPanelCtrl.successMessage = "FAILED: " + data.error + ".";
             adminPanelCtrl.hasError =  true;
+            $location.hash('top');
             $anchorScroll();
         });
+
+        adminPanelCtrl.changeView = function(view){
+
+            adminPanelCtrl.viewingAll = false;
+            adminPanelCtrl.viewingUsers = false;
+            adminPanelCtrl.viewingEmployees = false;
+            adminPanelCtrl.viewingAdministrators = false;
+            adminPanelCtrl.viewingLoggedIn = false;
+            adminPanelCtrl.addingUser = false;
+
+            switch(view){
+
+                case 'all':
+                    adminPanelCtrl.viewingAll = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'users':
+                    adminPanelCtrl.viewingUsers = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'employees':
+                    adminPanelCtrl.viewingEmployees = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'administrators':
+                    adminPanelCtrl.viewingAdministrators = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'loggedIn':
+                    adminPanelCtrl.viewingLoggedIn = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'addUser':
+                    adminPanelCtrl.addingUser = true;
+                    break;
+            };
+        };
+
+        adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
 
     }]);
 

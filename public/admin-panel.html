@@ -5,113 +5,156 @@
 		Create New User
 	</h1>
 	<br>
-    <h3 class="text-center"  ng-class="{'green':!adminPanelCtrl.hasError, 'red':adminPanelCtrl.hasError}" ng-show="!adminPanelCtrl.sending">{{adminPanelCtrl.successMessage}}</h3>
-    <br>
 
-    <div class="row-fluid">
-        <ul class="nav nav-tabs nav-justified">
-            <li class="active"><a>All</a></li>
-            <li><a>Users</a></li>
-            <li><a>Employees</a></li>
-            <li><a>Administrators</a></li>
-            <li><a>Logged In</a></li>
-        </ul>
 
-        <!-- Tab panes -->
-        <div class="tab-content">
-            <div class="tab-pane active">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Registered</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>Lilia</td>
-                        <td>me@me.com</td>
-                        <td>User</td>
-                        <td>
-                            <div class="btn-group">
-                                <ul class="pull-right">
-                                    <li><a href="#"><i class="icon-envelope"></i> Email</a></li>
-                                    <li><a href="#"><i class="icon-edit"></i> Edit</a></li>
-                                    <li><a href="#"><i class="icon-trash"></i> Delete</a></li>
-                                </ul>
+    <div class="row">
+        <div class="row-fluid">
+            <ul class="nav nav-tabs nav-justified">
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingAll}" ng-click="adminPanelCtrl.changeView('all')"><a class="pointer">All</a></li>
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingUsers}" ng-click="adminPanelCtrl.changeView('users')"><a class="pointer">Users</a></li>
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingEmployees}" ng-click="adminPanelCtrl.changeView('employees')"><a class="pointer">Employees</a></li>
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingAdministrators}" ng-click="adminPanelCtrl.changeView('administrators')"><a class="pointer">Administrators</a></li>
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingLoggedIn}" ng-click="adminPanelCtrl.changeView('loggedIn')"><a class="pointer">Logged In</a></li>
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.addingUser}" ng-click="adminPanelCtrl.changeView('addUser')"><a class="pointer">Add New</a></li>
+            </ul>
+        </div>
+        <div class="row-fluid admin-panel-main-container">
+            <nav class="navbar navbar-default admin-panel-navbar" ng-show="!adminPanelCtrl.addingUser">
+                <div class="container-fluid">
+                    <ul class="nav navbar-nav navbar-left">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Bulk Action<span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a>Add to Users</a></li>
+                                <li><a>Add to Employees</a></li>
+                                <li><a>Add to Administrators</a></li>
+                                <li class="divider"></li>
+                                <li><a>Delete User</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <form class="navbar-form navbar-left admin-panel-action-form" role="search">
+                        <div class="form-group">Registration Date:
+                            <input class="form-control" type="date" placeholder="Registration Date" ng-model="adminPanelCtrl.videoDateFilter"/>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" placeholder="Username or Email" ng-model="adminPanelCtrl.searchString"/>
+                        </div>
+                        <button type="submit" class="btn btn-default btn-primary">Filter</button>
+                    </form>
+                    <ul class="nav navbar-nav navbar-right active">
+                        <li class="pointer" id="add-user-button"><i class="glyphicon glyphicon-plus"></i></li>
+                    </ul>
+                </div><!-- /.container-fluid -->
+            </nav>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div class="tab-pane user-list" ng-class="{'active':!adminPanelCtrl.addingUser}">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Registered</th>
+                            <th>Logged In</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="user in adminPanelCtrl.adminPanelUsersArray">
+                            <td></td>
+                            <td>{{user.attributes.username}}</td>
+                            <td>{{user.attributes.email}}</td>
+                            <td>{{user.attributes.roles}}</td>
+                            <td>{{user.createdAt}}</td>
+                            <td>Yes</td>
+                            <td>
+                                <div class="btn-group">
+                                    <ul class="list-inline">
+                                        <li><i class="glyphicon glyphicon-envelope pointer"></i></li>
+                                        <li><i class="glyphicon glyphicon-edit pointer"></i></li>
+                                        <li><i class="glyphicon glyphicon-trash pointer"></i></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane" ng-class="{'active':adminPanelCtrl.addingUser}">
+                    <div class="row">
+
+                        <h3 class="text-center"  ng-class="{'green':!adminPanelCtrl.hasError, 'red':adminPanelCtrl.hasError}" ng-show="!adminPanelCtrl.sending">{{adminPanelCtrl.successMessage}}</h3>
+                        <br>
+
+                        <form role="form" name="addOfficerForm" novalidate>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-fname" class="dark-gray">First Name</label>
+                            <input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="adminPanelCtrl.newUser.fname" required/>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-lname" class="dark-gray">Last Name</label>
+                            <input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="adminPanelCtrl.newUser.lname" required/>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-email" class="dark-gray">Email</label>
+                            <input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.newUser.email" required/>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-username" class="dark-gray">Username</label>
+                            <input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.newUser.username" name="username" required/>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-phone" class="dark-gray">Phone Number</label>
+                            <input type="text" class="form-control" id="new-officer-phone" placeholder="Phone Number" ng-model="adminPanelCtrl.newUser.phoneNumber" required/>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-zip-code" class="dark-gray">Zip Code</label>
+                            <input type="number" min="0" max="99999" class="form-control" id="new-officer-zip-code" placeholder="Zip Code" ng-model="adminPanelCtrl.newUser.zipCode" required/>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-state" class="dark-gray">State</label>
+                            <select id="new-officer-state" class="form-control" ng-model="adminPanelCtrl.newUser.state" ng-init="adminPanelCtrl.newUser.state='Select'">
+                                <option ng-repeat="state in adminPanelCtrl.states" value="{{state}}">{{state}}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-password" class="dark-gray">Password</label>
+                            <input type="password" class="form-control" id="new-officer-password" placeholder="Password" ng-model="adminPanelCtrl.newUser.password" required/>
+                        </div>
+
+                        <div class="form-group col-sm-4 col-sm-offset-4">
+                            <label for="new-officer-role" class="dark-gray">Set Access Level</label>
+                            <select id="new-officer-role" class="form-control" ng-model="adminPanelCtrl.newUser.role" ng-init="adminPanelCtrl.newUser.role='manager'">
+                                <option value="employee">Employee</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="addOfficerForm.$valid && adminPanelCtrl.newUser.state!=='Select' && adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
+                            <span ng-hide="adminPanelCtrl.sending">Add User</span>
+                            <div class="spinner" ng-show="adminPanelCtrl.sending">
+                                <div class="bounce1"></div>
+                                <div class="bounce2"></div>
+                                <div class="bounce3"></div>
                             </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                        </button>
+                    </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-	<form ng-show="adminPanelCtrl.showNewOfficerForm" role="form" name="addOfficerForm" novalidate>
-
-		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-fname" class="dark-gray">First Name</label>
-			<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="adminPanelCtrl.newUser.fname" required/>
-		</div>
-
-		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-lname" class="dark-gray">Last Name</label>
-			<input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="adminPanelCtrl.newUser.lname" required/>
-		</div>
-
-		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-email" class="dark-gray">Email</label>
-			<input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.newUser.email" required/>
-		</div>
-
-		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-username" class="dark-gray">Username</label>
-			<input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.newUser.username" name="username" required/>
-		</div>
-
-        <div class="form-group col-sm-4 col-sm-offset-4">
-            <label for="new-officer-phone" class="dark-gray">Phone Number</label>
-            <input type="text" class="form-control" id="new-officer-phone" placeholder="Phone Number" ng-model="adminPanelCtrl.newUser.phoneNumber" required/>
-        </div>
-
-        <div class="form-group col-sm-4 col-sm-offset-4">
-            <label for="new-officer-zip-code" class="dark-gray">Zip Code</label>
-            <input type="number" min="0" max="99999" class="form-control" id="new-officer-zip-code" placeholder="Zip Code" ng-model="adminPanelCtrl.newUser.zipCode" required/>
-        </div>
-
-        <div class="form-group col-sm-4 col-sm-offset-4">
-            <label for="new-officer-state" class="dark-gray">State</label>
-            <select id="new-officer-state" class="form-control" ng-model="adminPanelCtrl.newUser.state" ng-init="adminPanelCtrl.newUser.state='Select'">
-                <option ng-repeat="state in adminPanelCtrl.states" value="{{state}}">{{state}}</option>
-            </select>
-        </div>
-
-		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-password" class="dark-gray">Password</label>
-			<input type="password" class="form-control" id="new-officer-password" placeholder="Password" ng-model="adminPanelCtrl.newUser.password" required/>
-		</div>
-
-		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-role" class="dark-gray">Set Access Level</label>
-			<select id="new-officer-role" class="form-control" ng-model="adminPanelCtrl.newUser.role" ng-init="adminPanelCtrl.newUser.role='manager'">
-				<option value="employee">Employee</option>
-				<option value="admin">Administrator</option>
-			</select>	
-		</div>
-
-		<button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="addOfficerForm.$valid && adminPanelCtrl.newUser.state!=='Select' && adminPanelCtrl.addUser(adminPanelCtrl.newUser)">
-			<span ng-hide="adminPanelCtrl.sending">Add User</span>
-			<div class="spinner" ng-show="adminPanelCtrl.sending">
-		        <div class="bounce1"></div>
-		        <div class="bounce2"></div>
-		        <div class="bounce3"></div>
-		     </div>
-		</button>
-
-	</form>	
 
 </div>
