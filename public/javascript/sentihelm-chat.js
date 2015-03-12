@@ -278,6 +278,7 @@
                         tipObjectId: tObject.tipObjectId,
                         crimeType: tObject.crimeType
                     };
+
                 }
 
                 function getUserName(id) {
