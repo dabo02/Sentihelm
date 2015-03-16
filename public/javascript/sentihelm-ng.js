@@ -3118,6 +3118,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         adminPanelCtrl.skip;
         adminPanelCtrl.userTotal;
         adminPanelCtrl.usersAvailable = true;
+        adminPanelCtrl.rolesFilter = ['employee','admin'];
 
         adminPanelCtrl.getPage = function(pageNum){
 
@@ -3133,18 +3134,18 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
             var User = Parse.Object.extend("_User");
             var adminPanelQuery = new Parse.Query(User);
-            //adminPanelQuery.containedIn('roles', ['employee','admin']);
+            adminPanelQuery.containedIn('roles', adminPanelCtrl.rolesFilter);
             adminPanelQuery.equalTo('homeClient', {
                 __type: "Pointer",
                 className: "Client",
                 objectId: Session.clientId
             });
             adminPanelQuery.descending("createdAt");
-            /*
-            if(adminPanelCtrl.videoDateFilter){
-                 adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(adminPanelCtrl.videoDateFilter));
-            }
 
+            if(adminPanelCtrl.userRegistrationDateFilter){
+                 adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(adminPanelCtrl.userRegistrationDateFilter));
+            }
+            /*
             if(adminPanelCtrl.watchStatusFilter && adminPanelCtrl.watchStatusFilter != "All"){
                  if(adminPanelCtrl.watchStatusFilter === "Watched"){
                     adminPanelQuery.equalTo('hasBeenWatched', true);
@@ -3253,7 +3254,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
                 case 'all':
                     adminPanelCtrl.viewingAll = true;
-                    // TODO call getPage with corresponding filter
+                    adminPanelCtrl.rolesFilter = ['employee','admin'];
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
                     break;
 
                 case 'users':
@@ -3263,12 +3265,14 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
                 case 'employees':
                     adminPanelCtrl.viewingEmployees = true;
-                    // TODO call getPage with corresponding filter
+                    adminPanelCtrl.rolesFilter = ['employee'];
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
                     break;
 
                 case 'administrators':
                     adminPanelCtrl.viewingAdministrators = true;
-                    // TODO call getPage with corresponding filter
+                    adminPanelCtrl.rolesFilter = ['admin'];
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
                     break;
 
                 case 'loggedIn':
