@@ -1,6 +1,6 @@
 
         
-<div class="vertical-center" id="video-archive-list" ng-controller="VideoArchiveController as videoArchiveCtrl">
+<div class="vertical-center" id="video-archive-list" style="background-color:white;" ng-controller="VideoArchiveController as videoArchiveCtrl">
 
 	<!-- archive main content -->
 	<div class="video-archive-mid-container">
@@ -45,7 +45,7 @@
 
         </span>
                 <p ng-show="videoArchiveCtrl.videosAvailable">Page {{videoArchiveCtrl.currentPageNum}} of {{videoArchiveCtrl.lastPageNum}}</p>
-                <p ng-show="videoArchiveCtrl.videosAvailable">Showing Videos {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}}</p>
+                <p ng-show="videoArchiveCtrl.videosAvailable">Showing {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}} Videos</p>
                 <li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray" ng-show="video" ng-class="{'orange-border':!video.attributes.hasBeenWatched}">
 
                     <!-------------------->

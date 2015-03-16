@@ -11,29 +11,31 @@
         <div class="row-fluid">
             <ul class="nav nav-tabs nav-justified">
                 <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingAll}" ng-click="adminPanelCtrl.changeView('all')"><a class="pointer">All</a></li>
-                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingUsers}" ng-click="adminPanelCtrl.changeView('users')"><a class="pointer">Users</a></li>
-                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingEmployees}" ng-click="adminPanelCtrl.changeView('employees')"><a class="pointer">Employees</a></li>
+                <!--<li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingUsers}" ng-click="adminPanelCtrl.changeView('users')"><a class="pointer">Users</a></li>-->
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingEmployees}" ng-click="adminPanelCtrl.changeView('employees')"><a class="pointer">Officers</a></li>
                 <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingAdministrators}" ng-click="adminPanelCtrl.changeView('administrators')"><a class="pointer">Administrators</a></li>
-                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingLoggedIn}" ng-click="adminPanelCtrl.changeView('loggedIn')"><a class="pointer">Logged In</a></li>
-                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.addingUser}" ng-click="adminPanelCtrl.changeView('addUser')"><a class="pointer">Add New</a></li>
+                <!--<li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingLoggedIn}" ng-click="adminPanelCtrl.changeView('loggedIn')"><a class="pointer">Logged In</a></li>-->
+                <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.addingUser}" ng-click="adminPanelCtrl.changeView('addUser')"><a class="pointer">Add New User</a></li>
             </ul>
         </div>
+
         <div class="row-fluid admin-panel-main-container">
+
             <nav class="navbar navbar-default admin-panel-navbar" ng-show="!adminPanelCtrl.addingUser">
                 <div class="container-fluid">
                     <ul class="nav navbar-nav navbar-left">
                         <li class="dropdown">
                             <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Bulk Action<span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
-                                <li><a>Add to Users</a></li>
-                                <li><a>Add to Employees</a></li>
+                                <!--<li><a>Add to Users</a></li>-->
+                                <li><a>Add to Officers</a></li>
                                 <li><a>Add to Administrators</a></li>
                                 <li class="divider"></li>
                                 <li><a>Delete User</a></li>
                             </ul>
                         </li>
                     </ul>
-                    <form class="navbar-form navbar-left admin-panel-action-form" role="search">
+                    <form class="navbar-form admin-panel-action-form navbar-left" role="search">
                         <div class="form-group">Registration Date:
                             <input class="form-control" type="date" placeholder="Registration Date" ng-model="adminPanelCtrl.videoDateFilter"/>
                         </div>
@@ -42,39 +44,41 @@
                         </div>
                         <button type="submit" class="btn btn-default btn-primary">Filter</button>
                     </form>
-                    <ul class="nav navbar-nav navbar-right active">
-                        <li class="pointer" id="add-user-button"><i class="glyphicon glyphicon-plus"></i></li>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="pointer" id="add-user-button" ng-click="adminPanelCtrl.changeView('addUser')"><i class="glyphicon glyphicon-plus"></i></li>
                     </ul>
                 </div><!-- /.container-fluid -->
             </nav>
             <!-- Tab panes -->
             <div class="tab-content">
                 <div class="tab-pane user-list" ng-class="{'active':!adminPanelCtrl.addingUser}">
+                    <div class="paginationText">
+                        <p ng-show="adminPanelCtrl.usersAvailable">Page {{adminPanelCtrl.currentPageNum}} of {{adminPanelCtrl.lastPageNum}}</p>
+                        <p ng-show="adminPanelCtrl.usersAvailable">Showing {{adminPanelCtrl.skip + 1}} - {{adminPanelCtrl.skip + 10 > adminPanelCtrl.userTotal ? adminPanelCtrl.userTotal : adminPanelCtrl.skip + 10}} of {{adminPanelCtrl.userTotal}} Users</p>
+                    </div>
                     <table class="table">
                         <thead>
                         <tr>
-                            <th></th>
                             <th>Username</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>Registered</th>
-                            <th>Logged In</th>
                             <th>Action</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr ng-repeat="user in adminPanelCtrl.adminPanelUsersArray">
-                            <td></td>
                             <td>{{user.attributes.username}}</td>
                             <td>{{user.attributes.email}}</td>
                             <td>{{user.attributes.roles}}</td>
-                            <td>{{user.createdAt}}</td>
-                            <td>Yes</td>
+                            <td>{{user.createdAt | date:'mediumDate'}}</td>
                             <td>
                                 <div class="btn-group">
                                     <ul class="list-inline">
-                                        <li><i class="glyphicon glyphicon-envelope pointer"></i></li>
-                                        <li><i class="glyphicon glyphicon-edit pointer"></i></li>
+                                        <li>
+                                            <a href="mailto:{{user.attributes.email}}" id="blackLink"><i class="glyphicon glyphicon-envelope pointer"></i></a>
+                                        </li>
+                                        <li ng-click="adminPanelCtrl.deleteUser(user.id)"><i class="glyphicon glyphicon-edit pointer"></i></li>
                                         <li><i class="glyphicon glyphicon-trash pointer"></i></li>
                                     </ul>
                                 </div>
@@ -82,6 +86,35 @@
                         </tr>
                         </tbody>
                     </table>
+                    <!--=====PAGINATOR======-->
+                    <!--====================-->
+                    <div ng-if="adminPanelCtrl.usersAvailable" class="admin-panel-paginator-container">
+                        <ul id="paginator">
+
+                            <li class="paginator-control" ng-click="adminPanelCtrl.getPage(1)">
+                                <span class="fa fa-chevron-left fa-lg" ng-class="{'disabled-link': adminPanelCtrl.currentPageNum===1}"></span><span class="fa fa-chevron-left fa-lg " ng-class="{'disabled-link': adminPanelCtrl.currentPageNum===1}"></span>
+                            </li>
+
+                            <li id="page-previous" class="paginator-control" ng-class="{'disabled-link': adminPanelCtrl.currentPageNum===1}" ng-click="adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum - 1)">
+                                <span class="fa fa-chevron-left fa-lg"></span>
+                            </li>
+
+
+                            <li class="paginator-control" ng-repeat="pageNumber in adminPanelCtrl.pageNumbers" ng-class="{'light-blue': adminPanelCtrl.currentPageNum === pageNumber}" ng-click="adminPanelCtrl.getPage(pageNumber)">
+                                {{pageNumber}}
+                            </li>
+
+
+                            <li id="page-next" class="paginator-control" ng-class="{'disabled-link': adminPanelCtrl.currentPageNum === adminPanelCtrl.lastPageNum}" ng-click="adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum + 1)">
+                                <span class="fa fa-chevron-right fa-lg"></span>
+                            </li>
+
+                            <li class="paginator-control" ng-click="adminPanelCtrl.getPage(adminPanelCtrl.lastPageNum)">
+                                <span class="fa fa-chevron-right fa-lg" ng-class="{'disabled-link': adminPanelCtrl.currentPageNum === adminPanelCtrl.lastPageNum}"></span><span class="fa fa-chevron-right fa-lg" ng-class="{'disabled-link': adminPanelCtrl.currentPageNum === adminPanelCtrl.lastPageNum}"></span>
+                            </li>
+
+                        </ul>
+                    </div>
                 </div>
                 <div class="tab-pane" ng-class="{'active':adminPanelCtrl.addingUser}">
                     <div class="row">
@@ -136,7 +169,7 @@
                         <div class="form-group col-sm-4 col-sm-offset-4">
                             <label for="new-officer-role" class="dark-gray">Set Access Level</label>
                             <select id="new-officer-role" class="form-control" ng-model="adminPanelCtrl.newUser.role" ng-init="adminPanelCtrl.newUser.role='manager'">
-                                <option value="employee">Employee</option>
+                                <option value="employee">Officer</option>
                                 <option value="admin">Administrator</option>
                             </select>
                         </div>

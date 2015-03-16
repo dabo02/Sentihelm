@@ -3117,7 +3117,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         adminPanelCtrl.limit = 10;
         adminPanelCtrl.skip;
         adminPanelCtrl.userTotal;
-        adminPanelCtrl.usersAvailable;
+        adminPanelCtrl.usersAvailable = true;
 
         adminPanelCtrl.getPage = function(pageNum){
 
