@@ -402,8 +402,14 @@
                     if (!found && tipId) {
                         tipChatService.addTipToQueue(tipId, id)
                             .then(function (tObject) {
+                                var oldRoom = getRoom(tObject.controlNumber);
+
 
                                 addTipRoom(roomName, username, id, tObject);
+
+                                if (oldRoom) {
+                                    delete TipChatController.rooms[oldRoom];
+                                }
                             });
 
                         TipChatController.rooms[roomName].new = true;
