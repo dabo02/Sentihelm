@@ -191,7 +191,7 @@
                 }
             })
             .state('tip-chat', {
-                url: '/chat-logs',
+                url: '/tip-chat-logs',
                 templateUrl: '/tip-chat.html',
                 data: {
                     // only users with chat permissions can use this route.
