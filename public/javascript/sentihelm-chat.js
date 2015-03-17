@@ -429,7 +429,13 @@
 
                 self.isTyping = function () {
                     if (self.currentRoom) {
-                        chatSocket.emit('user-typing');
+                        if (self.message !== '' && !(self.message.length > 1)) {
+                            chatSocket.emit('user-typing');
+                        } else if (self.message === '') {
+                            chatSocket.emit('user-stop-typing');
+                        } else {
+                            // nothing
+                        }
                     }
                 };
 
@@ -474,6 +480,8 @@
                 self.send = function () {
                     var m = {};
 
+                    chatSocket.emit('user-stop-typing');
+
                     try {
                         m = messageFactory({
                             receiver: self.receiver,
@@ -487,7 +495,6 @@
                     }
 
                     self.message = '';
-                    chatSocket.emit('user-stop-typing');
                 };
 
                 chatSocket.on('new-message', self.onNewMessage);
