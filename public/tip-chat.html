@@ -34,7 +34,8 @@
                        type="text" minlength="1" required
                        id="message-box"
                        ng-disabled="!tipChatCtrl.canSend"
-                       placeholder="Enter message here..."/>
+                       placeholder="Enter message here..."
+                       ng-keypress="tipChatCtrl.isTyping()" />
                 <button ng-disabled="!tipChatCtrl.canSend" type="submit"
                         ng-click="tip_chat_form.$valid && tipChatCtrl.send()"
                         class="send">Send

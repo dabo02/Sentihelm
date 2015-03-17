@@ -41,14 +41,14 @@
 
             return socket;
         }])
-        .factory('tipChatService', ['chatSocket', '$http', 'Session', 'ngToast', function (chatSocket, $http, Session, ngToast) {
+        .factory('tipChatService', ['chatSocket', '$http', 'Session', 'ngToast', '$location', function (chatSocket, $http, Session, ngToast, $location) {
             var password = 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
 
                 chatLogsUrl = '/chat-logs/' + Session.clientId,
 
                 tipChatService = {
                     activeChats: [],
-                    retrieveAll: function (cb) {
+                    retrieveAll: function () {
                         return $http.post(chatLogsUrl + '/retrieve', {password: password})
                             .success(function (data) {
                                 tipChatService.activeChats = angular.copy(data);
@@ -86,7 +86,7 @@
             }
 
             function onNewMessage(data) {
-                if (data.tipId) {
+                if (data.tipId && data.sender !== Session.user.objectId && $location.path() !== '/tip-chat-logs') {
                     ngToast.create("New message");
                 }
             }
@@ -267,8 +267,8 @@
                 chatSocket.on('new-room', self.onNewRoom);
             }
         ])
-        .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory',
-            function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory) {
+        .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory', '$timeout',
+            function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory, $timeout) {
                 var self = this;
                 self.message = '';
                 self.rooms = {};
@@ -276,9 +276,7 @@
                 self.receiver = '';
                 self.canSend = false;
 
-
-
-
+                var timeoutPromise;
 
                 function addTipRoom(roomName, username, id, tObject) {
                     self.rooms[roomName] = {
@@ -429,6 +427,12 @@
                     }
                 };
 
+                self.isTyping = function () {
+                    if (self.currentRoom) {
+                        chatSocket.emit('user-typing');
+                    }
+                };
+
                 self.changeRoom = function (controlNumber) {
 
                     self.canSend = false;
@@ -483,10 +487,25 @@
                     }
 
                     self.message = '';
+                    chatSocket.emit('user-stop-typing');
                 };
 
                 chatSocket.on('new-message', self.onNewMessage);
                 chatSocket.on('new-room', self.onNewRoom);
+
+
+                chatSocket.on('typing', function (room) {
+                    if (room === self.currentRoom) {
+                        // TODO Implement
+
+                    }
+                });
+
+                chatSocket.on('stop-typing', function (room) {
+                    if (room == self.currentRoom) {
+                        // TODO Implement
+                    }
+                });
 
                 tipChatService.retrieveAll().then(onRetrieveAllDone);
             }
