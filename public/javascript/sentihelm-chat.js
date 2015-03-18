@@ -270,11 +270,12 @@
         .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory', '$timeout',
             function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory, $timeout) {
                 var self = this;
-                self.message = '';
+                self.message = "";
                 self.rooms = {};
                 self.currentRoom = '';
                 self.receiver = '';
                 self.canSend = false;
+                self.userTyping = false;
 
                 var timeoutPromise;
 
@@ -429,9 +430,9 @@
 
                 self.isTyping = function () {
                     if (self.currentRoom) {
-                        if (self.message !== '' && !(self.message.length > 1)) {
+                        if (self.message !== '' && (typeof self.message === 'string' && !(self.message.length > 1))) {
                             chatSocket.emit('user-typing');
-                        } else if (self.message === '') {
+                        } else if (!self.message) {
                             chatSocket.emit('user-stop-typing');
                         } else {
                             // nothing
@@ -503,14 +504,15 @@
 
                 chatSocket.on('typing', function (room) {
                     if (room === self.currentRoom) {
-                        // TODO Implement
-
+                        self.userTyping = true;
+                        $location.hash('typing');
+                        $anchorScroll();
                     }
                 });
 
                 chatSocket.on('stop-typing', function (room) {
                     if (room == self.currentRoom) {
-                        // TODO Implement
+                        self.userTyping = false;
                     }
                 });
 

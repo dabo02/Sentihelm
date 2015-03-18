@@ -26,7 +26,12 @@
                         - {{message.message}}
                     </p>
                 </div>
-                <a id="chat-bottom"></a>
+                <div id="typing"
+                     class="message"
+                     ng-show="tipChatCtrl.userTyping">
+                    <p class="chat-message">{{tipChatCtrl.rooms[tipChatCtrl.currentRoom].with.username}} is
+                    typing...</p>
+                </div>
             </div>
 
             <div id="tip-chat-controls">
