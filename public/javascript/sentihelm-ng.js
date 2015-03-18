@@ -1859,7 +1859,7 @@
 //Controller for the video-archive state
 
 
-app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', function ($scope, Session, socket, ngDialog, usSpinnerService) {
+app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', function ($scope, Session, socket, ngDialog, usSpinnerService, $location) {
 
 	var videoArchiveCtrl = this;
 	videoArchiveCtrl.videoArchiveArray;
@@ -1880,8 +1880,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             return;
         }
 
-        var parseSkipLimit = 10000;
         usSpinnerService.spin('loading-video-archive-spinner');
+        var parseSkipLimit = 10000;
         videoArchiveCtrl.videoArchiveArray = [];
         videoArchiveCtrl.currentPageNum = pageNum;
         videoArchiveCtrl.skip = (videoArchiveCtrl.currentPageNum - 1) * videoArchiveCtrl.limit;
@@ -1924,8 +1924,13 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 if(videoArchiveCtrl.videoArchiveArray.length===0){
                     videoArchiveCtrl.videosAvailable = false;
                 }
+                else{
+                    videoArchiveCtrl.videosAvailable = true;
+                }
                 usSpinnerService.stop('loading-video-archive-spinner');
                 //videoArchiveCtrl.lastPageNum = Math.ceil(videoArchiveCtrl.videoArchiveArray.length / 10);
+                $location.hash('top');
+                $anchorScroll();
             },
             error: function(object, error) {
                 // The object was not retrieved successfully.
@@ -3122,19 +3127,35 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
         adminPanelCtrl.getPage = function(pageNum){
 
-            if(pageNum < 1 || pageNum > adminPanelCtrl.lastPageNum){
+            if(pageNum < 1 || (pageNum > adminPanelCtrl.lastPageNum && adminPanelCtrl.lastPageNum > 0)){
                 return;
             }
 
-            var parseSkipLimit = 10000;
             usSpinnerService.spin('loading-video-archive-spinner');
+            var parseSkipLimit = 10000;
             adminPanelCtrl.adminPanelUsersArray = [];
             adminPanelCtrl.currentPageNum = pageNum;
             adminPanelCtrl.skip = (adminPanelCtrl.currentPageNum - 1) * adminPanelCtrl.limit;
 
             var User = Parse.Object.extend("_User");
             var adminPanelQuery = new Parse.Query(User);
+
+            if(adminPanelCtrl.userSearchStringFilter){
+                 var usernameQuery = new Parse.Query("_User");
+                 usernameQuery.startsWith("username", adminPanelCtrl.userSearchStringFilter);
+
+                 var emailQuery = new Parse.Query("_User");
+                 emailQuery.startsWith("email", adminPanelCtrl.userSearchStringFilter);
+
+                 adminPanelQuery = Parse.Query.or(usernameQuery, emailQuery);
+            }
+
+            if(adminPanelCtrl.userRegistrationDateFilter){
+                 adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(adminPanelCtrl.userRegistrationDateFilter));
+            }
+
             adminPanelQuery.containedIn('roles', adminPanelCtrl.rolesFilter);
+
             adminPanelQuery.equalTo('homeClient', {
                 __type: "Pointer",
                 className: "Client",
@@ -3142,19 +3163,6 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             });
             adminPanelQuery.descending("createdAt");
 
-            if(adminPanelCtrl.userRegistrationDateFilter){
-                 adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(adminPanelCtrl.userRegistrationDateFilter));
-            }
-            /*
-            if(adminPanelCtrl.watchStatusFilter && adminPanelCtrl.watchStatusFilter != "All"){
-                 if(adminPanelCtrl.watchStatusFilter === "Watched"){
-                    adminPanelQuery.equalTo('hasBeenWatched', true);
-                 }
-                 else{
-                    adminPanelQuery.equalTo('hasBeenWatched', undefined);
-                 }
-            }
-            */
             //parse skip limit hack for fetching more than 11,001 records..
             if(adminPanelCtrl.skip > parseSkipLimit){
                 adminPanelQuery.lessThanOrEqualTo("createdAt", adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt)
@@ -3169,8 +3177,13 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                     if(adminPanelCtrl.adminPanelUsersArray.length===0){
                         adminPanelCtrl.usersAvailable = false;
                     }
+                    else{
+                        adminPanelCtrl.usersAvailable = true;
+                    }
                     usSpinnerService.stop('loading-video-archive-spinner');
                     //adminPanelCtrl.lastPageNum = Math.ceil(adminPanelCtrl.adminPanelUsersArray.length / 10);
+                    $location.hash('top');
+                    $anchorScroll();
                 },
                 error: function(object, error) {
                     // The object was not retrieved successfully.
@@ -3250,6 +3263,9 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             adminPanelCtrl.viewingLoggedIn = false;
             adminPanelCtrl.addingUser = false;
 
+            adminPanelCtrl.successMessage = "";
+            adminPanelCtrl.hasError = false;
+
             switch(view){
 
                 case 'all':
@@ -3284,6 +3300,52 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                     adminPanelCtrl.addingUser = true;
                     break;
             };
+        };
+
+        adminPanelCtrl.updateRole = function(action, role){
+            for(var i = 0; i < adminPanelCtrl.adminPanelUsersArray.length; i++){
+                var user = adminPanelCtrl.adminPanelUsersArray[i];
+           // adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
+                if(user.selected){
+                    //Update VideoSession's lastWatcher
+                    var VideoSession = Parse.Object.extend("_User");
+                    var videoSessionQuery = new Parse.Query(VideoSession);
+                    videoSessionQuery.get(video.id, {
+                        success: function(videoSession) {
+                            videoSession.set('hasBeenWatched', true);
+                            videoSession.set('lastWatcher', {
+                              __type: "Pointer",
+                              className: "User",
+                              objectId: Session.userId
+                            });
+                            videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
+                        },
+                        error: function(object, error) {
+                            // The object was not retrieved successfully.
+                            console.log("Error fetching video for lastWatcher update.");
+                        }
+                    });
+                    if(action === "add"){
+                        user.addUnique("roles", role);
+                    }
+                    else if(action === "remove"){
+                        user.remove("roles", role);
+                    }
+                    else{
+                        return;
+                    }
+                    user.save(null,{
+                        success: function(user){
+                            adminPanelCtrl.successMessage = "SUCCESS: Role has been updated.";
+                            adminPanelCtrl.hasError = false;
+                        },
+                        error: function(user, error){
+                            adminPanelCtrl.successMessage = "FAILURE: Role could not be updated.";
+                            adminPanelCtrl.hasError = true;
+                        }
+                    });
+                }
+            };//);
         };
 
         adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
