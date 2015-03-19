@@ -6,7 +6,6 @@
 
 (function (angular, undefined) {
     'use strict';
-    var User = Parse.Object.extend("User");
 
     angular.module('sentihelm')
         .factory('messageFactory', ['Session', function (Session) {
