@@ -4,7 +4,10 @@
 
     //Sets up all the states/routes the app will handle,
     //so as to have a one page app with deep-linking
-    app.config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', function ($stateProvider, $urlRouterProvider, USER_ROLES) {
+    app.config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', '$sceDelegateProvider', function ($stateProvider, $urlRouterProvider, USER_ROLES, $sceDelegateProvider) {
+
+		//$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://s3.amazonaws.com/stream-archive/44755992/**']);
+		$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44755992/**']);
 
         // For any unmatched url, redirect to /tipfeed
         $urlRouterProvider.otherwise("/tipfeed");
@@ -189,26 +192,6 @@
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
                     }
                 }
-            })
-            .state('tip-chat', {
-                url: '/chat-logs',
-                templateUrl: '/tip-chat.html',
-                data: {
-                    // only users with chat permissions can use this route.
-                    authorizedRoles: [USER_ROLES.demo, USER_ROLES.manager]
-                },
-                resolve: {
-                    // Reads the Routing Service
-                    routingService: 'RoutingService',
-
-                    // Receives the Routing Service, checks if user is logged in,
-                    // executes the login dialog if needed and waits for the dialog
-                    // to close before loading the state.
-                    authenticate: function (routingService) {
-                        return routingService.checkUserStatus(this.data.authorizedRoles, "Chat Logs");
-                    }
-                }
-
             });
     }]);
 
@@ -855,11 +838,11 @@
                     paginator.resetTotalTipCount = false;
                     paginator.totalTipCount = data.totalTipCount;
                 }
-                paginator.lastPage = Math.max(Math.ceil(paginator.totalTipCount / 10), 1);
+                paginator.lastVideo = Math.max(Math.ceil(paginator.totalTipCount / 10), 1);
                 paginator.firstTipDateInArray = data.tips[0].createdAt;
                 paginator.lastTipDateInArray = data.tips[data.tips.length - 1].createdAt;
                 if (paginator.currentPage === 1) {
-                    paginator.pageSetUpdater(paginator.lastPage, false);
+                    paginator.pageSetUpdater(paginator.lastVideo, false);
                 }
                 //        paginator.changePage(paginator.currentPage);
                 $rootScope.$broadcast('new-batch', [paginator.tips, paginator.currentPage]);
@@ -888,7 +871,7 @@
             //and size of said array
             paginator.totalTipCount = 0;
             paginator.currentPage = 1;
-            paginator.lastPage = 1;
+            paginator.lastVideo = 1;
             paginator.paginatorSet = [];
             paginator.paginatorSetSize = 0;
             paginator.tips;
@@ -937,7 +920,7 @@
             $rootScope.$broadcast('discard-current-tips', []);
 
             if (this.currentPage % 10 === 0) {
-                this.pageSetUpdater(this.lastPage, true);
+                this.pageSetUpdater(this.lastVideo, true);
             }
         };
 
@@ -955,7 +938,7 @@
             ++this.currentPage;
 
             if ((this.currentPage - 1) % 10 === 0) {
-                this.pageSetUpdater(this.lastPage - (this.currentPage - 1), false);
+                this.pageSetUpdater(this.lastVideo - (this.currentPage - 1), false);
             }
         };
 
@@ -972,7 +955,7 @@
             }
 
             //Let controller know the set has changed
-            $rootScope.$broadcast('paginator-set-update', [paginator.paginatorSet, paginator.lastPage]);
+            $rootScope.$broadcast('paginator-set-update', [paginator.paginatorSet, paginator.lastVideo]);
         };
 
         return paginator;
@@ -1107,6 +1090,7 @@
                         var query = new Parse.Query(VideoSession);
                         query.get(stream.connectionId)
                             .then(function (videoSession) {
+                                videoSession.set('hasBeenWatched', true);
                                 videoSession.set('officerUser', {
                                     __type: "Pointer",
                                     className: "User",
@@ -1153,7 +1137,6 @@
             session.on("sessionDisconnected", function (event) {
 
                 // access to disconnected session: event.target
-
                 //TODO Change broadcast so it manages when video call is
                 //changed for another one
                 // $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
@@ -1168,6 +1151,8 @@
                 }
                 //Save current session
                 VideoStreamsService.currentSession = session;
+
+
             });
         };
 
@@ -1735,41 +1720,37 @@
             drawer.clientLogo = Session.clientLogo;
             drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
 
-            //Drawer options with name and icon;
-            //entries are off by default
-            this.entries = [{
-                name: 'Tip Feed',
-                icon: 'glyphicon glyphicon-inbox',
-                state: 'tipfeed'
-            }, {
-                name: 'Video Streams',
-                icon: 'glyphicon glyphicon-facetime-video',
-                state: 'video-streams'
-            }, {
-                name: 'Tip Chat Logs',
-                icon: 'glyphicon glyphicon-envelope',
-                state: 'tip-chat'
-            }, {
-                name: 'Send Notification',
-                icon: 'glyphicon glyphicon-send',
-                state: 'regional-notifications'
-            }, /*{
-             name: 'Video Archive',
-             icon: 'glyphicon glyphicon-film',
-             state: 'video-archive'
-             }, */{
-                name: 'Maps',
-                icon: 'glyphicon glyphicon-map-marker',
-                state: 'maps'
-            }, {
-                name: 'Wanted List',
-                icon: 'glyphicon glyphicon-list-alt',
-                state: 'most-wanted'
-            }, {
-                name: 'Data Analysis',
-                icon: 'glyphicon glyphicon-stats',
-                state: 'data-analysis'
-            }];
+        //Drawer options with name and icon;
+        //entries are off by default
+        this.entries = [{
+            name: 'Tip Feed',
+            icon: 'glyphicon glyphicon-inbox',
+            state: 'tipfeed'
+        }, {
+            name: 'Video Streams',
+            icon: 'glyphicon glyphicon-facetime-video',
+            state: 'video-streams'
+        }, {
+            name: 'Video Archive',
+            icon: 'glyphicon glyphicon-film',
+            state: 'video-archive'
+        }, {
+            name: 'Send Notification',
+            icon: 'glyphicon glyphicon-send',
+            state: 'regional-notifications'
+        }, {
+            name: 'Maps',
+            icon: 'glyphicon glyphicon-map-marker',
+            state: 'maps'
+        }, {
+            name: 'Wanted List',
+            icon: 'glyphicon glyphicon-list-alt',
+            state: 'most-wanted'
+        }, {
+            name: 'Data Analysis',
+            icon: 'glyphicon glyphicon-stats',
+            state: 'data-analysis'
+        }];
 
             //Hides (closes) the drawer by sliding
             //snap-content (main page view) back to the left
@@ -1812,7 +1793,7 @@
                 }
             });
 
-            //Display toast.
+            //Display toast for new stream
             socket.on('new-video-stream', function (data) {
                 //Open toast.
                 ngToast.create({
@@ -1826,19 +1807,33 @@
                 });
                 drawer.sound.play();
             });
-
-            $scope.$on('update-user', function (event, data) {
-                drawer.userFullName = Session.userFullName;
+        /*
+        //Display toast for succesful archive creation
+        socket.on('new-video-archive', function (data) {
+            //Open toast.
+            ngToast.create({
+                //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
+                content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoArchive()">Video stored in archive successfully.</a>'),
+                class: 'success',
+                dismissOnTimeout: $state.current.name !== 'video-archive' ? false : true,
+                dismissButton: true,
+                compileContent: true,
+                dismissOnClick: false
             });
+            drawer.sound.play();
+        });
+        */
 
-            $scope.$on('refresh-counter', function (event, data) {
-                drawer.newTips = 0;
-                $scope.$apply();
-            });
+        $scope.$on('update-user', function (event, data) {
+            drawer.userFullName = Session.userFullName;
+        });
 
-        }
-    ])
-    ;
+        $scope.$on('refresh-counter', function (event, data) {
+            drawer.newTips = 0;
+            $scope.$apply();
+        });
+
+    }]);
 
 //Controller for the toast that notifies the user that a
 //new video stream is available.
@@ -1853,73 +1848,181 @@
                 });
             }
         };
+
+        toastCtrl.goToVideoArchive = function(){
+            if($state.current.name !== 'video-archive'){
+                $state.go("video-archive", {}, {reload: true});
+            }
+        }
     }]);
 
 //Controller for the video-archive state
 
 
-    app.controller('VideoArchiveController', ['$scope', function ($scope) {
+app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', function ($scope, Session, socket, ngDialog, usSpinnerService, $location, $anchorScroll) {
 
-        this.videoArchiveArray = [
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
+	var videoArchiveCtrl = this;
+	videoArchiveCtrl.videoArchiveArray;
+    videoArchiveCtrl.videoWatchStatuses = ['Watched', 'Unwatched', 'All'];
+    videoArchiveCtrl.videosAvailable = true;
+
+    //pagination variables
+    videoArchiveCtrl.currentPageNum = 1;
+    videoArchiveCtrl.lastPageNum;
+    videoArchiveCtrl.pageNumbers;
+    videoArchiveCtrl.limit = 10;
+    videoArchiveCtrl.skip;
+    videoArchiveCtrl.videoTotal;
+
+    videoArchiveCtrl.getPage = function(pageNum){
+
+        if(pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum){
+            return;
+        }
+
+        usSpinnerService.spin('loading-video-archive-spinner');
+        var parseSkipLimit = 10000;
+        videoArchiveCtrl.videoArchiveArray = [];
+        videoArchiveCtrl.currentPageNum = pageNum;
+        videoArchiveCtrl.skip = (videoArchiveCtrl.currentPageNum - 1) * videoArchiveCtrl.limit;
+
+        var VideoSession = Parse.Object.extend("VideoSession");
+        var videoArchiveQuery = new Parse.Query(VideoSession);
+        videoArchiveQuery.include('mobileUser', 'officerUser', 'lastWatcher');
+        videoArchiveQuery.containedIn('archiveStatus', ['uploaded','available']);
+        videoArchiveQuery.equalTo('client', {
+            __type: "Pointer",
+            className: "Client",
+            objectId: Session.clientId
+        });
+        videoArchiveQuery.descending("createdAt");
+
+        if(videoArchiveCtrl.videoDateFilter){
+             videoArchiveQuery.greaterThanOrEqualTo('createdAt', new Date(videoArchiveCtrl.videoDateFilter));
+        }
+
+        if(videoArchiveCtrl.watchStatusFilter && videoArchiveCtrl.watchStatusFilter != "All"){
+             if(videoArchiveCtrl.watchStatusFilter === "Watched"){
+                videoArchiveQuery.equalTo('hasBeenWatched', true);
+             }
+             else{
+                videoArchiveQuery.equalTo('hasBeenWatched', undefined);
+             }
+        }
+
+        //parse skip limit hack for fetching more than 11,001 records..
+        if(videoArchiveCtrl.skip > parseSkipLimit){
+            videoArchiveQuery.lessThanOrEqualTo("createdAt", videoArchiveCtrl.videoArchiveArray[videoArchiveCtrl.limit - 1].createdAt)
+            videoArchiveCtrl.skip = 0;
+        }
+
+        videoArchiveQuery.skip(videoArchiveCtrl.skip);
+        videoArchiveQuery.limit(videoArchiveCtrl.limit);
+        videoArchiveQuery.find({
+            success: function(videos) {
+                videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
+                if(videoArchiveCtrl.videoArchiveArray.length===0){
+                    videoArchiveCtrl.videosAvailable = false;
+                }
+                else{
+                    videoArchiveCtrl.videosAvailable = true;
+                }
+                usSpinnerService.stop('loading-video-archive-spinner');
+                //videoArchiveCtrl.lastPageNum = Math.ceil(videoArchiveCtrl.videoArchiveArray.length / 10);
+                $location.hash('top');
+                $anchorScroll();
             },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
-            },
-            {
-                streamer: 'Brian Landron',
-                watcher: 'Optivon',
-                duration: '4 hours',
-                creationDate: 'today',
-                geoLocation: '(-18,-67)'
+            error: function(object, error) {
+                // The object was not retrieved successfully.
+                console.log("Error fetching video archive.");
             }
-        ];
+        });
 
-        /*
-         this.fetchVideoArchive = function(){
+        videoArchiveQuery.count({
+            success: function(count) {
+                videoArchiveCtrl.lastPageNum = Math.ceil(count/10);
+                videoArchiveCtrl.videoTotal = count;
+            },
+            error: function(object, error) {
+                // The object was not retrieved successfully.
+                console.log("Error counting video archives.");
+            }
+        }).then(function(){
+            videoArchiveCtrl.refreshPageNumbers();
+        });
+    }
 
-         var VideoArchive = Parse.Object.extend("VideoArchive");
-         var query = new Parse.Query(VideoArchive);
-         query.get("xWMyZ4YEGZ", {
-         success: function(videoArchiveArray) {
-         // The object was retrieved successfully.
-         this.videoArchiveArray = angular.copy(videoArchiveArray);
+    videoArchiveCtrl.refreshPageNumbers = function(){
 
-         },
-         error: function(object, error) {
-         // The object was not retrieved successfully.
-         console.log("Error fetching video archive.");
-         }
-         });
-         //callback(err, array);
-         };
+        var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / videoArchiveCtrl.limit);
+        var firstNum =  videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0 ? (baseNum - 1) * videoArchiveCtrl.limit + 1 : baseNum  * videoArchiveCtrl.limit + 1;
+        var lastNum = 0;
 
-         this.fetchVideoArchiveArray();
-         */
-    }]);
+        if(videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0){
+            lastNum = videoArchiveCtrl.currentPageNum;
+        }
+        else if(baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit > videoArchiveCtrl.lastPageNum){
+            lastNum = videoArchiveCtrl.lastPageNum;
+        }
+        else{
+            lastNum = baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit;
+        }
+
+        videoArchiveCtrl.pageNumbers = [];
+
+        for(var i = 0, j = firstNum; j <= lastNum; i++, j++){
+            videoArchiveCtrl.pageNumbers[i] = j;
+        }
+    }
+
+	videoArchiveCtrl.showVideo = function(video){
+
+        AWS.config.update({accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q', secretAccessKey: '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'});
+        AWS.config.region = 'us-east-1';
+        var s3 = new AWS.S3();
+
+        // This URL will expire in one minute (60 seconds)
+        var params = {Bucket: 'stream-archive', Key: '44755992/' + video.attributes.archiveId + '/archive.mp4', Expires: 500};
+        var videoUrl = s3.getSignedUrl('getObject', params);
+
+		//ngDialog can only handle stringified JSONs
+		var data = JSON.stringify({
+			attachmentType: 'VID',
+			address: videoUrl
+		});
+
+		//Open dialog and pass control to AttachmentController
+		$scope.attachmentDialog = ngDialog.open({
+			template: '../attachment-dialog.html',
+			className: 'ngdialog-attachment',
+			showClose: true,
+			scope: $scope,
+			data: data
+		});
+
+		//Update VideoSession's lastWatcher
+		var VideoSession = Parse.Object.extend("VideoSession");
+        var videoSessionQuery = new Parse.Query(VideoSession);
+        videoSessionQuery.get(video.id, {
+            success: function(videoSession) {
+                videoSession.set('hasBeenWatched', true);
+                videoSession.set('lastWatcher', {
+                  __type: "Pointer",
+                  className: "User",
+                  objectId: Session.userId
+                });
+                videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
+            },
+            error: function(object, error) {
+                // The object was not retrieved successfully.
+                console.log("Error fetching video for lastWatcher update.");
+            }
+        });
+	}
+
+	videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
+
+}]);
 
 //Controller for VideStreams route; controls
 //the video streams view, which contains queue,
@@ -1947,6 +2050,7 @@
         socket.on('new-video-stream', function (data) {
             var stream = data.stream;
             vidStrmCtrl.queue.unshift(stream);
+//            vidStrmCtrl.currentSessionId = stream.sessionId;
         });
 
         $scope.$on('stream-destroyed', function (event, data) {
@@ -1988,9 +2092,9 @@
             this.showFilter = true;
             this.tipsAvailable = true;
             this.currentTips = [];
-            this.currentPage = tipFeedPaginationService.currentPage;
-            this.lastPage = tipFeedPaginationService.lastPage;
-            this.paginatorSet = tipFeedPaginationService.paginatorSet;
+            this.currentPage = paginator.currentPage;
+            this.lastVideo = paginator.lastVideo;
+            this.paginatorSet = paginator.paginatorSet;
             this.showMediaSpinner = false;
             this.counter = 0;
             this.filter = undefined;
@@ -2038,7 +2142,7 @@
             //Catch event when page sets change (every 10 pages)
             $scope.$on('paginator-set-update', function (event, data) {
                 tipfeed.paginatorSet = data[0];
-                tipfeed.lastPage = data[1];
+                tipfeed.lastVideo = data[1];
             });
 
             //Catch event when paginator Service is fetching
@@ -2782,7 +2886,7 @@
             center: {
                 latitude: 0,
                 longitude: 0
-            },
+            }
         };
 
         //Get region center-location from Parse
@@ -2994,11 +3098,101 @@
     }]);
 
 //Controller for Administrator Panel
-    app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', function (socket, Session, $anchorScroll) {
+    app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http) {
 
         var adminPanelCtrl = this;
         this.sending = false;
-         adminPanelCtrl.hasError = false;
+        adminPanelCtrl.hasError = false;
+
+        adminPanelCtrl.viewingAll = true;
+        adminPanelCtrl.viewingUsers = false;
+        adminPanelCtrl.viewingEmployees = false;
+        adminPanelCtrl.viewingAdministrators = false;
+        adminPanelCtrl.viewingLoggedIn = false;
+        adminPanelCtrl.addingUser = false;
+
+        adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
+
+        adminPanelCtrl.adminPanelUsersArray = [];
+
+        //pagination variables
+        adminPanelCtrl.currentPageNum = 1;
+        adminPanelCtrl.lastPageNum;
+        adminPanelCtrl.pageNumbers;
+        adminPanelCtrl.limit = 10;
+        adminPanelCtrl.skip;
+        adminPanelCtrl.userTotal;
+        adminPanelCtrl.usersAvailable = true;
+        adminPanelCtrl.rolesFilter = ['employee','admin'];
+
+        adminPanelCtrl.getPage = function(pageNum){
+
+            if(pageNum < 1 || (pageNum > adminPanelCtrl.lastPageNum && adminPanelCtrl.lastPageNum > 0)){
+                return;
+            }
+
+            usSpinnerService.spin('loading-video-archive-spinner');
+            adminPanelCtrl.currentPageNum = pageNum;
+            adminPanelCtrl.skip = (adminPanelCtrl.currentPageNum - 1) * adminPanelCtrl.limit;
+
+            var params = {
+                homeClient: Session.clientId,
+                searchString: adminPanelCtrl.searchString,
+                registrationDate: adminPanelCtrl.registrationDate,
+                roles: adminPanelCtrl.rolesFilter,
+                lastUserCreatedAt: false, // adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt || undefined,
+                skip: adminPanelCtrl.skip,
+                limit: adminPanelCtrl.limit
+            };
+
+
+            $http.get('/users/list', {params: params})
+                .success(function(data){
+
+                    adminPanelCtrl.lastPageNum = data.lastPageNum;
+                    adminPanelCtrl.userTotal = data.userTotal;
+
+                    adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
+
+                    if(adminPanelCtrl.adminPanelUsersArray.length===0){
+                        adminPanelCtrl.usersAvailable = false;
+                    }
+                    else{
+                        adminPanelCtrl.usersAvailable = true;
+                    }
+
+                    usSpinnerService.stop('loading-video-archive-spinner');
+                    $location.hash('top');
+                    $anchorScroll();
+                    adminPanelCtrl.refreshPageNumbers();
+                })
+                .error(function(err){
+
+                });
+        };
+
+        adminPanelCtrl.refreshPageNumbers = function(){
+
+            var baseNum = Math.floor(adminPanelCtrl.currentPageNum / adminPanelCtrl.limit);
+            var firstNum =  adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0 ? (baseNum - 1) * adminPanelCtrl.limit + 1 : baseNum  * adminPanelCtrl.limit + 1;
+            var lastNum = 0;
+
+            if(adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0){
+                lastNum = adminPanelCtrl.currentPageNum;
+            }
+            else if(baseNum * adminPanelCtrl.limit + adminPanelCtrl.limit > adminPanelCtrl.lastPageNum){
+                lastNum = adminPanelCtrl.lastPageNum;
+            }
+            else{
+                lastNum = baseNum * adminPanelCtrl.limit + adminPanelCtrl.limit;
+            }
+
+            adminPanelCtrl.pageNumbers = [];
+
+            for(var i = 0, j = firstNum; j <= lastNum; i++, j++){
+                adminPanelCtrl.pageNumbers[i] = j;
+            }
+        }
 
         //Adds new SentiHelm user
         this.addUser = function (newUser) {
@@ -3014,6 +3208,7 @@
             adminPanelCtrl.sending = false;
             adminPanelCtrl.successMessage = "SUCCESS: you have created a new user.";
             adminPanelCtrl.hasError = false;
+            $location.hash('top');
             $anchorScroll();
         });
 
@@ -3021,8 +3216,113 @@
             adminPanelCtrl.sending = false;
             adminPanelCtrl.successMessage = "FAILED: " + data.error + ".";
             adminPanelCtrl.hasError =  true;
+            $location.hash('top');
             $anchorScroll();
         });
+
+        adminPanelCtrl.changeView = function(view){
+
+            adminPanelCtrl.viewingAll = false;
+            adminPanelCtrl.viewingUsers = false;
+            adminPanelCtrl.viewingEmployees = false;
+            adminPanelCtrl.viewingAdministrators = false;
+            adminPanelCtrl.viewingLoggedIn = false;
+            adminPanelCtrl.addingUser = false;
+
+            adminPanelCtrl.successMessage = "";
+            adminPanelCtrl.hasError = false;
+
+            switch(view){
+
+                case 'all':
+                    adminPanelCtrl.viewingAll = true;
+                    adminPanelCtrl.rolesFilter = ['employee','admin'];
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                    break;
+
+                case 'users':
+                    adminPanelCtrl.viewingUsers = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'employees':
+                    adminPanelCtrl.viewingEmployees = true;
+                    adminPanelCtrl.rolesFilter = ['employee'];
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                    break;
+
+                case 'administrators':
+                    adminPanelCtrl.viewingAdministrators = true;
+                    adminPanelCtrl.rolesFilter = ['admin'];
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                    break;
+
+                case 'loggedIn':
+                    adminPanelCtrl.viewingLoggedIn = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'addUser':
+                    adminPanelCtrl.addingUser = true;
+                    break;
+            };
+        };
+
+        adminPanelCtrl.updateRole = function(action, role){
+
+            var roleString;
+            //determine role string
+            if(role === "admin"){
+                roleString = "Administrator";
+            }
+            else{
+                roleString = "Officer";
+            }
+
+            var roleChangeConfirm = confirm("Are you sure you want to " + action + "the " + roleString + "role to selected user(s)?");
+
+            if(roleChangeConfirm){
+                $http.post('/reset-password', {id: user});
+                //if()
+            }
+
+            adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
+                if(user.selected){
+                    //Update VideoSession's lastWatcher
+                    var User = Parse.Object.extend("_User");
+                    var adminPanelQuery = new Parse.Query(User);
+                    adminPanelQuery.get(user.id, {
+                        success: function(fetchedUser) {
+                            if(action === "add"){
+                                fetchedUser.addUnique("roles", role);
+                            }
+                            else if(action === "remove"){
+                                //fetchedUser.remove("roles", role);
+                            }
+                            else{
+                                return;
+                            }
+                            fetchedUser.save(/*null,{
+                                success: function(user){
+                                    adminPanelCtrl.successMessage = "SUCCESS: Role has been updated.";
+                                    adminPanelCtrl.hasError = false;
+                                },
+                                error: function(user, error){
+                                    adminPanelCtrl.successMessage = "FAILURE: Role could not be updated.";
+                                    adminPanelCtrl.hasError = true;
+                                }
+                            }*/).then(adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum));
+                        },
+                        error: function(object, error) {
+                            // The object was not retrieved successfully.
+                            console.log("Error fetching video for lastWatcher update.");
+                        }
+                    });
+                }
+            });
+        };
+
+        adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
 
     }]);
 
@@ -3030,12 +3330,15 @@
     app.controller('ProfileController', ['socket', 'Session', '$scope', function (socket, Session, $scope) {
 
         var profileCtrl = this;
+        profileCtrl.hasError = false;
         profileCtrl.user = Session.user;
-        profileCtrl.userChanged = false;
-        profileCtrl.passwordChanged = false;
 
         profileCtrl.savingUser = false;
         profileCtrl.savingPass = false;
+
+        profileCtrl.showPasswordChanger = false;
+
+        profileCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
 
         //Adds new SentiHelm user
         profileCtrl.saveUser = function (user) {
@@ -3060,31 +3363,39 @@
 
         socket.on('save-user-success', function (data) {
             profileCtrl.savingUser = false;
-            profileCtrl.userSuccessMessage = "Succeded";
+            profileCtrl.successMessage = "Succeeded";
+            profileCtrl.hasError = false;
             Session.updateUser(profileCtrl.user);
         });
 
         socket.on('save-user-failed', function (data) {
             profileCtrl.savingUser = false;
-            profileCtrl.userSuccessMessage = "Failed";
+            profileCtrl.successMessage = "Failed";
+            profileCtrl.hasError = true;
         });
         socket.on('save-user-password-success', function (data) {
             profileCtrl.savingPass = false;
-            profileCtrl.passwordSuccessMessage = "Succeded";
+            profileCtrl.successMessage = "Succeeded";
+            profileCtrl.hasError = false;
         });
 
         socket.on('save-user-password-failed', function (data) {
             profileCtrl.savingPass = false;
-            profileCtrl.passwordSuccessMessage = "Incorrect password";
+            profileCtrl.successMessage = "Incorrect password";
+            profileCtrl.hasError = true;
         });
 
-        profileCtrl.userChange = function () {
-            profileCtrl.userChanged = true;
+        profileCtrl.changePassword = function(){
+            profileCtrl.showPasswordChanger = true;
+            profileCtrl.successMessage = "";
+            profileCtrl.hasError = false;
         };
 
-        profileCtrl.passwordChange = function () {
-            profileCtrl.passwordChanged = true;
-        }
+        profileCtrl.editProfile = function(){
+            profileCtrl.showPasswordChanger = false;
+            profileCtrl.successMessage = "";
+            profileCtrl.hasError = false;
+        };
 
     }]);
 
@@ -3162,5 +3473,4 @@
 
     }]);
 
-})
-();
+})();

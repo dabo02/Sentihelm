@@ -1,7 +1,7 @@
 {
   "name": "sentinel",
   "description": "Sentinel dashboard service; part of ¡Basta Ya! crime prevention suite.",
-  "version": "0.0.1",
+  "version": "0.9.1",
   "private": true,
   "dependencies": {
     "body-parser": "1.0.2",
@@ -13,9 +13,10 @@
     "parse": "1.2.19",
     "socket.io": "~1.0.0",
     "crypto-js": "3.1.2-5",
-    "sjcl": "^1.0.1"
+    "sjcl": "^1.0.1",
+    "express-session": "*"
   },
   "scripts": {
-    "start": "PORT=8080 nodemon server.js"
+    "start": "./bin/www"
   }
 }

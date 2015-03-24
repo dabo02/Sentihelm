@@ -4,55 +4,36 @@
 
 //Imports for web server
 //Create an express server (app)
-//then pass along to http server
 var express = require('express');
 var app = express();
-var server = require('http').Server(app);
 var bodyParser = require('body-parser');
-var morgan = require('morgan');
+var logger = require('morgan');
 var fs = require('fs');
-var http = require('http');
+var config = require('./config');
+var util = require('./lib/util');
+var session = require('express-session');
 
 //Import and initialize socket.io
-var io = require('socket.io')(server);
+//var io = require('socket.io')(server);
 
 //Other imports
-var clc = require('cli-color');
-var net = require('net');
 var Parse = require('parse').Parse;
 var OpenTok = require('opentok');
 var MobileClient = require('./lib/mobileclient');
-var EncryptionManager = require('./lib/EncryptionManager.js');
-var PasswordGenerator = require('./lib/PasswordGenerator.js');
 
-//=========================================
-//  ENVIRONMENT SETUP
-//=========================================
-
-//Define colors for log
-var cyan = clc.cyanBright;
-var green = clc.greenBright;
-var yellow = clc.yellowBright;
-var red = clc.redBright;
-var notice = clc.magentaBright;
-var maroon = clc.red;
-
-////************************** User Encryption*****************************************/
-var APP_ID_2 = "csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd";
-var JS_KEY_2 = "T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor";
-Parse.initialize(APP_ID_2, JS_KEY_2);
-
-//Set up parse.
-//var APP_ID = "Q5ZCIWpcM4UWKNmdldH8PticCbywTRPO6mgXlwVE";
-//var JS_KEY = "021L3xL2O3l7sog9qRybPfZuXmYaLwwEil5x1EOk";
-//Parse.initialize(APP_ID, JS_KEY);
+Parse.initialize(config.parse.appId, config.parse.jsKey);
 
 //Set up Parse classes for queries
 var TipReport = Parse.Object.extend("TipReport");
 var Client = Parse.Object.extend("Client");
-var User = Parse.Object.extend("User");
+var User = Parse.Object.extend("_User");
 var VideoSession = Parse.Object.extend("VideoSession");
 var PushNotification = Parse.Object.extend("FollowUpNotifications");
+
+
+
+var EncryptionManager = require('./lib/EncryptionManager.js');
+var PasswordGenerator = require('./lib/PasswordGenerator.js');
 
 //Generates the password for the encription manager.
 var passwordGenerator = new PasswordGenerator();
@@ -60,445 +41,403 @@ var passwordGenerator = new PasswordGenerator();
 //Encrypts and decrypts
 var encryptionManager = new EncryptionManager();
 
-//Set OpenTok key and secret. Create a new opentok object,
-//which is used to manage sessions and tokens.
-var otKey = '44755992';
-var otSecret = '66817543d6b84f279a2f5557065b061875a4871f';
-var opentok = new OpenTok(otKey, otSecret);
+var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
 
 //Create an non-overriding log file and feed it
 //to an express logger with default settings
-var logFile = fs.createWriteStream('./logs/express.log', {flag: 'a'});
-app.use(morgan({format: 'default', stream: logFile}));
+app.use(logger('dev'));
 
 //Attach a bodyParser in order to handle json and urlencoded
 //bodies.
-app.use(bodyParser());
+app.use(bodyParser.json());
 
 //Add the static middleware: allows express to serve up
 //static content in the specified directory (for CSS/JS).
 app.use(express.static(__dirname + '/public'));
 
-// ======================= Chat Server ==========================
-var runChatServer = require('./lib/chat_server');
+app.use(session({
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something stored
+    secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@'
+}));
 
-runChatServer(io, Parse, Client, User, app);
-
-// ===================== End Chat Server =========================
-
-//Setup socket.io that communicates with front end
-io.on('connect', function (socket) {
-    //Front-end requested a new batch of tips;
-    //get query data and fetch
-    socket.on('start-session', function (clientId) {
-        "use strict";
-        socket.join(clientId);
-    });
-
-    socket.on('request-batch', function (data) {
-
-        //Get filtering values: by clientId, date
-        //and tips after or before given date
-        var clientId = data.clientId;
-        var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
-        var isAfterDate = data.isAfterDate;
-        var filter = data.filter;
-        var filterActivated = false;
-
-        //Create query
-        var tipQuery = new Parse.Query(TipReport);
-
-        //Filter by clientId
-        tipQuery.equalTo('clientId', {
-            __type: "Pointer",
-            className: "Client",
-            objectId: clientId
-        });
-
-        //Tell parse to include the user and client objects
-        //instead of just passing the pointers.
-        tipQuery.include('user');
-        tipQuery.include('clientId');
-
-        if (!!data.tipsToSkip) {
-            tipQuery.skip(data.tipsToSkip);
-        }
-
-        //If filter by crime type if activated
-        if (!!filter && !isNaN(filter.crimePosition)) {
-            filterActivated = true;
-            tipQuery.equalTo("crimeListPosition", filter.crimePosition);
-        }
-
-        //If filter by date is   activated
-        if (!!filter && !!filter.date) {
-            filterActivated = true;
-            filter.date = new Date(filter.date);
-            var dateAfter = new Date(filter.date);
-            dateAfter.setDate(dateAfter.getDate() + 1);
-            tipQuery.greaterThanOrEqualTo("createdAt", filter.date);
-            tipQuery.lessThanOrEqualTo("createdAt", dateAfter);
-
-        }
-
-        //Filter by date (before or after given date)
-        isAfterDate ? tipQuery.greaterThan("createdAt", date) :
-            tipQuery.lessThan("createdAt", date);
-
-        //If isAfterDate is false, query tips before said date in
-        //descending order (newest to oldest, earliest date first);
-        //otherwise, query tips after date in ascending order, but
-        //reverse final results array or tips will be incorrectly
-        //displayed from oldest to newest (tips in page 1 will be tips
-        //corresponding to page 10, and vice versa)
-        if (!isAfterDate) {
-            tipQuery.descending("createdAt");
-        }
-        else {
-            tipQuery.ascending("createdAt");
-        }
-
-        //If filter is not activated, limit the query to 10 and get the totalTipCount
-        //from the Client parse object on one of the received tips. If filter is activated
-        //get the totalTipCount from the number of tips received from parse.
-        if (!filterActivated) {
-            tipQuery.limit(10);
-        }
-        else {
-            tipQuery.limit(1000);
-        }
-
-        //Execute query
-        tipQuery.find({
-            success: function (tips) {
-
-                //Get the total tip count if filter is activated
-                if (filterActivated) {
-                    totalTips = tips.length;
-                    if (totalTips > 10) {
-                        tips = tips.slice(0, 10)
-                    }
-                }
-
-                //Reverse the array if the tips are in ascending
-                //order(oldest to newest)
-                if (isAfterDate) {
-                    tips.reverse();
-                }
-
-                var start = new Date().getTime();
-                //Loop over the array to prepare the tip objects
-                //for the front end
-                for (var i = 0; i < tips.length; i++) {
-
-                    //Get the user from the tip. This works
-                    //because we are using tipQuery.include('user').
-                    //It doesn't need to reconnect to the database
-                    //to retreive the user that submitted the tip.
-                    var tipUser = tips[i].get('user')
-
-                    if (!tips[i].attributes.smsId) {
-                        var passPhrase = passwordGenerator.generatePassword((!!tipUser ? tipUser.attributes.username : tips[i].attributes.anonymousPassword), !tipUser);
-                    }
-                    else {
-                        var passPhrase = passwordGenerator.generatePassword(tips[i].attributes.smsId);
-                    }
-
-                    //Get the client object from the first tip to be
-                    //able to get the total tip count later on (all
-                    //tips have the same client).
-                    if (i === 0 && !filterActivated) {
-                        totalTips = tips[i].get('clientId').attributes.totalTipCount;
-                    }
-                    //Convert tip from Parse to Javascript object
-                    tips[i] = JSON.parse(JSON.stringify(tips[i]));
-                    //If not an anonymous tip, get user information
-                    if (!!tipUser) {
-                        tips[i].firstName = encryptionManager.decrypt(passPhrase, tipUser.attributes.firstName.base64);
-                        tips[i].lastName = encryptionManager.decrypt(passPhrase, tipUser.attributes.lastName.base64);
-                        tips[i].username = tipUser.attributes.username;
-                        tips[i].phone = encryptionManager.decrypt(passPhrase, tipUser.attributes.phoneNumber.base64);
-                        tips[i].anonymous = false;
-                        tips[i].channel = "user_" + tipUser.id;
-                    }
-                    else {
-                        //Set tip to anonymous if the user was not found
-                        tips[i].firstName = "ANONYMOUS";
-                        tips[i].lastName = "";
-                        tips[i].anonymous = true;
-                    }
-
-                    //Prepare tip object with the values needed in
-                    //the front end; coordinates for map, tip control
-                    //number, and formatted date
-                    tips[i].center = {
-                        latitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLatitude.base64),
-                        longitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLongitude.base64)
-                    };
-                    tips[i].controlNumber = tips[i].objectId + "-" + tips[i].controlNumber;
-                    var tempDate = (new Date(tips[i].createdAt));
-                    tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
-                    tips[i].date = tempDate;
-                    tips[i].crimeDescription = tips[i].crimeDescription ? encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64) : "";
-                    tips[i].crimeType = encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
-                    tips[i].crimeListPosition = tips[i].crimeListPosition;
-                    tips[i].markers = [{
-                        id: tips[i].objectId,
-                        latitude: tips[i].center.latitude,
-                        longitude: tips[i].center.longitude,
-                        options: {
-                            draggable: false,
-                            title: "Crime Location",
-                            visible: true
-                        }
-                    }];
-
-                    if (tips[i].smsNumber) {
-                        tips[i].phone = encryptionManager.decrypt(passPhrase, tips[i].smsNumber.base64);
-                    }
-                }
-
-                //Send the tips to the front end
-                socket.emit('response-batch', {tips: tips, totalTipCount: totalTips});
-            },
-            error: function (error) {
-                //Tip fetching failed, emit response error
-                //along with error object
-                socket.emit('response-error', {error: error});
-            }
-        });
-
-    });
-
-    socket.on('request-media-url', function (data) {
-
-        //Get parseFile
-        var parseFile = data.parseFile;
-        //Generate password for decryption
-        var passPhrase = passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
-
-        var url = parseFile.url;
-        var filepath = parseFile.name;
-
-        //Download file to server
-        var file = fs.createWriteStream(filepath);
-        var request = http.get(url, function (response) {
-            response.pipe(file);
-            file.on('finish', function () {
-                //File finished downloading. Read file.
-                fs.readFile(filepath, function (err, dataBuf) {
-
-                    //Select the correct extension depending on file type.
-                    if (data.type === 'IMG') {
-                        filepath = '/temp/file.jpg';
-                    }
-                    else if (data.type === 'VID') {
-                        filepath = '/temp/file.mpg4';
-                    }
-                    else {
-                        filepath = '/temp/file.aac';
-                    }
-
-                    //Convert to base64 and decrypt.
-                    var fileB64 = dataBuf.toString('base64');
-                    var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
-
-                    //Create buffer and write the decrypted file.
-                    var decodedFile = new Buffer(decrypt, 'base64');
-                    fs.writeFile('./public' + filepath, decodedFile, function (err) {
-                        //Delete the downloaded and encrypted file.
-                        fs.unlinkSync(parseFile.name);
-                    });
-
-                    //Send file url to front-end
-                    socket.emit('response-media-url', filepath);
-                });
-            });
-        });
-    });
-
-    //Encrypt and send follow-up.
-    socket.on('new-follow-up-notif', function (data) {
-        saveAndPushNotification(data.notificationData)
-            .then(function () {
-                socket.emit('follow-up-notif-sent');
-            }, function (error) {
-                console.log(error.message);
-            });
-    });
-
-    //Add a new officer to Sentihelm
-    socket.on('add-new-officer', function (data) {
-        var officer = data.newOfficer;
-        var clientId = data.clientId;
-        addNewOfficer(officer, clientId).then(function (newOfficer) {
-            //Successfuly added; alert front-end
-            socket.emit('new-officer-added');
-            console.log("Sign up succesful..");
-        }, function (error) {
-            //Failed adding officer; alert front-end
-            console.log(error);
-            socket.emit('new-officer-failed', {error: error.message});
-        });
-    });
-
-    //Save user to Sentihelm
-    socket.on('save-user', function (data) {
-        var user = data.user;
-        saveUser(user).then(function (user) {
-            // Execute any logic that should take place after the object is saved.
-            socket.emit('save-user-success');
-        }, function (user, error) {
-            // Execute any logic that should take place if the save fails.
-            // error is a Parse.Error with an error code and message.
-            if (error.message === 'user-session-timeout') {
-                socket.emit('user-session-timeout');
-            } else {
-                socket.emit('save-user-failed');
-            }
-        });
-    });
-
-    //Save password to Sentihelm
-    socket.on('save-user-password', function (data) {
-        saveUserPassword(data).then(function (user) {
-            // Execute any logic that should take place after the object is saved.
-            socket.emit('save-user-password-success');
-        }, function (user, error) {
-            // Execute any logic that should take place if the save fails.
-            // error is a Parse.Error with an error code and message.
-            if (error.message === 'user-session-timeout') {
-                socket.emit('user-session-timeout');
-            } else {
-                socket.emit('save-user-password-failed');
-            }
-        });
-    });
-
-    //Download data from parse and organize it.
-    socket.on('analyze-data', function (data) {
-        analyzeData(data).then(function (tips) {
-            var charts = {},
-                year = data.year,
-                month = data.month,
-                isMonthSelected = !isNaN(month);
-
-            charts.tipCount = tips.length;
-
-            if (isMonthSelected) {
-                charts = getChartsData(tips, month, year);
-            }
-            else {
-                charts = getChartsData(tips);
-            }
-
-            socket.emit('analyze-data-response', charts);
-        }, function (error) {
-            socket.emit('analyze-data-error', error);
-        });
-    });
-
-    //Check for active streams on the VideoSession table on parse.
-    socket.on('get-active-streams', function (clientId) {
-        getActiveVideoStreams(clientId).then(function (streams) {
-                //Format each result for front-end
-                //keep them in modifiedStreams array
-                var modifiedStreams = [];
-
-                streams.forEach(function (stream) {
-                    "use strict";
-                    var streamUser = stream.attributes.mobileUser,
-                        passPhrase = passwordGenerator.generatePassword(streamUser.attributes.username, false);
-
-                    //Create a new strem and copy over values
-                    //from current stream in results
-                    var newStream = {};
-                    newStream.connectionId = stream.id;
-                    newStream.sessionId = stream.attributes.sessionId;
-                    newStream.webClientToken = stream.attributes.webClientToken;
-                    newStream.latitude = stream.attributes.latitude;
-                    newStream.longitude = stream.attributes.longitude;
-                    newStream.currentCliendId = stream.attributes.client.id;
-                    newStream.userObjectId = stream.attributes.mobileUser.id;
-                    newStream.firstName = encryptionManager.decrypt(passPhrase, streamUser.attributes.firstName.base64);
-                    newStream.lastName = encryptionManager.decrypt(passPhrase, streamUser.attributes.lastName.base64);
-                    newStream.email = streamUser.attributes.email;
-                    newStream.phone = encryptionManager.decrypt(passPhrase, streamUser.attributes.phoneNumber.base64);
-
-                    //Add modified stream to collection
-                    modifiedStreams.push(newStream);
-                });
-                //Send modified results to controller
-                socket.emit('get-active-streams-response', modifiedStreams);
-            },
-            function (error) {
-                //TODO
-                //Manage error when couldn't fetch active video streams
-                var err = error;
-            });
-        ;
-    });
-
-    socket.on('disconnect', function () {
-        "use strict";
-       socket.rooms.forEach(function (room) {
-           socket.leave(room);
-       });
-    });
-});
+// // ======================= Chat Server ==========================
+// var runChatServer = require('./lib/chat_server');
+//
+// runChatServer(io, Parse, Client, User, app);
+//
+// // ===================== End Chat Server =========================
+//
+// //Setup socket.io that communicates with front end
+// io.on('connect', function (socket) {
+//     //Front-end requested a new batch of tips;
+//     //get query data and fetch
+//     socket.on('start-session', function (clientId) {
+//         "use strict";
+//         socket.join(clientId);
+//     });
+//
+//     socket.on('request-batch', function (data) {
+//
+//         //Get filtering values: by clientId, date
+//         //and tips after or before given date
+//         var clientId = data.clientId;
+//         var date = data.lastTipDate ? new Date(data.lastTipDate) : new Date();
+//         var isAfterDate = data.isAfterDate;
+//         var filter = data.filter;
+//         var filterActivated = false;
+//
+//         //Create query
+//         var tipQuery = new Parse.Query(TipReport);
+//
+//         //Filter by clientId
+//         tipQuery.equalTo('clientId', {
+//             __type: "Pointer",
+//             className: "Client",
+//             objectId: clientId
+//         });
+//
+//         //Tell parse to include the user and client objects
+//         //instead of just passing the pointers.
+//         tipQuery.include('user');
+//         tipQuery.include('clientId');
+//
+//         if (!!data.tipsToSkip) {
+//             tipQuery.skip(data.tipsToSkip);
+//         }
+//
+//         //If filter by crime type if activated
+//         if (!!filter && !isNaN(filter.crimePosition)) {
+//             filterActivated = true;
+//             tipQuery.equalTo("crimeListPosition", filter.crimePosition);
+//         }
+//
+//         //If filter by date is   activated
+//         if (!!filter && !!filter.date) {
+//             filterActivated = true;
+//             filter.date = new Date(filter.date);
+//             var dateAfter = new Date(filter.date);
+//             dateAfter.setDate(dateAfter.getDate() + 1);
+//             tipQuery.greaterThanOrEqualTo("createdAt", filter.date);
+//             tipQuery.lessThanOrEqualTo("createdAt", dateAfter);
+//
+//         }
+//
+//         //Filter by date (before or after given date)
+//         isAfterDate ? tipQuery.greaterThan("createdAt", date) :
+//             tipQuery.lessThan("createdAt", date);
+//
+//         //If isAfterDate is false, query tips before said date in
+//         //descending order (newest to oldest, earliest date first);
+//         //otherwise, query tips after date in ascending order, but
+//         //reverse final results array or tips will be incorrectly
+//         //displayed from oldest to newest (tips in page 1 will be tips
+//         //corresponding to page 10, and vice versa)
+//         if (!isAfterDate) {
+//             tipQuery.descending("createdAt");
+//         }
+//         else {
+//             tipQuery.ascending("createdAt");
+//         }
+//
+//         //If filter is not activated, limit the query to 10 and get the totalTipCount
+//         //from the Client parse object on one of the received tips. If filter is activated
+//         //get the totalTipCount from the number of tips received from parse.
+//         if (!filterActivated) {
+//             tipQuery.limit(10);
+//         }
+//         else {
+//             tipQuery.limit(1000);
+//         }
+//
+//         //Execute query
+//         tipQuery.find({
+//             success: function (tips) {
+//
+//                 //Get the total tip count if filter is activated
+//                 if (filterActivated) {
+//                     totalTips = tips.length;
+//                     if (totalTips > 10) {
+//                         tips = tips.slice(0, 10)
+//                     }
+//                 }
+//
+//                 //Reverse the array if the tips are in ascending
+//                 //order(oldest to newest)
+//                 if (isAfterDate) {
+//                     tips.reverse();
+//                 }
+//
+//                 var start = new Date().getTime();
+//                 //Loop over the array to prepare the tip objects
+//                 //for the front end
+//                 for (var i = 0; i < tips.length; i++) {
+//
+//                     //Get the user from the tip. This works
+//                     //because we are using tipQuery.include('user').
+//                     //It doesn't need to reconnect to the database
+//                     //to retreive the user that submitted the tip.
+//                     var tipUser = tips[i].get('user')
+//
+//                     if (!tips[i].attributes.smsId) {
+//                         var passPhrase = passwordGenerator.generatePassword((!!tipUser ? tipUser.attributes.username : tips[i].attributes.anonymousPassword), !tipUser);
+//                     }
+//                     else {
+//                         var passPhrase = passwordGenerator.generatePassword(tips[i].attributes.smsId);
+//                     }
+//
+//                     //Get the client object from the first tip to be
+//                     //able to get the total tip count later on (all
+//                     //tips have the same client).
+//                     if (i === 0 && !filterActivated) {
+//                         totalTips = tips[i].get('clientId').attributes.totalTipCount;
+//                     }
+//                     //Convert tip from Parse to Javascript object
+//                     tips[i] = JSON.parse(JSON.stringify(tips[i]));
+//                     //If not an anonymous tip, get user information
+//                     if (!!tipUser) {
+//                         tips[i].firstName = encryptionManager.decrypt(passPhrase, tipUser.attributes.firstName.base64);
+//                         tips[i].lastName = encryptionManager.decrypt(passPhrase, tipUser.attributes.lastName.base64);
+//                         tips[i].username = tipUser.attributes.username;
+//                         tips[i].phone = encryptionManager.decrypt(passPhrase, tipUser.attributes.phoneNumber.base64);
+//                         tips[i].anonymous = false;
+//                         tips[i].channel = "user_" + tipUser.id;
+//                     }
+//                     else {
+//                         //Set tip to anonymous if the user was not found
+//                         tips[i].firstName = "ANONYMOUS";
+//                         tips[i].lastName = "";
+//                         tips[i].anonymous = true;
+//                     }
+//
+//                     //Prepare tip object with the values needed in
+//                     //the front end; coordinates for map, tip control
+//                     //number, and formatted date
+//                     tips[i].center = {
+//                         latitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLatitude.base64),
+//                         longitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLongitude.base64)
+//                     };
+//                     tips[i].controlNumber = tips[i].objectId + "-" + tips[i].controlNumber;
+//                     var tempDate = (new Date(tips[i].createdAt));
+//                     tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
+//                     tips[i].date = tempDate;
+//                     tips[i].crimeDescription = tips[i].crimeDescription ? encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64) : "";
+//                     tips[i].crimeType = encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
+//                     tips[i].crimeListPosition = tips[i].crimeListPosition;
+//                     tips[i].markers = [{
+//                         id: tips[i].objectId,
+//                         latitude: tips[i].center.latitude,
+//                         longitude: tips[i].center.longitude,
+//                         options: {
+//                             draggable: false,
+//                             title: "Crime Location",
+//                             visible: true
+//                         }
+//                     }];
+//
+//                     if (tips[i].smsNumber) {
+//                         tips[i].phone = encryptionManager.decrypt(passPhrase, tips[i].smsNumber.base64);
+//                     }
+//                 }
+//
+//                 //Send the tips to the front end
+//                 socket.emit('response-batch', {tips: tips, totalTipCount: totalTips});
+//             },
+//             error: function (error) {
+//                 //Tip fetching failed, emit response error
+//                 //along with error object
+//                 socket.emit('response-error', {error: error});
+//             }
+//         });
+//
+//     });
+//
+//     socket.on('request-media-url', function (data) {
+//
+//         //Get parseFile
+//         var parseFile = data.parseFile;
+//         //Generate password for decryption
+//         var passPhrase = passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
+//
+//         var url = parseFile.url;
+//         var filepath = parseFile.name;
+//
+//         //Download file to server
+//         var file = fs.createWriteStream(filepath);
+//         var request = http.get(url, function (response) {
+//             response.pipe(file);
+//             file.on('finish', function () {
+//                 //File finished downloading. Read file.
+//                 fs.readFile(filepath, function (err, dataBuf) {
+//
+//                     //Select the correct extension depending on file type.
+//                     if (data.type === 'IMG') {
+//                         filepath = '/temp/file.jpg';
+//                     }
+//                     else if (data.type === 'VID') {
+//                         filepath = '/temp/file.mp4';
+//                     }
+//                     else {
+//                         filepath = '/temp/file.aac';
+//                     }
+//
+//                     //Convert to base64 and decrypt.
+//                     var fileB64 = dataBuf.toString('base64');
+//                     var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
+//
+//                     //Create buffer and write the decrypted file.
+//                     var decodedFile = new Buffer(decrypt, 'base64');
+//                     fs.writeFile('./public' + filepath, decodedFile, function (err) {
+//                         //Delete the downloaded and encrypted file.
+//                         fs.unlinkSync(parseFile.name);
+//                     });
+//
+//                     //Send file url to front-end
+//                     socket.emit('response-media-url', filepath);
+//                 });
+//             });
+//         });
+//     });
+//
+//     //Encrypt and send follow-up.
+//     socket.on('new-follow-up-notif', function (data) {
+//         saveAndPushNotification(data.notificationData)
+//             .then(function () {
+//                 socket.emit('follow-up-notif-sent');
+//             }, function (error) {
+//                 console.log(error.message);
+//             });
+//     });
+//
+//     //Add a new officer to Sentihelm
+//     socket.on('add-new-officer', function (data) {
+//         var officer = data.newOfficer;
+//         var clientId = data.clientId;
+//         addNewOfficer(officer, clientId).then(function (newOfficer) {
+//             //Successfuly added; alert front-end
+//             socket.emit('new-officer-added');
+//             console.log("Sign up succesful..");
+//         }, function (error) {
+//             //Failed adding officer; alert front-end
+//             console.log(error);
+//             socket.emit('new-officer-failed', {error: error.message});
+//         });
+//     });
+//
+//     //Save user to Sentihelm
+//     socket.on('save-user', function (data) {
+//         var user = data.user;
+//         saveUser(user).then(function (user) {
+//             // Execute any logic that should take place after the object is saved.
+//             socket.emit('save-user-success');
+//         }, function (user, error) {
+//             // Execute any logic that should take place if the save fails.
+//             // error is a Parse.Error with an error code and message.
+//             if (error.message === 'user-session-timeout') {
+//                 socket.emit('user-session-timeout');
+//             } else {
+//                 socket.emit('save-user-failed');
+//             }
+//         });
+//     });
+//
+//     //Save password to Sentihelm
+//     socket.on('save-user-password', function (data) {
+//         saveUserPassword(data).then(function (user) {
+//             // Execute any logic that should take place after the object is saved.
+//             socket.emit('save-user-password-success');
+//         }, function (user, error) {
+//             // Execute any logic that should take place if the save fails.
+//             // error is a Parse.Error with an error code and message.
+//             if (error.message === 'user-session-timeout') {
+//                 socket.emit('user-session-timeout');
+//             } else {
+//                 socket.emit('save-user-password-failed');
+//             }
+//         });
+//     });
+//
+//     //Download data from parse and organize it.
+//     socket.on('analyze-data', function (data) {
+//         analyzeData(data).then(function (tips) {
+//             var charts = {},
+//                 year = data.year,
+//                 month = data.month,
+//                 isMonthSelected = !isNaN(month);
+//
+//             charts.tipCount = tips.length;
+//
+//             if (isMonthSelected) {
+//                 charts = getChartsData(tips, month, year);
+//             }
+//             else {
+//                 charts = getChartsData(tips);
+//             }
+//
+//             socket.emit('analyze-data-response', charts);
+//         }, function (error) {
+//             socket.emit('analyze-data-error', error);
+//         });
+//     });
+//
+//     //Check for active streams on the VideoSession table on parse.
+//     socket.on('get-active-streams', function (clientId) {
+//         getActiveVideoStreams(clientId).then(function (streams) {
+//                 //Format each result for front-end
+//                 //keep them in modifiedStreams array
+//                 var modifiedStreams = [];
+//
+//                 streams.forEach(function (stream) {
+//                     "use strict";
+//                     var streamUser = stream.attributes.mobileUser,
+//                         passPhrase = passwordGenerator.generatePassword(streamUser.attributes.username, false);
+//
+//                     //Create a new strem and copy over values
+//                     //from current stream in results
+//                     var newStream = {};
+//                     newStream.connectionId = stream.id;
+//                     newStream.sessionId = stream.attributes.sessionId;
+//                     newStream.webClientToken = stream.attributes.webClientToken;
+//                     newStream.latitude = stream.attributes.latitude;
+//                     newStream.longitude = stream.attributes.longitude;
+//                     newStream.currentCliendId = stream.attributes.client.id;
+//                     newStream.userObjectId = stream.attributes.mobileUser.id;
+//                     newStream.firstName = encryptionManager.decrypt(passPhrase, streamUser.attributes.firstName.base64);
+//                     newStream.lastName = encryptionManager.decrypt(passPhrase, streamUser.attributes.lastName.base64);
+//                     newStream.email = streamUser.attributes.email;
+//                     newStream.phone = encryptionManager.decrypt(passPhrase, streamUser.attributes.phoneNumber.base64);
+//
+//                     //Add modified stream to collection
+//                     modifiedStreams.push(newStream);
+//                 });
+//                 //Send modified results to controller
+//                 socket.emit('get-active-streams-response', modifiedStreams);
+//             },
+//             function (error) {
+//                 //TODO
+//                 //Manage error when couldn't fetch active video streams
+//                 var err = error;
+//             });
+//         ;
+//     });
+//
+//     socket.on('disconnect', function () {
+//         "use strict";
+//        socket.rooms.forEach(function (room) {
+//            socket.leave(room);
+//        });
+//     });
+// });
 
 //=========================================
 //  SET UP ROUTING
 //=========================================
 
-//Login handler
-app.post('/login', function (request, response) {
-    //TODO Sanitize user input
-    var userId = request.body.userId;
-    var password = request.body.password;
-    Parse.User.logIn(userId, password, {
-        success: function (user) {
+var routes = require('./routes/index');
+var users = require('./routes/users');
 
-            //Update userPassword column on Parse
-            user.set("userPassword", passwordGenerator.md5(password));
-            user.save(null, {
-                success: function (user) {
-                    // Execute any logic that should take place after the object is saved.
-                },
-                error: function (user, error) {
-                    // Execute any logic that should take place if the save fails.
-                    // error is a Parse.Error with an error code and message.
-                }
-            });
-
-            //Get Client to which user belongs to
-            var clientQuery = new Parse.Query(Client);
-            clientQuery.include("regions");
-            clientQuery.include("mostWantedList");
-            clientQuery.get(user.attributes.homeClient.id, {
-                success: function (client) {
-
-                    var answer = [];
-
-                    var passPhrase = passwordGenerator.generatePassword(user.attributes.username);
-                    user.attributes.firstName = encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
-                    user.attributes.lastName = encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
-
-                    answer.push(user);
-                    answer.push(client);
-                    answer.push(client.get('regions'));
-                    response.send(200, answer);
-                },
-                error: function (object, error) {
-                    response.send(400, error);
-                }
-            });
-        },
-        error: function (user, error) {
-            response.send(400, error);
-        }
-    });
-});
+app.use('/', routes);
+app.use('/users', users);
 
 // Reset-password
 app.post('/reset-password', function (request, response) {
@@ -685,29 +624,37 @@ app.post('/opentok-callback', function(request, response){
 });
 
 
-//Landing/login page
-app.get('/', function (request, response) {
-    response.sendfile(__dirname + '/public/index.html');
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
 
-//Base-case where page was not found, send 404 error
-app.get('*', function (request, response) {
-    response.send(404, "Error 404: Not Found");
+// error handlers
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  });
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
 });
 
-
-//=========================================
-//  START WEB SERVER
-//=========================================
-
-//Start the server by listening in on a port.
-//process.env.PORT is the default port environment,
-//in this case used for AWS; port 80 is for local
-//testing purposes. Log listening port.
-
-server.listen((process.env.PORT || 80), function () {
-    console.log(notice('WEB SERVER RUNNING ON PORT %s\n'), server.address().port)
-});
+module.exports = app;
 
 //=========================================
 //  HELPER FUNCTIONS
@@ -1081,3 +1028,6 @@ function getActiveVideoStreams(clientId) {
 
     return query.find();
 }
+
+
+module.exports = app;

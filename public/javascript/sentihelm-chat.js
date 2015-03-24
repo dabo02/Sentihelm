@@ -266,8 +266,6 @@
                 var Base = $controller('ChatController', {$scope: $scope}),
                     TipChatController = this;
 
-                TipChatController.rooms[];
-
                 /**
                  * This gets called whenever we're done retrieving all messages from every active tip chat.
                  * */
