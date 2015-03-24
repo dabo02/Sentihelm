@@ -14,7 +14,8 @@
     /**
      * @ngdoc Directive
      * @name wantedPerson
-     * @param {ngService} $rootScope provide separation between the model and the view, via a mechanism for watching the model for changes.
+     * @param {ngService} $rootScope provide separation between the model and
+     * the view, via a mechanism for watching the model for changes.
      * @returns {ngDirective}
      * @restrict EA
      * @scope
@@ -76,7 +77,7 @@
                 var nameArray = inputName.split(' '),
                     first = nameArray[0] || '',  // fixes undefined error
                     last = nameArray[1] || '';  // fixes undefined error
-                
+
                 return first + ' ' + last;
             }
 

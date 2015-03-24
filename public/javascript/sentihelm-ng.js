@@ -191,7 +191,7 @@
                 }
             })
             .state('tip-chat', {
-                url: '/tip-chat-logs',
+                url: '/tip-chat-logs/:tipId',
                 templateUrl: '/tip-chat.html',
                 data: {
                     // only users with chat permissions can use this route.
@@ -2782,7 +2782,7 @@
             center: {
                 latitude: 0,
                 longitude: 0
-            },
+            }
         };
 
         //Get region center-location from Parse
@@ -3162,5 +3162,4 @@
 
     }]);
 
-})
-();
+})();

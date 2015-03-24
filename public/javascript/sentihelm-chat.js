@@ -48,7 +48,9 @@
                 tipChatService = {
                     activeChats: [],
                     retrieveAll: function () {
-                        return $http.post(chatLogsUrl + '/retrieve', {password: password})
+                        return $http.post(chatLogsUrl + '/retrieve', {
+                                password: password
+                            })
                             .success(function (data) {
                                 tipChatService.activeChats = angular.copy(data);
                             });
@@ -57,12 +59,13 @@
                     },
                     addTipToQueue: function (tipId, id) {
                         return $http.post(chatLogsUrl + '/add', {
-                            password: password,
-                            tipId: tipId,
-                            userObjectId: id
-                        }).then(function (dd) {
-                            return dd.data;
-                        });
+                                password: password,
+                                tipId: tipId,
+                                userObjectId: id
+                            })
+                            .then(function (dd) {
+                                return dd.data;
+                            });
                     }
                 };
 
@@ -266,8 +269,8 @@
                 chatSocket.on('new-room', self.onNewRoom);
             }
         ])
-        .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory', '$timeout',
-            function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory, $timeout) {
+        .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory', '$timeout', '$state',
+            function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory, $timeout, $state) {
                 var self = this;
                 self.message = "";
                 self.rooms = {};
@@ -277,6 +280,7 @@
                 self.userTyping = false;
 
                 var timeoutPromise;
+
 
                 function addTipRoom(roomName, username, id, tObject) {
                     self.rooms[roomName] = {
@@ -362,7 +366,8 @@
 
                     room = getRoom(undefined, data.tipId);
 
-                    messageObject.id = Math.round(Math.random() * 1000 + 1 + Date.now()).toString();
+                    messageObject.id = Math.round(Math.random() * 1000 + 1 + Date.now())
+                        .toString();
 
                     console.log(room);
 
@@ -445,26 +450,7 @@
 
                     for (var roomName in self.rooms) {
                         if (self.rooms[roomName].controlNumber === controlNumber) {
-                            self.currentRoom = roomName;
-                            var messages = self.rooms[roomName].messages;
-                            if (messages.length > 0) {
-                                $location.hash(messages[messages.length - 1].id);
-                            }
-                            $anchorScroll();
-
-                            self.canSend = true;
-
-                            self.receiver = self.rooms[roomName].with.id;
-
-                            if (roomName !== controlNumber) {
-                                chatSocket.emit('change-room', roomName);
-                            } else {
-                                chatSocket.emit('change-room', null);
-                            }
-
-                            self.rooms[roomName].new = false;
-
-                            return;
+                            $state.go('tip-chat', { tipId: self.rooms[roomName].tipObjectId });
                         }
                     }
 
@@ -515,7 +501,39 @@
                     }
                 });
 
-                tipChatService.retrieveAll().then(onRetrieveAllDone);
+                tipChatService.retrieveAll()
+                    .then(onRetrieveAllDone)
+                    .then(function () {
+                        var room;
+                        if ($state.params.tipId) {
+                            if ($state.params.tipId.length > 1) {
+                                room = getRoom(undefined, $state.params.tipId);
+                                if (room) {
+                                    self.currentRoom = room;
+
+                                    var messages = self.rooms[room].messages;
+                                    if (messages.length > 0) {
+                                        $location.hash(messages[messages.length - 1].id);
+                                    }
+                                    $anchorScroll();
+
+                                    self.canSend = true;
+
+                                    self.receiver = self.rooms[room].with.id;
+
+                                    if (room !== controlNumber) {
+                                        chatSocket.emit('change-room', room);
+                                    } else {
+                                        chatSocket.emit('change-room', null);
+                                    }
+
+                                    self.rooms[room].new = false;
+                                } else {
+                                    
+                                }
+                            }
+                        }
+                    });
             }
         ]);
 })(window.angular);
