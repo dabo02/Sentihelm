@@ -36,3 +36,5 @@ build/Release
 # Version packages
 *.zip
 
+# atom files
+.tern-project
