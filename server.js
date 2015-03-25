@@ -439,26 +439,6 @@ var users = require('./routes/users');
 app.use('/', routes);
 app.use('/users', users);
 
-// Reset-password
-app.post('/reset-password', function (request, response) {
-    "use strict";
-    var email = request.body.email;
-
-    if (email) {
-        Parse.User.requestPasswordReset(email, {
-            success: function () {
-                // Password reset request was sent successfully
-                response.send(200);
-            },
-            error: function (error) {
-                // Show the error message somewhere
-                response.send(401);
-            }
-        });
-    }
-
-    response.send(401);
-});
 
 //Recieve new-tip event form Parse,
 //and pass it along to front-end

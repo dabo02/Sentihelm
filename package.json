@@ -3,20 +3,27 @@
   "description": "Sentinel dashboard service; part of ¡Basta Ya! crime prevention suite.",
   "version": "0.9.1",
   "private": true,
+  "repository": "bitbucket.org:optivon/sentinel.git",
   "dependencies": {
     "body-parser": "1.0.2",
     "cli-color": "0.3.2",
+    "crypto-js": "3.1.2-5",
     "express": "4.1.1",
+    "express-session": "*",
+    "lodash": "^3.5.0",
     "mime": "1.2.11",
     "morgan": "1.0.1",
     "opentok": "2.2.4",
     "parse": "1.2.19",
-    "socket.io": "~1.0.0",
-    "crypto-js": "3.1.2-5",
+    "q": "^1.2.0",
     "sjcl": "^1.0.1",
-    "express-session": "*"
+    "socket.io": "~1.0.0"
   },
   "scripts": {
     "start": "./bin/www"
+  },
+  "main": "./bin/www",
+  "devDependencies": {
+    "tern-node-express": "^0.1.0"
   }
 }
