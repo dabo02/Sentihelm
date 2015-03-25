@@ -1,0 +1,17 @@
+{
+  "name": "sentinel",
+  "version": "0.9.1",
+  "authors": [
+    "Optivon",
+    "Inc."
+  ],
+  "description": "Sentinel dashboard service; part of ¡Basta Ya! crime prevention suite.",
+  "license": "Closed Sourced",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

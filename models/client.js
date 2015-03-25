@@ -25,4 +25,4 @@ module.exports.getById = function (clientId) {
         reject(new Error(error));
       });
   });
-}
+};

@@ -30,17 +30,6 @@ var User = Parse.Object.extend("_User");
 var VideoSession = Parse.Object.extend("VideoSession");
 var PushNotification = Parse.Object.extend("FollowUpNotifications");
 
-
-
-var EncryptionManager = require('./lib/EncryptionManager.js');
-var PasswordGenerator = require('./lib/PasswordGenerator.js');
-
-//Generates the password for the encription manager.
-var passwordGenerator = new PasswordGenerator();
-
-//Encrypts and decrypts
-var encryptionManager = new EncryptionManager();
-
 var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
 
 //Create an non-overriding log file and feed it
@@ -180,10 +169,10 @@ app.use(session({
 //                     var tipUser = tips[i].get('user')
 //
 //                     if (!tips[i].attributes.smsId) {
-//                         var passPhrase = passwordGenerator.generatePassword((!!tipUser ? tipUser.attributes.username : tips[i].attributes.anonymousPassword), !tipUser);
+//                         var passPhrase = util.passwordGenerator.generatePassword((!!tipUser ? tipUser.attributes.username : tips[i].attributes.anonymousPassword), !tipUser);
 //                     }
 //                     else {
-//                         var passPhrase = passwordGenerator.generatePassword(tips[i].attributes.smsId);
+//                         var passPhrase = util.passwordGenerator.generatePassword(tips[i].attributes.smsId);
 //                     }
 //
 //                     //Get the client object from the first tip to be
@@ -196,10 +185,10 @@ app.use(session({
 //                     tips[i] = JSON.parse(JSON.stringify(tips[i]));
 //                     //If not an anonymous tip, get user information
 //                     if (!!tipUser) {
-//                         tips[i].firstName = encryptionManager.decrypt(passPhrase, tipUser.attributes.firstName.base64);
-//                         tips[i].lastName = encryptionManager.decrypt(passPhrase, tipUser.attributes.lastName.base64);
+//                         tips[i].firstName = util.encryptionManager.decrypt(passPhrase, tipUser.attributes.firstName.base64);
+//                         tips[i].lastName = util.encryptionManager.decrypt(passPhrase, tipUser.attributes.lastName.base64);
 //                         tips[i].username = tipUser.attributes.username;
-//                         tips[i].phone = encryptionManager.decrypt(passPhrase, tipUser.attributes.phoneNumber.base64);
+//                         tips[i].phone = util.encryptionManager.decrypt(passPhrase, tipUser.attributes.phoneNumber.base64);
 //                         tips[i].anonymous = false;
 //                         tips[i].channel = "user_" + tipUser.id;
 //                     }
@@ -214,15 +203,15 @@ app.use(session({
 //                     //the front end; coordinates for map, tip control
 //                     //number, and formatted date
 //                     tips[i].center = {
-//                         latitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLatitude.base64),
-//                         longitude: encryptionManager.decrypt(passPhrase, tips[i].crimePositionLongitude.base64)
+//                         latitude: util.encryptionManager.decrypt(passPhrase, tips[i].crimePositionLatitude.base64),
+//                         longitude: util.encryptionManager.decrypt(passPhrase, tips[i].crimePositionLongitude.base64)
 //                     };
 //                     tips[i].controlNumber = tips[i].objectId + "-" + tips[i].controlNumber;
 //                     var tempDate = (new Date(tips[i].createdAt));
 //                     tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
 //                     tips[i].date = tempDate;
-//                     tips[i].crimeDescription = tips[i].crimeDescription ? encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64) : "";
-//                     tips[i].crimeType = encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
+//                     tips[i].crimeDescription = tips[i].crimeDescription ? util.encryptionManager.decrypt(passPhrase, tips[i].crimeDescription.base64) : "";
+//                     tips[i].crimeType = util.encryptionManager.decrypt(passPhrase, tips[i].crimeType.base64);
 //                     tips[i].crimeListPosition = tips[i].crimeListPosition;
 //                     tips[i].markers = [{
 //                         id: tips[i].objectId,
@@ -236,7 +225,7 @@ app.use(session({
 //                     }];
 //
 //                     if (tips[i].smsNumber) {
-//                         tips[i].phone = encryptionManager.decrypt(passPhrase, tips[i].smsNumber.base64);
+//                         tips[i].phone = util.encryptionManager.decrypt(passPhrase, tips[i].smsNumber.base64);
 //                     }
 //                 }
 //
@@ -257,7 +246,7 @@ app.use(session({
 //         //Get parseFile
 //         var parseFile = data.parseFile;
 //         //Generate password for decryption
-//         var passPhrase = passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
+//         var passPhrase = util.passwordGenerator.generatePassword(data.passPhrase, data.anonymous);
 //
 //         var url = parseFile.url;
 //         var filepath = parseFile.name;
@@ -283,7 +272,7 @@ app.use(session({
 //
 //                     //Convert to base64 and decrypt.
 //                     var fileB64 = dataBuf.toString('base64');
-//                     var decrypt = encryptionManager.decrypt(passPhrase, fileB64);
+//                     var decrypt = util.encryptionManager.decrypt(passPhrase, fileB64);
 //
 //                     //Create buffer and write the decrypted file.
 //                     var decodedFile = new Buffer(decrypt, 'base64');
@@ -390,7 +379,7 @@ app.use(session({
 //                 streams.forEach(function (stream) {
 //                     "use strict";
 //                     var streamUser = stream.attributes.mobileUser,
-//                         passPhrase = passwordGenerator.generatePassword(streamUser.attributes.username, false);
+//                         passPhrase = util.passwordGenerator.generatePassword(streamUser.attributes.username, false);
 //
 //                     //Create a new strem and copy over values
 //                     //from current stream in results
@@ -402,10 +391,10 @@ app.use(session({
 //                     newStream.longitude = stream.attributes.longitude;
 //                     newStream.currentCliendId = stream.attributes.client.id;
 //                     newStream.userObjectId = stream.attributes.mobileUser.id;
-//                     newStream.firstName = encryptionManager.decrypt(passPhrase, streamUser.attributes.firstName.base64);
-//                     newStream.lastName = encryptionManager.decrypt(passPhrase, streamUser.attributes.lastName.base64);
+//                     newStream.firstName = util.encryptionManager.decrypt(passPhrase, streamUser.attributes.firstName.base64);
+//                     newStream.lastName = util.encryptionManager.decrypt(passPhrase, streamUser.attributes.lastName.base64);
 //                     newStream.email = streamUser.attributes.email;
-//                     newStream.phone = encryptionManager.decrypt(passPhrase, streamUser.attributes.phoneNumber.base64);
+//                     newStream.phone = util.encryptionManager.decrypt(passPhrase, streamUser.attributes.phoneNumber.base64);
 //
 //                     //Add modified stream to collection
 //                     modifiedStreams.push(newStream);
@@ -439,21 +428,6 @@ var users = require('./routes/users');
 app.use('/', routes);
 app.use('/users', users);
 
-
-//Recieve new-tip event form Parse,
-//and pass it along to front-end
-app.post('/new-tip', function (request, response) {
-    var tip = request.body;
-    var pass = tip.pass;
-    var clientId = tip.clientId;
-    if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
-        io.to(clientId).emit('new-tip', {
-            tip: tip,
-            clientId: clientId
-        });
-        response.send(200);
-    }
-});
 
 //Recieve a request for a video stream connection;
 //get data form mobile client, save session info in
@@ -649,7 +623,7 @@ function saveAndPushNotification(notificationData) {
 
         then(function (user) {
             var username = user.attributes.username;
-            passPhrase = passwordGenerator.generatePassword(username);
+            passPhrase = util.passwordGenerator.generatePassword(username);
 
             var notification = new PushNotification();
             notification.set("userId", notificationData.userId);
@@ -657,16 +631,16 @@ function saveAndPushNotification(notificationData) {
 
             notification.set('title', {
                 __type: "Bytes",
-                base64: encryptionManager.encrypt(passPhrase, notificationData.title)
+                base64: util.encryptionManager.encrypt(passPhrase, notificationData.title)
             });
 
             notification.set('message', {
                 __type: "Bytes",
-                base64: encryptionManager.encrypt(passPhrase, notificationData.message)
+                base64: util.encryptionManager.encrypt(passPhrase, notificationData.message)
             });
 
             if (notificationData.attachment) {
-                var encryptedFile = encryptionManager.encrypt(passPhrase, notificationData.attachment);
+                var encryptedFile = util.encryptionManager.encrypt(passPhrase, notificationData.attachment);
                 var attachment = new Parse.File('file', {base64: encryptedFile});
                 notification.set(notificationData.attachmentType, attachment);
             }
@@ -702,15 +676,15 @@ function pushNotification(notification) {
 function addNewOfficer(officerData, clientId) {
     //Generate passphrase for encryption
     var passPhrase = "";
-    passPhrase = passwordGenerator.generatePassword(officerData.username);
+    passPhrase = util.passwordGenerator.generatePassword(officerData.username);
 
     //Encrypted/Hashed Values
-    var encryptedFirstName = encryptionManager.encrypt(passPhrase, officerData.fname);
-    var encryptedLastName = encryptionManager.encrypt(passPhrase, officerData.lname);
-    var hashedPassword = passwordGenerator.md5(officerData.password);
-    var encryptedPhoneNumber = encryptionManager.encrypt(passPhrase, officerData.phoneNumber);
-    var encryptedZipCode = encryptionManager.encrypt(passPhrase, officerData.zipCode.toString());
-    var encryptedState = encryptionManager.encrypt(passPhrase, officerData.state);
+    var encryptedFirstName = util.encryptionManager.encrypt(passPhrase, officerData.fname);
+    var encryptedLastName = util.encryptionManager.encrypt(passPhrase, officerData.lname);
+    var hashedPassword = util.passwordGenerator.md5(officerData.password);
+    var encryptedPhoneNumber = util.encryptionManager.encrypt(passPhrase, officerData.phoneNumber);
+    var encryptedZipCode = util.encryptionManager.encrypt(passPhrase, officerData.zipCode.toString());
+    var encryptedState = util.encryptionManager.encrypt(passPhrase, officerData.state);
 
     //Create new officer
     var officer = new Parse.User();
@@ -756,14 +730,14 @@ function saveUser(editedUser) {
 
     //Generate passphrase for encryption
     var passPhrase = "";
-    passPhrase = passwordGenerator.generatePassword(editedUser.username);
+    passPhrase = util.passwordGenerator.generatePassword(editedUser.username);
 
     //Encrypted/Hashed Values
-    var encryptedFirstName = encryptionManager.encrypt(passPhrase, editedUser.firstName);
-    var encryptedLastName = encryptionManager.encrypt(passPhrase, editedUser.lastName);
+    var encryptedFirstName = util.encryptionManager.encrypt(passPhrase, editedUser.firstName);
+    var encryptedLastName = util.encryptionManager.encrypt(passPhrase, editedUser.lastName);
     var email = editedUser.email;
 
-    // var hashedPassword = passwordGenerator.md5(officerData.password);
+    // var hashedPassword = util.passwordGenerator.md5(officerData.password);
 
     // var ParseUser = new Parse.Query(User);
     var user = Parse.User.current();
@@ -809,11 +783,11 @@ function saveUserPassword(data) {
 
 
     //Change pass
-    if (passwordGenerator.md5(prevPass) === user.attributes.userPassword) {
+    if (util.passwordGenerator.md5(prevPass) === user.attributes.userPassword) {
 
         //Throw pass incorrect
         user.set("password", newPass);
-        user.set("userPassword", passwordGenerator.md5(newPass));
+        user.set("userPassword", util.passwordGenerator.md5(newPass));
         return user.save();
     }
     else {

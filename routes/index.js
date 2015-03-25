@@ -67,13 +67,25 @@ router
       usersModel.sendPasswordResetRequest(email)
         .then(function () {
             // Password reset request was sent successfully
-            response.send(200)
+            response.send(200);
           },
           function (error) {
             // Show the error message somewhere
             response.send(401);
           });
     }
+  })
+  .post('/new-tip', function (request, response) {
+      var tip = request.body;
+      var pass = tip.pass;
+      var clientId = tip.clientId;
+      if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
+          io.to(clientId).emit('new-tip', {
+              tip: tip,
+              clientId: clientId
+          });
+          response.send(200);
+      }
   });
 
 module.exports = router;

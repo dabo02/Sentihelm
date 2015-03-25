@@ -24,6 +24,12 @@
   },
   "main": "./bin/www",
   "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-concat": "^2.5.2",
+    "gulp-jshint": "^1.9.4",
+    "gulp-jsmin": "^0.1.4",
+    "gulp-ngmin": "^0.3.0",
+    "jshint-stylish": "^1.0.1",
     "tern-node-express": "^0.1.0"
   }
 }

@@ -70,7 +70,7 @@ router
                 res.status(503)
                   .send('Error counting video archives.');
               }
-            })
+          });
 
 
         },
