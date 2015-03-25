@@ -1859,7 +1859,7 @@
 //Controller for the video-archive state
 
 
-app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', function ($scope, Session, socket, ngDialog, usSpinnerService, $location) {
+app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', function ($scope, Session, socket, ngDialog, usSpinnerService, $location, $anchorScroll) {
 
 	var videoArchiveCtrl = this;
 	videoArchiveCtrl.videoArchiveArray;
@@ -3132,78 +3132,41 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             }
 
             usSpinnerService.spin('loading-video-archive-spinner');
-            var parseSkipLimit = 10000;
-            adminPanelCtrl.adminPanelUsersArray = [];
-            adminPanelCtrl.currentPageNum = pageNum;
             adminPanelCtrl.skip = (adminPanelCtrl.currentPageNum - 1) * adminPanelCtrl.limit;
 
-            var User = Parse.Object.extend("_User");
-            var adminPanelQuery = new Parse.Query(User);
+            var params = {
+                homeClient: Session.clientId,
+                searchString: adminPanelCtrl.searchString,
+                registrationDate: adminPanelCtrl.registrationDate,
+                roles: adminPanelCtrl.rolesFilter,
+                lastUserCreatedAt: adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt,
+                skip: adminPanelCtrl.skip
+            };
 
-            if(adminPanelCtrl.userSearchStringFilter){
-                 var usernameQuery = new Parse.Query("_User");
-                 usernameQuery.startsWith("username", adminPanelCtrl.userSearchStringFilter);
 
-                 var emailQuery = new Parse.Query("_User");
-                 emailQuery.startsWith("email", adminPanelCtrl.userSearchStringFilter);
+            $http.get('/users/list', params)
+                .success(function(data){
 
-                 adminPanelQuery = Parse.Query.or(usernameQuery, emailQuery);
-            }
+                    adminPanelCtrl.currentPageNum = pageNum;
+                    adminPanelCtrl.lastPageNum = data.lastPageNum;
+                    adminPanelCtrl.userTotal = data.userTotal;
 
-            if(adminPanelCtrl.userRegistrationDateFilter){
-                 adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(adminPanelCtrl.userRegistrationDateFilter));
-            }
-
-            adminPanelQuery.containedIn('roles', adminPanelCtrl.rolesFilter);
-
-            adminPanelQuery.equalTo('homeClient', {
-                __type: "Pointer",
-                className: "Client",
-                objectId: Session.clientId
-            });
-            adminPanelQuery.descending("createdAt");
-
-            //parse skip limit hack for fetching more than 11,001 records..
-            if(adminPanelCtrl.skip > parseSkipLimit){
-                adminPanelQuery.lessThanOrEqualTo("createdAt", adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt)
-                adminPanelCtrl.skip = 0;
-            }
-
-            adminPanelQuery.skip(adminPanelCtrl.skip);
-            adminPanelQuery.limit(adminPanelCtrl.limit);
-            adminPanelQuery.find({
-                success: function(users) {
-                    adminPanelCtrl.adminPanelUsersArray = angular.copy(users);
                     if(adminPanelCtrl.adminPanelUsersArray.length===0){
                         adminPanelCtrl.usersAvailable = false;
                     }
                     else{
                         adminPanelCtrl.usersAvailable = true;
                     }
+
                     usSpinnerService.stop('loading-video-archive-spinner');
-                    //adminPanelCtrl.lastPageNum = Math.ceil(adminPanelCtrl.adminPanelUsersArray.length / 10);
                     $location.hash('top');
                     $anchorScroll();
-                },
-                error: function(object, error) {
-                    // The object was not retrieved successfully.
-                    console.log("Error fetching video archive.");
-                }
-            });
+                    adminPanelCtrl.refreshPageNumbers();
+                })
+                .error(function(err){
 
-            adminPanelQuery.count({
-                success: function(count) {
-                    adminPanelCtrl.lastPageNum = Math.ceil(count/10);
-                    adminPanelCtrl.userTotal = count;
-                },
-                error: function(object, error) {
-                    // The object was not retrieved successfully.
-                    console.log("Error counting video archives.");
-                }
-            }).then(function(){
-                adminPanelCtrl.refreshPageNumbers();
-            });
-        }
+                });
+        };
 
         adminPanelCtrl.refreshPageNumbers = function(){
 
@@ -3303,49 +3266,57 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         };
 
         adminPanelCtrl.updateRole = function(action, role){
-            for(var i = 0; i < adminPanelCtrl.adminPanelUsersArray.length; i++){
-                var user = adminPanelCtrl.adminPanelUsersArray[i];
-           // adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
+
+            var roleString;
+            //determine role string
+            if(role === "admin"){
+                roleString = "Administrator";
+            }
+            else{
+                roleString = "Officer";
+            }
+
+            var roleChangeConfirm = confirm("Are you sure you want to " + action + "the " + roleString + "role to selected user(s)?");
+
+            if(roleChangeConfirm){
+                $http.post('/reset-password', {id: user});
+                if()
+            }
+
+            adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
                 if(user.selected){
                     //Update VideoSession's lastWatcher
-                    var VideoSession = Parse.Object.extend("_User");
-                    var videoSessionQuery = new Parse.Query(VideoSession);
-                    videoSessionQuery.get(video.id, {
-                        success: function(videoSession) {
-                            videoSession.set('hasBeenWatched', true);
-                            videoSession.set('lastWatcher', {
-                              __type: "Pointer",
-                              className: "User",
-                              objectId: Session.userId
-                            });
-                            videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
+                    var User = Parse.Object.extend("_User");
+                    var adminPanelQuery = new Parse.Query(User);
+                    adminPanelQuery.get(user.id, {
+                        success: function(fetchedUser) {
+                            if(action === "add"){
+                                fetchedUser.addUnique("roles", role);
+                            }
+                            else if(action === "remove"){
+                                //fetchedUser.remove("roles", role);
+                            }
+                            else{
+                                return;
+                            }
+                            fetchedUser.save(/*null,{
+                                success: function(user){
+                                    adminPanelCtrl.successMessage = "SUCCESS: Role has been updated.";
+                                    adminPanelCtrl.hasError = false;
+                                },
+                                error: function(user, error){
+                                    adminPanelCtrl.successMessage = "FAILURE: Role could not be updated.";
+                                    adminPanelCtrl.hasError = true;
+                                }
+                            }*/).then(adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum));
                         },
                         error: function(object, error) {
                             // The object was not retrieved successfully.
                             console.log("Error fetching video for lastWatcher update.");
                         }
                     });
-                    if(action === "add"){
-                        user.addUnique("roles", role);
-                    }
-                    else if(action === "remove"){
-                        user.remove("roles", role);
-                    }
-                    else{
-                        return;
-                    }
-                    user.save(null,{
-                        success: function(user){
-                            adminPanelCtrl.successMessage = "SUCCESS: Role has been updated.";
-                            adminPanelCtrl.hasError = false;
-                        },
-                        error: function(user, error){
-                            adminPanelCtrl.successMessage = "FAILURE: Role could not be updated.";
-                            adminPanelCtrl.hasError = true;
-                        }
-                    });
                 }
-            };//);
+            });
         };
 
         adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
