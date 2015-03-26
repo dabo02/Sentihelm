@@ -12,7 +12,7 @@ router
     var limit = parseInt(req.query.limit, 10);
     var searchString = req.query.searchString;
     var registrationDate = req.query.registrationDate;
-    var roles = req.query.roles;
+    var roles = req.query.roles instanceof Array === true ? req.query.roles : [req.query.roles];
     var homeClient = req.query.homeClient;
     var lastUserCreatedAt = req.query.lastUserCreatedAt;
     var parseSkipLimit = 10000;
@@ -77,7 +77,7 @@ router
         error: function (object, error) {
           // The object was not retrieved successfully.
           console.error('Error fetching users list');
-          res.setStatus(503)
+          res.status(503)
             .send('Error fetching users list');
         }
       });

@@ -47,7 +47,8 @@ app.use(express.static(__dirname + '/public'));
 app.use(session({
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
-    secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@'
+    secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
+    cookie: { maxAge: 300000 } // expire in 5 minutes
 }));
 
 // // ======================= Chat Server ==========================
