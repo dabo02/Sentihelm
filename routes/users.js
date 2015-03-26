@@ -12,7 +12,7 @@ router
     var limit = parseInt(req.query.limit, 10);
     var searchString = req.query.searchString;
     var registrationDate = req.query.registrationDate;
-    var roles = req.query.roles;
+    var roles = req.query.roles instanceof Array === true ? req.query.roles : [req.query.roles];
     var homeClient = req.query.homeClient;
     var lastUserCreatedAt = req.query.lastUserCreatedAt;
     var parseSkipLimit = 10000;
@@ -70,18 +70,39 @@ router
                 res.status(503)
                   .send('Error counting video archives.');
               }
-          });
+            })
 
 
         },
         error: function (object, error) {
           // The object was not retrieved successfully.
           console.error('Error fetching users list');
-          res.setStatus(503)
+          res.status(503)
             .send('Error fetching users list');
         }
       });
     }
+  })
+
+  .get('/updateRole', function(req, res){
+
+    var users = res.query.users;
+    var action = res.query.action;
+    var role = res.query.role;
+
+    Parse.Cloud.run('updateUserRole', {
+           users: user,
+           action: action,
+           role: role
+        }, {
+        success: function (result) {
+            res.status(200).send("SUCCESS: Role has been updated.")
+        },
+        error: function (error) {
+            res.status(503).send("FAILURE: Role could not be updated.");
+        }
+    });
+
   });
 
 

@@ -87,7 +87,7 @@
                             <td><input type="checkbox" ng-model="user.selected"></td>
                             <td>{{user.username}}</td>
                             <td>{{user.email}}</td>
-                            <td>{{user.roles}}</td>
+                            <td ng-init="adminPanelCtrl.sortRoles(user.roles)">{{user.roles[0] | uppercase}} - {{user.roles[1] | uppercase}}</td>
                             <td>{{user.createdAt | date:'mediumDate'}}</td>
                             <!--<td>Yes</td>-->
                             <td>

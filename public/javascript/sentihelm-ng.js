@@ -3147,29 +3147,34 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
 
             $http.get('/users/list', {params: params})
-                .success(function(data){
+            .success(function(data){
 
-                    adminPanelCtrl.lastPageNum = data.lastPageNum;
-                    adminPanelCtrl.userTotal = data.userTotal;
+                adminPanelCtrl.lastPageNum = data.lastPageNum;
+                adminPanelCtrl.userTotal = data.userTotal;
 
-                    adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
+                adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
 
-                    if(adminPanelCtrl.adminPanelUsersArray.length===0){
-                        adminPanelCtrl.usersAvailable = false;
-                    }
-                    else{
-                        adminPanelCtrl.usersAvailable = true;
-                    }
+                if(adminPanelCtrl.adminPanelUsersArray.length===0){
+                    adminPanelCtrl.usersAvailable = false;
+                }
+                else{
+                    adminPanelCtrl.usersAvailable = true;
+                }
 
-                    usSpinnerService.stop('loading-video-archive-spinner');
-                    $location.hash('top');
-                    $anchorScroll();
-                    adminPanelCtrl.refreshPageNumbers();
-                })
-                .error(function(err){
-
-                });
+                usSpinnerService.stop('loading-video-archive-spinner');
+                $location.hash('top');
+                $anchorScroll();
+                adminPanelCtrl.refreshPageNumbers();
+            })
+            .error(function(err){
+                adminPanelCtrl.usersAvailable = false;
+                usSpinnerService.stop('loading-video-archive-spinner');
+            });
         };
+
+        adminPanelCtrl.sortRoles = function(roles){
+            roles.sort();
+        }
 
         adminPanelCtrl.refreshPageNumbers = function(){
 
@@ -3271,6 +3276,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         adminPanelCtrl.updateRole = function(action, role){
 
             var roleString;
+            var roleAction;
             //determine role string
             if(role === "admin"){
                 roleString = "Administrator";
@@ -3279,47 +3285,37 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 roleString = "Officer";
             }
 
-            var roleChangeConfirm = confirm("Are you sure you want to " + action + "the " + roleString + "role to selected user(s)?");
-
-            if(roleChangeConfirm){
-                $http.post('/reset-password', {id: user});
-                //if()
+            if(action === "add"){
+                roleAction = "added to";
+            }
+            else{
+                roleAction = "removed from";
             }
 
-            adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
-                if(user.selected){
-                    //Update VideoSession's lastWatcher
-                    var User = Parse.Object.extend("_User");
-                    var adminPanelQuery = new Parse.Query(User);
-                    adminPanelQuery.get(user.id, {
-                        success: function(fetchedUser) {
-                            if(action === "add"){
-                                fetchedUser.addUnique("roles", role);
-                            }
-                            else if(action === "remove"){
-                                //fetchedUser.remove("roles", role);
-                            }
-                            else{
-                                return;
-                            }
-                            fetchedUser.save(/*null,{
-                                success: function(user){
-                                    adminPanelCtrl.successMessage = "SUCCESS: Role has been updated.";
-                                    adminPanelCtrl.hasError = false;
-                                },
-                                error: function(user, error){
-                                    adminPanelCtrl.successMessage = "FAILURE: Role could not be updated.";
-                                    adminPanelCtrl.hasError = true;
-                                }
-                            }*/).then(adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum));
-                        },
-                        error: function(object, error) {
-                            // The object was not retrieved successfully.
-                            console.log("Error fetching video for lastWatcher update.");
-                        }
-                    });
+            var roleChangeConfirm = confirm("The " + roleString + " role will be " + roleAction + " selected user(s).");
+
+            if(roleChangeConfirm){
+                var params = {
+                    users: adminPanelCtrl.adminPanelUsersArray,
+                    action: action,
+                    role: role
                 }
-            });
+
+                $http.post('/users/updateRole', {params: params})
+                .success(function(res){
+
+                    adminPanelCtrl.successMessage = res.data;
+                    adminPanelCtrl.hasError = false;
+                    $location.hash('top');
+                    $anchorScroll();
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                    adminPanelCtrl.refreshPageNumbers();
+                })
+                .error(function(err){
+                    adminPanelCtrl.successMessage = err;
+                    adminPanelCtrl.usersAvailable = false;
+                });
+            }
         };
 
         adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
