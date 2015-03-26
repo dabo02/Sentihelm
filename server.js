@@ -1,3 +1,4 @@
+"use strict";
 //=========================================
 //  IMPORTS
 //=========================================
@@ -39,6 +40,7 @@ app.use(logger('dev'));
 //Attach a bodyParser in order to handle json and urlencoded
 //bodies.
 app.use(bodyParser.json());
+app.set('view engine', 'hjs');
 
 //Add the static middleware: allows express to serve up
 //static content in the specified directory (for CSS/JS).
@@ -603,7 +605,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  res.render('error', {
+  res.send({
     message: err.message,
     error: {}
   });

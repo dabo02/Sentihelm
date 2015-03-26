@@ -6,10 +6,10 @@
   "repository": "bitbucket.org:optivon/sentinel.git",
   "dependencies": {
     "body-parser": "1.0.2",
-    "cli-color": "0.3.2",
     "crypto-js": "3.1.2-5",
     "express": "4.1.1",
     "express-session": "*",
+    "hjs": "0.0.6",
     "lodash": "^3.5.0",
     "mime": "1.2.11",
     "mime-types": "^2.0.10",
