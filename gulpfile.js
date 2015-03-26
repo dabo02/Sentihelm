@@ -11,7 +11,7 @@ var aKarmaTestServer = karma({
 });
 
 var javascriptFiles = ['./lib/*.js', './models/*.js', './routes/*.js',
-  './bin/www', './gulpfile.js',
+  './bin/www', './Gulpfile.js',
   './src/**/*.js', './test/*[sS]pec.js'
 ];
 
@@ -44,7 +44,7 @@ gulp.task('compile:css', function () {
     .pipe();
 });
 
-gulpt.task('compile', ['compile:javascript',
+gulp.task('compile', ['compile:javascript',
   'compile:css'
 ]);
 
