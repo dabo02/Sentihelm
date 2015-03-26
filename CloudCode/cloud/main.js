@@ -350,8 +350,6 @@ Parse.Cloud.define("sendNewsletterEmail", function(request,response) {
 
 Parse.Cloud.define("updateUserRole", function(req, res){
 
-   Parse.Cloud.useMasterKey();
-
    req.params.users.forEach(function(user){
         var User = Parse.Object.extend("_User");
         var userQuery = new Parse.Query(User);
@@ -369,7 +367,7 @@ Parse.Cloud.define("updateUserRole", function(req, res){
                     }
                     fetchedUser.save();
                 },
-                error: function(object, error) {
+                error: function(error) {
                     
                 }
             });

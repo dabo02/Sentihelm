@@ -84,22 +84,23 @@ router
     }
   })
 
-  .get('/updateRole', function(req, res){
+  .post('/update/role', function(req, res){
 
-    var users = res.query.users;
-    var action = res.query.action;
-    var role = res.query.role;
+    var users = req.body.users instanceof Array === true ? req.body.users : [req.body.users];
+    var action = req.body.action;
+    var role = req.body.role;
 
+    Parse.Cloud.useMasterKey();
     Parse.Cloud.run('updateUserRole', {
-           users: user,
+           users: users,
            action: action,
            role: role
         }, {
-        success: function (result) {
-            res.status(200).send("SUCCESS: Role has been updated.")
+        success: function(result) {
+            res.send("SUCCESS: Role has been updated.")
         },
         error: function (error) {
-            res.status(503).send("FAILURE: Role could not be updated.");
+            res.status(503).send("FAILURE: Role could not be updated.\n" + error);
         }
     });
 

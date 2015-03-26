@@ -3161,14 +3161,15 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                     adminPanelCtrl.usersAvailable = true;
                 }
 
+            })
+            .error(function(err){
+                adminPanelCtrl.usersAvailable = false;
+
+            }).then(function(){
                 usSpinnerService.stop('loading-video-archive-spinner');
                 $location.hash('top');
                 $anchorScroll();
                 adminPanelCtrl.refreshPageNumbers();
-            })
-            .error(function(err){
-                adminPanelCtrl.usersAvailable = false;
-                usSpinnerService.stop('loading-video-archive-spinner');
             });
         };
 
@@ -3275,6 +3276,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
         adminPanelCtrl.updateRole = function(action, role){
 
+            usSpinnerService.spin('loading-video-archive-spinner');
+
             var roleString;
             var roleAction;
             //determine role string
@@ -3295,27 +3298,26 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             var roleChangeConfirm = confirm("The " + roleString + " role will be " + roleAction + " selected user(s).");
 
             if(roleChangeConfirm){
-                var params = {
+                var data = {
                     users: adminPanelCtrl.adminPanelUsersArray,
                     action: action,
                     role: role
                 }
 
-                $http.post('/users/updateRole', {params: params})
-                .success(function(res){
-
-                    adminPanelCtrl.successMessage = res.data;
+                $http.post('/users/update/role', {data: data})
+                .success(function(data){
+                    adminPanelCtrl.successMessage = data;
                     adminPanelCtrl.hasError = false;
-                    $location.hash('top');
-                    $anchorScroll();
-                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
-                    adminPanelCtrl.refreshPageNumbers();
                 })
                 .error(function(err){
                     adminPanelCtrl.successMessage = err;
-                    adminPanelCtrl.usersAvailable = false;
+                    adminPanelCtrl.hasError = true;
+                }).then(function(){
+                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
                 });
             }
+
+            usSpinnerService.stop('loading-video-archive-spinner');
         };
 
         adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
