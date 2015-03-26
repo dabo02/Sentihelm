@@ -365,6 +365,7 @@ Parse.Cloud.define("updateUserRole", function(req, res){
                     else{
                         return;
                     }
+                    Parse.Cloud.userMasterKey();
                     fetchedUser.save();
                 },
                 error: function(error) {

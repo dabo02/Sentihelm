@@ -84,7 +84,7 @@
                         </thead>
                         <tbody>
                         <tr ng-repeat="user in adminPanelCtrl.adminPanelUsersArray">
-                            <td><input type="checkbox" ng-model="user.selected"></td>
+                            <td><input type="checkbox" ng-model="user.selected" ng-init="user.selected = false"></td>
                             <td>{{user.username}}</td>
                             <td>{{user.email}}</td>
                             <td ng-init="adminPanelCtrl.sortRoles(user.roles)">{{user.roles[0] | uppercase}} - {{user.roles[1] | uppercase}}</td>
