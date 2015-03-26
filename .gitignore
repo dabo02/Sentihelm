@@ -32,6 +32,7 @@ node_modules
 # IDE files
 .idea
 *.iml
+Sentinel.iml
 
 # Version packages
 *.zip
