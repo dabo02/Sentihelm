@@ -12,6 +12,7 @@
     "express-session": "*",
     "lodash": "^3.5.0",
     "mime": "1.2.11",
+    "mime-types": "^2.0.10",
     "morgan": "1.0.1",
     "node-karma-wrapper": "^0.2.2",
     "opentok": "2.2.4",
