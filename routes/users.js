@@ -90,18 +90,22 @@ router
     var action = req.body.action;
     var role = req.body.role;
 
+
     Parse.Cloud.run('updateUserRole', {
-       users: users,
-       action: action,
-       role: role
+        users: users,
+        action: action,
+        role: role
     }, {
         success: function(result) {
-            res.send("SUCCESS: Role has been updated.")
+            res.send("SUCCESS: Role has been updated.");
         },
         error: function (error) {
-            res.status(503).send("FAILURE: Role could not be updated.\n" + error.message);
+            res.status(503).send("FAILURE: Role could not be updated." + error.message);
         }
     });
+
+
+
 
   });
 

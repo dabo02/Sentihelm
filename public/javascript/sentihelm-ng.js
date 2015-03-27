@@ -3304,7 +3304,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                     role: role
                 }
 
-                $http.post('/users/update/role', {data: data})
+                $http.post('/users/update/role', data)
                 .success(function(data){
                     adminPanelCtrl.successMessage = data;
                     adminPanelCtrl.hasError = false;
