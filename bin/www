@@ -20,12 +20,12 @@ app.set('port', port);
  * Create HTTP server.
  */
 var server = http.createServer(app);
-io.attach(server);
 
 /**
  *  Create WebSocket server.
  */
 // send the io server the same session that the express server uses.
+io.attach(server);
 require('../lib/io_servers')(io, webServer.session);
 
 /**

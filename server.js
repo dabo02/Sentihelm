@@ -729,45 +729,6 @@
       return officer.signUp();
     }
 
-    //Save edited user
-    function saveUser(editedUser) {
-
-      //Generate passphrase for encryption
-      var passPhrase = "";
-      passPhrase = util.passwordGenerator.generatePassword(editedUser.username);
-
-      //Encrypted/Hashed Values
-      var encryptedFirstName = util.encryptionManager.encrypt(passPhrase, editedUser.firstName);
-      var encryptedLastName = util.encryptionManager.encrypt(passPhrase, editedUser.lastName);
-      var email = editedUser.email;
-
-      // var hashedPassword = util.passwordGenerator.md5(officerData.password);
-
-      // var ParseUser = new Parse.Query(User);
-      var user = Parse.User.current();
-      if (!user) {
-        return {
-          then: function (success, error) {
-            "use strict";
-            error(user, Error("user-session-timeout"));
-          }
-        };
-      }
-
-      user.set('firstName', {
-        __type: "Bytes",
-        base64: encryptedFirstName
-      });
-      user.set('lastName', {
-        __type: "Bytes",
-        base64: encryptedLastName
-      });
-      user.set('email', email);
-      // officer.set('userPassword', hashedPassword);
-      // officer.set('roles', [officerData.role]);
-      return user.save();
-    }
-
     //Save/change user password
     function saveUserPassword(data) {
 
