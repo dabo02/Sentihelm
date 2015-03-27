@@ -3,8 +3,9 @@
 /**
  * Module dependencies.
  */
-
-var app = require('../server');
+var io = require('socket.io')();
+var webServer = require('../server');
+var app = webServer.app(io);
 //var debug = require('debug')('example-project:server');
 var http = require('http');
 
@@ -18,8 +19,14 @@ app.set('port', port);
 /**
  * Create HTTP server.
  */
-
 var server = http.createServer(app);
+io.attach(server);
+
+/**
+ *  Create WebSocket server.
+ */
+// send the io server the same session that the express server uses.
+require('../lib/io_servers')(io, webServer.session);
 
 /**
  * Listen on provided port, on all network interfaces.

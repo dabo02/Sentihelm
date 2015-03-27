@@ -204,7 +204,7 @@
             touchToDrag: false
         };
     }]);
-    
+
     app.config(['GoogleMapApiProvider'.ns(), function (GoogleMapApi) {
         GoogleMapApi.configure({
             //    key: 'your api key',
