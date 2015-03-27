@@ -13,16 +13,15 @@ var fs = require('fs');
 var config = require('./config');
 var util = require('./lib/util');
 var session = require('express-session');
+var SessionStore = require('connect-sqlite3')(session);
 
 //Import and initialize socket.io
 //var io = require('socket.io')(server);
 
 //Other imports
-var Parse = require('parse').Parse;
+var Parse = require('./lib/db');
 var OpenTok = require('opentok');
 var MobileClient = require('./lib/mobileclient');
-
-Parse.initialize(config.parse.appId, config.parse.jsKey);
 
 //Set up Parse classes for queries
 var TipReport = Parse.Object.extend("TipReport");
@@ -50,7 +49,8 @@ app.use(session({
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
     secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
-    cookie: { maxAge: 300000 } // expire in 5 minutes
+    cookie: { maxAge: 300000 }, // expire in 5 minutes
+    store: new SessionStore()
 }));
 
 // // ======================= Chat Server ==========================

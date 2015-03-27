@@ -6,6 +6,8 @@
   "repository": "bitbucket.org:optivon/sentinel.git",
   "dependencies": {
     "body-parser": "1.0.2",
+    "connect-parse": "^1.0.0",
+    "connect-sqlite3": "^0.9.5",
     "crypto-js": "3.1.2-5",
     "express": "4.1.1",
     "express-session": "*",

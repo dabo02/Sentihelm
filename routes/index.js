@@ -11,8 +11,8 @@ router
     var username = req.body.userId;
     var password = req.body.password;
 
-    function sendError(user, error) {
-      res.send(400, error);
+    function sendError(error) {
+      res.send(503, error);
     }
 
     function sendLoginAnswer(client, user) {
