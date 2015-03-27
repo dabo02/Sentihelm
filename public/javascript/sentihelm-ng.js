@@ -204,13 +204,34 @@
             touchToDrag: false
         };
     }]);
-
+    
     app.config(['GoogleMapApiProvider'.ns(), function (GoogleMapApi) {
         GoogleMapApi.configure({
             //    key: 'your api key',
             v: '3.16',
             libraries: 'places'
         });
+    }]);
+
+    app.config(['$httpProvider', function ($httpProvider) {
+        // Session interceptor, checks if the server responded with a 401 and prompts the user to log-in.
+        $httpProvider.interceptors.push(['$q', '$window', function ($q, $window) {
+            return {
+                responseError: function (response) {
+                    // if the status matches an 401 (unauthorized) status
+                    // response, make the user login again.
+                    if (response.status == 401) {
+                        // can't use Session service because of circular dependency with $http.
+                        // so we destroy the session manually.
+                        delete $window.sessionStorage['session'];
+                        $window.location.reload();
+                    }
+
+                    return $q.reject(response);
+
+                }
+            };
+        }]);
     }]);
 
     //Initialize values needed throughout the app

@@ -49,6 +49,7 @@ app.use(session({
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
     secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
+    name: 'sentihelm.id',
     cookie: { maxAge: 300000 }, // expire in 5 minutes
     store: new SessionStore()
 }));
