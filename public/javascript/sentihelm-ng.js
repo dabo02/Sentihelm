@@ -189,26 +189,6 @@
                         return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
                     }
                 }
-            })
-            .state('tip-chat', {
-                url: '/tip-chat-logs/:tipId',
-                templateUrl: '/tip-chat.html',
-                data: {
-                    // only users with chat permissions can use this route.
-                    authorizedRoles: [USER_ROLES.demo, USER_ROLES.manager]
-                },
-                resolve: {
-                    // Reads the Routing Service
-                    routingService: 'RoutingService',
-
-                    // Receives the Routing Service, checks if user is logged in,
-                    // executes the login dialog if needed and waits for the dialog
-                    // to close before loading the state.
-                    authenticate: function (routingService) {
-                        return routingService.checkUserStatus(this.data.authorizedRoles, "Chat Logs");
-                    }
-                }
-
             });
     }]);
 
