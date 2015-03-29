@@ -19,7 +19,7 @@
                     message: messageData.message || undefined,
                     dateTime: Date.now()
                 };
-            }
+            };
         }])
         .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 
@@ -529,7 +529,7 @@
 
                                     self.rooms[room].new = false;
                                 } else {
-                                    
+
                                 }
                             }
                         }
