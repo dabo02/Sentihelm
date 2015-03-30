@@ -2,6 +2,7 @@
   'use strict';
   var Parse, Colletion;
   var Q = require('q');
+  var _ = require('lodash');
 
   function setDB(db, col) {
     Parse = db;
@@ -19,15 +20,42 @@
   function ParseModel(Model) {
     var self = this;
     self.Model = Model;
+    var self._promise = Q.Promise();
 
-    self.set = function () {
-
+    self.set = function (properties) {
+      if (arguments.length == 2) {
+      } else {
+        if (typeof properties === 'object') {
+          Object.keys(properties)
+            .forEach(function (prop) {
+              self.Model.set(prop, properties[prop]);
+            });
+        }
+      }
     };
 
     self.save = function () {
 
     };
+
+    // implementing promise funcitons, simply calling the promise stuff.
+    self.then = function () {
+      self._promise = self._promise.then.apply(self._promise, arguments);
+      return self;
+    };
+
+    self.fail = function () {
+      self._promise = self._promise.fail.apply(self._promise, arguments);
+      return self;
+    };
+
+    self.fin = function () {
+      self._promise = self._promise.fin.apply(self._promise, arguments);
+      return self;
+    };
   }
+
+  ParseModel.prototype = _.create()
 
   function ParseCollection(CollectionClass) {
     var self = this;
