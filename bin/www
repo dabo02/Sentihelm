@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-var webServer = require('../server');
+var webServer = require('../sentihelm-server');
 var io = require('../lib/io_servers')(webServer.session);
 var app = webServer.app(io);
 //var debug = require('debug')('example-project:server');

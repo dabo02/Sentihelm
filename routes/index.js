@@ -81,10 +81,10 @@
         sessionId: opentokCallbackJSON.sessionId
       }).then(function (videoSession) {
         videoSesison.setProperties({
-          'archiveStatus', opentokCallbackJSON.status,
-            'duration', opentokCallbackJSON.duration,
-            'reason', opentokCallbackJSON.reason,
-            'archiveSize', opentokCallbackJSON.size
+          'archiveStatus': opentokCallbackJSON.status,
+            'duration': opentokCallbackJSON.duration,
+            'reason': opentokCallbackJSON.reason,
+            'archiveSize': opentokCallbackJSON.size
         });
       }, function (object, error) {
         // The object was not retrieved successfully.
@@ -174,6 +174,9 @@
           stream.sessionId = session.sessionId;
           stream.connectionId = videoSession.id;
           stream.webClientToken = webToken;
+          /**
+           * response and io responses need to be consolidated.
+           */
           response.send(200, {
             objectId: videoSession.id,
             sessionId: session.sessionId,
