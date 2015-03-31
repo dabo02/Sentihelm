@@ -13,12 +13,8 @@ to the repo's root directory and run the following
 command:
 
 ```
-sudo node server.js
+npm start
 ```
-**You need root permissions.**
-
-Note that this assumes you haven't moved/renamed the
-```server.js``` file.
 
 Node.js Routing
 ---------------

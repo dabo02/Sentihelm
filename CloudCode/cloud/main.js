@@ -1,4 +1,3 @@
-
 Parse.Cloud.define("receiveSMS", function(request, response) {
   var EncryptionManager = require('cloud/EncryptionManager.js').EncryptionManager;
   var PasswordGenerator = require('cloud/PasswordGenerator.js').PasswordGenerator;
@@ -78,19 +77,19 @@ Parse.Cloud.define("sendSMS",function(request, response){
 
   // Send an SMS message
   client.sendSms({
-    to:request.params.To,
-    from: request.params.From,
-    body: request.params.Body
-  }, function(err, responseData) {
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(responseData.from);
-      console.log(responseData.body);
-      response.success();
+      to:request.params.To,
+      from: request.params.From,
+      body: request.params.Body
+    }, function(err, responseData) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log(responseData.from);
+        console.log(responseData.body);
+        response.success();
+      }
     }
-  }
-);
+  );
 
 })
 
@@ -99,16 +98,17 @@ Parse.Cloud.beforeSave("TipReport", function(request,response){
   var client = new Parse.Query(Client);
   //Query the table
   console.log(request.object.get("clientId").id);
+
   client.get(request.object.get("clientId").id, {
     success: function(result) {
-      //increment 1 to totalTipCount
-      result.increment("totalTipCount");
-      //save result
-      result.save();
-      var date = new Date();
-      request.object.set("controlNumber", date.getFullYear()+"-"+result.get("totalTipCount"));
-      console.log(result.get("totalTipCount"));
-      //request.save();
+      if(request.object.get("controlNumber")==undefined){
+        result.increment("totalTipCount");
+        //save result
+        result.save();
+        var date = new Date();
+
+        request.object.set("controlNumber", date.getFullYear()+"-"+result.get("totalTipCount"));
+      }
 
       response.success();
     },
@@ -127,24 +127,26 @@ Parse.Cloud.afterSave("TipReport", function(request, response) {
   client.get(request.object.get("clientId").id, {
     success: function(result) {
       if(result!=null){
-      console.log(result.id);
-      sendRequest(result);
-      if(response!=null){
-      response.success();
-    }
-    }
+        console.log(result.id);
+
+        if(!request.object.get("emailSent")){
+          sendRequest(result, response);
+        }
+      }
     },
     error: function(object, error) {
       console.log("It was not possible to increment 1 to the totalTipCount of the Client.")
     }
+
+
   });
 
 
-   function  sendRequest (clientObject) {
-  console.log("Debug 4");
+  function  sendRequest (clientObject, response) {
+
     createRequest('http://208.80.239.58:1080/new-tip', clientObject);
     createRequest('http://sentihelm.elasticbeanstalk.com/new-tip', clientObject);
-    sendEmail(request, clientObject);
+    sendEmail(request, response, clientObject);
 
   }
 
@@ -173,7 +175,7 @@ Parse.Cloud.afterSave("TipReport", function(request, response) {
     });
   }
 
-  function sendEmail(request, clientObject){
+  function sendEmail(request, response, clientObject){
     //Initialize Mailgun
     var Mailgun = require('mailgun');
     Mailgun.initialize('bastaya.mailgun.org', 'key-6hn8wfe4o5-k--6kzt4nclk1df2zyik0');
@@ -209,20 +211,28 @@ Parse.Cloud.afterSave("TipReport", function(request, response) {
     //Send Email
     Mailgun.sendEmail ({
 
-      from: "SentiGuard App <contact@sentiguard.com>",
-      subject: "SentiHelm Activity Report",
-      html: htmlMsg,
-      to: string
+        from: "SentiGuard App <contact@sentiguard.com>",
+        subject: "SentiHelm Activity Report",
+        html: htmlMsg,
+        to: string
 
-    },
-    {
-      success: function(httpResponse) {
-        console.log(httpResponse);
       },
-      error: function(httpResponse) {
-        console.error(httpResponse);
-      }
-    });
+      {
+        success: function(httpResponse) {
+          console.log(httpResponse);
+          request.object.set("emailSent", true).save(null,{
+            success: function(result){
+
+            },
+            error: function (error){
+              response.error();
+            }
+          });
+        },
+        error: function(httpResponse) {
+          console.error(httpResponse);
+        }
+      });
   }
 
 });
@@ -274,37 +284,37 @@ Parse.Cloud.job("editUsers", function(request, status) {
   var User = Parse.Object.extend("User");
 
   var users = ['jblack', 'tbaldwin', 'dbaloglou', 'gmarksberry',
-      'slinville', 'abiddle', 'jblack', 'ntimon', 'tbaldwin',
-      'jsmith_admin', 'jsmith'
+    'slinville', 'abiddle', 'jblack', 'ntimon', 'tbaldwin',
+    'jsmith_admin', 'jsmith'
   ];
 
   users.forEach(function (username) {
-      new Parse.Query(Parse.Object.extend('User'))
-          .equalTo('username', username)
-          .first()
-          .then(function (user) {
-              var password = passwordGenerator.generatePassword(username);
+    new Parse.Query(Parse.Object.extend('User'))
+      .equalTo('username', username)
+      .first()
+      .then(function (user) {
+        var password = passwordGenerator.generatePassword(username);
 
-              console.log(user);
+        console.log(user);
 
-              user.set('zipCode', {
-                  __type: 'Bytes',
-                  base64: encryptionManager.encrypt(password, '41074')
-              })
-              user.set('phoneNumber', {
-                  __type: 'Bytes',
-                  base64: encryptionManager.encrypt(password, '859-261-1471')
-              }) // 859-261-1471
-              user.set('state', {
-                  __type: 'Bytes',
-                  base64: encryptionManager.encrypt(password, 'KY')
-              });
-              Parse.Cloud.useMasterKey();
-              user.save();
-          });
+        user.set('zipCode', {
+          __type: 'Bytes',
+          base64: encryptionManager.encrypt(password, '41074')
+        })
+        user.set('phoneNumber', {
+          __type: 'Bytes',
+          base64: encryptionManager.encrypt(password, '859-261-1471')
+        }) // 859-261-1471
+        user.set('state', {
+          __type: 'Bytes',
+          base64: encryptionManager.encrypt(password, 'KY')
+        });
+        Parse.Cloud.useMasterKey();
+        user.save();
+      });
 
 
-});
+  });
 });
 
 Parse.Cloud.define("sendNewsletterEmail", function(request,response) {
@@ -350,28 +360,34 @@ Parse.Cloud.define("sendNewsletterEmail", function(request,response) {
 
 Parse.Cloud.define("updateUserRole", function(req, res){
 
-   req.params.users.forEach(function(user){
-        var User = Parse.Object.extend("_User");
-        var userQuery = new Parse.Query(User);
-        if(user.selected){
-            userQuery.get(user.id, {
-                success: function(fetchedUser) {
-                    if(req.params.action === "add"){
-                        fetchedUser.addUnique("roles", req.params.role);
-                    }
-                    else if(action === "remove"){
-                        //fetchedUser.remove("roles", role);
-                    }
-                    else{
-                        return;
-                    }
-                    Parse.Cloud.userMasterKey();
-                    fetchedUser.save();
-                },
-                error: function(error) {
-                    
-                }
-            });
-        }
-   });
+  var User = Parse.Object.extend("_User");
+  var userQuery = new Parse.Query(User);
+  var users = req.params.users;
+  var action = req.params.action;
+  var role = req.params.role;
+
+  users.forEach(function(user, index){
+    userQuery.get(user.objectId).then(function(fetchedUser) {
+      if (action === "add") {
+        fetchedUser.addUnique("roles", role);
+      }
+      else if (action === "remove") {
+        fetchedUser.remove("roles", role);
+      }
+      else {
+        return;
+      }
+
+      Parse.Cloud.useMasterKey();
+
+      return fetchedUser.save();
+
+    }).then(function(savedUser){
+      if(index + 1 === req.params.users.length){
+        res.success();
+      }
+    }).then(null, function(error) {
+       res.error(error);
+    });
+  });
 });

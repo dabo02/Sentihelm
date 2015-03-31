@@ -28,6 +28,9 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git-
 node_modules
 
+# Build directory
+build
+
 
 # IDE files
 .idea
@@ -38,3 +41,7 @@ node_modules
 
 # atom files
 .tern-project
+
+
+# ignore dbs
+*.db

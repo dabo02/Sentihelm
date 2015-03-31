@@ -213,6 +213,27 @@
         });
     }]);
 
+    app.config(['$httpProvider', function ($httpProvider) {
+        // Session interceptor, checks if the server responded with a 401 and prompts the user to log-in.
+        $httpProvider.interceptors.push(['$q', '$window', function ($q, $window) {
+            return {
+                responseError: function (response) {
+                    // if the status matches an 401 (unauthorized) status
+                    // response, make the user login again.
+                    if (response.status == 401) {
+                        // can't use Session service because of circular dependency with $http.
+                        // so we destroy the session manually.
+                        delete $window.sessionStorage['session'];
+                        $window.location.reload();
+                    }
+
+                    return $q.reject(response);
+
+                }
+            };
+        }]);
+    }]);
+
     //Initialize values needed throughout the app
     app.run(function () {
         //Initialize Parse
@@ -3123,7 +3144,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         adminPanelCtrl.skip;
         adminPanelCtrl.userTotal;
         adminPanelCtrl.usersAvailable = true;
-        adminPanelCtrl.rolesFilter = ['employee','admin'];
+        adminPanelCtrl.rolesFilter = "";
 
         adminPanelCtrl.getPage = function(pageNum){
 
@@ -3139,7 +3160,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 homeClient: Session.clientId,
                 searchString: adminPanelCtrl.searchString,
                 registrationDate: adminPanelCtrl.registrationDate,
-                roles: adminPanelCtrl.rolesFilter,
+                role: adminPanelCtrl.rolesFilter,
                 lastUserCreatedAt: false, // adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt || undefined,
                 skip: adminPanelCtrl.skip,
                 limit: adminPanelCtrl.limit
@@ -3242,8 +3263,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
                 case 'all':
                     adminPanelCtrl.viewingAll = true;
-                    adminPanelCtrl.rolesFilter = ['employee','admin'];
-                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                    adminPanelCtrl.rolesFilter = "";
+                    adminPanelCtrl.getPage(1);
                     break;
 
                 case 'users':
@@ -3253,14 +3274,14 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
                 case 'employees':
                     adminPanelCtrl.viewingEmployees = true;
-                    adminPanelCtrl.rolesFilter = ['employee'];
-                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                    adminPanelCtrl.rolesFilter = "employee";
+                    adminPanelCtrl.getPage(1);
                     break;
 
                 case 'administrators':
                     adminPanelCtrl.viewingAdministrators = true;
-                    adminPanelCtrl.rolesFilter = ['admin'];
-                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                    adminPanelCtrl.rolesFilter = "admin";
+                    adminPanelCtrl.getPage(1);
                     break;
 
                 case 'loggedIn':
@@ -3275,6 +3296,20 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         };
 
         adminPanelCtrl.updateRole = function(action, role){
+
+            var selectedUsers = [];
+
+            adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
+                if(user.selected){
+                    selectedUsers.push(user);
+                }
+            });
+
+            if(selectedUsers.length == 0){
+                adminPanelCtrl.successMessage = "Please selected at least one user to apply bulk actions.";
+                adminPanelCtrl.hasError = true;
+                return;
+            }
 
             usSpinnerService.spin('loading-video-archive-spinner');
 
@@ -3299,7 +3334,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
             if(roleChangeConfirm){
                 var data = {
-                    users: adminPanelCtrl.adminPanelUsersArray,
+                    users: selectedUsers,
                     action: action,
                     role: role
                 }

@@ -4,15 +4,14 @@ var _ = require('lodash');
 var util = require('../lib/util');
 var clientModel = require('../models/client');
 var usersModel = require('../models/users');
-var Q = require('q');
 
 router
   .post('/login', function (req, res) {
     var username = req.body.userId;
     var password = req.body.password;
 
-    function sendError(user, error) {
-      res.send(400, error);
+    function sendError(error) {
+      res.send(503, error);
     }
 
     function sendLoginAnswer(client, user) {
@@ -39,7 +38,10 @@ router
     function userLogedIn(user) {
       var clientId = user.attributes.homeClient.id;
 
-      req.session.regenerate(function () {
+      req.session.regenerate(function (err) {
+        if (err) {
+          res.status(503).send({});
+        }
         // perform a deep copy of the user object to keep in the session.
         req.session.user = _.clone(user, true);
       });
