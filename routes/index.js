@@ -7,7 +7,6 @@
   var usersModel = require('../models/users');
   var config = require('../config');
   var OpenTok = require('opentok');
-  var MobileClient = require('../lib/mobileclient');
   var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
   var Parse = require('../lib/db');
   var VideoSession = Parse.Object.extend('VideoSession');
