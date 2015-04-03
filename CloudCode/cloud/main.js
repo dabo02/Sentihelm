@@ -391,3 +391,26 @@ Parse.Cloud.define("updateUserRole", function(req, res){
     });
   });
 });
+
+Parse.Cloud.define("deleteUser", function(req, res){
+
+  var User = Parse.Object.extend("_User");
+  var userQuery = new Parse.Query(User);
+  var users = req.params.users;
+
+  users.forEach(function(user, index){
+    userQuery.get(user.objectId).then(function(fetchedUser) {
+
+      Parse.Cloud.useMasterKey();
+
+      return fetchedUser.destroy();
+
+    }).then(function(deletedUser){
+      if(index + 1 === req.params.users.length){
+        res.success();
+      }
+    }).then(null, function(error) {
+      res.error(error);
+    });
+  });
+});

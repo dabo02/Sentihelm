@@ -1,8 +1,8 @@
 "use strict";
 var db = require('../lib/db');
+var User = db.Object.extend('_User');
 var util = require('../lib/util');
 var Q = require('q');
-var User = db.Object.extend('User');
 
 module.exports.sendPasswordResetRequest = function (email) {
   return Q.Promise(function (resolve, reject, notify) {
@@ -14,7 +14,6 @@ module.exports.sendPasswordResetRequest = function (email) {
       });
   });
 };
-
 
 module.exports.saveUser = function (user) {
   //Generate passphrase for encryption
@@ -94,4 +93,42 @@ module.exports.updateRole = function(data){
       }
     });
   });
-}
+};
+
+module.exports.deleteUser = function(data){
+
+  return Q.Promise(function(resolve, reject){
+    db.Cloud.run('deleteUser', data, {
+      success: function(result) {
+        resolve();
+      },
+      error: function (error) {
+        reject(error);
+      }
+    });
+  });
+};
+
+module.exports.getById = function(data){
+
+  return Q.Promise(function(resolve, reject){
+    var id = data;
+
+    var userQuery = new db.Query(User);
+    userQuery.get(id).then(function (user) {
+
+      var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
+
+      user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
+      var lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
+      user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
+      user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
+      user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+
+      resolve(user);
+
+      }, function (error) {
+        reject();
+      });
+  });
+};

@@ -3135,6 +3135,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
 
         adminPanelCtrl.adminPanelUsersArray = [];
+        adminPanelCtrl.selectedUsers = [];
 
         //pagination variables
         adminPanelCtrl.currentPageNum = 1;
@@ -3297,16 +3298,10 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
         adminPanelCtrl.updateRole = function(action, role){
 
-            var selectedUsers = [];
+            adminPanelCtrl.findSelectedUsers();
 
-            adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
-                if(user.selected){
-                    selectedUsers.push(user);
-                }
-            });
-
-            if(selectedUsers.length == 0){
-                adminPanelCtrl.successMessage = "Please selected at least one user to apply bulk actions.";
+            if(adminPanelCtrl.selectedUsers.length == 0){
+                adminPanelCtrl.successMessage = "Please selected at least one user to apply any actions.";
                 adminPanelCtrl.hasError = true;
                 return;
             }
@@ -3324,17 +3319,17 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             }
 
             if(action === "add"){
-                roleAction = "added to";
+                roleAction = "ADDED to";
             }
             else{
-                roleAction = "removed from";
+                roleAction = "REMOVED from";
             }
 
             var roleChangeConfirm = confirm("The " + roleString + " role will be " + roleAction + " selected user(s).");
 
             if(roleChangeConfirm){
                 var data = {
-                    users: selectedUsers,
+                    users: adminPanelCtrl.selectedUsers,
                     action: action,
                     role: role
                 }
@@ -3353,6 +3348,74 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             }
 
             usSpinnerService.stop('loading-video-archive-spinner');
+        };
+
+        adminPanelCtrl.deleteUser = function(){
+
+            adminPanelCtrl.findSelectedUsers();
+
+            if(adminPanelCtrl.selectedUsers.length == 0){
+                adminPanelCtrl.successMessage = "Please selected at least one user to apply any actions.";
+                adminPanelCtrl.hasError = true;
+                return;
+            }
+
+            usSpinnerService.spin('loading-video-archive-spinner');
+
+            var deleteUserConfirm = confirm("The selected user(s) will be DELETED.");
+
+            if(deleteUserConfirm){
+                var data = {
+                    users: adminPanelCtrl.selectedUsers
+                }
+
+                $http.post('/users/delete', data)
+                  .success(function(data){
+                      adminPanelCtrl.successMessage = data;
+                      adminPanelCtrl.hasError = false;
+                  })
+                  .error(function(err){
+                      adminPanelCtrl.successMessage = err;
+                      adminPanelCtrl.hasError = true;
+                  }).then(function(){
+                      adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                  });
+            }
+
+            usSpinnerService.stop('loading-video-archive-spinner');
+        };
+
+        adminPanelCtrl.selectUser = function(user){
+            user.selected = true;
+        };
+
+        adminPanelCtrl.findSelectedUsers = function(){
+
+            adminPanelCtrl.selectedUsers = [];
+
+            adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
+                if(user.selected){
+                    adminPanelCtrl.selectedUsers.push(user);
+                }
+            });
+        };
+
+        adminPanelCtrl.getUser = function(user){
+
+            var data = {
+                userId: user.objectId
+            }
+
+            $http.post('/users/get', data)
+              .success(function(data){
+                  user = angular.copy(data);
+              })
+              .error(function(err){
+                  adminPanelCtrl.successMessage = err;
+                  adminPanelCtrl.hasError = true;
+              }).then(function(){
+                  adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+              });
         };
 
         adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);

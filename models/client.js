@@ -17,7 +17,7 @@ module.exports.getById = function (clientId) {
         if (client) {
           resolve(client);
         } else {
-          reject(new Errror("Couldn't get client"));
+          reject(new Error("Couldn't get client"));
         }
 
 

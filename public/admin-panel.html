@@ -35,7 +35,7 @@
                                 <li><a class="pointer" ng-click="adminPanelCtrl.updateRole('add','admin')">Add to Administrators</a></li>
                                 <li><a class="pointer" ng-click="adminPanelCtrl.updateRole('remove','admin')">Remove from Administrators</a></li>
                                 <li class="divider"></li>
-                                <li class="pointer"><a>Delete Selected Users<i class="glyphicon glyphicon-trash pointer pull-right"></i></a></li>
+                                <li class="pointer"><a ng-click="adminPanelCtrl.deleteUser()">Delete Selected Users<i class="glyphicon glyphicon-trash pointer pull-right"></i></a></li>
                             </ul>
                         </li>
                     </ul>
@@ -67,7 +67,7 @@
                     </div>
 
                     <!--======SPINNER (LOADING)======-->
-                    <span  us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-video-archive-spinner" spinner-start-active="1">
+                    <span  us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-video-archive-spinner" spinner-start-active="1"/>
                     <h3 class="text-center"  ng-class="{'green':!adminPanelCtrl.hasError, 'red':adminPanelCtrl.hasError}" ng-show="!adminPanelCtrl.sending">{{adminPanelCtrl.successMessage}}</h3>
                         <br>
                     <table class="table" ng-show="adminPanelCtrl.usersAvailable">
@@ -83,7 +83,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="user in adminPanelCtrl.adminPanelUsersArray">
+                        <tr ng-repeat="user in adminPanelCtrl.adminPanelUsersArray" ng-click="adminPanelCtrl.getUser(user)" class="pointer">
                             <td><input type="checkbox" ng-model="user.selected" ng-init="user.selected = false"></td>
                             <td>{{user.username}}</td>
                             <td>{{user.email}}</td>
@@ -96,8 +96,8 @@
                                         <li>
                                             <a href="mailto:{{user.email}}" id="blackLink"><i class="glyphicon glyphicon-envelope pointer"></i></a>
                                         </li>
-                                        <li ng-click="adminPanelCtrl.deleteUser(user.id)"><i class="glyphicon glyphicon-edit pointer"></i></li>
-                                        <li><i class="glyphicon glyphicon-trash pointer"></i></li>
+                                        <li><i class="glyphicon glyphicon-edit pointer"></i></li>
+                                        <li ng-click="adminPanelCtrl.selectUser(user); adminPanelCtrl.deleteUser()"><i class="glyphicon glyphicon-trash pointer"></i></li>
                                     </ul>
                                 </div>
                             </td>

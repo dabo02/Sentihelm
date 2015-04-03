@@ -98,7 +98,7 @@ router
             res.send("SUCCESS: Role has been updated.");
 
         }, function (error) {
-            res.status(503).send("FAILURE: Role could not be updated." + error.message);
+            res.status(503).send("FAILURE: Role could not be updated.");
         });
     })
 
@@ -110,9 +110,35 @@ router
             res.send("SUCCESS: User has been saved.");
 
         }, function (error) {
-            res.status(503).send("FAILURE: User could not be saved." + error.message);
+            res.status(503).send("FAILURE: User could not be saved.");
         });
     })
+
+  .post('/delete', function(req, res){
+
+      var data = {
+          users: req.body.users
+      };
+
+      usersModel.deleteUser(req.body.users).then(function () {
+          res.send("SUCCESS: Deleted selected user(s).");
+
+      }, function (error) {
+          res.status(503).send("FAILURE: Could not delete selected user(s).");
+      });
+  })
+
+  .post('/get', function(req, res){
+
+      var userId = req.body.userId;
+
+      usersModel.getById(userId).then(function (user) {
+          res.send(user);
+
+      }, function (error) {
+          res.status(503).send("FAILURE: Could not fetch the selected user's information." + error.message);
+      });
+  });
 
 
 module.exports = router;
