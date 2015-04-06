@@ -35,7 +35,7 @@
                                 <li><a class="pointer" ng-click="adminPanelCtrl.updateRole('add','admin')">Add to Administrators</a></li>
                                 <li><a class="pointer" ng-click="adminPanelCtrl.updateRole('remove','admin')">Remove from Administrators</a></li>
                                 <li class="divider"></li>
-                                <li class="pointer"><a>Delete Selected Users<i class="glyphicon glyphicon-trash pointer pull-right"></i></a></li>
+                                <li class="pointer"><a ng-click="adminPanelCtrl.deleteUser()">Delete Selected Users<i class="glyphicon glyphicon-trash pointer pull-right"></i></a></li>
                             </ul>
                         </li>
                     </ul>
@@ -83,11 +83,11 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="user in adminPanelCtrl.adminPanelUsersArray">
-                            <td><input type="checkbox" ng-model="user.selected"></td>
+                        <tr ng-repeat="user in adminPanelCtrl.adminPanelUsersArray" ng-click="adminPanelCtrl.decryptUser(user)" class="pointer">
+                            <td><input type="checkbox" ng-model="user.selected" ng-init="user.selected = false"></td>
                             <td>{{user.username}}</td>
                             <td>{{user.email}}</td>
-                            <td>{{user.roles}}</td>
+                            <td ng-init="adminPanelCtrl.sortRoles(user.roles)">{{user.roles[0] | uppercase}}{{user.roles[1] ? " - " + user.roles[1] : "" | uppercase}}</td>
                             <td>{{user.createdAt | date:'mediumDate'}}</td>
                             <!--<td>Yes</td>-->
                             <td>
@@ -96,8 +96,8 @@
                                         <li>
                                             <a href="mailto:{{user.email}}" id="blackLink"><i class="glyphicon glyphicon-envelope pointer"></i></a>
                                         </li>
-                                        <li ng-click="adminPanelCtrl.deleteUser(user.id)"><i class="glyphicon glyphicon-edit pointer"></i></li>
-                                        <li><i class="glyphicon glyphicon-trash pointer"></i></li>
+                                        <li><i class="glyphicon glyphicon-edit pointer"></i></li>
+                                        <li ng-click="adminPanelCtrl.selectUser(user); adminPanelCtrl.deleteUser()"><i class="glyphicon glyphicon-trash pointer"></i></li>
                                     </ul>
                                 </div>
                             </td>

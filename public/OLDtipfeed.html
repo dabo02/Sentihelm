@@ -1,0 +1,209 @@
+<div id="tip-feed-route-container" ng-controller="TipFeedController as tipfeed">
+
+    <!--=======COUNTER======-->
+    <!--====================-->
+    <div class="row">
+        <div class="tip-counter"
+             ng-class="{'disabled-counter':tipfeed.counter===0}"
+             ng-click="tipfeed.loadNewTips()">
+          <span ng-show="tipfeed.counter>0" class="col-md-12" ng-class="{'active-counter':tipfeed.counter>0}">
+            <span style="text-decoration: underline;" class="col-md-12">{{tipfeed.counter}} new tips available</span>
+          </span>
+          <span ng-hide="tipfeed.counter>0">
+            No new Tips available
+          </span>
+        </div>
+    </div>
+
+    <div class="tip-filter-container row" ng-show="tipfeed.showFilter">
+        <div class="filter-controls">
+
+            <div class="crime-filter col-xs-5">
+                <label class="">Crime Date</label>
+                <input class="crime-date " type="date" ng-model="tipfeed.crimeDateFilter"/>
+            </div>
+
+            <div class="crime-filter col-xs-6">
+                <label>Crime Type</label>
+                <select class="crime-type" ng-model="tipfeed.crimeTypeFilter">
+                    <option value="{{tipfeed.noCrimeType}}">None</option>
+                    <option value="{{$index}}" ng-repeat="crimetype in tipfeed.crimeTypes track by $index">
+                        {{crimetype}}
+                    </option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary filter-submit col-xs-1"
+                    ng-click="tipfeed.filterTips(tipfeed.crimeDateFilter, tipfeed.crimeTypeFilter)">
+                Filter
+            </button>
+
+        </div>
+    </div>
+
+    <div id="tip-feed-container" class="tip-mid-container">
+        <span ng-if='!tipfeed.tipsAvailable'>No tips have been submitted.</span>
+
+        <!--======SPINNER (LOADING)======-->
+        <span ng-if='tipfeed.tipsAvailable' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}"
+              spinner-key="loading-tips-spinner" spinner-start-active="1"></span>
+
+        <!--======TIP FEED======-->
+        <!--====================-->
+        <ul id="tip-feed" ng-if='tipfeed.tipsAvailable'>
+            <!--ANCHOR MARKER FOR SCROLLING TO TOP WHEN PAGE CHANGES-->
+            <a id="top"></a>
+
+            <li class="tip" ng-repeat="tip in tipfeed.currentTips track by $index" ng-show="tip"
+                ng-class="{'orange-border':tip.anonymous}">
+
+                <!-------------------->
+                <!------TIP HEAD------>
+                <!-------------------->
+                <div class="tip-header">
+
+                    <!------DATE------>
+        <span class="white tip-date">
+          {{tip.date}}
+        </span>
+
+                    <!------NAME------>
+        <span class="user" ng-class="{orange:tip.anonymous, white:!tip.anonymous}">
+          {{(tip.firstName+" "+tip.lastName)}}
+        </span>
+
+                    <!------CONTROL NUMBER------>
+                    <div class="control-number" ng-class="{'orange-border':tip.anonymous}">
+                        {{tip.controlNumber}}
+                    </div>
+
+                </div>
+
+                <!-------------------->
+                <!------TIP BODY------>
+                <!-------------------->
+                <div class="tip-body">
+
+                    <!-------LEFT DIVISION------>
+                    <!-------------------------->
+                    <div class="left">
+
+                        <!------CRIME IMAGE------>
+                        <img ng-src="http://199.85.204.123/fb_images/{{tip.crimeListPosition}}.png"/>
+                        <br>
+
+                        <!------CRIME TYPE------>
+                        <span>{{tip.crimeType}}</span>
+
+                        <!------CONTACT USER INFORMATION------>
+                        <div ng-hide="tip.anonymous" class="contact-info">
+                            CONTACT USER<br>
+                            <span class="contact-number">{{tip.phone}}</span><br>
+                            <button class="notification-button"
+                                    ng-click="tipfeed.showNotificationDialog(tip.firstName, tip.lastName, tip.controlNumber, tip.channel)">
+                                Send Notification
+                            </button>
+                        </div>
+
+                        <div ng-show="tip.smsNumber" class="contact-info">
+                            CONTACT USER<br>
+                            <span class="contact-number">{{tip.phone}}</span><br>
+                            <button class="notification-button" ng-click="tipfeed.showSMSDialog(tip.phone)">Send Text
+                                Message
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-------MID DIVISION------->
+                    <!-------------------------->
+                    <div class="center">
+
+                        <!------ATTACHMENTS------>
+                        <div class="attachments" ng-class="{'orange-border':tip.anonymous}">
+
+                            <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}"
+                               ng-click="tipfeed.showAttachmentDialog(tip, 'VID')">
+                                <img src="./resources/images/videoAtt.png"
+                                     ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
+                            </a>
+                            <a id="imageAtt" ng-class="{'disabled-link': !tip.attachmentPhoto.url}"
+                               ng-click="tipfeed.showAttachmentDialog(tip, 'IMG')">
+                                <img src="./resources/images/imageAtt.png"
+                                     ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
+                            </a>
+                            <a id="audioAtt" ng-class="{'disabled-link': !tip.attachmentAudio.url}"
+                               ng-click="tipfeed.showAttachmentDialog(tip, 'AUDIO')">
+                                <img src="./resources/images/audioAtt.png"
+                                     ng-class="{'orange-bg':tip.anonymous, 'light-blue-bg':!tip.anonymous}"/>
+                            </a>
+
+                        </div>
+
+                        <!------CRIME DESCRIPTION------>
+                        <div class="crime-description" ng-class="{'orange-border':tip.anonymous}">
+                            <span>{{tip.crimeDescription}}</span>
+                        </div>
+                    </div>
+
+                    <!------RIGHT DIVISION------>
+                    <!-------------------------->
+                    <div class="right" ng-controller="GoogleMapController as mapCtrl">
+                        <div class="map-canvas" id="{{tip.controlNumber}}">
+
+                            <!------ANON NO LOCATION------>
+                            <span ng-show="tip.smsNumber" style="line-height: 290px;">NO LOCATION AVAILABLE</span>
+
+                            <!------GOOGLE MAP------>
+                            <ui-gmap-google-map ng-if="!tip.smsNumber" center="mapCtrl.getMapCenter(tip.center)"
+                                                zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+                                <ui-gmap-markers models="tip.markers" coords="'self'"
+                                                 options="'options'"></ui-gmap-markers>
+                            </ui-gmap-google-map>
+                        </div>
+                    </div>
+                </div>
+                <!-- END TIP -->
+            </li>
+        </ul>
+
+    </div>
+
+    <!--=====PAGINATOR======-->
+    <!--====================-->
+    <div ng-show='tipfeed.showPaginator' id="paginator-container" ng-init="tipfeed.currentPage=1">
+        <ul id="paginator">
+
+            <!------PREVIOUS PAGE CONTROL------>
+            <li id="page-previous" class="paginator-control" ng-show="tipfeed.paginatorSet"
+                ng-class="{'disabled-link': tipfeed.currentPage===1}" ng-click="tipfeed.prevPage()"
+                    >
+                <span class="fa fa-chevron-left fa-lg"></span>
+            </li>
+
+            <!------PAGE CONTROLS------>
+            <li class="paginator-control"
+                ng-repeat="value in tipfeed.paginatorSet"
+                ng-class="{'light-blue': tipfeed.currentPage === value}"
+                ng-click="tipfeed.changePage(value)"
+                    >
+                {{value}}
+            </li>
+
+            <!------NEXT PAGE CONTROL------>
+            <li id="page-next" class="paginator-control"
+                ng-show="tipfeed.paginatorSet"
+                ng-class="{'disabled-link': tipfeed.currentPage===tipfeed.lastPage}"
+                ng-click="tipfeed.nextPage()"
+                    >
+                <span class="fa fa-chevron-right fa-lg"></span>
+            </li>
+
+        </ul>
+    </div>
+
+    <!-- LOADING MEDIA SPINNER -->
+    <span ng-if='tipfeed.showMediaSpinner' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}"
+          spinner-key="loading-media-spinner" spinner-start-active="0"></span>
+
+</div>

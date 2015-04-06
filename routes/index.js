@@ -1,4 +1,5 @@
 (function () {
+  'use strict';
   var express = require('express');
   var router = express.Router();
   var _ = require('lodash');
@@ -23,17 +24,12 @@
       function sendLoginAnswer(client, user) {
         var answer = [];
 
-        var passPhrase = util.passwordGenerator.generatePassword(
-          user.attributes.username
-        );
-        user.attributes.firstName = util.encryptionManager.decrypt(
-          passPhrase,
-          user.attributes.firstName.base64
-        );
-        user.attributes.lastName = util.encryptionManager.decrypt(
-          passPhrase,
-          user.attributes.lastName.base64
-        );
+        var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
+        user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
+        user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
+        user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
+        user.attributes.zipCode = parseInt(util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64), 10);
+        user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
 
         answer.push(user);
         answer.push(client);
@@ -49,7 +45,8 @@
             res.status(503).send({});
           }
           // perform a deep copy of the user object to keep in the session.
-          req.session.user = _.clone(user, true);
+          var userJSON = user.toJSON();
+          req.session.user = _.clone(userJSON, true);
         });
         // Get Client to which user belongs to
         // and return a promise
@@ -81,9 +78,9 @@
       }).then(function (videoSession) {
         videoSesison.setProperties({
           'archiveStatus': opentokCallbackJSON.status,
-            'duration': opentokCallbackJSON.duration,
-            'reason': opentokCallbackJSON.reason,
-            'archiveSize': opentokCallbackJSON.size
+          'duration': opentokCallbackJSON.duration,
+          'reason': opentokCallbackJSON.reason,
+          'archiveSize': opentokCallbackJSON.size
         });
       }, function (object, error) {
         // The object was not retrieved successfully.

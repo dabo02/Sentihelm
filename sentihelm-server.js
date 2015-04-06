@@ -15,7 +15,7 @@
     secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
     name: 'sentihelm.id',
     cookie: {
-      maxAge: 30000
+      maxAge: 300000
     }, // expire in 5 minutes
     store: new SessionStore()
   });
@@ -54,10 +54,12 @@
     var routes = require('./routes/index');
     var users = require('./routes/users');
     var tip = require('./routes/tip');
+    var tips = require('./routes/tips');
 
     app.use(routes);
     app.use(tip(io));
     app.use('/users', users);
+    app.use('/tips', tips);
 
     app.use(function (req, res, next) {
       var err = new Error('Not Found');
