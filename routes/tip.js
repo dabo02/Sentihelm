@@ -51,7 +51,8 @@
             var buffer = Buffer.concat(file);
             var decrypt = util.encryptionManager.decrypt(passPhrase, buffer);
             var fileName = Date.now();
-            var filepath = 'temp/' + fileName;
+            var filepath = 'temp/' + fileName + (mime === 'image/jpeg' ? '.jpg' : (mime === 'video/mp4' ? '.mp4' : '.aac'));
+            console.log(filepath);
             var options = {
               headers: {
                 'x-timestamp': Date.now(),
