@@ -72,7 +72,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="tip in tipFeed.tips" class="pointer">
+              <tr ng-repeat="tip in tipFeed.tips" class="pointer" ng-click="tipFeed.showTip(tip)">
                 <td>{{tip.user.username || 'anonymous'}}</td>
                 <td>{{tip.user.email || 'anonymous'}}</td>
                 <td>{{tip.crimeType || 'not set'}}</td>

@@ -5,6 +5,7 @@
   "private": true,
   "repository": "bitbucket.org:optivon/sentinel.git",
   "dependencies": {
+    "blob": "0.0.4",
     "body-parser": "^1.0.2",
     "cli-color": "^0.3.1",
     "connect-parse": "^1.0.0",

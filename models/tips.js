@@ -6,23 +6,44 @@
   var Q = require('q');
 
   var crimeTypes = ["Assault",
-  "Child Abuse",
-  "Elderly Abuse",
-  "Domestic Violence",
-  "Drugs",
-  "Homicide",
-  "Animal Abuse",
-  "Robbery",
-  "Sex Offenses",
-  "Bullying",
-  "Police Misconduct",
-  "Bribery",
-  "Vehicle Theft",
-  "Vandalism",
-  "Auto Accident",
-  "Civil Rights",
-  "Arson",
-  "Other"];
+    "Child Abuse",
+    "Elderly Abuse",
+    "Domestic Violence",
+    "Drugs",
+    "Homicide",
+    "Animal Abuse",
+    "Robbery",
+    "Sex Offenses",
+    "Bullying",
+    "Police Misconduct",
+    "Bribery",
+    "Vehicle Theft",
+    "Vandalism",
+    "Auto Accident",
+    "Civil Rights",
+    "Arson",
+    "Other"
+  ];
+
+  module.exports.getById = function (id) {
+    return Q.Promise(function (resolve, reject) {
+        new db.Query(TipReport)
+          .include('user')
+          .get(id)
+          .then(function (tip) {
+            var t = tip.toJSON();
+
+            if (t.user) {
+              t.user = tip.get('user').toJSON();
+            }
+
+            resolve([t, t.user]);
+
+          }, function (e) {
+            reject(e);
+          });
+      });
+  };
 
   module.exports.listTips = function (options) {
     return Q.Promise(function (resolve, reject) {

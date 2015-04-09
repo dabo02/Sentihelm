@@ -57,9 +57,22 @@
     var tips = require('./routes/tips');
 
     app.use(routes);
-    app.use(tip(io));
+    app.use('/tip', tip);
     app.use('/users', users);
     app.use('/tips', tips);
+
+    app.post('/new-tip', function (request, response) {
+      var tip = request.body;
+      var pass = tip.pass;
+      var clientId = tip.clientId;
+      if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
+        io.to(clientId).emit('new-tip', {
+          tip: tip,
+          clientId: clientId
+        });
+        response.send(200);
+      }
+    });
 
     app.use(function (req, res, next) {
       var err = new Error('Not Found');

@@ -5,8 +5,31 @@
   'use strict';
 
   angular.module('sentihelm')
-    .controller('TipFeedCtrl', ['socket', 'Session', 'usSpinnerService', '$http', '$location', '$anchorScroll',
-      function (socket, Session, usSpinnerService, $http, $location, $anchorScroll) {
+    .config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', '$sceDelegateProvider',
+      function ($stateProvider, $urlRouterProvider, USER_ROLES, $sceDelegateProvider) {
+        $stateProvider
+          .state('tip', {
+            url: '/tip/:tipId',
+            templateUrl: '/tip.html',
+            data: {
+              authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+            },
+            resolve: {
+              // Reads the Routing Service
+              routingService: 'RoutingService',
+
+              // Receives the Routing Service, checks if user is logged in,
+              // executes the login dialog if needed and waits for the dialog
+              // to close before loading the state.
+              authenticate: function (routingService) {
+                return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
+              }
+            }
+          });
+      }
+    ])
+    .controller('TipFeedCtrl', ['socket', 'Session', 'usSpinnerService', '$http', '$location', '$anchorScroll', '$state',
+      function (socket, Session, usSpinnerService, $http, $location, $anchorScroll, $state) {
         var self = this;
 
 
@@ -67,7 +90,7 @@
             list: self.currentTab,
             searchString: self.searchString,
             registrationDate: self.registrationDate,
-            crimeTypes: self.selectedCrimeType,
+            crimeType: self.selectedCrimeType,
             skip: self.skip,
             limit: self.limit,
             type: self.currentTab
@@ -131,8 +154,91 @@
           self.getPage(1);
         };
 
+        self.showTip = function (tip) {
+          $state.go('tip', {
+            tipId: tip.objectId
+          }, {
+            location: true
+          });
+        };
+
         self.getPage(self.currentPageNum);
       }
-    ]);
+    ])
+    .controller('TipCtrl', ['$http', '$stateParams', 'ngDialog', '$scope', '$location', function ($http, $stateParams, ngDialog, $scope, $location) {
+      var self = this;
+
+      self.tipError = null;
+      self.tip = null;
+      self.notificationDialogIsOn = false;
+      self.attachmentDialogIsOn = false;
+
+      self.showAttachmentDialog = function (type) {
+
+        // if (self.showMediaSpinner) {
+        //   return;
+        // }
+
+        //Only show dialog if it, and notificationDialog,
+        //are not showing
+        if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
+
+          self.showMediaSpinner = true;
+          //usSpinnerService.spin('loading-media-spinner');
+          var parseFile;
+          if (type === 'IMG') {
+            parseFile = self.tip.attachmentPhoto;
+          } else if (type === 'VID') {
+            parseFile = self.tip.attachmentVideo;
+          } else {
+            parseFile = self.tip.attachmentAudio;
+          }
+
+          var url = $location.protocol() + '://' + $location.host() + ':' + $location.port();
+          url += '/tip/' + self.tip.objectId + '/media?type=' + type;
+
+          if (self.attachmentDialogIsOn) {
+            return;
+          }
+
+          //usSpinnerService.stop('loading-media-spinner');
+          //self.showMediaSpinner = false;
+
+          //ngDialog can only handle stringified JSONs
+          var data = JSON.stringify({
+            attachmentType: type,
+            address: url
+          });
+
+          //If attachment is an audio file,
+          //don't show close control (X)
+          var showClose = self.attachmentType !== 'AUDIO';
+
+          //Open dialog and pass control to AttachmentController
+          $scope.attachmentDialog = ngDialog.open({
+            template: '../attachment-dialog.html',
+            className: 'ngdialog-attachment',
+            showClose: showClose,
+            scope: $scope,
+            data: data
+          });
+
+          //Attachment dialog is now showing
+          self.attachmentDialogIsOn = true;
+        }
+      };
+
+
+      $http.get('/tip/' + $stateParams.tipId)
+        .success(function (data) {
+          self.tip = angular.copy(data);
+          console.log(self.tip);
+        })
+        .error(function (e) {
+          self.tip = null;
+          self.tipError = e;
+        });
+
+    }]);
 
 })();
