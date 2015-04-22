@@ -1,30 +1,36 @@
 <div class="container-fluid wanted-card">
-    <div class="row">
-        <div class="btn btn-default most-wanted-move-handle" ng-hide="editingList">
-            <span class="glyphicon glyphicon-align-justify"></span>
-        </div>
-        <div class="col-xs-1 most-wanted-ranking-number">{{index + 1}}</div>
-
-        <div class="no-margin no-border col-xs-2 no-padding pointer thumbnail">
-            <img class="profile" ng-src="{{criminal.photoUrl || criminal.photo._url || './resources/images/no-profile-pic.png'}}"
-                 alt="..."/>
-        </div>
-        <div class="col-xs-8">
-            <div class="btn btn-default col-xs-offset-12 edit-btn" ng-click="toggleEditing()" ng-hide="editingList">
-                <span class="glyphicon glyphicon-pencil"></span>
-            </div>
-            <div class="col-xs-5"><em>Name:</em> {{criminal.name | limitName}}</div>
-            <div class="col-xs-5"><em>Alias:</em> {{criminal.alias}}</div>
-            <br/><br/>
-
-            <div class="col-xs-3"><em>Age:</em> {{criminal.age || "Unknown"}}</div>
-            <div class="col-xs-3 col-xs-offset-2"><em>Height:</em> {{criminal.height || "Unknown"}}</div>
-
-            <br/>
-
-            <div class="col-xs-9"><em>Wanted For:</em> {{criminal.summary || "Reasons: unknown." | limitSummary}}
-            </div>
-            <br/><br/>
-        </div>
+  <div class="row">
+    <div class="btn btn-default most-wanted-move-handle" ng-hide="editingList">
+      <span class="glyphicon glyphicon-align-justify"></span>
     </div>
+    <div class="col-xs-1 most-wanted-ranking-number">{{index + 1}}</div>
+
+    <div class="no-margin no-border col-xs-2 no-padding pointer thumbnail">
+      <img class="profile" ng-src="{{criminal.photoUrl || criminal.photo._url || './resources/images/no-profile-pic.png'}}" alt="..." />
+    </div>
+    <div class="col-xs-8">
+      <div class="btn btn-default col-xs-offset-12 edit-btn" ng-click="toggleEditing()" ng-hide="editingList">
+        <span class="glyphicon glyphicon-pencil"></span>
+      </div>
+      <div class="col-xs-5">
+        <em>Name:</em> {{criminal.name | limitName}}</div>
+      <div class="col-xs-5">
+        <em>Alias:</em> {{criminal.alias}}</div>
+      <br/>
+      <br/>
+
+      <div class="col-xs-3">
+        <em>Age:</em> {{criminal.age || "Unknown"}}</div>
+      <div class="col-xs-3 col-xs-offset-2">
+        <em>Height:</em> {{criminal.height || "Unknown"}}</div>
+
+      <br/>
+
+      <div class="col-xs-9">
+        <em>Wanted For:</em> {{criminal.summary || "Reasons: unknown." | limitSummary}}
+      </div>
+      <br/>
+      <br/>
+    </div>
+  </div>
 </div>

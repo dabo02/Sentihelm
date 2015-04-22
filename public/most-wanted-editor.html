@@ -1,139 +1,112 @@
-<form class="form-horizontal most-wanted-item"
-      role="form" class="editor">
+<form class="form-horizontal most-wanted-item" role="form" class="editor">
 
-    <div class="col-md-3 most-wanted-ranking-number">{{index + 1}}</div>
+  <div class="col-md-3 most-wanted-ranking-number">{{index + 1}}</div>
 
-    <div class="col-md-2 no-padding pointer" accept="image/*"
-         ng-file-select="fileSelect({files: $files, index: index})">
-        <a class="thumbnail no-margin no-border">
-            <img class="profile" ng-src="{{criminal.attributes.photoUrl ||
-                            criminal.attributes.photo._url ||
-                            './resources/images/no-profile-pic.png'}}"
-                 alt="...">
-        </a>
+  <div class="col-md-2 no-padding pointer" accept="image/*" ng-file-select="fileSelect({files: $files, index: index})">
+    <a class="thumbnail no-margin no-border">
+      <img class="profile" ng-src="{{trustAsResourcUrl(criminal.photoUrl ||
+        criminal.photo._url ||
+                            './resources/images/no-profile-pic.png')}}" alt="...">
+    </a>
+  </div>
+
+  <div class="form-group">
+    <br>
+    <br>
+    <br>
+    <label for="name" class="col-md-1 control-label">Name</label>
+
+    <div class="col-md-3">
+      <input type="text" class="form-control" placeholder="Name" ng-model="criminal.name" ng-change="change({index:index})">
     </div>
+    <br>
+    <br>
+    <br>
+    <label for="alias" class="col-md-1 control-label">Alias</label>
 
-    <div class="form-group">
-        <br><br><br>
-        <label for="name" class="col-md-1 control-label">Name</label>
-
-        <div class="col-md-3">
-            <input type="text" class="form-control" placeholder="Name"
-                   ng-model="criminal.attributes.name"
-                   ng-change="change({index:index})">
-        </div>
-        <br><br><br>
-        <label for="alias" class="col-md-1 control-label">Alias</label>
-
-        <div class="col-md-3">
-            <input class="form-control" placeholder="Alias"
-                   ng-model="criminal.attributes.alias"
-                   ng-change="change({index:index})">
-        </div>
+    <div class="col-md-3">
+      <input class="form-control" placeholder="Alias" ng-model="criminal.alias" ng-change="change({index:index})">
     </div>
+  </div>
 
-    <div class="form-group">
-        <label for="birthdate" class="col-md-3 control-label">Birthdate</label>
+  <div class="form-group">
+    <label for="birthdate" class="col-md-3 control-label">Birthdate</label>
 
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Birthdate"
-                   ng-model="criminal.attributes.birthdate"
-                   ng-change="change({index:index})">
-        </div>
-        <label for="age" class="col-md-2 control-label">Age</label>
-
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Age"
-                   ng-model="criminal.attributes.age"
-                   ng-change="change({index:index})">
-        </div>
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Birthdate" ng-model="criminal.birthdate" ng-change="change({index:index})">
     </div>
+    <label for="age" class="col-md-2 control-label">Age</label>
 
-    <div class="form-group">
-        <label for="eyeColor" class="col-md-3 control-label">Eye Color</label>
-
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Eye Color"
-                   ng-model="criminal.attributes.eyeColor"
-                   ng-change="change({index:index})">
-        </div>
-        <label for="hairColor" class="col-md-2 control-label">Hair Color</label>
-
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Hair Color"
-                   ng-model="criminal.attributes.hairColor"
-                   ng-change="change({index:index})">
-        </div>
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Age" ng-model="criminal.age" ng-change="change({index:index})">
     </div>
+  </div>
 
-    <div class="form-group">
-        <label for="height" class="col-md-3 control-label">Height</label>
+  <div class="form-group">
+    <label for="eyeColor" class="col-md-3 control-label">Eye Color</label>
 
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Height"
-                   ng-model="criminal.attributes.height"
-                   ng-change="change({index:index})">
-        </div>
-        <label for="weight" class="col-md-2 control-label">Weight</label>
-
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Weight"
-                   ng-model="criminal.attributes.weight"
-                   ng-change="change({index:index})">
-        </div>
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Eye Color" ng-model="criminal.eyeColor" ng-change="change({index:index})">
     </div>
+    <label for="hairColor" class="col-md-2 control-label">Hair Color</label>
 
-    <div class="form-group">
-        <label for="race" class="col-md-3 control-label">Race</label>
-
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Race"
-                   ng-model="criminal.attributes.race"
-                   ng-change="change({index:index})">
-        </div>
-        <label for="characteristics" class="col-md-2 control-label">Characteristics</label>
-
-        <div class="col-md-2">
-            <input class="form-control" placeholder="Characteristics"
-                   ng-model="criminal.attributes.characteristics"
-                   ng-change="change({index:index})">
-        </div>
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Hair Color" ng-model="criminal.hairColor" ng-change="change({index:index})">
     </div>
+  </div>
 
-    <div class="form-group">
-        <label for="summary" class="col-md-3 control-label">Summary</label>
+  <div class="form-group">
+    <label for="height" class="col-md-3 control-label">Height</label>
 
-        <div class="col-md-6">
-            <textarea style="resize:none" class="form-control" rows="4" id="global-notification-body"
-                      placeholder="Message" ng-model="criminal.attributes.summary"
-                      ng-change="change({index:index})"></textarea>
-        </div>
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Height" ng-model="criminal.height" ng-change="change({index:index})">
     </div>
+    <label for="weight" class="col-md-2 control-label">Weight</label>
 
-    <div class="form-group">
-        <div class=" col-md-offset-4 col-md-2">
-            <div class="btn btn-success done-editing-btn" ng-click="save({index:index}); toggleEditing()"
-                 ng-disabled="!editedPeopleIndices[index]">
-                <span class="glyphicon glyphicon-ok"></span>
-                Finish Editing
-            </div>
-        </div>
-        <div class="col-md-1">
-            <button type="submit" class="btn btn-danger"
-                    ng-click="confirm({index: index}); toggleEditing()"
-                    ng-disabled="disableNewButton
-                    && index === (wantedArray.length-1)"
-                    ng-hide="justCreated">
-                Delete
-            </button>
-            <button class="btn btn-danger" type="submit"
-                    ng-click="discard()"
-                    ng-show="justCreated">
-                Discard
-            </button>
-        </div>
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Weight" ng-model="criminal.weight" ng-change="change({index:index})">
     </div>
+  </div>
 
-    <!-- <div class="form-group col-md-12 dark-gray-bg"> </div> -->
+  <div class="form-group">
+    <label for="race" class="col-md-3 control-label">Race</label>
+
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Race" ng-model="criminal.race" ng-change="change({index:index})">
+    </div>
+    <label for="characteristics" class="col-md-2 control-label">Characteristics</label>
+
+    <div class="col-md-2">
+      <input class="form-control" placeholder="Characteristics" ng-model="criminal.characteristics" ng-change="change({index:index})">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="summary" class="col-md-3 control-label">Summary</label>
+
+    <div class="col-md-6">
+      <textarea style="resize:none" class="form-control" rows="4" id="global-notification-body" placeholder="Message" ng-model="criminal.summary" ng-change="change({index:index})"></textarea>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class=" col-md-offset-4 col-md-2">
+      <div class="btn btn-success done-editing-btn" ng-click="save({index:index}); toggleEditing()" ng-disabled="!editedPeopleIndices[index]">
+        <span class="glyphicon glyphicon-ok"></span>
+        Finish Editing
+      </div>
+    </div>
+    <div class="col-md-1">
+      <button type="submit" class="btn btn-danger" ng-click="confirm({index: index}); toggleEditing()" ng-disabled="disableNewButton
+                    && index === (wantedArray.length-1)" ng-hide="justCreated">
+        Delete
+      </button>
+      <button class="btn btn-danger" type="submit" ng-click="discard()" ng-show="justCreated">
+        Discard
+      </button>
+    </div>
+  </div>
+
+  <!-- <div class="form-group col-md-12 dark-gray-bg"> </div> -->
 
 </form>

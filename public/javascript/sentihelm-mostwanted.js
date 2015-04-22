@@ -136,12 +136,10 @@
             return;
           }
 
-          return $http.post('mostwanted/save', {
-              data: {
+          return $http.post('/mostwanted/save', {
                 person: person,
-                index: index
-              }
-            })
+                new: index === -1 ? true : false
+              })
             .then(null, function (errResponse) {
               return;
             });
@@ -153,9 +151,7 @@
         mostWantedService.deleteMostWanted = function (index) {
           var wantedPerson = mostWantedArray[index];
 
-          $http.delete('/mostwanted/remove', {
-              data: wantedPerson.objectId
-            })
+          $http.delete('/mostwanted/remove/' + wantedPerson.objectId)
             .then(null, function (errResponse) {
               return;
             });
@@ -173,8 +169,8 @@
       }
     ])
     //Controller for the Most-Wanted state
-    .controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog', '$rootScope',
-      function (MostWantedService, $scope, fileReader, ngDialog, $rootScope) {
+    .controller('MostWantedController', ['MostWantedService', '$scope', '$sce', 'ngDialog', '$rootScope',
+      function (MostWantedService, $scope, $sce, ngDialog, $rootScope) {
 
         var MostWantedCtrl = this,
           oldList = [],
@@ -229,13 +225,13 @@
           var file = $files[0];
           var mostWanted = MostWantedCtrl.wantedArray[index];
 
-          fileReader.readAsDataUrl(file, $scope)
-            .then(function (result) {
-              mostWanted.photoUrl = result;
-              MostWantedCtrl.editedPeopleIndices[index] = true;
-            });
+          mostWanted.photoUrl = $sce.trustAsResourceUrl(URL.createObjectURL(file));
+          MostWantedCtrl.editedPeopleIndices[index] = true;
 
-          mostWanted.photo = new Parse.File(file.name, file);
+          mostWanted.photo = {
+            base64: file.slice(),
+            name: file.name
+          }
         };
 
         //Add new wanted to the controller array. Must

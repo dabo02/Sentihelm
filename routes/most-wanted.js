@@ -8,7 +8,7 @@
   var Q = require('q');
   var _ = require('lodash');
 
-  var clientParseObj;
+  //var clientParseObj;
   var Client = db.Object.extend("Client");
   var MostWanted = db.Object.extend("MostWanted");
 
@@ -39,20 +39,25 @@
       new db.Query(Client)
         .get(request.session.user.homeClient.objectId)
         .then(function (clientParseObj) {
-          _.forEach(newList, function (person) {
-            var personData = {
-              __type: "Pointer",
-              className: "MostWanted",
-              objectId: person.id
-            };
-            clientParseObj.remove('mostWantedList', personData);
-            return clientParseObj.save(null, {
-              success: function (client) {
-                client.add('mostWantedList', personData);
-                client.save();
-              }
-            });
+          var saved = [];
+          return Q.Promise(function (resolve, reject) {
+            _.forEach(newList, function (person, index, array) {
+              var personData = {
+                __type: "Pointer",
+                className: "MostWanted",
+                objectId: person.objectId
+              };
+              clientParseObj.remove('mostWantedList', personData);
+              clientParseObj.save()
+                .then(function (client) {
+                  client.add('mostWantedList', personData);
+                  if (index === array.length - 1) {
+                    client.save();
+                    resolve();
+                  }
+                });
 
+            });
           });
         })
         .then(function () {
@@ -63,12 +68,12 @@
         });
 
     })
-    .delete('/remove', function (request, response) {
+    .delete('/remove/:personId', function (request, response) {
       new db.Query(Client)
         .get(request.session.user.homeClient.objectId)
         .then(function (clientParseObj) {
           new db.Query(MostWanted)
-            .get(request.body.personId)
+            .get(request.params.personId)
             .then(function (wantedPerson) {
               return wantedPerson.destroy().then(function (deletedPerson) {
                 //Do something with the deleted object?
@@ -78,25 +83,24 @@
                   objectId: deletedPerson.id
                 });
                 return clientParseObj.save();
-                mostWantedArray.splice(index, 1);
               });
             })
             .then(function () {
               response.send(200);
             }, function (d, e) {
-              response.status(503).send(e.message);
+              response.status(503).send("something went wrong.");
             });
         })
     })
     .post('/save', function (request, response) {
       var wantedPerson;
       var person = request.body.person;
-      var index = request.body.index;
+      var newTip = request.body.new || false;
 
-      // Start the promise chain.
-      Q.Promise(function (resolve, reject) {
-          // a negative index indicates a new person.
-          if (index < 0) {
+
+      function getPerson() {
+        return Q.Promise(function (resolve, reject) {
+          if (newTip) {
             resolve(new MostWanted());
           } else {
             // otherwhise the prson already exists, so let's look for 'em.
@@ -109,22 +113,23 @@
                 reject(e);
               });
           }
-        })
+        });
+      }
+
+      // start the promise chain.
+      getPerson()
         .then(function (wantedPerson) {
           // Set the person's properties here.
-          wantedPerson.set("age", person.age);
-          wantedPerson.set("alias", person.alias);
-          wantedPerson.set("birthdate", person.birthdate);
-          wantedPerson.set("characteristics", person.characteristics);
-          wantedPerson.set("eyeColor", person.eyeColor);
-          wantedPerson.set("hairColor", person.hairColor);
-          wantedPerson.set("height", person.height);
-          wantedPerson.set("name", person.name);
-          wantedPerson.set("race", person.race);
-          wantedPerson.set("summary", person.summary);
-          wantedPerson.set("weight", person.weight);
-          wantedPerson.set("photo", person.photo);
+          Object.keys(person).forEach(function (key) {
+            if (key !== 'objectId' && key !== 'photoUrl') {
+              wantedPerson.set(key, person[key]);
+            }
 
+          });
+
+          wantedPerson.set('photo', db.File(person.photo.name, {
+            base64: person.photo.base64
+          }));
           //
           return wantedPerson.save()
             .then(function (wantedPerson) {
@@ -136,7 +141,7 @@
                 .include('mostWantedList')
                 .get(request.session.user.homeClient.objectId)
                 .then(function (clientParseObj) {
-                  if (index < 0) {
+                  if (newTip) {
                     clientParseObj.add("mostWantedList", {
                       __type: "Pointer",
                       className: "MostWanted",
@@ -145,7 +150,7 @@
                   }
 
                   // save the list and continue execution.
-                  return clientParseObj.save();
+                  clientParseObj.save();
                 });
 
             });
@@ -161,5 +166,5 @@
         });
     });
 
-    module.exports = router;
+  module.exports = router;
 })();

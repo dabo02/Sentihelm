@@ -23,6 +23,7 @@
 
       function sendLoginAnswer(client, user) {
         var answer = [];
+
         var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
         user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
         user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
@@ -31,7 +32,8 @@
         user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
 
         answer.push(user);
-        answer.push(client);
+        // fixes serialization issue.
+        answer.push(client.attributes);
         answer.push(client.get('regions'));
         res.send(200, answer);
       }
