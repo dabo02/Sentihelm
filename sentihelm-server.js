@@ -55,11 +55,14 @@
     var users = require('./routes/users');
     var tip = require('./routes/tip');
     var tips = require('./routes/tips');
+    var mostwanted = require('./routes/most-wanted');
 
-    app.use(routes);
-    app.use('/tip', tip);
-    app.use('/users', users);
-    app.use('/tips', tips);
+    app
+      .use(routes)
+      .use('/tip', tip)
+      .use('/users', users)
+      .use('/tips', tips)
+      .use('/mostwanted', mostwanted);
 
     app.post('/new-tip', function (request, response) {
       var tip = request.body;

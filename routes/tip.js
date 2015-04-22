@@ -9,6 +9,9 @@
   var http = require('http');
   var fs = require('fs');
   var url = require('url');
+  // hot fix, avoids buffer overflow. This is the maxium number value javascript can handle,
+  // which in bytes is about a file the size of
+  Buffer.poolSize = 9007199254740992;
   router
     .use(util.restrict)
     .get('/:tipId/media', function (request, response) {
@@ -29,7 +32,7 @@
         switch (type) {
         case 'IMG':
           uri = tip.attachmentPhoto.url;
-          mime = 'image/jpeg';
+          mime = 'image/jpg';
           break;
         case 'VID':
           uri = tip.attachmentVideo.url;
@@ -41,6 +44,16 @@
           break;
         }
 
+        var options = {
+          headers: {
+            'x-timestamp': Date.now(),
+            'x-sent': true,
+            'content-type': mime
+          }
+        };
+
+
+        response.status(200);
         http.get(url.parse(uri), function (r) {
           var file = [];
           r.on('data', function (data) {
@@ -49,22 +62,28 @@
 
           r.on('end', function () {
             var buffer = Buffer.concat(file);
-            var decrypt = util.encryptionManager.decrypt(passPhrase, buffer);
+            var fileB64 = buffer.toString('base64');
+            var decrypt = util.encryptionManager.decrypt(passPhrase, fileB64);
             var fileName = Date.now();
-            var filepath = 'temp/' + fileName + (mime === 'image/jpeg' ? '.jpg' : (mime === 'video/mp4' ? '.mp4' : '.aac'));
-            console.log(filepath);
-            var options = {
-              headers: {
-                'x-timestamp': Date.now(),
-                'x-sent': true,
-                'content-type': mime
-              }
-            };
-            fs.writeFileSync(filepath, decrypt, 'base64');
+            var filepath = '/temp/' + fileName + (mime === 'image/jpg' ? '.jpg' : (mime === 'video/mp4' ? '.mp4' : '.aac'));
 
-            response.sendfile(filepath, options);
+            var decodedFile = new Buffer(decrypt, 'base64');
+            fs.writeFile('./public' + filepath, decodedFile, function (err) {
+              response.redirect(filepath);
+              //response.sendfile(filepath, options);
+              setTimeout(function () {
+                fs.unlink('./public/' + filepath, function (err) {
+                  if (!err) {
+                    console.log("Unlinked file: %s", './public' + filepath);
+                  } else {
+                    console.warn("Couldn't delete file");
+                  }
+                });
+              }, 1 * 60 * 1000); // delete after one minute
+            });
           });
         });
+
 
       });
     })
@@ -72,10 +91,11 @@
       var tipId = request.params.tipId;
 
       tipModel.getById(tipId).spread(function (tip, tipUser) {
+          var passPhrase;
           if (!tip.smsId) {
-            var passPhrase = util.passwordGenerator.generatePassword((!!tipUser ? tipUser.username : tip.anonymousPassword), !tipUser);
+            passPhrase = util.passwordGenerator.generatePassword((!!tipUser ? tipUser.username : tip.anonymousPassword), !tipUser);
           } else {
-            var passPhrase = util.passwordGenerator.generatePassword(tip.smsId);
+            passPhrase = util.passwordGenerator.generatePassword(tip.smsId);
           }
 
           //If not an anonymous tip, get user information
@@ -100,7 +120,7 @@
             latitude: util.encryptionManager.decrypt(passPhrase, tip.crimePositionLatitude.base64),
             longitude: util.encryptionManager.decrypt(passPhrase, tip.crimePositionLongitude.base64)
           };
-          tip.controlNumber = tip.objectId + "-" + tip.controlNumber;
+          tip.controlNumber = tip.objectId + "-" + tip.controlNumber; 
           var tempDate = (new Date(tip.createdAt));
           tempDate = tempDate.toDateString() + ' - ' + tempDate.toLocaleTimeString();
           tip.date = tempDate;
@@ -121,7 +141,7 @@
           if (tip.smsNumber) {
             tip.phone = util.encryptionManager.decrypt(passPhrase, tip.smsNumber.base64);
           }
-
+          tipModel.setTipAsRead(tip.objectId, request.session.user.username);
           response.json(tip);
         })
         .then(null, function (e) {

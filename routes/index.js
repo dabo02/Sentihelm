@@ -23,7 +23,6 @@
 
       function sendLoginAnswer(client, user) {
         var answer = [];
-
         var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
         user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
         user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);

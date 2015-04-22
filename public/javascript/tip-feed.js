@@ -28,8 +28,57 @@
           });
       }
     ])
-    .controller('TipFeedCtrl', ['socket', 'Session', 'usSpinnerService', '$http', '$location', '$anchorScroll', '$state',
-      function (socket, Session, usSpinnerService, $http, $location, $anchorScroll, $state) {
+    .config(['$httpProvider', function ($httpProvider) {
+      // this line ensures that people are able to download audio
+      // and video from sentihelm.
+      $httpProvider.defaults.timeout = 5000;
+    }])
+    .factory('Tip', ['$http', 'socket', 'ngDialog', '$log', '$q', '$location', function ($http, socket, ngDialog, $log, $q, $location) {
+      return {
+        getTips: function (searchParams) {
+          return $http.get('/tips/list', {
+              params: searchParams
+            })
+            .then(function (response) { // success
+              return response.data;
+            }, function (errResponse) { // error
+              return $q.reject(errorResponse);
+            });
+        },
+        getTip: function (tipId) {
+          return $http.get('/tip/' + tipId)
+            .then(function (r) {
+              return r.data;
+            }, function (r) {
+              return $q.reject('couldn\'t retrieve tip, sorry. status: ' + r.status);
+            });
+        },
+        /**
+         * Returns an ngDialog with the requested media on a tip
+         * @param {String} type  The type of media 'VID', 'AUDIO', 'IMG'
+         * @param {[type]} tipId [description]
+         */
+        getMedia: function (type, tipId, showClose, $scope) {
+          var url = $location.protocol() + '://' + $location.host() + ':' + $location.port();
+          url += '/tip/' + tipId + '/media?type=' + type;
+
+          var data = JSON.stringify({
+            attachmentType: type,
+            address: url
+          });
+
+          return ngDialog.open({
+            template: '../attachment-dialog.html',
+            className: 'ngdialog-attachment',
+            showClose: showClose,
+            scope: $scope,
+            data: data
+          });
+        }
+      };
+    }])
+    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location',
+      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location) {
         var self = this;
 
 
@@ -55,6 +104,10 @@
           'Vehicle Theft', 'Vandalism', 'Auto Accident', 'Civil Rights', 'Arson',
           'Other'
         ].sort();
+
+        self.notificationDialogIsOn = false;
+        self.attachmentDialogIsOn = false;
+
         self.selectedCrimeType = 'All';
 
         self.setCrimeType = function (type) {
@@ -96,26 +149,20 @@
             type: self.currentTab
           };
 
-
-          $http.get('/tips/list', {
-              params: params
-            })
-            .success(function (data, headers) {
-
+          Tip.getTips(params)
+            .then(function (data) {
               self.lastPageNum = data.lastPageNum;
               self.totalTips = data.totalTips;
 
               self.tips = angular.copy(data.tips);
 
               self.tipsAvailable = self.tips.length !== 0;
-
-            })
-            .error(function (err) {
+            }, function (err) {
               self.tipsAvailable = false;
               self.hasError = true;
               self.successMessag = err.message;
-
-            }).then(function () {
+            })
+            .then(function () {
               usSpinnerService.stop(spinner);
               $location.hash('top');
               $anchorScroll();
@@ -162,10 +209,37 @@
           });
         };
 
+        self.showAttachmentDialog = function (tip, type) {
+          //Only show dialog if it, and notificationDialog,
+          //are not showing
+          if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
+
+            self.showMediaSpinner = true;
+
+            if (self.attachmentDialogIsOn) {
+              return;
+            }
+
+            //If attachment is an audio file,
+            //don't show close control (X)
+            var showClose = self.attachmentType !== 'AUDIO';
+
+            //Open dialog and pass control to AttachmentController
+            $scope.attachmentDialog = Tip.getMedia(type, tip.objectId, showClose, $scope);
+
+            $scope.attachmentDialog.closePromise.then(function () {
+              self.attachmentDialogIsOn = false;
+            });
+
+            //Attachment dialog is now showing
+            self.attachmentDialogIsOn = true;
+          }
+        };
+
         self.getPage(self.currentPageNum);
       }
     ])
-    .controller('TipCtrl', ['$http', '$stateParams', 'ngDialog', '$scope', '$location', function ($http, $stateParams, ngDialog, $scope, $location) {
+    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', function ($http, $stateParams, $scope, Tip) {
       var self = this;
 
       self.tipError = null;
@@ -174,53 +248,25 @@
       self.attachmentDialogIsOn = false;
 
       self.showAttachmentDialog = function (type) {
-
-        // if (self.showMediaSpinner) {
-        //   return;
-        // }
-
         //Only show dialog if it, and notificationDialog,
         //are not showing
         if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
 
           self.showMediaSpinner = true;
-          //usSpinnerService.spin('loading-media-spinner');
-          var parseFile;
-          if (type === 'IMG') {
-            parseFile = self.tip.attachmentPhoto;
-          } else if (type === 'VID') {
-            parseFile = self.tip.attachmentVideo;
-          } else {
-            parseFile = self.tip.attachmentAudio;
-          }
-
-          var url = $location.protocol() + '://' + $location.host() + ':' + $location.port();
-          url += '/tip/' + self.tip.objectId + '/media?type=' + type;
 
           if (self.attachmentDialogIsOn) {
             return;
           }
-
-          //usSpinnerService.stop('loading-media-spinner');
-          //self.showMediaSpinner = false;
-
-          //ngDialog can only handle stringified JSONs
-          var data = JSON.stringify({
-            attachmentType: type,
-            address: url
-          });
 
           //If attachment is an audio file,
           //don't show close control (X)
           var showClose = self.attachmentType !== 'AUDIO';
 
           //Open dialog and pass control to AttachmentController
-          $scope.attachmentDialog = ngDialog.open({
-            template: '../attachment-dialog.html',
-            className: 'ngdialog-attachment',
-            showClose: showClose,
-            scope: $scope,
-            data: data
+          $scope.attachmentDialog = Tip.getMedia(type, self.tip.objectId, showClose, $scope);
+
+          $scope.attachmentDialog.closePromise.then(function () {
+            self.attachmentDialogIsOn = false;
           });
 
           //Attachment dialog is now showing
@@ -228,13 +274,10 @@
         }
       };
 
-
-      $http.get('/tip/' + $stateParams.tipId)
-        .success(function (data) {
+      Tip.getTip($stateParams.tipId)
+        .then(function (data) {
           self.tip = angular.copy(data);
-          console.log(self.tip);
-        })
-        .error(function (e) {
+        }, function (e) {
           self.tip = null;
           self.tipError = e;
         });

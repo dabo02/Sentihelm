@@ -27,22 +27,22 @@
 
   module.exports.getById = function (id) {
     return Q.Promise(function (resolve, reject) {
-        new db.Query(TipReport)
-          .include('user')
-          .get(id)
-          .then(function (tip) {
-            var t = tip.toJSON();
+      new db.Query(TipReport)
+        .include('user')
+        .get(id)
+        .then(function (tip) {
+          var t = tip.toJSON();
 
-            if (t.user) {
-              t.user = tip.get('user').toJSON();
-            }
+          if (t.user) {
+            t.user = tip.get('user').toJSON();
+          }
 
-            resolve([t, t.user]);
+          resolve([t, t.user]);
 
-          }, function (e) {
-            reject(e);
-          });
-      });
+        }, function (e) {
+          reject(e);
+        });
+    });
   };
 
   module.exports.listTips = function (options) {
@@ -57,7 +57,8 @@
         var emailQuery = new db.Query("_User");
         emailQuery.startsWith("email", options.searchString);
 
-        tipReportQuery = db.Query.or(usernameQuery, emailQuery);
+        var innerQuery = db.Query.or(usernameQuery, emailQuery);
+        tipReportQuery.matchesQuery("user", innerQuery);
       }
 
       if (options.registeredOn) {
@@ -108,6 +109,9 @@
             t.crimeType = crimeTypes[t.crimeListPosition];
             if (t.user) {
               t.user = tip.get('user').toJSON();
+              t.anonymous = false;
+            } else {
+              t.anonymous = true;
             }
 
             resultingTips.push(t);
@@ -131,6 +135,31 @@
           reject(error);
         }
       });
+    });
+  };
+
+  module.exports.setTipAsRead = function (tipId, lastReadByUsername) {
+    return Q.Promise(function (resolve, reject) {
+      new db.Query(TipReport)
+        .get(tipId).then(function (tip) {
+            if (tip) {
+              tip
+                .add("readBy", {
+                  username: lastReadByUsername,
+                  date: Date.now()
+                })
+                .save({
+                  success: function () {
+                    resolve();
+                  },
+                  error: function (e) {
+                    reject(e);
+                  }
+                })
+            }
+          }, function (e) {
+            reject(e);
+          });
     });
   };
 })();

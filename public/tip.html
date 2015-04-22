@@ -1,4 +1,4 @@
-<div ng-controller="TipCtrl as tipCtrl" id="tip-container" class="container-fluid">
+<div ng-controller="TipController as tipCtrl" id="tip-container" class="container-fluid">
   <!-------------------->
   <!------TIP HEAD------>
   <!-------------------->
@@ -42,6 +42,7 @@
         CONTACT USER
         <br>
         <span class="contact-number">{{tipCtrl.tip.phone}}</span>
+        <span>{{tipCtrl.tip.user.email}}</span>
         <br>
         <button class="notification-button" ng-click="tipCtrl.showNotificationDialog(tipCtrl.tip.firstName, tipCtrl.tip.lastName, tipCtrl.tip.controlNumber, tipCtrl.tip.channel)">
           Send Notification
