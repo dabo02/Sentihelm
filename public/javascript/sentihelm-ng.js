@@ -1231,8 +1231,8 @@
 
     //Service for the Maps state. It can save, add
     //or delete police stations from the map.
-    app.factory("PoliceStationsService", ['$rootScope', 'Session',
-        function ($rootScope, Session) {
+    app.factory("PoliceStationsService", ['$http', '$q',
+        function ($http, $q) {
             var PoliceStationsService = {};
 
             //Current stations downloaded from Parse
@@ -1251,55 +1251,21 @@
             //Download stations from Parse. If editedMarkerId is not undefined, the
             //window for the edited marker will be open.
             PoliceStationsService.getStationsMarkers = function (editedMarkerId) {
-                stationsMarkers = [];
-                var PoliceMap = Parse.Object.extend("PoliceMap");
-                var query = new Parse.Query(PoliceMap);
-                //Filter by clientId
-                query.equalTo('client', {
-                    __type: "Pointer",
-                    className: "Client",
-                    objectId: Session.clientId
-                });
-                query.find({
-                    success: function (results) {
-
-                        //Create markers for each station.
-                        for (var i = 0; i < results.length; i++) {
-                            var station = results[i];
-
-                            // Create a marker for each place.
-                            var marker = {
-                                id: station.id,
-                                place_id: station.attributes.placeId,
-                                latitude: station.attributes.latitude,
-                                longitude: station.attributes.longitude,
-                                name: station.attributes.stationName,
-                                address: station.attributes.address,
-                                email: station.attributes.email,
-                                phone: station.attributes.phone,
-                                description: station.attributes.description,
-                                options: {
-                                    draggable: false,
-                                    title: station.attributes.stationName,
-                                    visible: true
-                                },
-                                templateurl: 'window.tpl.html',
-                                show: editedMarkerId === station.id
-                            };
-                            marker.onClick = function () {
-                                marker.show = !marker.show;
-                            };
-                            stationsMarkers.push(marker);
-                        }
-
-                        //Send new markers to the controller.
-                        $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
-
-                    },
-                    error: function (error) {
-                        console.log("Error receiving police stations from parse. " + error.message);
-                    }
-                });
+                if (PoliceStationsService.isAdding) {
+                  return $q.when(stationsMarkers);
+                } else {
+                  return $http.get('/stations/list', {
+                    params: {
+                      editedMarkerId: editedMarkerId
+                      }
+                    })
+                    .then(function (response) {
+                      stationsMarkers = angular.copy(response.data);
+                      return stationsMarkers;
+                    }, function () {
+                      return stationsMarkers;
+                    });
+                }
             };
 
             //Return the desired marker contained in the array.
@@ -1310,71 +1276,47 @@
                 }
             };
 
+            PoliceStationsService.getCenter = function () {
+              //Get region center-location from Parse
+              return $http.get('/stations/center')
+                .then(function (response) {
+                  return response.data;
+                  });
+            };
+
             //Changes the station info in Parse after user saves the edited station
             PoliceStationsService.updateStationInfo = function (stationInfo) {
-                var PoliceMap = Parse.Object.extend("PoliceMap");
-                var query = new Parse.Query(PoliceMap);
-                query.get(stationInfo.id, {
-                    success: function (station) {
-                        PoliceStationsService.saveStation(stationInfo, station);
-                    },
-                    error: function (station, error) {
-                        console.log("Error fetching police station");
-                    }
-                });
+
+              PoliceStationsService.saveStation(stationInfo);
             };
 
             //Add temporary marker.
             PoliceStationsService.addMarker = function (marker) {
                 stationsMarkers.push(marker);
-                $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
             };
 
             //Cancels the addition of a new station. Removes the temp marker.
             PoliceStationsService.cancel = function () {
                 stationsMarkers.pop();
                 PoliceStationsService.isAdding = false;
-                $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
             };
 
             //Save new station to Parse or update a station in parse if the
             //station object is not undefined.
-            PoliceStationsService.saveStation = function (stationInfo, station) {
+            PoliceStationsService.saveStation = function (stationInfo) {
                 PoliceStationsService.isAdding = false;
 
-                //If station object isn't received, a new station object is created.
-                if (!station) {
-                    var PoliceMap = Parse.Object.extend("PoliceMap");
-                    station = new PoliceMap();
-                    station.set("latitude", PoliceStationsService.getTempMarker().latitude);
-                    station.set("longitude", PoliceStationsService.getTempMarker().longitude);
-                    station.set("coordinates", new Parse.GeoPoint({
-                        latitude: PoliceStationsService.getTempMarker().latitude,
-                        longitude: PoliceStationsService.getTempMarker().longitude
-                    }))
-                    station.set("client", {
-                        __type: "Pointer",
-                        className: "Client",
-                        objectId: Session.clientId
-                    });
-                }
+                //If station object isn't received, a new station object is
+                // created.
 
-                station.set("stationName", stationInfo.name);
-                station.set("address", stationInfo.address);
-                station.set("phone", stationInfo.phone);
-                station.set("description", stationInfo.description);
-                station.set("email", stationInfo.email);
-                station.save(null, {
-                    success: function (station) {
-                        // Execute any logic that should take place after the object is saved.
-                        PoliceStationsService.getStationsMarkers(station.id);
-                    },
-                    error: function (station, error) {
-                        // Execute any logic that should take place if the save fails.
-                        // error is a Parse.Error with an error code and message.
-                        console.log('Failed to create/update  Police Station on Parse. Error: ' + error.message);
-                    }
-                });
+                $http.post('/stations/save', {
+                    stationInfo: stationInfo,
+                    tempMarker: PoliceStationsService.getTempMarker() })
+                  .then(function () {
+                    PoliceStationsService.getStationsMarkers();
+                  });
+
+
             };
 
             //Return the temp marker.
@@ -1385,29 +1327,14 @@
             //Remove the temp marker and update the map.
             PoliceStationsService.removeTempMarker = function () {
                 stationsMarkers.splice(stationsMarkers.length - 1, 1);
-                $rootScope.$broadcast('stations-markers-fetched', stationsMarkers);
             };
 
             //Delete a station from Parse.
             PoliceStationsService.deleteStation = function (id) {
-                var PoliceMap = Parse.Object.extend("PoliceMap");
-                var query = new Parse.Query(PoliceMap);
-                query.get(id, {
-                    success: function (station) {
-                        station.destroy({
-                            success: function (myObject) {
-                                PoliceStationsService.getStationsMarkers();
-                            },
-                            error: function (myObject, error) {
-                                // The delete failed.
-                                // error is a Parse.Error with an error code and message.
-                            }
-                        });
-                    },
-                    error: function (station, error) {
-                        console.log("Error fetching police station");
-                    }
-                });
+                $http.delete('/mostwanted/remove/' + id)
+                  .then(function () {
+
+                  });
             };
 
             return PoliceStationsService;
@@ -2262,7 +2189,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                     this.fileType = "audio";
                 }
                 //Set file name
-                this.fileLabel = this.file.name
+                this.fileLabel = this.file.name;
             };
 
             //Send the notification to the user
@@ -2290,7 +2217,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                     }
                 }
 
-                if (parseNotificationService.channels.length == 0) {
+                if (parseNotificationService.channels.length === 0) {
                     errorFactory.showError('REGIONAL-NOTIF-NO-REGION');
                     return;
                 }
@@ -2361,7 +2288,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     ]);
 
 //Controller for Google map in the 'Maps' state.
-    app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'Session', function (PoliceStationsService, $scope, Session) {
+    app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function (PoliceStationsService, $scope) {
 
         var mapCtrl = this;
 
@@ -2379,22 +2306,10 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             }
         };
 
-        //Get region center-location from Parse
-        var Client = Parse.Object.extend("Client");
-        var clientQuery = new Parse.Query(Client);
-        clientQuery.get(Session.clientId, {
-            success: function (client) {
-                if (!!client.attributes.location) {
-                    mapCtrl.map.center = {
-                        latitude: client.attributes.location._latitude,
-                        longitude: client.attributes.location._longitude
-                    };
-                }
-            },
-            error: function (object, error) {
-                console.log("Error fetching client: " + error.message);
-            }
-        });
+        PoliceStationsService.getCenter()
+          .then(function (center) {
+            mapCtrl.map.center = angular.copy(center);
+          });
 
         PoliceStationsService.map = mapCtrl.map;
 
@@ -2424,33 +2339,32 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         };
 
         //Retreive markers from the service.
-        PoliceStationsService.getStationsMarkers();
 
-        //Checks if an "$scope.$apply" is in progress before
-        //starting a new one.
-        $scope.safeApply = function (fn) {
-            var phase = this.$root.$$phase;
-            if (phase == '$apply' || phase == '$digest') {
-                if (fn && (typeof (fn) === 'function')) {
-                    fn();
-                }
-            } else {
-                this.$apply(fn);
-            }
-        };
-
-        //Receive the markers from Parse.
-        $scope.$on('stations-markers-fetched', function (event, markers) {
-            mapCtrl.policeStationsMarkers = markers;
-            PoliceStationsService.redrawMarkers = false;
-            $scope.safeApply();
-
-        });
 
         //Check if the user is adding a new station.
         mapCtrl.isAdding = function () {
             return PoliceStationsService.isAdding;
         };
+
+        mapCtrl.refresh = function () {
+
+          PoliceStationsService.getStationsMarkers()
+            .then(function setMarkers(markers) {
+                mapCtrl.policeStationsMarkers = markers;
+                PoliceStationsService.redrawMarkers = false;
+            });
+        };
+
+        // get first points
+        mapCtrl.refresh();
+
+        $scope.$watch(function () {
+          return PoliceStationsService.redrawMarkers;
+        }, function (newVal) {
+          if (newVal === true) {
+            mapCtrl.refresh();
+          }
+        });
 
     }]);
 
@@ -2577,6 +2491,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             else {
                 PoliceStationsService.saveStation(dialogCtrl.station);
             }
+
             $scope.closeThisDialog();
         };
 

@@ -6,7 +6,7 @@
     <div class="col-xs-1 most-wanted-ranking-number">{{index + 1}}</div>
 
     <div class="no-margin no-border col-xs-2 no-padding pointer thumbnail">
-      <img class="profile" ng-src="{{criminal.photoUrl || criminal.photo._url || './resources/images/no-profile-pic.png'}}" alt="..." />
+      <img class="profile" ng-src="{{criminal.photoUrl || criminal.photo.url || './resources/images/no-profile-pic.png'}}" alt="..." />
     </div>
     <div class="col-xs-8">
       <div class="btn btn-default col-xs-offset-12 edit-btn" ng-click="toggleEditing()" ng-hide="editingList">

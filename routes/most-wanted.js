@@ -121,15 +121,19 @@
         .then(function (wantedPerson) {
           // Set the person's properties here.
           Object.keys(person).forEach(function (key) {
-            if (key !== 'objectId' && key !== 'photoUrl') {
+            if (key !== 'objectId' && key !== 'photoUrl' && key !== 'photo') {
               wantedPerson.set(key, person[key]);
             }
 
-          });
+            if (key === 'photoUrl' && typeof person.photo === 'string') {
+              var randomName = Math.floor(Math.random() * Date.now()) + "" + Date.now();
+              var photo = db.File(randomName, {
+                base64: person.photo
+              });
+              wantedPerson.set('photo', photo);
+            }
 
-          wantedPerson.set('photo', db.File(person.photo.name, {
-            base64: person.photo.base64
-          }));
+          });
           //
           return wantedPerson.save()
             .then(function (wantedPerson) {

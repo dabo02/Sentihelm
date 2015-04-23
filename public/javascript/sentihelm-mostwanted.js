@@ -135,6 +135,16 @@
             errorFactory.showError('MOST-WANTED-NO-NAME');
             return;
           }
+          /**
+           * Ok, so here's the deal, we can't send too weird of objects to
+           * the server or else nothing will get through, especially object that
+           * need to be flattened. So what we do here is send the image that was
+           * newly added as a base64 array in string format. Otherwise we delete
+           * the image and we detect a new image in the server.
+           */
+          if (person.photoUrl) {
+            person.photo = person.photoUrl.split('base64,')[1];
+          }
 
           return $http.post('/mostwanted/save', {
                 person: person,
@@ -169,8 +179,8 @@
       }
     ])
     //Controller for the Most-Wanted state
-    .controller('MostWantedController', ['MostWantedService', '$scope', '$sce', 'ngDialog', '$rootScope',
-      function (MostWantedService, $scope, $sce, ngDialog, $rootScope) {
+    .controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog', '$rootScope',
+      function (MostWantedService, $scope, fileReader, ngDialog, $rootScope) {
 
         var MostWantedCtrl = this,
           oldList = [],
@@ -225,13 +235,11 @@
           var file = $files[0];
           var mostWanted = MostWantedCtrl.wantedArray[index];
 
-          mostWanted.photoUrl = $sce.trustAsResourceUrl(URL.createObjectURL(file));
-          MostWantedCtrl.editedPeopleIndices[index] = true;
-
-          mostWanted.photo = {
-            base64: file.slice(),
-            name: file.name
-          }
+          fileReader.readAsDataUrl(file, $scope)
+            .then(function (result) {
+              mostWanted.photoUrl = result;
+              MostWantedCtrl.editedPeopleIndices[index] = true;
+            });
         };
 
         //Add new wanted to the controller array. Must

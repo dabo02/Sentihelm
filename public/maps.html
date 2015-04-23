@@ -6,11 +6,11 @@
     </script>
 
     <!-- Cannot put a whitespace between script and button. -->
-    <script type="text/ng-template" id="control.tpl.html"><button type="submit" class="btn btn-primary" ng-click="buttonCtrl.newStationMarker()" ng-disabled="buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">Add Police Station</button>
+    <script type="text/ng-template" id="control.tpl.html"><button type="submit" class="btn btn-primary" ng-click="buttonCtrl.newStationMarker() && mapCtrl.refresh()" ng-disabled="buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">Add Police Station</button>
     </script>
 
     <!-- Cannot put a whitespace between script and button. -->
-    <script type="text/ng-template" id="control3.tpl.html"><button type="submit" class="btn btn-danger" ng-click="buttonCtrl.cancel()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">Cancel</button>
+    <script type="text/ng-template" id="control3.tpl.html"><button type="submit" class="btn btn-danger" ng-click="buttonCtrl.cancel() && mapCtrl.refresh()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">Cancel</button>
     </script>
 
     <!-- Cannot put a whitespace between script and button. -->

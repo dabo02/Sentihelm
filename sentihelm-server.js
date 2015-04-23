@@ -56,12 +56,14 @@
     var tip = require('./routes/tip');
     var tips = require('./routes/tips');
     var mostwanted = require('./routes/most-wanted');
+    var policeStations = require('./routes/police-stations');
 
     app
       .use(routes)
       .use('/tip', tip)
       .use('/users', users)
       .use('/tips', tips)
+      .use('/stations', policeStations)
       .use('/mostwanted', mostwanted);
 
     app.post('/new-tip', function (request, response) {
@@ -90,7 +92,7 @@
     if (app.get('env') === 'development') {
       app.use(function (err, req, res, next) {
         res.status(err.status || 500);
-        res.render('error', {
+        res.send({
           message: err.message,
           error: err
         });
