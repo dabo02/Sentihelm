@@ -449,7 +449,7 @@
 
     //Creates a session service that can create
     //and destroy a session which manages (logged in) users
-    app.factory('Session', ['$window', '$rootScope', 'AUTH_EVENTS', '$http', function ($window, $rootScope, AUTH_EVENTS, $http) {
+    app.factory('Session', ['$window', '$rootScope', 'AUTH_EVENTS', '$http', 'socket', function ($window, $rootScope, AUTH_EVENTS, $http, socket) {
 
         var session = {};
 
@@ -467,6 +467,7 @@
             session.clientAgency = client.agency;
             session.user = user;
             session.client = client;
+            socket.emit('start-session');
         };
 
         //Destroy current session object
@@ -540,6 +541,7 @@
                 session.client = storedClient;
 
                 $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [storedUser, storedClient, session.regions]);
+                socket.emit('start-session');
             }
         };
 
@@ -572,7 +574,6 @@
 
         authenticator.isAuthenticated = function () {
             Session.restoreSession();
-            socket.emit('start-session', Session.clientId);
             //Return true if userId is set; false otherwise
             return !!Session.userId;
         };
@@ -1450,7 +1451,6 @@
                         var regions = response.data[2];
                         //Login was successful, create Session
                         Session.create(user, user.roles, client, regions);
-                        socket.emit('start-session', Session.clientId);
                         Session.store(user, client);
                         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
                         loginCtrl.submitting = false;

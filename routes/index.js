@@ -9,8 +9,8 @@
   var config = require('../config');
   var OpenTok = require('opentok');
   var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
-  var Parse = require('../lib/db');
-  var VideoSession = Parse.Object.extend('VideoSession');
+  var db = require('../lib/db');
+  var VideoSession = db.Object.extend('VideoSession');
 
   router
     .post('/login', function (req, res) {
@@ -66,31 +66,8 @@
     })
     //Recieve  request to start archiving a video session
     //and pass it along to front-end
-    .post('/opentok-callback', function (request, response) {
-      var videoSessionModel = require('../models/video-sessions');
-
-      //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
-      console.log("\n\nIn opentok-callback...\n\n");
-
-      var opentokCallbackJSON = request.body;
-
-      videoSessionModel.find({
-        sessionId: opentokCallbackJSON.sessionId
-      }).then(function (videoSession) {
-        videoSesison.setProperties({
-          'archiveStatus': opentokCallbackJSON.status,
-          'duration': opentokCallbackJSON.duration,
-          'reason': opentokCallbackJSON.reason,
-          'archiveSize': opentokCallbackJSON.size
-        });
-      }, function (object, error) {
-        // The object was not retrieved successfully.
-        console.log("Error fetching video for archive ID update on Opentok callback.");
-      });
-
-    })
     .post('/reset-password', function (request, response) {
-      "use strict";
+
       var email = request.body.email;
 
       if (email) {
@@ -106,9 +83,21 @@
             });
       }
     })
+    .post('/new-tip', function (request, response) {
+      var tip = request.body;
+      var pass = tip.pass;
+      var clientId = tip.clientId;
+      if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
+        io.to(clientId).emit('new-tip', {
+          tip: tip,
+          clientId: clientId
+        });
+        response.send(200);
+      }
+    })
     //Recieve a request for a video stream connection;
     //get data form mobile client, save session info in
-    //Parse and pass on to front-end
+    //db and pass on to front-end
     .post('/request-video-connection', function (request, response) {
 
       //Check if password is valid
@@ -171,9 +160,6 @@
           stream.sessionId = session.sessionId;
           stream.connectionId = videoSession.id;
           stream.webClientToken = webToken;
-          /**
-           * response and io responses need to be consolidated.
-           */
           response.send(200, {
             objectId: videoSession.id,
             sessionId: session.sessionId,
@@ -198,42 +184,70 @@
       });
 
     })
-    //Receive request to start archiving a video session
-    //and store the archiveId
-    .post('/start-archive', function (request, response) {
 
-      console.log("\n\nIn start-archive...\n\n");
-      //TODO why is the password check not being used?
-      /*/Check if password is valid
-       if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
-       return;
-       }*/
+  //Receive request to start archiving a video session
+  //and store the archiveId
+  .post('/start-archive', function (request, response) {
 
-      var videoSession = JSON.parse(request.body.data);
+    console.log("\n\nIn start-archive...\n\n");
+    //TODO why is the password check not being used?
+    /*/Check if password is valid
+     if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+     return;
+     }*/
 
-      opentok.startArchive(videoSession.sessionId, {
-        name: 'archive: ' + videoSession.sessionId
-      }, function (err, archive) {
-        if (err) {
-          response.send(400, err);
-          return console.log(err + " Session id: " + videoSession.sessionId);
+    var videoSession = JSON.parse(request.body.data);
+
+    opentok.startArchive(videoSession.sessionId, {
+      name: 'archive: ' + videoSession.sessionId
+    }, function (err, archive) {
+      if (err) {
+        response.send(400, err);
+        return console.log(err + " Session id: " + videoSession.sessionId);
+      }
+
+      var videoSessionQuery = new db.Query(VideoSession);
+      videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
+      videoSessionQuery.find({
+        success: function (videoSessions) {
+          videoSessions[0].set('archiveId', archive.id);
+          videoSessions[0].save();
+        },
+        error: function (object, error) {
+          // The object was not retrieved successfully.
+          console.log("Error fetching video for archive ID update.");
         }
-
-        var videoSessionQuery = new Parse.Query(VideoSession);
-        videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
-        videoSessionQuery.find({
-          success: function (videoSessions) {
-            videoSessions[0].set('archiveId', archive.id);
-            videoSessions[0].save();
-          },
-          error: function (object, error) {
-            // The object was not retrieved successfully.
-            console.log("Error fetching video for archive ID update.");
-          }
-        });
       });
-
     });
+
+  })
+
+  //Recieve  request to start archiving a video session
+  //and pass it along to front-end
+  .post('/opentok-callback', function (request, response) {
+
+    //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
+    console.log("\n\nIn opentok-callback...\n\n");
+
+    var opentokCallbackJSON = request.body;
+
+    var videoSessionQuery = new db.Query(VideoSession);
+    videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
+    videoSessionQuery.find({
+      success: function (videoSessions) {
+        videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
+        videoSessions[0].set('duration', opentokCallbackJSON.duration);
+        videoSessions[0].set('reason', opentokCallbackJSON.reason);
+        videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
+        videoSessions[0].save();
+      },
+      error: function (object, error) {
+        // The object was not retrieved successfully.
+        console.log("Error fetching video for archive ID update on Opentok callback.");
+      }
+    });
+
+  });
 
   module.exports = router;
 

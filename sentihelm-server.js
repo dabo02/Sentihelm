@@ -66,7 +66,19 @@
       .use('/tips', tips)
       .use('/stations', policeStations)
       .use('/mostwanted', mostwanted)
-      .use('/analyze', dataAnalysis);
+      .use('/analyze', dataAnalysis)
+      .post('/new-tip', function (request, response) {
+        var tip = request.body;
+        var pass = tip.pass;
+        var clientId = tip.clientId;
+        if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
+          io.to(clientId).emit('new-tip', {
+            tip: tip,
+            clientId: clientId
+          });
+          response.send(200);
+        }
+      });
 
     app.post('/new-tip', function (request, response) {
       var tip = request.body;
