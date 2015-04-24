@@ -43,7 +43,8 @@ router
           res.status(503).send({});
         }
         // perform a deep copy of the user object to keep in the session.
-        req.session.user = _.clone(user, true);
+        var userJSON = user.toJSON();
+        req.session.user = _.clone(userJSON, true);
       });
       // Get Client to which user belongs to
       // and return a promise

@@ -14,7 +14,7 @@
     saveUninitialized: false, // don't create session until something stored
     secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
     name: 'sentihelm.id',
-    cookie: {maxAge: 300000}, // expire in 5 minutes
+    cookie: {maxAge: 30000000}, // expire in 5 minutes
     store: new SessionStore()
   });
 
@@ -676,58 +676,7 @@
       });
     };
 
-    //Adds a new officer/user to SentiHelm
-    function addNewOfficer(officerData, clientId) {
-      //Generate passphrase for encryption
-      var passPhrase = "";
-      passPhrase = util.passwordGenerator.generatePassword(officerData.username);
 
-      //Encrypted/Hashed Values
-      var encryptedFirstName = util.encryptionManager.encrypt(passPhrase, officerData.fname);
-      var encryptedLastName = util.encryptionManager.encrypt(passPhrase, officerData.lname);
-      var hashedPassword = util.passwordGenerator.md5(officerData.password);
-      var encryptedPhoneNumber = util.encryptionManager.encrypt(passPhrase, officerData.phoneNumber);
-      var encryptedZipCode = util.encryptionManager.encrypt(passPhrase, officerData.zipCode.toString());
-      var encryptedState = util.encryptionManager.encrypt(passPhrase, officerData.state);
-
-      //Create new officer
-      var officer = new Parse.User();
-      officer.set('firstName', {
-        __type: "Bytes",
-        base64: encryptedFirstName
-      });
-      officer.set('lastName', {
-        __type: "Bytes",
-        base64: encryptedLastName
-      });
-      officer.set('phoneNumber', {
-        __type: 'Bytes',
-        base64: encryptedPhoneNumber
-      });
-      officer.set('zipCode', {
-        __type: 'Bytes',
-        base64: encryptedZipCode
-      });
-      officer.set('state', {
-        __type: 'Bytes',
-        base64: encryptedState
-      });
-
-      // officer.set('firstName', encryptedFirstName);
-      officer.set('email', officerData.email);
-      officer.set('username', officerData.username);
-      officer.set('password', officerData.password);
-      officer.set('userPassword', hashedPassword);
-      officer.set('roles', [officerData.role]);
-      officer.set('homeClient', {
-        __type: "Pointer",
-        className: "Client",
-        objectId: clientId
-      });
-
-      //Save/Signup new officer
-      return officer.signUp();
-    }
 
     //Save/change user password
     function saveUserPassword(data) {

@@ -369,6 +369,15 @@ Parse.Cloud.define("updateUserRole", function(req, res){
   users.forEach(function(user, index){
     userQuery.get(user.objectId).then(function(fetchedUser) {
       if (action === "add") {
+       if(role === "employee"){
+          fetchedUser.remove("roles", "admin");
+        }
+        else{
+          fetchedUser.remove("roles", "employee");
+        }
+        Parse.Cloud.useMasterKey();
+        fetchedUser.save();
+
         fetchedUser.addUnique("roles", role);
       }
       else if (action === "remove") {
@@ -387,7 +396,7 @@ Parse.Cloud.define("updateUserRole", function(req, res){
         res.success();
       }
     }).then(null, function(error) {
-       res.error(error);
+      res.error(error);
     });
   });
 });
@@ -412,5 +421,67 @@ Parse.Cloud.define("deleteUser", function(req, res){
     }).then(null, function(error) {
       res.error(error);
     });
+  });
+});
+
+Parse.Cloud.define("updateUser", function(req, res){
+
+  var User = Parse.Object.extend("_User");
+  var userQuery = new Parse.Query(User);
+  var user = req.params.user;
+  var attrs = req.params.attrs;
+  var values = req.params.values;
+  var action = req.params.action;
+
+  userQuery.get(user.objectId).then(function(user){
+
+    for(var i = 0; i < attrs.length; i++){
+
+      //TODO replace this 'roles' if statement with call to updateUserRole cloud code and send array of single user (will result in
+      //TODO additional overhead due to an additional get query to parse performed in the call updateUserRole)
+
+      if(action === "delete"){
+        user.unset(attrs[i]);
+        if(attrs[i] === 'roles'){
+          user.addUnique(attrs[i], "user");
+        }
+      }
+      else if(attrs[i] === 'roles'){
+        if(values[i] === "employee"){
+          user.remove(attrs[i], "admin");
+        }
+        else if(values[i] === "admin"){
+          user.remove(attrs[i], "employee");
+        }
+        else{
+          return;
+        }
+
+        Parse.Cloud.useMasterKey();
+        user.save(); //save removed role then add new role
+
+        if(action !== "delete"){
+          user.addUnique(attrs[i], values[i]);
+        }
+      }
+      else if(attrs[i] === "email" || attrs[i] === "permissions" || attrs[i] === "password" || attrs[i] === "userPassword"){
+        user.set(attrs[i], values[i]);
+      }
+      else{
+        user.set(attrs[i], {
+          __type: 'Bytes',
+          base64: values[i]
+        });
+      }
+    }
+
+    Parse.Cloud.useMasterKey();
+    user.save().then(function(savedUser){
+      res.success(savedUser);
+    }).then(null, function(error){
+      res.error(error);
+    });
+  }).then(null, function(error){
+    res.error(error);
   });
 });
