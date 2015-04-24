@@ -1343,32 +1343,32 @@
 
     //Creates a Data analysis service which retreives the data from Parse
     //and organizes the data that will be used in the charts.
-    app.factory("DataAnalysisService", ['Session', '$rootScope', 'socket', 'usSpinnerService',
-        function (Session, $rootScope, socket, usSpinnerService) {
+    app.factory("DataAnalysisService", ['$rootScope', '$http', 'usSpinnerService',
+        function ($rootScope, $http, usSpinnerService) {
 
             var analysisService = {};
 
-            socket.on('analyze-data-response', function (charts) {
-                $rootScope.$broadcast('data-analysis', charts);
-                usSpinnerService.stop('analizing-data-spinner');
-            });
-
-            socket.on('analyze-data-error', function (error) {
-                // $rootScope.$broadcast('data-analysis', charts);
-                // usSpinnerService.stop('analizing-data-spinner');
-                $rootScope.$broadcast('data-analysis-error', error);
-                // console.log(error.message);
-            });
-
             analysisService.requestDataAnalysis = function (year, month) {
                 usSpinnerService.spin('analizing-data-spinner');
-                var data = {
-                    clientId: Session.clientId,
+
+                //socket.emit('analyze-data', data);
+
+                $http.get('/analyze', {
+                  params: {
                     month: month,
                     year: year
-                };
-                socket.emit('analyze-data', data);
-            }
+                  }
+                })
+                .then(function onSuccess(response) {
+                  var charts = response.data;
+
+                  $rootScope.$broadcast('data-analysis', charts);
+                  usSpinnerService.stop('analizing-data-spinner');
+                }, function onError(response) {
+                  var error = response.data;
+                  $rootScope.$broadcast('data-analysis-error', error);
+                });
+            };
 
             return analysisService;
         }
