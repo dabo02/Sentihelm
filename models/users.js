@@ -31,9 +31,29 @@ module.exports.updateUser = function (user) {
 
     var data = {
       user: user,
-      attrs: ['firstName','lastName','phoneNumber','zipCode','state','email','roles','permissions'],
-      values: [encryptedUser[0],encryptedUser[1],encryptedUser[2],encryptedUser[3],encryptedUser[4],email,role, permissions],
+      attrs: ['firstName','lastName','phoneNumber','zipCode','email','roles','permissions'],
+      values: [encryptedUser[0],encryptedUser[1],encryptedUser[2],encryptedUser[3],email,role, permissions],
       action: 'none'
+    }
+
+    if(user.state){
+      data.attrs.push('state');
+      data.attrs.push(encryptedUser[4]);
+    }
+
+    if(user.addressLine1){
+      data.attrs.push('addressLine1');
+      data.attrs.push(encryptedUser[5]);
+    }
+
+    if(user.addressLine2){
+      data.attrs.push('addressLine2');
+      data.attrs.push(encryptedUser[6]);
+    }
+
+    if(user.city){
+      data.attrs.push('city');
+      data.attrs.push(encryptedUser[7]);
     }
 
     db.Cloud.run('updateUser', data, {
@@ -96,11 +116,7 @@ module.exports.decryptUser = function(data){
 
       var passPhrase = util.passwordGenerator.generatePassword(user.username);
 
-      user.firstName = util.encryptionManager.decrypt(passPhrase, user.firstName.base64);
-      user.lastName = util.encryptionManager.decrypt(passPhrase, user.lastName.base64);
-      user.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.phoneNumber.base64);
-      user.zipCode = util.encryptionManager.decrypt(passPhrase, user.zipCode.base64);
-      user.state = util.encryptionManager.decrypt(passPhrase, user.state.base64);
+      user = util.encryptionManager.decryptUser(passPhrase, user);
 
       resolve(user);
     }
@@ -121,20 +137,45 @@ module.exports.addNewOfficer = function(officerData, clientId) {
 
         if(users.length > 0){
           //modify array so cloud code recognizes input
-          var user = {"objectId": users[0].id};
+          var passPhrase = util.passwordGenerator.generatePassword(users[0].username);
+          var encryptedUser = util.encryptionManager.encryptUser(officerData, passPhrase);
           var hashedPassword = util.passwordGenerator.md5(officerData.password);
 
           var data = {
-            user: user,
-            attrs: ['roles','permissions','password','userPassword'],
-            values: [officerData.roles, officerData.permissions, officerData.password, hashedPassword],
+            user: {"objectId": users[0].id},
+            attrs: ['firstName','lastName','phoneNumber','zipCode','email','roles','permissions','password','userPassword'],
+            values: [encryptedUser[0],encryptedUser[1],encryptedUser[2],encryptedUser[3],officerData.email,officerData.roles[0], officerData.permissions, officerData.password, hashedPassword],
             action: 'none'
           };
 
-          exports.updateRole(data).then(function(){
-            resolve("Access to SentiHelm has been granted to existing user: " + officerData.username);
-          }, function(err){
-            reject(err);
+          //TODO add optional fields to data.attrs and data.values
+          if(officerData.state){
+            data.attrs.push('state');
+            data.attrs.push(encryptedUser[4]);
+          }
+
+          if(officerData.addressLine1){
+            data.attrs.push('addressLine1');
+            data.attrs.push(encryptedUser[5]);
+          }
+
+          if(officerData.addressLine2){
+            data.attrs.push('addressLine2');
+            data.attrs.push(encryptedUser[6]);
+          }
+
+          if(officerData.city){
+            data.attrs.push('city');
+            data.attrs.push(encryptedUser[7]);
+          }
+
+          db.Cloud.run('updateUser', data, {
+            success: function(result) {
+              resolve("Access to SentiHelm has been granted to existing user " + officerData.username);
+            },
+            error: function (error) {
+              reject(error);
+            }
           });
         }
         else{
@@ -143,42 +184,63 @@ module.exports.addNewOfficer = function(officerData, clientId) {
           //Generate passphrase for encryption
           var passPhrase = "";
           passPhrase = util.passwordGenerator.generatePassword(officerData.username);
-
-          //Encrypted/Hashed Values
-          var encryptedFirstName = util.encryptionManager.encrypt(passPhrase, officerData.firstName);
-          var encryptedLastName = util.encryptionManager.encrypt(passPhrase, officerData.lastName);
           var hashedPassword = util.passwordGenerator.md5(officerData.password);
-          var encryptedPhoneNumber = util.encryptionManager.encrypt(passPhrase, officerData.phoneNumber);
-          var encryptedZipCode = util.encryptionManager.encrypt(passPhrase, officerData.zipCode.toString());
-          var encryptedState = util.encryptionManager.encrypt(passPhrase, officerData.state);
+
+          //Encrypt user information
+          var encryptedUser = util.encryptionManager.encryptUser(officerData, passPhrase);
 
           //Create new officer
           var officer = new db.User();
           officer.set('firstName', {
             __type: "Bytes",
-            base64: encryptedFirstName
+            base64: encryptedUser[0]
           });
           officer.set('lastName', {
             __type: "Bytes",
-            base64: encryptedLastName
+            base64: encryptedUser[1]
           });
           officer.set('phoneNumber', {
             __type: 'Bytes',
-            base64: encryptedPhoneNumber
+            base64: encryptedUser[2]
           });
           officer.set('zipCode', {
             __type: 'Bytes',
-            base64: encryptedZipCode
+            base64: encryptedUser[3]
           });
-          officer.set('state', {
-            __type: 'Bytes',
-            base64: encryptedState
-          });
+
+          if(officerData.state){
+            officer.set('state', {
+              __type: 'Bytes',
+              base64: encryptedUser[4]
+            });
+          }
+
+          if(officerData.addressLine1){
+            officer.set('addressLine1', {
+              __type: 'Bytes',
+              base64: encryptedUser[5]
+            });
+          }
+
+          if(officerData.addressLine2){
+            officer.set('addressLine2', {
+              __type: 'Bytes',
+              base64: encryptedUser[6]
+            });
+          }
+
+          if(officerData.city){
+            officer.set('city', {
+              __type: 'Bytes',
+              base64: encryptedUser[7]
+            });
+          }
 
           officer.set('email', officerData.email);
           officer.set('username', officerData.username);
           officer.set('password', officerData.password);
           officer.set('userPassword', hashedPassword);
+          officerData.roles.push('user');
           officer.set('roles', officerData.roles);
           officer.set('permissions', officerData.permissions);
           officer.set('homeClient', {

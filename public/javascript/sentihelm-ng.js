@@ -3230,14 +3230,20 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         this.saveUser = function(){
 
             if(adminPanelCtrl.formUser.state !== 'Select' || adminPanelCtrl.formUser.role !== 'Select') {
-                if (adminPanelCtrl.addingUser) {
-                    adminPanelCtrl.addUser(adminPanelCtrl.formUser);
+                if(/(^\d{1,5}$)|(^\d{1,5}-\d{1,4}$)/.test(adminPanelCtrl.formUser.zipCode)){
+                    if (adminPanelCtrl.addingUser) {
+                        adminPanelCtrl.addUser(adminPanelCtrl.formUser);
+                    }
+                    else if (adminPanelCtrl.editingUser) {
+                        adminPanelCtrl.updateUser(adminPanelCtrl.formUser);
+                    }
+                    else {
+                        return;
+                    }
                 }
-                else if (adminPanelCtrl.editingUser) {
-                    adminPanelCtrl.updateUser(adminPanelCtrl.formUser);
-                }
-                else {
-                    return;
+                else{
+                    adminPanelCtrl.successMessage = "Please enter a valid zip code."
+                    adminPanelCtrl.hasError = true;
                 }
             }
 
@@ -3249,6 +3255,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
             adminPanelCtrl.successMessage = "";
             adminPanelCtrl.sending = true;
+
+            newUser.roles = [newUser.roles];
 
             var data = {
                 newOfficer: newUser

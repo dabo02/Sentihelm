@@ -86,7 +86,7 @@
                             <td><input type="checkbox" ng-model="user.selected" ng-init="user.selected = false"></td>
                             <td ng-click="adminPanelCtrl.changeView('editUser');adminPanelCtrl.decryptUser(user);">{{user.username}}</td>
                             <td ng-click="adminPanelCtrl.changeView('editUser');adminPanelCtrl.decryptUser(user);">{{user.email}}</td>
-                            <td ng-click="adminPanelCtrl.changeView('editUser');adminPanelCtrl.decryptUser(user);" ng-init="adminPanelCtrl.sortRoles(user.roles)">{{user.roles[0] | uppercase}}</td>
+                            <td ng-click="adminPanelCtrl.changeView('editUser');adminPanelCtrl.decryptUser(user);" ng-init="adminPanelCtrl.sortRoles(user.roles)">{{user.roles[0] === 'employee' ? 'officer' : user.roles[0] | uppercase}}</td>
                             <td ng-click="adminPanelCtrl.changeView('editUser');adminPanelCtrl.decryptUser(user);">{{user.createdAt | date:'mediumDate'}}</td>
                             <!--<td>Yes</td>-->
                             <td>
@@ -136,7 +136,7 @@
 
                         <form role="form" name="addOfficerForm" class="userForm" novalidate>
                             <div class="row">
-                                <div class="col-xs-4 col-xs-offset-2">
+                                <div class="col-xs-3 col-xs-offset-1">
                                     <div class="form-group">
                                         <label for="new-officer-fname" class="dark-gray">First Name</label>
                                         <input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="adminPanelCtrl.formUser.firstName"  required/>
@@ -148,13 +148,13 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="new-officer-email" class="dark-gray">Email</label>
-                                        <input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.formUser.email" required/>
+                                        <label for="new-officer-username" class="dark-gray">Username</label>
+                                        <input ng-disabled="adminPanelCtrl.editingUser" type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.formUser.username" name="username" ng-required="adminPanelCtrl.addingUser"/>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="new-officer-username" class="dark-gray">Username</label>
-                                        <input ng-disabled="adminPanelCtrl.editingUser" type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.formUser.username" name="username" ng-required="adminPanelCtrl.addingUser"/>
+                                        <label for="new-officer-email" class="dark-gray">Email</label>
+                                        <input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.formUser.email" required/>
                                     </div>
 
                                     <div class="form-group">
@@ -162,34 +162,58 @@
                                         <input type="text" class="form-control" id="new-officer-phone" placeholder="Phone Number" ng-model="adminPanelCtrl.formUser.phoneNumber" required/>
                                     </div>
                                 </div>
-                                <div class="col-xs-4">
+                                <div class="col-xs-3">
                                     <div class="form-group">
-                                        <label for="new-officer-zip-code" class="dark-gray">Zip Code</label>
-                                        <input type="number" min="0" max="99999" class="form-control" id="new-officer-zip-code" placeholder="Zip Code" ng-model="adminPanelCtrl.formUser.zipCode" required/>
+                                        <label for="address-1" class="dark-gray">Address Line 1</label>
+                                        <input type="text" class="form-control" id="address-1" placeholder="Address line 1" ng-model="adminPanelCtrl.formUser.addressLine1"/>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="address-2" class="dark-gray">Address Line 2</label>
+                                        <input type="text" class="form-control" id="address-2" placeholder="Address line 2" ng-model="adminPanelCtrl.formUser.addressLine2"/>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="city" class="dark-gray">City</label>
+                                        <input type="text" class="form-control" id="city" placeholder="City" ng-model="adminPanelCtrl.formUser.city"/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="new-officer-state" class="dark-gray">State</label>
-                                        <select id="new-officer-state" class="form-control" ng-model="adminPanelCtrl.formUser.state" ng-init="adminPanelCtrl.formUser.state='Select'" required>
+                                        <select id="new-officer-state" class="form-control" ng-model="adminPanelCtrl.formUser.state" ng-init="adminPanelCtrl.formUser.state='Select'">
                                             <option ng-repeat="state in adminPanelCtrl.states" value="{{state}}">{{state}}</option>
                                         </select>
                                     </div>
 
                                     <div class="form-group">
+                                        <label for="new-officer-zip-code" class="dark-gray">Zip Code</label>
+                                        <input type="text" maxlength="11" class="form-control" id="new-officer-zip-code" placeholder="Zip Code" ng-model="adminPanelCtrl.formUser.zipCode" required/>
+                                    </div>
+                                </div>
+                                <div class="col-xs-3">
+                                    <div ng-show="adminPanelCtrl.addingUser" class="form-group">
                                         <label for="new-officer-password" class="dark-gray">Password</label>
                                         <input ng-disabled="adminPanelCtrl.editingUser" type="password" class="form-control" id="new-officer-password" placeholder="Password" ng-model="adminPanelCtrl.formUser.password" ng-required="adminPanelCtrl.addingUser"/>
                                     </div>
 
-                                    <div class="form-group">
+                                    <div ng-show="adminPanelCtrl.editingUser" class="form-group">
                                         <label for="new-officer-role" class="dark-gray">Set Role</label>
                                         <select id="new-officer-role" class="form-control" ng-model="adminPanelCtrl.formUser.roles[0]" required>
                                             <option ng-repeat="role in adminPanelCtrl.roles" value="{{role}}">{{role | uppercase}}</option>
                                         </select>
                                     </div>
 
+                                    <div ng-show="adminPanelCtrl.addingUser" class="form-group">
+                                        <label for="existing-officer-role" class="dark-gray">Set Role</label>
+                                        <select id="existing-officer-role" class="form-control" ng-model="adminPanelCtrl.formUser.roles" required>
+                                            <option ng-repeat="role in adminPanelCtrl.roles" value="{{role}}">{{role | uppercase}}</option>
+                                        </select>
+                                    </div>
+
                                     <div class="form-group">
-                                        <label for="new-officer-role" class="dark-gray">Set Permissions</label>
+                                        <label for="new-officer-role" class="dark-gray">Set Special Permissions</label>
                                         <select class="form-control selectpicker" id="permission-select" ng-model="adminPanelCtrl.formUser.permissions" title="Choose one or more" multiple required>
+                                            <option id="no-access" value="none">None</option>
                                             <option id="video-access" value="video">Video Access</option>
                                             <option id="chat-access" value="chat">Chat Access</option>
                                             <option id="notifications-access" value="notifications">Notifications Access</option>

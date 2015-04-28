@@ -36,10 +36,9 @@ router
             if(role){
                 adminPanelQuery.equalTo('roles', role);
             }
-            //else{
-            //    adminPanelQuery.equalTo('roles', 'admin');
-            //    adminPanelQuery.equalTo('roles', 'employee');
-            //}
+            else{
+                adminPanelQuery.containedIn('roles', ['admin','employee']);
+            }
 
             adminPanelQuery.equalTo('homeClient', {
             __type: "Pointer",
@@ -122,7 +121,7 @@ router
           res.send("SUCCESS: Deleted selected user(s).");
 
       }, function (error) {
-          res.status(503).send("FAILURE: Could not delete selected user(s)." + error.message);
+          res.status(503).send("FAILURE: Could not delete selected user(s).");
       });
   })
 
@@ -132,7 +131,7 @@ router
           res.send(user);
 
       }, function (error) {
-          res.status(503).send("FAILURE: Could not fetch the selected user's information.");
+          res.status(503).send("FAILURE: Could not fetch the selected user's information." + error.message);
       });
   })
 
@@ -142,7 +141,7 @@ router
           res.send("SUCCESS: " + data);
 
       }, function (error) {
-          res.status(503).send("FAILURE: Could not add new user." + error.message);
+          res.status(503).send("FAILURE: Could not add new user.");
       });
   });
 

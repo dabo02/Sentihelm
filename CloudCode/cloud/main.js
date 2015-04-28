@@ -424,6 +424,7 @@ Parse.Cloud.define("deleteUser", function(req, res){
   });
 });
 
+//TODO replace updateUserRole cloud code with this function
 Parse.Cloud.define("updateUser", function(req, res){
 
   var User = Parse.Object.extend("_User");
@@ -437,10 +438,7 @@ Parse.Cloud.define("updateUser", function(req, res){
 
     for(var i = 0; i < attrs.length; i++){
 
-      //TODO replace this 'roles' if statement with call to updateUserRole cloud code and send array of single user (will result in
-      //TODO additional overhead due to an additional get query to parse performed in the call updateUserRole)
-
-      if(action === "delete"){
+      if(action === "delete"){ // on delete only roles and permissions ar unset
         user.unset(attrs[i]);
         if(attrs[i] === 'roles'){
           user.addUnique(attrs[i], "user");
@@ -462,6 +460,7 @@ Parse.Cloud.define("updateUser", function(req, res){
 
         if(action !== "delete"){
           user.addUnique(attrs[i], values[i]);
+          user.addUnique(attrs[i], "user");
         }
       }
       else if(attrs[i] === "email" || attrs[i] === "permissions" || attrs[i] === "password" || attrs[i] === "userPassword"){
