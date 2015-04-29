@@ -7,6 +7,9 @@
   var util = require('../lib/util');
   var Q = require('q');
   var _ = require('lodash');
+  var multipart = require('connect-multiparty');
+  var config = require('../config');
+  var fs = require('fs');
 
   //var clientParseObj;
   var Client = db.Object.extend("Client");
@@ -90,12 +93,17 @@
             }, function (d, e) {
               response.status(503).send("something went wrong.");
             });
-        })
+        });
     })
-    .post('/save', function (request, response) {
+    .post('/save', multipart({
+      uploadDir: config.tmp
+    }), function (request, response) {
       var wantedPerson;
-      var person = request.body.person;
-      var newTip = request.body.new || false;
+      var person = typeof request.body.person !== 'string' ? request.body.person : JSON.parse(request.body.person);
+      var newTip = JSON.parse(request.body.new) || false;
+      if (request.files) {
+        var imageFile = request.files.file || null;
+      }
 
 
       function getPerson() {
@@ -104,7 +112,7 @@
             resolve(new MostWanted());
           } else {
             // otherwhise the prson already exists, so let's look for 'em.
-            new db.Query(Mostanted)
+            new db.Query(MostWanted)
               .get(person.objectId)
               .then(function (person) {
                 resolve(person);
@@ -125,15 +133,16 @@
               wantedPerson.set(key, person[key]);
             }
 
-            if (key === 'photoUrl' && typeof person.photo === 'string') {
-              var randomName = Math.floor(Math.random() * Date.now()) + "" + Date.now();
-              var photo = db.File(randomName, {
-                base64: person.photo
-              });
-              wantedPerson.set('photo', photo);
-            }
-
           });
+
+          if (imageFile) {
+            fs.readFile(imageFile.path, function (err, data) {
+              wantedPerson.set('photo', new db.File(imageFile.name, {
+                base64: data.toString('base64')
+              }));
+              wantedPerson.save();
+            });
+          }
           //
           return wantedPerson.save()
             .then(function (wantedPerson) {

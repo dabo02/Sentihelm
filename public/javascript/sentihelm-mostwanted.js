@@ -113,8 +113,8 @@
     })
     //Service for managing the most wanted list. It can save, add
     //or delete most wanted people to/from Parse
-    .factory("MostWantedService", ['Session', '$rootScope', 'errorFactory', '$http',
-      function (Session, $rootScope, errorFactory, $http) {
+    .factory("MostWantedService", ['errorFactory', '$http', '$upload',
+      function (errorFactory, $http, Upload) {
         var mostWantedService = {};
         var mostWantedArray = [];
 
@@ -129,6 +129,10 @@
         //Save one most wanted person, whether
         //it is a new one or an old one
         mostWantedService.saveMostWanted = function (person, index) {
+          var fields = {
+              person: person,
+              new: index === -1 ? true : false
+            };
 
           if (!person.name) {
             //TODO show 'must have a name' error MOST-WANTED-NO-DATA
@@ -142,17 +146,22 @@
            * newly added as a base64 array in string format. Otherwise we delete
            * the image and we detect a new image in the server.
            */
-          if (person.photoUrl) {
-            person.photo = person.photoUrl.split('base64,')[1];
+
+
+          if (person.file) {
+            return Upload.upload({
+              url: '/mostwanted/save',
+              data: fields,
+              file: person.file
+            });
+          } else {
+            return $http.post('/mostwanted/save', fields)
+              .then(null, function (errResponse) {
+                return;
+              });
           }
 
-          return $http.post('/mostwanted/save', {
-                person: person,
-                new: index === -1 ? true : false
-              })
-            .then(null, function (errResponse) {
-              return;
-            });
+
 
 
         };
@@ -171,7 +180,9 @@
         mostWantedService.rearrangeList = function (newList) {
           if (newList instanceof Array && newList.length === mostWantedArray.length) {
 
-            return $http.put('/mostwanted/list', { list: newList });
+            return $http.put('/mostwanted/list', {
+              list: newList
+            });
           }
         };
 
@@ -240,6 +251,8 @@
               mostWanted.photoUrl = result;
               MostWantedCtrl.editedPeopleIndices[index] = true;
             });
+
+          mostWanted.file = file;
         };
 
         //Add new wanted to the controller array. Must

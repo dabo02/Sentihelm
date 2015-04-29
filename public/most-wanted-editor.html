@@ -4,9 +4,7 @@
 
   <div class="col-md-2 no-padding pointer" accept="image/*" ng-file-select="fileSelect({files: $files, index: index})">
     <a class="thumbnail no-margin no-border">
-      <img class="profile" ng-src="{{criminal.photoUrl ||
-        criminal.photo.url ||
-                            './resources/images/no-profile-pic.png'}}" alt="...">
+      <img class="profile" ng-src="{{criminal.photoUrl || criminal.photo.url || './resources/images/no-profile-pic.png'}}" alt="...">
     </a>
   </div>
 

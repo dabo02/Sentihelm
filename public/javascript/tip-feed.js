@@ -33,13 +33,28 @@
       // and video from sentihelm.
       $httpProvider.defaults.timeout = 5000;
     }])
-    .factory('Tip', ['$http', 'socket', 'ngDialog', '$log', '$q', '$location', function ($http, socket, ngDialog, $log, $q, $location) {
+    .factory('Tip', ['$http', 'ngDialog', '$log', '$q', '$location', 'tipSocket', function ($http, ngDialog, $log, $q, $location, tipSocket) {
+
+      var newTips = [];
+
+      tipSocket.on('new-tip', function (tipId) {
+        newTips.push({
+          tipId: tipId,
+          date: new Date()
+        });
+      });
+
       return {
         getTips: function (searchParams) {
           return $http.get('/tips/list', {
               params: searchParams
             })
             .then(function (response) { // success
+              var i;
+              for (i = newTips.length - 1; i > 0; i--) {
+                delete newTips[i];
+                newTips.pop()
+              }
               return response.data;
             }, function (errResponse) { // error
               return $q.reject(errorResponse);
@@ -74,8 +89,18 @@
             scope: $scope,
             data: data
           });
+        },
+        getNewTips: function () {
+          return newTips;
         }
+
       };
+    }])
+    .factory('tipSocket', ['socketFactory', '$location', function (socketFactory, $location) {
+      var tipSocket = io.connect($location.host());
+      return socketFactory({
+          ioSocket: tipSocket
+      });
     }])
     .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location',
       function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location) {
@@ -128,6 +153,13 @@
             'active': self.tipsAvailable
           };
         };
+
+        self.newTips = function () {
+          return {
+            newTips: Tip.getNewTips().length > 0,
+            howMany: Tip.getNewTips().length
+          };
+        }
 
         self.getPage = function (pageNum) {
 
