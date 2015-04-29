@@ -1,0 +1,210 @@
+.
+├── CloudCode
+│   ├── cloud
+│   │   └── main.js
+│   ├── config
+│   │   └── global.json
+│   └── public
+│       └── index.html
+├── README.md
+├── bin
+│   ├── sessions.db
+│   └── www
+├── bower.json
+├── config.js
+├── gulpfile.js
+├── karma.conf.js
+├── lib
+│   ├── EncryptionManager.js
+│   ├── PasswordGenerator.js
+│   ├── chat_server.js
+│   ├── db.js
+│   ├── io_servers.js
+│   ├── notification_server.js
+│   └── util.js
+├── models
+│   ├── client.js
+│   ├── parse-adapter.js
+│   ├── tips.js
+│   ├── users.js
+│   └── video-sessions.js
+├── package.json
+├── public
+│   ├── OLDtipfeed.html
+│   ├── admin-panel.html
+│   ├── attachment-dialog.html
+│   ├── bootstrap
+│   │   ├── css
+│   │   │   ├── bootstrap-theme.css
+│   │   │   ├── bootstrap-theme.css.map
+│   │   │   ├── bootstrap-theme.min.css
+│   │   │   ├── bootstrap.css
+│   │   │   ├── bootstrap.css.map
+│   │   │   └── bootstrap.min.css
+│   │   ├── fonts
+│   │   │   ├── glyphicons-halflings-regular.eot
+│   │   │   ├── glyphicons-halflings-regular.svg
+│   │   │   ├── glyphicons-halflings-regular.ttf
+│   │   │   └── glyphicons-halflings-regular.woff
+│   │   └── js
+│   │       ├── bootstrap.js
+│   │       └── bootstrap.min.js
+│   ├── browser_demo.html
+│   ├── data-analysis.html
+│   ├── drawer.html
+│   ├── error-dialog.html
+│   ├── favicon.ico
+│   ├── header.html
+│   ├── index.html
+│   ├── javascript
+│   │   ├── angular-base64-upload.min.js
+│   │   ├── angular-file-upload-shim.min.js
+│   │   ├── angular-file-upload.min.js
+│   │   ├── angular-google-maps.min-OLD.js
+│   │   ├── angular-google-maps.min.js
+│   │   ├── angular-route.min.js
+│   │   ├── angular-snap.min.js
+│   │   ├── angular-spinner.min.js
+│   │   ├── angular-ui-router.min.js
+│   │   ├── angular-ui.js
+│   │   ├── angular.min.js
+│   │   ├── client.socket.io-1.0.4.js
+│   │   ├── google-maps.js
+│   │   ├── jquery-1.11.1.min.js
+│   │   ├── jquery-ui.js
+│   │   ├── lodash-underscore.min.js
+│   │   ├── ng-csv.min.js
+│   │   ├── ng-google-chart.js
+│   │   ├── ngAudio.js
+│   │   ├── ngDialog.min.js
+│   │   ├── ngToast.min.js
+│   │   ├── opentok.min-2.2.js
+│   │   ├── parse-sdk.js
+│   │   ├── sentihelm-chat.js
+│   │   ├── sentihelm-mostwanted.js
+│   │   ├── sentihelm-ng.js
+│   │   ├── snap.min.js
+│   │   ├── socket.min.js
+│   │   ├── sortable.js
+│   │   ├── spin.js
+│   │   ├── streams-ui.js
+│   │   └── tip-feed.js
+│   ├── login-dialog.html
+│   ├── maps.html
+│   ├── most-wanted-card.html
+│   ├── most-wanted-confirm-dialog.html
+│   ├── most-wanted-editor.html
+│   ├── most-wanted.html
+│   ├── new-station-form.html
+│   ├── notification-dialog.html
+│   ├── profile.html
+│   ├── regional-notifications.html
+│   ├── reset-pass.html
+│   ├── resources
+│   │   ├── font-awesome-4.1.0
+│   │   │   ├── css
+│   │   │   │   ├── font-awesome.css
+│   │   │   │   └── font-awesome.min.css
+│   │   │   ├── fonts
+│   │   │   │   ├── FontAwesome.otf
+│   │   │   │   ├── fontawesome-webfont.eot
+│   │   │   │   ├── fontawesome-webfont.svg
+│   │   │   │   ├── fontawesome-webfont.ttf
+│   │   │   │   └── fontawesome-webfont.woff
+│   │   │   ├── less
+│   │   │   │   ├── bordered-pulled.less
+│   │   │   │   ├── core.less
+│   │   │   │   ├── fixed-width.less
+│   │   │   │   ├── font-awesome.less
+│   │   │   │   ├── icons.less
+│   │   │   │   ├── larger.less
+│   │   │   │   ├── list.less
+│   │   │   │   ├── mixins.less
+│   │   │   │   ├── path.less
+│   │   │   │   ├── rotated-flipped.less
+│   │   │   │   ├── spinning.less
+│   │   │   │   ├── stacked.less
+│   │   │   │   └── variables.less
+│   │   │   └── scss
+│   │   │       ├── _bordered-pulled.scss
+│   │   │       ├── _core.scss
+│   │   │       ├── _fixed-width.scss
+│   │   │       ├── _icons.scss
+│   │   │       ├── _larger.scss
+│   │   │       ├── _list.scss
+│   │   │       ├── _mixins.scss
+│   │   │       ├── _path.scss
+│   │   │       ├── _rotated-flipped.scss
+│   │   │       ├── _spinning.scss
+│   │   │       ├── _stacked.scss
+│   │   │       ├── _variables.scss
+│   │   │       └── font-awesome.scss
+│   │   ├── fonts
+│   │   │   ├── nexa-bold.otf
+│   │   │   └── nexa-light.otf
+│   │   ├── images
+│   │   │   ├── audioAtt.png
+│   │   │   ├── audioAttHover.png
+│   │   │   ├── drawer-icon-alt.png
+│   │   │   ├── drawer-icon-combo.png
+│   │   │   ├── drawer-icon.png
+│   │   │   ├── drawer-info.png
+│   │   │   ├── drawer-live911.png
+│   │   │   ├── drawer-testing.png
+│   │   │   ├── drawer-tip.png
+│   │   │   ├── imageAtt.png
+│   │   │   ├── imageAttHover.png
+│   │   │   ├── marker-icon.png
+│   │   │   ├── no-profile-pic.png
+│   │   │   ├── sentihelm.png
+│   │   │   ├── videoAtt.png
+│   │   │   └── videoAttHover.png
+│   │   └── sounds
+│   │       └── notification-sound.mp3
+│   ├── sms-dialog.html
+│   ├── stylesheets
+│   │   ├── admin-panel.css
+│   │   ├── angular-snap.min.css
+│   │   ├── browser_demo_view.css
+│   │   ├── custom.css
+│   │   ├── data-analysis-style.css
+│   │   ├── error-dialog-style.css
+│   │   ├── login-dialog-style.css
+│   │   ├── maps-style.css
+│   │   ├── most-wanted-style.css
+│   │   ├── ngDialog
+│   │   │   ├── ngDialog-attachment.css
+│   │   │   ├── ngDialog-error.css
+│   │   │   ├── ngDialog-sms.css
+│   │   │   └── ngDialog-theme-plain.css
+│   │   ├── ngDialog.min.css
+│   │   ├── ngToast.min.css
+│   │   ├── profile-style.css
+│   │   ├── spinner.css
+│   │   ├── streams-view.css
+│   │   ├── tip-chat.css
+│   │   ├── tipfeed-style.css
+│   │   ├── video-archive-style.css
+│   │   └── video-streams-style.css
+│   ├── temp
+│   ├── tip-chat.html
+│   ├── tip.html
+│   ├── tipfeed.html
+│   ├── video-archive.html
+│   ├── video-streams.html
+│   └── wanted-person-template.html
+├── routes
+│   ├── data-analysis.js
+│   ├── index.js
+│   ├── most-wanted.js
+│   ├── police-stations.js
+│   ├── tip.js
+│   ├── tips.js
+│   └── users.js
+├── sentihelm-server.js
+├── sessions.db
+├── spec
+├── test
+└── tree.txt
+
+28 directories, 179 files
