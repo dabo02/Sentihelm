@@ -2880,7 +2880,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         $('.selectpicker').selectpicker();
 
     }]);
-    
+
 //Controller for Profile page
     app.controller('ProfileController', ['socket', 'Session', '$scope', function (socket, Session, $scope) {
 
