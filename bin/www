@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 var io = require('socket.io')();
-var webServer = require('../server');
+var webServer = require('../sentihelm-server');
 var app = webServer.app(io);
 //var debug = require('debug')('example-project:server');
 var http = require('http');
