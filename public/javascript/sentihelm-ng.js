@@ -2503,7 +2503,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
     }]);
 
 //Controller for Administrator Panel
-    app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http) {
+    app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', '$scope', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http, $scope) {
 
         var adminPanelCtrl = this;
         this.sending = false;
@@ -2516,10 +2516,13 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         adminPanelCtrl.viewingLoggedIn = false;
         adminPanelCtrl.addingUser = false;
 
+
         adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
+        adminPanelCtrl.roles = ["Select","employee","admin"];
 
         adminPanelCtrl.adminPanelUsersArray = [];
         adminPanelCtrl.selectedUsers = [];
+        adminPanelCtrl.editedUser;
 
         //pagination variables
         adminPanelCtrl.currentPageNum = 1;
@@ -2529,6 +2532,7 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
         adminPanelCtrl.skip;
         adminPanelCtrl.userTotal;
         adminPanelCtrl.usersAvailable = true;
+        adminPanelCtrl.fetchingUsers = true;
         adminPanelCtrl.rolesFilter = "";
 
         adminPanelCtrl.getPage = function(pageNum){
@@ -2551,32 +2555,33 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 limit: adminPanelCtrl.limit
             };
 
-
+            adminPanelCtrl.fetchingUsers = true;
             $http.get('/users/list', {params: params})
-            .success(function(data){
+              .success(function(data){
 
-                adminPanelCtrl.lastPageNum = data.lastPageNum;
-                adminPanelCtrl.userTotal = data.userTotal;
+                  adminPanelCtrl.lastPageNum = data.lastPageNum;
+                  adminPanelCtrl.userTotal = data.userTotal;
 
-                adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
+                  adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
 
-                if(adminPanelCtrl.adminPanelUsersArray.length===0){
-                    adminPanelCtrl.usersAvailable = false;
-                }
-                else{
-                    adminPanelCtrl.usersAvailable = true;
-                }
+                  if(adminPanelCtrl.adminPanelUsersArray.length===0){
+                      adminPanelCtrl.usersAvailable = false;
+                  }
+                  else{
+                      adminPanelCtrl.usersAvailable = true;
+                  }
 
-            })
-            .error(function(err){
-                adminPanelCtrl.usersAvailable = false;
+              })
+              .error(function(err){
+                  adminPanelCtrl.usersAvailable = false;
 
-            }).then(function(){
-                usSpinnerService.stop('loading-video-archive-spinner');
-                $location.hash('top');
-                $anchorScroll();
-                adminPanelCtrl.refreshPageNumbers();
-            });
+              }).then(function(){
+                  usSpinnerService.stop('loading-video-archive-spinner');
+                  $location.hash('top');
+                  $anchorScroll();
+                  adminPanelCtrl.refreshPageNumbers();
+                  adminPanelCtrl.fetchingUsers = false;
+              });
         };
 
         adminPanelCtrl.sortRoles = function(roles){
@@ -2606,78 +2611,82 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             }
         }
 
+        this.saveUser = function(){
+
+            if(adminPanelCtrl.formUser.state !== 'Select' || adminPanelCtrl.formUser.role !== 'Select') {
+                if(/(^\d{1,5}$)|(^\d{1,5}-\d{1,4}$)/.test(adminPanelCtrl.formUser.zipCode)){
+                    if (adminPanelCtrl.addingUser) {
+                        adminPanelCtrl.addUser(adminPanelCtrl.formUser);
+                    }
+                    else if (adminPanelCtrl.editingUser) {
+                        adminPanelCtrl.updateUser(adminPanelCtrl.formUser);
+                    }
+                    else {
+                        return;
+                    }
+                }
+                else{
+                    adminPanelCtrl.successMessage = "Please enter a valid zip code."
+                    adminPanelCtrl.hasError = true;
+                }
+            }
+
+            return;
+        }
+
         //Adds new SentiHelm user
         this.addUser = function (newUser) {
+
             adminPanelCtrl.successMessage = "";
-            this.sending = true;
-            socket.emit('add-new-officer', {
-                newOfficer: newUser,
-                clientId: Session.clientId
-            });
+            adminPanelCtrl.sending = true;
+
+            newUser.roles = [newUser.roles];
+
+            var data = {
+                newOfficer: newUser
+            }
+
+            $http.post('/users/add', data)
+              .success(function(data){
+                  adminPanelCtrl.sending = false;
+                  adminPanelCtrl.successMessage = data;
+                  adminPanelCtrl.hasError = false;
+              })
+              .error(function(err){
+                  adminPanelCtrl.sending = false;
+                  adminPanelCtrl.successMessage = err;
+                  adminPanelCtrl.hasError =  true;
+
+              }).then(function(){
+                  $location.hash('top');
+                  $anchorScroll();
+              });
         };
 
-        socket.on('new-officer-added', function (data) {
-            adminPanelCtrl.sending = false;
-            adminPanelCtrl.successMessage = "SUCCESS: you have created a new user.";
-            adminPanelCtrl.hasError = false;
-            $location.hash('top');
-            $anchorScroll();
-        });
-
-        socket.on('new-officer-failed', function (data) {
-            adminPanelCtrl.sending = false;
-            adminPanelCtrl.successMessage = "FAILED: " + data.error + ".";
-            adminPanelCtrl.hasError =  true;
-            $location.hash('top');
-            $anchorScroll();
-        });
-
-        adminPanelCtrl.changeView = function(view){
-
-            adminPanelCtrl.viewingAll = false;
-            adminPanelCtrl.viewingUsers = false;
-            adminPanelCtrl.viewingEmployees = false;
-            adminPanelCtrl.viewingAdministrators = false;
-            adminPanelCtrl.viewingLoggedIn = false;
-            adminPanelCtrl.addingUser = false;
+        adminPanelCtrl.updateUser = function(user){
 
             adminPanelCtrl.successMessage = "";
-            adminPanelCtrl.hasError = false;
+            adminPanelCtrl.sending = true;
 
-            switch(view){
+            var data = {
+                user: user
+            }
 
-                case 'all':
-                    adminPanelCtrl.viewingAll = true;
-                    adminPanelCtrl.rolesFilter = "";
-                    adminPanelCtrl.getPage(1);
-                    break;
+            $http.post('/users/update', data)
+              .success(function(data){
+                  adminPanelCtrl.sending = false;
+                  adminPanelCtrl.successMessage = data;
+                  adminPanelCtrl.hasError = false;
+              })
+              .error(function(err){
+                  adminPanelCtrl.sending = false;
+                  adminPanelCtrl.successMessage = err;
+                  adminPanelCtrl.hasError =  true;
 
-                case 'users':
-                    adminPanelCtrl.viewingUsers = true;
-                    // TODO call getPage with corresponding filter
-                    break;
-
-                case 'employees':
-                    adminPanelCtrl.viewingEmployees = true;
-                    adminPanelCtrl.rolesFilter = "employee";
-                    adminPanelCtrl.getPage(1);
-                    break;
-
-                case 'administrators':
-                    adminPanelCtrl.viewingAdministrators = true;
-                    adminPanelCtrl.rolesFilter = "admin";
-                    adminPanelCtrl.getPage(1);
-                    break;
-
-                case 'loggedIn':
-                    adminPanelCtrl.viewingLoggedIn = true;
-                    // TODO call getPage with corresponding filter
-                    break;
-
-                case 'addUser':
-                    adminPanelCtrl.addingUser = true;
-                    break;
-            };
+              }).then(function(){
+                  $location.hash('top');
+                  $anchorScroll();
+              });
         };
 
         adminPanelCtrl.updateRole = function(action, role){
@@ -2719,16 +2728,16 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 }
 
                 $http.post('/users/update/role', data)
-                .success(function(data){
-                    adminPanelCtrl.successMessage = data;
-                    adminPanelCtrl.hasError = false;
-                })
-                .error(function(err){
-                    adminPanelCtrl.successMessage = err;
-                    adminPanelCtrl.hasError = true;
-                }).then(function(){
-                    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
-                });
+                  .success(function(data){
+                      adminPanelCtrl.successMessage = data;
+                      adminPanelCtrl.hasError = false;
+                  })
+                  .error(function(err){
+                      adminPanelCtrl.successMessage = err;
+                      adminPanelCtrl.hasError = true;
+                  }).then(function(){
+                      adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                  });
             }
 
             usSpinnerService.stop('loading-video-archive-spinner');
@@ -2786,22 +2795,92 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
         adminPanelCtrl.decryptUser = function(user){
 
-            $http.post('/users/decrypt', user)
+            var data = {
+                user: user
+            }
+
+            $http.post('/users/decrypt', data)
               .success(function(data){
-                  user = angular.copy(data);
+                  adminPanelCtrl.editedUser = angular.copy(data);
+                  adminPanelCtrl.editedUser.zipCode = parseInt(adminPanelCtrl.editedUser.zipCode, 10);
               })
               .error(function(err){
                   adminPanelCtrl.successMessage = err;
                   adminPanelCtrl.hasError = true;
               }).then(function(){
-                  adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+                  adminPanelCtrl.formUser = adminPanelCtrl.editedUser;
+                  if(adminPanelCtrl.formUser.permissions !== undefined && adminPanelCtrl.formUser.permissions !== null) {
+                      adminPanelCtrl.formUser.permissions.forEach(function (perm) {
+                          $('#' + perm + '-access').attr('selected', 'selected');
+                      });
+                  }
+
+                  $('.selectpicker').selectpicker('refresh');
               });
         };
 
+        adminPanelCtrl.changeView = function(view){
+
+            adminPanelCtrl.viewingAll = false;
+            adminPanelCtrl.viewingUsers = false;
+            adminPanelCtrl.viewingEmployees = false;
+            adminPanelCtrl.viewingAdministrators = false;
+            adminPanelCtrl.viewingLoggedIn = false;
+            adminPanelCtrl.addingUser = false;
+            adminPanelCtrl.editingUser = false;
+
+            adminPanelCtrl.successMessage = "";
+            adminPanelCtrl.hasError = false;
+
+            switch(view){
+
+                case 'all':
+                    adminPanelCtrl.viewingAll = true;
+                    adminPanelCtrl.rolesFilter = "";
+                    adminPanelCtrl.getPage(1);
+                    break;
+
+                case 'users':
+                    adminPanelCtrl.viewingUsers = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'employees':
+                    adminPanelCtrl.viewingEmployees = true;
+                    adminPanelCtrl.rolesFilter = "employee";
+                    adminPanelCtrl.getPage(1);
+                    break;
+
+                case 'administrators':
+                    adminPanelCtrl.viewingAdministrators = true;
+                    adminPanelCtrl.rolesFilter = "admin";
+                    adminPanelCtrl.getPage(1);
+                    break;
+
+                case 'loggedIn':
+                    adminPanelCtrl.viewingLoggedIn = true;
+                    // TODO call getPage with corresponding filter
+                    break;
+
+                case 'addUser':
+                    adminPanelCtrl.addingUser = true;
+                    $scope.addOfficerForm.$setPristine();
+                    adminPanelCtrl.formUser = {};
+                    $('.selectpicker').selectpicker('refresh');
+                    break;
+
+                case 'editUser':
+                    adminPanelCtrl.editingUser = true;
+                    //$scope.addOfficerForm.$set();
+                    adminPanelCtrl.formUser = {};
+                    break;
+            };
+        };
         adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+        $('.selectpicker').selectpicker();
 
     }]);
-
+    
 //Controller for Profile page
     app.controller('ProfileController', ['socket', 'Session', '$scope', function (socket, Session, $scope) {
 
