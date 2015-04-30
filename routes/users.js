@@ -36,6 +36,9 @@ router
             if(role){
                 adminPanelQuery.equalTo('roles', role);
             }
+            else{
+                adminPanelQuery.containedIn('roles', ['admin','employee']);
+            }
 
             adminPanelQuery.equalTo('homeClient', {
             __type: "Pointer",
@@ -94,7 +97,7 @@ router
             role:req.body.role
         };
 
-        usersModel.updateRole(data).then(function () {
+        usersModel.updateRole(req.body).then(function () {
             res.send("SUCCESS: Role has been updated.");
 
         }, function (error) {
@@ -102,23 +105,17 @@ router
         });
     })
 
-    .post('save-user', function(req, res){
+    .post('/update', function(req, res){
 
-        var user = req.body.user;
-
-        usersModel.saveUser(user).then(function () {
-            res.send("SUCCESS: User has been saved.");
+        usersModel.updateUser(req.body.user).then(function () {
+            res.send("SUCCESS: Account details for " + req.body.user.username + " have been updated.");
 
         }, function (error) {
-            res.status(503).send("FAILURE: User could not be saved.");
+            res.status(503).send("FAILURE: User could not be updated.");
         });
     })
 
   .post('/delete', function(req, res){
-
-      var data = {
-          users: req.body.users
-      };
 
       usersModel.deleteUser(req.body.users).then(function () {
           res.send("SUCCESS: Deleted selected user(s).");
@@ -128,15 +125,23 @@ router
       });
   })
 
-  .post('/get', function(req, res){
+  .post('/decrypt', function(req, res){
 
-      var userId = req.body.userId;
-
-      usersModel.getById(userId).then(function (user) {
+      usersModel.decryptUser(req.body.user).then(function (user) {
           res.send(user);
 
       }, function (error) {
-          res.status(503).send("FAILURE: Could not fetch the selected user's information." + error.message);
+          res.status(503).send("FAILURE: Could not fetch the selected user's information.");
+      });
+  })
+
+  .post('/add', function(req, res){
+
+      usersModel.addNewOfficer(req.body.newOfficer, req.session.user.homeClient.objectId).then(function(data) {
+          res.send("SUCCESS: " + data);
+
+      }, function (error) {
+          res.status(503).send("FAILURE: Could not add new user.");
       });
   });
 

@@ -15,26 +15,50 @@ module.exports.sendPasswordResetRequest = function (email) {
   });
 };
 
-module.exports.saveUser = function (user) {
-  //Generate passphrase for encryption
-  
-  return Q.Promise(function () {
+module.exports.updateUser = function (user) {
+
+  return Q.Promise(function (resolve, reject) {
 
     //Generate passphrase for encryption
-    var passPhrase = passwordGenerator.generatePassword(user.username);
+    var passPhrase = util.passwordGenerator.generatePassword(user.username);
 
-    //Encrypted/Hashed Values
-    var encryptedFirstName = encryptionManager.encrypt(passPhrase, user.firstName);
-    var encryptedLastName = encryptionManager.encrypt(passPhrase, user.lastName);
-    var encryptedPhoneNumber = encryptionManager.encrypt(passPhrase, user.phoneNumber);
-    var encryptedZipCode = encryptionManager.encrypt(passPhrase, user.zipCode.toString());
-    var encryptedState = encryptionManager.encrypt(passPhrase, user.state);
+    //Encrypt user information
+    var encryptedUser = util.encryptionManager.encryptUser(user, passPhrase);
 
     var email = user.email;
+    var role = user.roles[0];
+    var permissions = user.permissions;
 
-    db.Cloud.run('saveUser', {
-      //data here
-    }, {
+    var data = {
+      user: user,
+      attrs: ['firstName','lastName','phoneNumber','zipCode','email','roles','permissions'],
+      values: [encryptedUser[0],encryptedUser[1],encryptedUser[2],encryptedUser[3],email,role, permissions],
+      action: 'none'
+    }
+
+    var optionalFieldIndex = 4;
+
+    if(user.state){
+      data.attrs.push('state');
+      data.values.push(encryptedUser[optionalFieldIndex++]);
+    }
+
+    if(user.addressLine1){
+      data.attrs.push('addressLine1');
+      data.values.push(encryptedUser[optionalFieldIndex++]);
+    }
+
+    if(user.addressLine2){
+      data.attrs.push('addressLine2');
+      data.values.push(encryptedUser[optionalFieldIndex++]);
+    }
+
+    if(user.city){
+      data.attrs.push('city');
+      data.values.push(encryptedUser[optionalFieldIndex]);
+    }
+
+    db.Cloud.run('updateUser', data, {
       success: function(result) {
         resolve();
       },
@@ -42,46 +66,10 @@ module.exports.saveUser = function (user) {
         reject(error);
       }
     });
-
-    /* the following code runs on the cloud
-    // var dbUser = new db.Query(User);
-    var user = db.User.current();
-    if (!user) {
-      return {
-        then: function (success, error) {
-          "use strict";
-          error(user, Error("user-session-timeout"));
-        }
-      };
-    }
-
-    user.set('firstName', {
-      __type: "Bytes",
-      base64: encryptedFirstName
-    });
-    user.set('lastName', {
-      __type: "Bytes",
-      base64: encryptedLastName
-    });
-    user.set('email', email);
-    user.set('phoneNumber', {
-      __type: "Bytes",
-      base64: encryptedPhoneNumber
-    });
-    user.set('zipCode', {
-      __type: "Bytes",
-      base64: encryptedZipCode
-    });
-    user.set('state', {
-      __type: "Bytes",
-      base64: encryptedState
-    });
-
-    */
   });
 };
 
-module.exports.updateRole = function(data){
+module.exports.updateRole = function (data){
 
   return Q.Promise(function(resolve, reject){
     db.Cloud.run('updateUserRole', data, {
@@ -95,40 +83,189 @@ module.exports.updateRole = function(data){
   });
 };
 
-module.exports.deleteUser = function(data){
+module.exports.deleteUser = function(users){
 
   return Q.Promise(function(resolve, reject){
-    db.Cloud.run('deleteUser', data, {
-      success: function(result) {
-        resolve();
-      },
-      error: function (error) {
-        reject(error);
+
+    users.forEach(function(user){
+
+      var data = {
+        user: user,
+        attrs: ['roles','permissions'],
+        values: [undefined, undefined],
+        action: 'delete'
       }
+
+      db.Cloud.run('updateUser', data, {
+        success: function(result) {
+          resolve();
+        },
+        error: function (error) {
+          reject(error);
+        }
+      });
     });
   });
 };
 
-module.exports.getById = function(data){
+module.exports.decryptUser = function(data){
 
   return Q.Promise(function(resolve, reject){
-    var id = data;
+    
+    var user = data;
 
-    var userQuery = new db.Query(User);
-    userQuery.get(id).then(function (user) {
+    try{
 
-      var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
+      var passPhrase = util.passwordGenerator.generatePassword(user.username);
 
-      user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
-      var lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
-      user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
-      user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
-      user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+      user = util.encryptionManager.decryptUser(passPhrase, user);
 
       resolve(user);
+    }
+    catch(e){
+      reject(e);
+    }
+  });
+};
 
-      }, function (error) {
-        reject();
-      });
+module.exports.addNewOfficer = function(officerData, clientId) {
+
+  return Q.Promise(function(resolve, reject) {
+
+    var userQuery = new db.Query(User);
+    userQuery.equalTo("username", officerData.username);
+    userQuery.find({
+      success: function (users) {
+
+        if(users.length > 0){
+          //modify array so cloud code recognizes input
+          var passPhrase = util.passwordGenerator.generatePassword(users[0].username);
+          var encryptedUser = util.encryptionManager.encryptUser(officerData, passPhrase);
+          var hashedPassword = util.passwordGenerator.md5(officerData.password);
+
+          var data = {
+            user: {"objectId": users[0].id},
+            attrs: ['firstName','lastName','phoneNumber','zipCode','email','roles','permissions','password','userPassword'],
+            values: [encryptedUser[0],encryptedUser[1],encryptedUser[2],encryptedUser[3],officerData.email,officerData.roles[0], officerData.permissions, officerData.password, hashedPassword],
+            action: 'none'
+          };
+
+          var optionalFieldIndex = 4;
+          //TODO add optional fields to data.attrs and data.values
+          if(officerData.state){
+            data.attrs.push('state');
+            data.values.push(encryptedUser[optionalFieldIndex++]);
+          }
+
+          if(officerData.addressLine1){
+            data.attrs.push('addressLine1');
+            data.values.push(encryptedUser[optionalFieldIndex++]);
+          }
+
+          if(officerData.addressLine2){
+            data.attrs.push('addressLine2');
+            data.values.push(encryptedUser[optionalFieldIndex++]);
+          }
+
+          if(officerData.city){
+            data.attrs.push('city');
+            data.values.push(encryptedUser[optionalFieldIndex]);
+          }
+
+          db.Cloud.run('updateUser', data, {
+            success: function(result) {
+              resolve("Access to SentiHelm has been granted to existing user " + officerData.username);
+            },
+            error: function (error) {
+              reject(error);
+            }
+          });
+        }
+        else{
+
+          //var encryptedUser = util.encryptionManager.encryptUser(officerData);
+          //Generate passphrase for encryption
+          var passPhrase = "";
+          passPhrase = util.passwordGenerator.generatePassword(officerData.username);
+          var hashedPassword = util.passwordGenerator.md5(officerData.password);
+
+          //Encrypt user information
+          var encryptedUser = util.encryptionManager.encryptUser(officerData, passPhrase);
+
+          //Create new officer
+          var officer = new db.User();
+          officer.set('firstName', {
+            __type: "Bytes",
+            base64: encryptedUser[0]
+          });
+          officer.set('lastName', {
+            __type: "Bytes",
+            base64: encryptedUser[1]
+          });
+          officer.set('phoneNumber', {
+            __type: 'Bytes',
+            base64: encryptedUser[2]
+          });
+          officer.set('zipCode', {
+            __type: 'Bytes',
+            base64: encryptedUser[3]
+          });
+
+          var optionalFieldIndex = 4;
+
+          if(officerData.state){
+            officer.set('state', {
+              __type: 'Bytes',
+              base64: encryptedUser[optionalFieldIndex++]
+            });
+          }
+
+          if(officerData.addressLine1){
+            officer.set('addressLine1', {
+              __type: 'Bytes',
+              base64: encryptedUser[optionalFieldIndex++]
+            });
+          }
+
+          if(officerData.addressLine2){
+            officer.set('addressLine2', {
+              __type: 'Bytes',
+              base64: encryptedUser[optionalFieldIndex++]
+            });
+          }
+
+          if(officerData.city){
+            officer.set('city', {
+              __type: 'Bytes',
+              base64: encryptedUser[optionalFieldIndex]
+            });
+          }
+
+          officer.set('email', officerData.email);
+          officer.set('username', officerData.username);
+          officer.set('password', officerData.password);
+          officer.set('userPassword', hashedPassword);
+          officerData.roles.push('user');
+          officer.set('roles', officerData.roles);
+          officer.set('permissions', officerData.permissions);
+          officer.set('homeClient', {
+            __type: "Pointer",
+            className: "Client",
+            objectId: clientId
+          });
+
+          //Save/Signup new officer
+          officer.signUp().then(function(){
+            resolve("New user added to SentiHelm.");
+          }, function(err){
+            reject(err);
+          });
+        }
+      },
+      error: function (err) {
+
+
+      }
+    });
   });
 };

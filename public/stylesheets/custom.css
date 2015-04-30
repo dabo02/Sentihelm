@@ -191,3 +191,16 @@ input.strong{
 .blue {
   color: #219fe9;
 }
+}
+
+.list-action-img{
+  width: 25px;
+  height: 25px;
+}
+/*
+.feed-spinner{
+  position: relative;
+  top: 75px;
+  left: 540px;
+  margin-bottom: 100px;
+}*/
