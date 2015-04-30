@@ -131,7 +131,7 @@ router
           res.send(user);
 
       }, function (error) {
-          res.status(503).send("FAILURE: Could not fetch the selected user's information." + error.message);
+          res.status(503).send("FAILURE: Could not fetch the selected user's information.");
       });
   })
 

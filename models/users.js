@@ -36,24 +36,26 @@ module.exports.updateUser = function (user) {
       action: 'none'
     }
 
+    var optionalFieldIndex = 4;
+
     if(user.state){
       data.attrs.push('state');
-      data.attrs.push(encryptedUser[4]);
+      data.values.push(encryptedUser[optionalFieldIndex++]);
     }
 
     if(user.addressLine1){
       data.attrs.push('addressLine1');
-      data.attrs.push(encryptedUser[5]);
+      data.values.push(encryptedUser[optionalFieldIndex++]);
     }
 
     if(user.addressLine2){
       data.attrs.push('addressLine2');
-      data.attrs.push(encryptedUser[6]);
+      data.values.push(encryptedUser[optionalFieldIndex++]);
     }
 
     if(user.city){
       data.attrs.push('city');
-      data.attrs.push(encryptedUser[7]);
+      data.values.push(encryptedUser[optionalFieldIndex]);
     }
 
     db.Cloud.run('updateUser', data, {
@@ -148,25 +150,26 @@ module.exports.addNewOfficer = function(officerData, clientId) {
             action: 'none'
           };
 
+          var optionalFieldIndex = 4;
           //TODO add optional fields to data.attrs and data.values
           if(officerData.state){
             data.attrs.push('state');
-            data.attrs.push(encryptedUser[4]);
+            data.values.push(encryptedUser[optionalFieldIndex++]);
           }
 
           if(officerData.addressLine1){
             data.attrs.push('addressLine1');
-            data.attrs.push(encryptedUser[5]);
+            data.values.push(encryptedUser[optionalFieldIndex++]);
           }
 
           if(officerData.addressLine2){
             data.attrs.push('addressLine2');
-            data.attrs.push(encryptedUser[6]);
+            data.values.push(encryptedUser[optionalFieldIndex++]);
           }
 
           if(officerData.city){
             data.attrs.push('city');
-            data.attrs.push(encryptedUser[7]);
+            data.values.push(encryptedUser[optionalFieldIndex]);
           }
 
           db.Cloud.run('updateUser', data, {
@@ -208,31 +211,33 @@ module.exports.addNewOfficer = function(officerData, clientId) {
             base64: encryptedUser[3]
           });
 
+          var optionalFieldIndex = 4;
+
           if(officerData.state){
             officer.set('state', {
               __type: 'Bytes',
-              base64: encryptedUser[4]
+              base64: encryptedUser[optionalFieldIndex++]
             });
           }
 
           if(officerData.addressLine1){
             officer.set('addressLine1', {
               __type: 'Bytes',
-              base64: encryptedUser[5]
+              base64: encryptedUser[optionalFieldIndex++]
             });
           }
 
           if(officerData.addressLine2){
             officer.set('addressLine2', {
               __type: 'Bytes',
-              base64: encryptedUser[6]
+              base64: encryptedUser[optionalFieldIndex++]
             });
           }
 
           if(officerData.city){
             officer.set('city', {
               __type: 'Bytes',
-              base64: encryptedUser[7]
+              base64: encryptedUser[optionalFieldIndex]
             });
           }
 

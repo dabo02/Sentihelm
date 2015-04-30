@@ -91,7 +91,7 @@
                             <!--<td>Yes</td>-->
                             <td>
                                 <a href="mailto:{{user.email}}" id="blackLink"><img class="list-action-img img-circle" src="/resources/images/mail.png"/></a>
-                                <a><img class="list-action-img img-circle" src="/resources/images/edit.png"/></a>
+                                <a><img ng-click="adminPanelCtrl.changeView('editUser');adminPanelCtrl.decryptUser(user);" class="list-action-img img-circle" src="/resources/images/edit.png"/></a>
                                 <a ng-click="adminPanelCtrl.selectUser(user); adminPanelCtrl.deleteUser()"><img class="list-action-img img-circle" src="/resources/images/delete.png"/></a>
                             </td>
                         </tr>
