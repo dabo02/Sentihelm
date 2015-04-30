@@ -11,7 +11,11 @@
   var url = require('url');
   // hot fix, avoids buffer overflow. This is the maxium number value javascript can handle,
   // which in bytes is about a file the size of
-  Buffer.poolSize = 9007199254740992;
+  // for version v0.12.x of node.
+  if (!(parseInt(process.version.split('.')[1], 10) < 12)) {
+    Buffer.poolSize = 9007199254740992;
+  }
+  
   router
     .use(util.restrict)
     .get('/:tipId/media', function (request, response) {
