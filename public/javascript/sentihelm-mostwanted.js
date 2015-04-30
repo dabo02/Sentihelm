@@ -2,14 +2,14 @@
  * Created by Victor Martinez <victoramartinez@optivon.net> on 1/12/2015.
  */
 
-(function (angular, undefined) {
+(function () {
   /**
    * @ngdoc Module
    * @name sh.mostwanted
    * @requires none
    * @description Creates the module for the controllers and directives of most wanted
    * */
-  var mostWantedModule = angular.module('sh.mostwanted', [])
+  angular.module('sentihelm')
 
   /**
    * @ngdoc Directive
@@ -301,4 +301,4 @@
       }
     ]);
 
-})(window.angular);
+})();
