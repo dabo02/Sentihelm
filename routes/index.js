@@ -25,11 +25,22 @@
         var answer = [];
 
         var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
+        //user = util.encryptionManager.decryptUser(passPhrase, user);
+
         user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
         user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
         user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
         user.attributes.zipCode = parseInt(util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64), 10);
         user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+
+        req.session.regenerate(function (err) {
+          if (err) {
+            res.status(503).send({});
+          }
+          // perform a deep copy of the user object to keep in the session.
+          var userJSON = user.toJSON();
+          req.session.user = _.clone(userJSON, true);
+        });
 
         answer.push(user);
         // fixes serialization issue.
@@ -41,14 +52,6 @@
       function userLogedIn(user) {
         var clientId = user.attributes.homeClient.id;
 
-        req.session.regenerate(function (err) {
-          if (err) {
-            res.status(503).send({});
-          }
-          // perform a deep copy of the user object to keep in the session.
-          var userJSON = user.toJSON();
-          req.session.user = _.clone(userJSON, true);
-        });
         // Get Client to which user belongs to
         // and return a promise
 
