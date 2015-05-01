@@ -467,7 +467,6 @@
             session.clientAgency = client.agency;
             session.user = user;
             session.client = client;
-            socket.emit('start-session');
         };
 
         //Destroy current session object
@@ -1451,6 +1450,7 @@
                         var regions = response.data[2];
                         //Login was successful, create Session
                         Session.create(user, user.roles, client, regions);
+                        socket.emit('start-session');
                         Session.store(user, client);
                         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
                         loginCtrl.submitting = false;
