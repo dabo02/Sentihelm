@@ -24,6 +24,19 @@
       function sendLoginAnswer(client, user) {
         var answer = [];
 
+        answer.push(user);
+        // fixes serialization issue.
+        answer.push(client.attributes);
+        answer.push(client.get('regions'));
+        res.send(200, answer);
+      }
+
+      function userLogedIn(user) {
+        var clientId = user.attributes.homeClient.id;
+
+        // Get Client to which user belongs to
+        // and return a promise
+
         var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
         //user = util.encryptionManager.decryptUser(passPhrase, user);
 
@@ -41,19 +54,6 @@
           var userJSON = user.toJSON();
           req.session.user = _.clone(userJSON, true);
         });
-
-        answer.push(user);
-        // fixes serialization issue.
-        answer.push(client.attributes);
-        answer.push(client.get('regions'));
-        res.send(200, answer);
-      }
-
-      function userLogedIn(user) {
-        var clientId = user.attributes.homeClient.id;
-
-        // Get Client to which user belongs to
-        // and return a promise
 
         console.log('client for now is %s', clientId);
 
