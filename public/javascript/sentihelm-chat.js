@@ -40,27 +40,38 @@
 
       return socket;
     }])
-    .factory('TipChat', ['chatSocket', '$q', '$http', 'messageFactory', function TipChatService(chatSocket, $q, $http, message) {
-      var TipChat = {};
+    .factory('shChat', ['chatSocket', 'messageFactory', function (chatSocket, messageFactory) {
+      var chatService = {};
 
-      TipChat.getMessages = function (tip) {
-        return $http.get('/tip/messages', { params: { tipId: tip.objectId } })
-          .then(function (response) {
-            return reponse.data;
-          }, function (errResposne) {
-            return [];
-          });
+      chatService.onMessage = function (cb) {
+        chatSocket.on('new-message', cb);
       };
 
-      TipChat.sendMessage = function (tip, text) {
-        chatSocket.emit('message-sent', message({
 
-        }));
+
+      chatService.sendMessage = function (plainText, to, from, options) {
+        var message = messageFactory({
+          sender: from,
+          receiver: to,
+          message: plainText
+        });
+
+        for (var key in options) {
+          message[key] = options[key];
+        }
+
+        chatSocket.emit('message-sent', message);
       };
 
-      return TipChat;
-
+      return chatService
     }])
+    .factory('shTipChat', 'shChat', '$http', function (shChat, $http) {
+      var shTipChat = {};
+
+      shTipChat.messages = [];
+
+      return shTipChat;
+    })
     .factory('tipChatService', ['chatSocket', '$http', 'Session', 'ngToast', '$location', function (chatSocket, $http, Session, ngToast, $location) {
       var password = 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
 
@@ -71,10 +82,9 @@
           retrieveAll: function () {
             return $http.post(chatLogsUrl + '/retrieve', {
               password: password
-            })
-              .success(function (data) {
-                tipChatService.activeChats = angular.copy(data);
-              });
+            }).success(function (data) {
+              tipChatService.activeChats = angular.copy(data);
+            });
 
 
           },

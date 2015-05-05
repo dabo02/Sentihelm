@@ -5,10 +5,11 @@
   var router = express.Router();
   var tipModel = require('../models/tips');
   var util = require('../lib/util');
-  var Blob = require('blob');
+  var config = require('../config');
   var http = require('http');
   var fs = require('fs');
   var url = require('url');
+  var path = require('path');
   // hot fix, avoids buffer overflow. This is the maxium number value javascript can handle,
   // which in bytes is about a file the size of
   // for version v0.12.x of node.
@@ -23,6 +24,8 @@
       var tipId = request.params.tipId;
       var passPhrase;
       var uri, mime;
+
+      tipModel.setTipAsRead(tipId, request.session.user.username);
 
       tipModel.getById(tipId).spread(function (tip, tipUser) {
         if (!tip.smsId) {
@@ -72,7 +75,8 @@
             var filepath = '/temp/' + fileName + (mime === 'image/jpg' ? '.jpg' : (mime === 'video/mp4' ? '.mp4' : '.aac'));
 
             var decodedFile = new Buffer(decrypt, 'base64');
-            fs.writeFile('./public' + filepath, decodedFile, function (err) {
+            var saveFilePath = path.join(config.serverRoot, './public', filepath);
+            fs.writeFile(saveFilePath, decodedFile, function (err) {
               response.redirect(filepath);
               //response.sendfile(filepath, options);
               setTimeout(function () {
@@ -83,7 +87,7 @@
                     console.warn("Couldn't delete file");
                   }
                 });
-              }, 1 * 60 * 1000); // delete after one minute
+              }, 60 * 1000); // delete after one minute
             });
           });
         });
