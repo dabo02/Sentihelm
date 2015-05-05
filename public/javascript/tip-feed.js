@@ -33,73 +33,79 @@
       // and video from sentihelm.
       $httpProvider.defaults.timeout = 5000;
     }])
-    .factory('Tip', ['$http', 'ngDialog', '$log', '$q', '$location', 'tipSocket', function ($http, ngDialog, $log, $q, $location, tipSocket) {
+    .factory('Tip', ['$http', 'ngDialog', '$log', '$q', '$location', 'socket', function ($http, ngDialog, $log, $q, $location, socket) {
 
       var newTips = [];
 
-      tipSocket.on('new-tip', function (tipId) {
+      socket.on('new-tip', function (tipId) {
         newTips.push({
           tipId: tipId,
           date: new Date()
         });
+        tip.newTipCount += 1;
       });
 
-      return {
-        getTips: function (searchParams) {
-          return $http.get('/tips/list', {
-              params: searchParams
-            })
-            .then(function (response) { // success
-              var i;
-              for (i = newTips.length - 1; i > 0; i--) {
-                delete newTips[i];
-                newTips.pop()
-              }
-              return response.data;
-            }, function (errResponse) { // error
-              return $q.reject(errorResponse);
-            });
-        },
-        getTip: function (tipId) {
-          return $http.get('/tip/' + tipId)
-            .then(function (r) {
-              return r.data;
-            }, function (r) {
-              return $q.reject('couldn\'t retrieve tip, sorry. status: ' + r.status);
-            });
-        },
-        /**
-         * Returns an ngDialog with the requested media on a tip
-         * @param {String} type  The type of media 'VID', 'AUDIO', 'IMG'
-         * @param {[type]} tipId [description]
-         */
-        getMedia: function (type, tipId, showClose, $scope) {
-          var url = $location.protocol() + '://' + $location.host() + ':' + $location.port();
-          url += '/tip/' + tipId + '/media?type=' + type;
+      var tip = {};
 
-          var data = JSON.stringify({
-            attachmentType: type,
-            address: url
+      tip.newTipCount = 0;
+
+      tip.getTips = function (searchParams) {
+        return $http.get('/tips/list', {
+          params: searchParams
+        })
+          .then(function (response) { // success
+            tip.newTipCount = 0;
+            var i;
+            for (i = newTips.length - 1; i > 0; i--) {
+              delete newTips[i];
+              newTips.pop()
+            }
+            return response.data;
+          }, function (errResponse) { // error
+            return $q.reject(errorResponse);
           });
-
-          return ngDialog.open({
-            template: '../attachment-dialog.html',
-            className: 'ngdialog-attachment',
-            showClose: showClose,
-            scope: $scope,
-            data: data
-          });
-        },
-        getNewTips: function () {
-          return newTips;
-        }
-
       };
+      tip.getTip = function (tipId) {
+        return $http.get('/tip/' + tipId)
+          .then(function (r) {
+            return r.data;
+          }, function (r) {
+            return $q.reject('couldn\'t retrieve tip, sorry. status: ' + r.status);
+          });
+      };
+      /**
+       * Returns an ngDialog with the requested media on a tip
+       * @param {String} type  The type of media 'VID', 'AUDIO', 'IMG'
+       * @param {[type]} tipId [description]
+       */
+      tip.getMedia = function (type, tipId, showClose, $scope) {
+        var url = $location.protocol() + '://' + $location.host() + ':' + $location.port();
+        url += '/tip/' + tipId + '/media?type=' + type;
+
+        var data = JSON.stringify({
+          attachmentType: type,
+          address: url
+        });
+
+        return ngDialog.open({
+          template: '../attachment-dialog.html',
+          className: 'ngdialog-attachment',
+          showClose: showClose,
+          scope: $scope,
+          data: data
+        });
+      };
+
+      tip.getNewTips = function () {
+        return newTips;
+      };
+
+      return tip;
     }])
     .factory('tipSocket', ['socketFactory', '$location', function (socketFactory, $location) {
       var tipSocket = io.connect($location.host());
       return socketFactory({
-          ioSocket: tipSocket
+        ioSocket: tipSocket
       });
     }])
     .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location',
@@ -266,6 +272,14 @@
             //Attachment dialog is now showing
             self.attachmentDialogIsOn = true;
           }
+        };
+
+        self.loadNewTips = function () {
+          self.getPage(1);
+        };
+
+        self.count = function () {
+          return Tip.newTipCount;
         };
 
         self.getPage(self.currentPageNum);

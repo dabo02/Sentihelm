@@ -86,18 +86,6 @@
             });
       }
     })
-    .post('/new-tip', function (request, response) {
-      var tip = request.body;
-      var pass = tip.pass;
-      var clientId = tip.clientId;
-      if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
-        io.to(clientId).emit('new-tip', {
-          tip: tip,
-          clientId: clientId
-        });
-        response.send(200);
-      }
-    })
     //Recieve a request for a video stream connection;
     //get data form mobile client, save session info in
     //db and pass on to front-end

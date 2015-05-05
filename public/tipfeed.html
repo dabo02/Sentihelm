@@ -1,14 +1,23 @@
 <div class="container mid" ng-controller="TipFeedController as tipFeed">
   <a id="top"></a>
 
-<!--   <div id="newTips" class="tip-counter">
-  <span ng-if="tipFeed.newTips().newTips" ng-class="tipFeed.newTipClass()">{{tipFeed.newTips().howMany | "no"}} new tips available</span>
-</div> -->
-
   <h1 class="text-center">
     Tip Feed
   </h1>
   <br>
+
+  <div class="row">
+    <div class="tip-counter"
+         ng-class="{'disabled-counter':tipFeed.count()===0}"
+         ng-click="tipfeed.loadNewTips()">
+          <span ng-show="tipFeed.count()>0" class="col-md-12" ng-class="{'active-counter':tipFeed.count()>0}">
+            <span style="text-decoration: underline;" class="col-md-12">{{tipFeed.count()}} new tips available</span>
+          </span>
+          <span ng-hide="tipFeed.count()>0">
+            No new Tips available
+          </span>
+    </div>
+  </div>
 
   <div class="row">
     <div class="row-fluid">

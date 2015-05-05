@@ -614,10 +614,12 @@
     //works just like socket.io's client library
     app.factory('socket', function (socketFactory, $location) {
         //var ioSocket = io.connect('http://sentihelm.elasticbeanstalk.com');
-        var ioSocket = io.connect($location.host());
-        return socketFactory({
-            ioSocket: ioSocket
+
+        var socket = socketFactory({
+            ioSocket: io.connect($location.host())
         });
+
+        return socket;
     });
 
     //Creates an error delivering service that can
@@ -1410,8 +1412,8 @@
 
     //Controller for login dialog and login
     //landing page
-    app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', 'socket', 'ngDialog',
-        function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, socket, ngDialog) {
+    app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', '$window', 'ngDialog',
+        function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, $window, ngDialog) {
 
             var loginCtrl = this;
 
@@ -1456,6 +1458,7 @@
                         //Login was successful, create Session
                         Session.create(user, user.roles, client, regions);
                         // socket.emit('start-session');
+                        $window.location.reload();
                         Session.store(user, client);
                         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
                         loginCtrl.submitting = false;
