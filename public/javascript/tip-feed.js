@@ -285,13 +285,57 @@
         self.getPage(self.currentPageNum);
       }
     ])
-    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', function ($http, $stateParams, $scope, Tip) {
+    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', 'ngDialog', function ($http, $stateParams, $scope, Tip, ngDialog) {
       var self = this;
 
       self.tipError = null;
       self.tip = null;
       self.notificationDialogIsOn = false;
       self.attachmentDialogIsOn = false;
+
+      self.showSMSDialog = function () {
+        //ngDialog can only handle stringified JSONs
+        var data = JSON.stringify({
+          phoneNumber: self.tip.phone
+        });
+
+        //Open dialog and pass control to AttachmentController
+        $scope.SMSDialog = ngDialog.open({
+          template: '/sms-dialog.html',
+          className: 'ngdialog-theme-plain',
+          showClose: true,
+          scope: $scope,
+          data: data
+        });
+      };
+
+      self.showNotificationDialog = function (firstName, lastName, controlNumber, channel) {
+        //Only show dialog if it, and attachmentDialog,
+        //are not showing
+        if (!this.notificationDialogIsOn && !this.attachmentDialogIsOn) {
+          //ngDialog can only handle stringified JSONs
+          var data = JSON.stringify({
+            name: firstName + " " + lastName,
+            controlNumber: controlNumber,
+            channel: channel
+          });
+
+          //Open dialog, and add it to the $scope
+          //so it can identify itself once open
+          $scope.notificationDialog = ngDialog.open({
+            template: '/notification-dialog.html',
+            className: 'ngdialog-theme-plain',
+            closeByDocument: false,
+            closeByEscape: false,
+            scope: $scope,
+            data: data
+          });
+
+          //NotificationDialog is now showing
+          this.notificationDialogIsOn = true;
+        }
+      };
+
 
       self.showAttachmentDialog = function (type) {
         //Only show dialog if it, and notificationDialog,
