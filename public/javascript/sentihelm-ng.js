@@ -1596,16 +1596,14 @@
 
             //Increase counter of new tips in the drawer button. Display toast.
             socket.on('new-tip', function (data) {
-                if (data.clientId === Session.clientId) {
-                    drawer.newTips++;
-                    //Open toast
-                    ngToast.create({
-                        content: 'New tip received.',
-                        class: 'info'
-                    });
-                    drawer.sound.play();
-                    $scope.$apply();
-                }
+                drawer.newTips++;
+                //Open toast
+                ngToast.create({
+                    content: 'New tip received.',
+                    class: 'info'
+                });
+                drawer.sound.play();
+                $scope.$apply();
             });
 
             //Display toast for new stream
