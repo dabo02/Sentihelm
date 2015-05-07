@@ -1668,174 +1668,6 @@
         }
     }]);
 
-//Controller for the video-archive state
-
-
-app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', function ($scope, Session, socket, ngDialog, usSpinnerService, $location, $anchorScroll) {
-
-	var videoArchiveCtrl = this;
-	videoArchiveCtrl.videoArchiveArray;
-    videoArchiveCtrl.videoWatchStatuses = ['Watched', 'Unwatched', 'All'];
-    videoArchiveCtrl.videosAvailable = true;
-
-    //pagination variables
-    videoArchiveCtrl.currentPageNum = 1;
-    videoArchiveCtrl.lastPageNum;
-    videoArchiveCtrl.pageNumbers;
-    videoArchiveCtrl.limit = 10;
-    videoArchiveCtrl.skip;
-    videoArchiveCtrl.videoTotal;
-
-    videoArchiveCtrl.getPage = function(pageNum){
-
-        if(pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum){
-            return;
-        }
-
-        usSpinnerService.spin('loading-video-archive-spinner');
-        var parseSkipLimit = 10000;
-        videoArchiveCtrl.videoArchiveArray = [];
-        videoArchiveCtrl.currentPageNum = pageNum;
-        videoArchiveCtrl.skip = (videoArchiveCtrl.currentPageNum - 1) * videoArchiveCtrl.limit;
-
-        var VideoSession = Parse.Object.extend("VideoSession");
-        var videoArchiveQuery = new Parse.Query(VideoSession);
-        videoArchiveQuery.include('mobileUser', 'officerUser', 'lastWatcher');
-        videoArchiveQuery.containedIn('archiveStatus', ['uploaded','available']);
-        videoArchiveQuery.equalTo('client', {
-            __type: "Pointer",
-            className: "Client",
-            objectId: Session.clientId
-        });
-        videoArchiveQuery.descending("createdAt");
-
-        if(videoArchiveCtrl.videoDateFilter){
-             videoArchiveQuery.greaterThanOrEqualTo('createdAt', new Date(videoArchiveCtrl.videoDateFilter));
-        }
-
-        if(videoArchiveCtrl.watchStatusFilter && videoArchiveCtrl.watchStatusFilter != "All"){
-             if(videoArchiveCtrl.watchStatusFilter === "Watched"){
-                videoArchiveQuery.equalTo('hasBeenWatched', true);
-             }
-             else{
-                videoArchiveQuery.equalTo('hasBeenWatched', undefined);
-             }
-        }
-
-        //parse skip limit hack for fetching more than 11,001 records..
-        if(videoArchiveCtrl.skip > parseSkipLimit){
-            videoArchiveQuery.lessThanOrEqualTo("createdAt", videoArchiveCtrl.videoArchiveArray[videoArchiveCtrl.limit - 1].createdAt)
-            videoArchiveCtrl.skip = 0;
-        }
-
-        videoArchiveQuery.skip(videoArchiveCtrl.skip);
-        videoArchiveQuery.limit(videoArchiveCtrl.limit);
-        videoArchiveQuery.find({
-            success: function(videos) {
-                videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
-                if(videoArchiveCtrl.videoArchiveArray.length===0){
-                    videoArchiveCtrl.videosAvailable = false;
-                }
-                else{
-                    videoArchiveCtrl.videosAvailable = true;
-                }
-                usSpinnerService.stop('loading-video-archive-spinner');
-                //videoArchiveCtrl.lastPageNum = Math.ceil(videoArchiveCtrl.videoArchiveArray.length / 10);
-                $location.hash('top');
-                $anchorScroll();
-            },
-            error: function(object, error) {
-                // The object was not retrieved successfully.
-                console.log("Error fetching video archive.");
-            }
-        });
-
-        videoArchiveQuery.count({
-            success: function(count) {
-                videoArchiveCtrl.lastPageNum = Math.ceil(count/10);
-                videoArchiveCtrl.videoTotal = count;
-            },
-            error: function(object, error) {
-                // The object was not retrieved successfully.
-                console.log("Error counting video archives.");
-            }
-        }).then(function(){
-            videoArchiveCtrl.refreshPageNumbers();
-        });
-    }
-
-    videoArchiveCtrl.refreshPageNumbers = function(){
-
-        var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / videoArchiveCtrl.limit);
-        var firstNum =  videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0 ? (baseNum - 1) * videoArchiveCtrl.limit + 1 : baseNum  * videoArchiveCtrl.limit + 1;
-        var lastNum = 0;
-
-        if(videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0){
-            lastNum = videoArchiveCtrl.currentPageNum;
-        }
-        else if(baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit > videoArchiveCtrl.lastPageNum){
-            lastNum = videoArchiveCtrl.lastPageNum;
-        }
-        else{
-            lastNum = baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit;
-        }
-
-        videoArchiveCtrl.pageNumbers = [];
-
-        for(var i = 0, j = firstNum; j <= lastNum; i++, j++){
-            videoArchiveCtrl.pageNumbers[i] = j;
-        }
-    }
-
-	videoArchiveCtrl.showVideo = function(video){
-
-        AWS.config.update({accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q', secretAccessKey: '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'});
-        AWS.config.region = 'us-east-1';
-        var s3 = new AWS.S3();
-
-        // This URL will expire in one minute (60 seconds)
-        var params = {Bucket: 'stream-archive', Key: '44755992/' + video.attributes.archiveId + '/archive.mp4', Expires: 500};
-        var videoUrl = s3.getSignedUrl('getObject', params);
-
-		//ngDialog can only handle stringified JSONs
-		var data = JSON.stringify({
-			attachmentType: 'VID',
-			address: videoUrl
-		});
-
-		//Open dialog and pass control to AttachmentController
-		$scope.attachmentDialog = ngDialog.open({
-			template: '../attachment-dialog.html',
-			className: 'ngdialog-attachment',
-			showClose: true,
-			scope: $scope,
-			data: data
-		});
-
-		//Update VideoSession's lastWatcher
-		var VideoSession = Parse.Object.extend("VideoSession");
-        var videoSessionQuery = new Parse.Query(VideoSession);
-        videoSessionQuery.get(video.id, {
-            success: function(videoSession) {
-                videoSession.set('hasBeenWatched', true);
-                videoSession.set('lastWatcher', {
-                  __type: "Pointer",
-                  className: "User",
-                  objectId: Session.userId
-                });
-                videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
-            },
-            error: function(object, error) {
-                // The object was not retrieved successfully.
-                console.log("Error fetching video for lastWatcher update.");
-            }
-        });
-	}
-
-	videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
-
-}]);
-
 //Controller for VideStreams route; controls
 //the video streams view, which contains queue,
 //current video, chat with current mobile client,
@@ -2109,8 +1941,8 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
-    app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session',
-        function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session) {
+    app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session', '$http',
+        function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session, $http) {
             //Get data from ngDialog directive
             this.phone = $scope.$parent.ngDialogData.phoneNumber;
             // this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -2145,19 +1977,21 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
                 //Toggle sending animation
                 this.sending = true;
 
-                Parse.Cloud.run('sendSMS', {
+                var data = {
                     To: this.phone,
                     From: Session.clientPhoneNumber,
                     Body: this.message
-                }, {
-                    success: function (result) {
-                        $rootScope.$broadcast('sms-success');
-                    },
-                    error: function (error) {
-                        console.log('Error: ' + error.message);
-                        smsCtrl.sending = false;
-                    }
-                });
+                };
+
+                $http.post('/sendSMS', data)
+                  .success(function(data){
+                      $rootScope.$broadcast('sms-success');
+                  })
+                  .error(function(error){
+                      console.log('Error: ' + error.message);
+                      smsCtrl.sending = false;
+
+                  });
             };
 
             //SMS was successfully saved and sent
@@ -2807,7 +2641,6 @@ app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDial
             $http.post('/users/decrypt', data)
               .success(function(data){
                   adminPanelCtrl.editedUser = angular.copy(data);
-                  adminPanelCtrl.editedUser.zipCode = parseInt(adminPanelCtrl.editedUser.zipCode, 10);
               })
               .error(function(err){
                   adminPanelCtrl.successMessage = err;

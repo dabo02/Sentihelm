@@ -60,7 +60,7 @@
                         <p ng-show="adminPanelCtrl.usersAvailable">Showing {{adminPanelCtrl.skip + 1}} - {{adminPanelCtrl.skip + 10 > adminPanelCtrl.userTotal ? adminPanelCtrl.userTotal : adminPanelCtrl.skip + 10}} of {{adminPanelCtrl.userTotal}} Users</p>
                     </div>
                     <!--Show if NO video archives are available -->
-                    <div ng-if="!adminPanelCtrl.usersAvailable">
+                    <div ng-show="!adminPanelCtrl.usersAvailable">
                         <h2 class="text-center">No Records Found</h2>
                         <h3 class="text-center">Try a different filter or refresh your browser</h3>
                     </div>

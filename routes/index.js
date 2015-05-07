@@ -43,8 +43,24 @@
         user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
         user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
         user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
-        user.attributes.zipCode = parseInt(util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64), 10);
-        user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+        user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
+        //user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+
+        if(user.attributes.state){
+          user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+        }
+
+        if(user.attributes.addressLine1){
+          user.attributes.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
+        }
+
+        if(user.attributes.addressLine2){
+          user.attributes.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
+        }
+
+        if(user.attributes.city){
+          user.attributes.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
+        }
 
         req.session.regenerate(function (err) {
           if (err) {
@@ -247,6 +263,19 @@
       error: function (object, error) {
         // The object was not retrieved successfully.
         console.log("Error fetching video for archive ID update on Opentok callback.");
+      }
+    });
+
+  })
+
+  //send sms message using cloud code
+  .post('/sendSMS', function (request, response) {
+    db.Cloud.run('sendSMS', request.body, {
+      success: function (result) {
+        response.send(200);
+      },
+      error: function (error) {
+        response.send(401);
       }
     });
 
