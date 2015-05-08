@@ -71,3 +71,15 @@
     top: 300px;
     width: 100%;
 }
+
+/***TIP HEAD***/
+.video-archive-entry-header{
+    width:100%;
+    height:10%;
+    background-color:#4d4d4d;
+    text-align:center;
+}
+.video-archive-entry-header span{
+    display:inline-block;
+    margin-top:0.5em;
+}
