@@ -29,46 +29,42 @@
           ioSocket: io.connect(server + namespace) // connect to chat server
         });
 
-      function onInit() {
-        socket.emit('start', {
-          username: Session.user.username,
-          role: 'admin'
-        });
-      }
-
-      socket.on('init', onInit);
-
       return socket;
     }])
-    .factory('shChat', ['chatSocket', 'messageFactory', function (chatSocket, messageFactory) {
-      var chatService = {};
-
-      chatService.onMessage = function (cb) {
-        chatSocket.on('new-message', cb);
-      };
-
-
-
-      chatService.sendMessage = function (plainText, to, from, options) {
-        var message = messageFactory({
-          sender: from,
-          receiver: to,
-          message: plainText
-        });
-
-        for (var key in options) {
-          message[key] = options[key];
-        }
-
-        chatSocket.emit('message-sent', message);
-      };
-
-      return chatService
-    }])
-    .factory('shTipChat', 'shChat', '$http', function (shChat, $http) {
+    .factory('shTipChat', 'chatSocket', '$http', function (chatSocket, $http) {
       var shTipChat = {};
 
-      shTipChat.messages = [];
+      var messages = [];
+      var inChat = false;
+      
+      shTipChat.messages = function () {
+        return messages;
+      };
+
+      shTipChat.sendMessage = function (tip, message) {
+        if (inChat) {
+          chatSocket.emit('new-message', {
+            
+          });
+        }
+      };
+
+      shTipChat.startChat = function (tipId) {
+        chatSocket.emit('start', {
+          tipId: tipId
+        });
+        chatSocket.on('new-message', function (data) {
+          
+        });
+        inChat = true;
+      };
+      
+      shTipChat.stopChat = function (tipId) {
+        chatSocket.emit('stop', {
+          tipId: tipId
+        });
+        inChat = false;
+      }
 
       return shTipChat;
     })

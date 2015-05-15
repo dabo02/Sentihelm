@@ -25,8 +25,7 @@
         var answer = [];
 
         answer.push(user);
-        // fixes serialization issue.
-        answer.push(client.attributes);
+        answer.push(client.toJSON());
         answer.push(client.get('regions'));
         res.send(200, answer);
       }

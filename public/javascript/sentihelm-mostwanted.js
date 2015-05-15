@@ -225,17 +225,29 @@
         this.disableNewButton = false;
         this.editedPeopleIndices = [];
 
-        function getList() {
+        function getList(count) {
+          count = count|0;
           // Request most wanted list from Parse
           // Receive the most wanted list from the Most Wanted
           // service
           MostWantedService.fetchMostWantedList()
             .then(function (list) {
-              MostWantedCtrl.wantedArray = angular.copy(list);
+              // make sure the list is an Array of elements and that it has a length,
+              // otherwise try again.
+              list = list instanceof Array ? list : [];
+              if (list.length >= 1) {
+                MostWantedCtrl.wantedArray = angular.copy(list);
 
-              MostWantedCtrl.disableNewButton = false;
-              MostWantedCtrl.editedPeopleIndices = [];
-              MostWantedCtrl.parseArrayLength = list.length;
+                MostWantedCtrl.disableNewButton = false;
+                MostWantedCtrl.editedPeopleIndices = [];
+                MostWantedCtrl.parseArrayLength = list.length;
+              } else {
+                // list was delivered blank, let's try fetching it again,
+                // at a maximum of 10 times.
+                if (count < 10) {
+                  getList(count+1);
+                }
+              }
             });
         }
 

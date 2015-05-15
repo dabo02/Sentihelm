@@ -58,6 +58,7 @@
     var mostwanted = require('./routes/most-wanted');
     var policeStations = require('./routes/police-stations');
     var dataAnalysis = require('./routes/data-analysis');
+    var notifications = require('./routes/notifications');
 
     app
       .use(routes)
@@ -66,7 +67,8 @@
       .use('/tips', tips)
       .use('/stations', policeStations)
       .use('/mostwanted', mostwanted)
-      .use('/analyze', dataAnalysis);
+      .use('/analyze', dataAnalysis)
+      .use('/notifications', notifications);
 
     app.post('/new-tip', function (request, response) {
       var tip = request.body;
