@@ -8,19 +8,6 @@
   'use strict';
 
   angular.module('sentihelm')
-    .factory('messageFactory', ['Session', function (Session) {
-      return function (messageData) {
-        if (!messageData.receiver) {
-          throw Error("No receiver set, please do so.");
-        }
-        return {
-          sender: messageData.sender || Session.user.objectId,
-          receiver: messageData.receiver || undefined,
-          message: messageData.message || undefined,
-          dateTime: Date.now()
-        };
-      };
-    }])
     .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 
       var namespace = '/chat/' + Session.clientId,
@@ -31,271 +18,352 @@
 
       return socket;
     }])
-    .factory('shTipChat', 'chatSocket', '$http', function (chatSocket, $http) {
-      var shTipChat = {};
+    // Service that manages the nitty gritty
+    .factory('shChat', ['chatSocket', '$q', 'Session', function (chatSocket, $q, Session) {
 
-      var messages = [];
-      var inChat = false;
-      
-      shTipChat.messages = function () {
-        return messages;
-      };
+      // Memory store for the connected rooms.
+      var connectedRooms = {};
 
-      shTipChat.sendMessage = function (tip, message) {
-        if (inChat) {
-          chatSocket.emit('new-message', {
-            
-          });
-        }
-      };
+      // Listen for new messages on joined rooms.
+      chatSocket.on('new-message', function (message, chatId) {
+        connectedRooms[chatId].push(message);
+      });
 
-      shTipChat.startChat = function (tipId) {
-        chatSocket.emit('start', {
-          tipId: tipId
-        });
-        chatSocket.on('new-message', function (data) {
-          
-        });
-        inChat = true;
-      };
-      
-      shTipChat.stopChat = function (tipId) {
-        chatSocket.emit('stop', {
-          tipId: tipId
-        });
-        inChat = false;
-      }
-
-      return shTipChat;
-    })
-    .factory('tipChatService', ['chatSocket', '$http', 'Session', 'ngToast', '$location', function (chatSocket, $http, Session, ngToast, $location) {
-      var password = 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
-
-        chatLogsUrl = '/chat-logs/' + Session.clientId,
-
-        tipChatService = {
-          activeChats: [],
-          retrieveAll: function () {
-            return $http.post(chatLogsUrl + '/retrieve', {
-              password: password
-            }).success(function (data) {
-              tipChatService.activeChats = angular.copy(data);
-            });
-
-
-          },
-          addTipToQueue: function (tipId, id) {
-            return $http.post(chatLogsUrl + '/add', {
-              password: password,
-              tipId: tipId,
-              userObjectId: id
-            })
-              .then(function (dd) {
-                return dd.data;
-              });
-          }
-        };
-
-      tipChatService.retrieveAll();
-
-      function onNewRoom() {
-        var found = false,
-          tipId = arguments[3];
-        if (tipId != undefined) {
-          tipChatService.activeChats.forEach(function (activeChat) {
-            if (activeChat.tipObjectId === tipId) {
-              found = true;
-            }
-          });
-
-          if (!found) {
-            ngToast.create("A new room has been added!");
-          }
-        }
-      }
-
-      function onNewMessage(data) {
-        if (data.tipId && data.sender !== Session.user.objectId && $location.path() !== '/tip-chat-logs') {
-          ngToast.create("New message");
-        }
-      }
-
-      chatSocket.on('new-room', onNewRoom);
-      chatSocket.on('new-message', onNewMessage);
-
-      return tipChatService;
-    }])
-    .controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', 'messageFactory',
-      function (chatSocket, Session, $rootScope, $location, $anchorScroll, messageFactory) {
-        var self = this;
-        self.message = '';
-        self.rooms = {};
-        self.currentRoom = '';
-        self.receiver = '';
-        self.canSend = false;
-
-        // Private
-        function getUserName(id) {
-          var username = '';
-
-          Object.keys(self.rooms)
-            .forEach(function (room) {
-              var currentRoom = self.rooms[room];
-              if (currentRoom.with.id === id) {
-                username = currentRoom.with.username;
-              }
-            });
-
-          return username;
-
-        }
-
-        // Priavate
-        function getRoom(username, id) {
-          var prop = username ? 'username' : (id ? 'id' : undefined),
-            roomName = '',
-            comparative = username || id || undefined;
-
-          if (prop && comparative) {
-            Object.keys(self.rooms)
-              .forEach(function (room) {
-                var currentRoom = self.rooms[room];
-                if (currentRoom.with[prop] === comparative) {
-                  roomName = room;
-                }
-              });
-            return roomName;
-          }
-
-          return undefined;
-        }
-
-        // Private
-
-
-        // Private
-        function onConnectionSuccess() {
-          console.log('We are connected to chat server');
-        }
-
-        // Private
-        function onDeleteStream(event, id) {
-          var roomName = getRoom(undefined, id);
-          self.message = '';
-          if (self.rooms.hasOwnProperty(roomName) &&
-            self.rooms[roomName].messages.length > 0) {
-            self.save(id);
-          }
-        }
-
-        // Public
-        self.send = function () {
-
-          try {
-            chatSocket.emit('message-sent', messageFactory({
-              receiver: self.receiver,
-              message: self.message
-            }));
-          } catch (e) {
-            console.log(e.message);
-            self.rooms[getRoom(undefined, self.receiver)].messages.push({
-              dateTime: Date.now(),
-              message: e.message
-            });
-          }
-
-          self.message = '';
-        };
-
-        // Public
-        self.onNewRoom = function (room, username, id) {
-          self.rooms[room] = {
-            with: {
-              username: username,
-              id: id
-            },
+      return {
+        // Join a room that is listening to messages on the specified chat id.
+        enterChat: function (chatId) {
+          connectedRooms[chatId] = {
             messages: []
           };
-        };
+          chatSocket.emit('officer-enter-chat', chatId);
+        },
 
-        // Public
-        self.onNewMessage = function (data) {
-          var sender = data.sender,
-            receiver = data.receiver,
-            message = data.message,
-            dateTime = data.dateTime,
-            messageObject = {
-              from: '',
-              fromMe: false,
-              message: message,
-              dateTime: dateTime
-            },
-            username,
-            room;
+        // Leave a room listening for messages on a specific chat.
+        leaveChat: function (chatId) {
+          delete connectedRooms[chatId];
+          chatSocket.emit('officer-leave-chat', chatId);
+        },
 
-          if (sender == Session.user.objectId) {
-            messageObject.from = Session.user.username;
-            messageObject.fromMe = true;
+        // Send a message to all users listening to a chat identified by a specific id.
+        send: function (message, chatId, receiver) {
+          chatSocket.emit('message-sent', {
+            receiver: receiver,
+            message: message,
+            sender: null
+          }, chatId);
 
-            username = getUserName(receiver);
-          } else {
-            username = getUserName(sender);
-            messageObject.from = username;
-          }
-
-          messageObject.id = 'm' + Math.round(Math.random() * 1000 + 1 + Date.now());
-
-          room = getRoom(username);
-
-          this.rooms[room].messages.push(messageObject);
-
-          if (room === self.currentRoom) {
-            $location.hash(messageObject.id);
-            $anchorScroll();
-          }
-        };
-
-        // Public
-        self.changeRoom = function (id) {
-          var room = getRoom(undefined, id);
-
-          if (room) {
-            self.receiver = self.rooms[room].with.id;
-            self.canSend = true;
-
-            if (self.currentRoom !== room) {
-              chatSocket.emit('change-room', room);
-              self.currentRoom = room;
-              $location.hash('chat-bottom');
-              $anchorScroll();
-            }
-
-          } else {
-            // TODO implement method that requests a chat with a user if not already chatting.
-            //self.requestChat(username);
-            self.canSend = false;
-            self.currentRoom = '';
-          }
-        };
-
-        // Public
-        self.save = function (id) {
-          // TODO SAVE
-          var room = getRoom(undefined, id);
-
-          // remove room from memory
-          delete self.rooms[room];
-          self.canSend = false;
-        };
-
-        chatSocket.emit('change-space', 'video-streams');
-
-        chatSocket.on('successful-connect', onConnectionSuccess);
-        $rootScope.$on('delete-stream', onDeleteStream);
-        chatSocket.on('new-message', self.onNewMessage);
-        chatSocket.on('new-room', self.onNewRoom);
+        },
+        messages: function (chatId) {
+          return connectedRooms[chatId].messages;
+        }
       }
-    ]);
+    }])
+    // Custom directive for containing a chat. The only requirement is to pass in a string to identify the chat. This gets used internally in the system
+    .directive('shChatterbox', ['shChat', function (shChat) {
+      return {
+        restrict: 'E',
+        scope: {
+          chatId: '@',
+          mobileUserId: '@'
+        },
+        templateUrl: '/chat-template.html',
+        link: function ($scope) {
+          $scope.chatEnabled = false;
+
+          //
+          $scope.sendMessage = function () {
+            shChat.send($scope.messageText);
+            $scope.messageText = '';
+          };
+
+          // Get all messages for a this chat.
+          $scope.messages = function () {
+            return shChat.messages($scope.chatId);
+          };
+
+
+          shChat.enterChat($scope.chatId);
+        }
+      }
+    }]);
+    //.factory('messageFactory', ['Session', function (Session) {
+    //  return function (messageData) {
+    //    if (!messageData.receiver) {
+    //      throw Error("No receiver set, please do so.");
+    //    }
+    //    return {
+    //      sender: messageData.sender || Session.user.objectId,
+    //      receiver: messageData.receiver || undefined,
+    //      message: messageData.message || undefined,
+    //      dateTime: Date.now()
+    //    };
+    //  };
+    //}])
+    //.factory('shTipChat', 'chatSocket', '$http', function (chatSocket, $http) {
+    //  var shTipChat = {};
+    //
+    //  var messages = [];
+    //  var inChat = false;
+    //
+    //  shTipChat.messages = function () {
+    //    return messages;
+    //  };
+    //
+    //  shTipChat.sendMessage = function (tip, message) {
+    //    if (inChat) {
+    //      chatSocket.emit('new-message', {
+    //
+    //      });
+    //    }
+    //  };
+    //
+    //  shTipChat.startChat = function (tipId) {
+    //    chatSocket.emit('start', {
+    //      tipId: tipId
+    //    });
+    //    chatSocket.on('new-message', function (data) {
+    //
+    //    });
+    //    inChat = true;
+    //  };
+    //
+    //  shTipChat.stopChat = function (tipId) {
+    //    chatSocket.emit('stop', {
+    //      tipId: tipId
+    //    });
+    //    inChat = false;
+    //  };
+    //
+    //  return shTipChat;
+    //})
+    //.factory('tipChatService', ['chatSocket', '$http', 'Session', 'ngToast', '$location', function (chatSocket, $http, Session, ngToast, $location) {
+    //  var password = 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
+    //
+    //    chatLogsUrl = '/chat-logs/' + Session.clientId,
+    //
+    //    tipChatService = {
+    //      activeChats: [],
+    //      retrieveAll: function () {
+    //        return $http.post(chatLogsUrl + '/retrieve', {
+    //          password: password
+    //        }).success(function (data) {
+    //          tipChatService.activeChats = angular.copy(data);
+    //        });
+    //
+    //
+    //      },
+    //      addTipToQueue: function (tipId, id) {
+    //        return $http.post(chatLogsUrl + '/add', {
+    //          password: password,
+    //          tipId: tipId,
+    //          userObjectId: id
+    //        })
+    //          .then(function (dd) {
+    //            return dd.data;
+    //          });
+    //      }
+    //    };
+    //
+    //  tipChatService.retrieveAll();
+    //
+    //  function onNewRoom() {
+    //    var found = false,
+    //      tipId = arguments[3];
+    //    if (tipId != undefined) {
+    //      tipChatService.activeChats.forEach(function (activeChat) {
+    //        if (activeChat.tipObjectId === tipId) {
+    //          found = true;
+    //        }
+    //      });
+    //
+    //      if (!found) {
+    //        ngToast.create("A new room has been added!");
+    //      }
+    //    }
+    //  }
+    //
+    //  function onNewMessage(data) {
+    //    if (data.tipId && data.sender !== Session.user.objectId && $location.path() !== '/tip-chat-logs') {
+    //      ngToast.create("New message");
+    //    }
+    //  }
+    //
+    //  chatSocket.on('new-room', onNewRoom);
+    //  chatSocket.on('new-message', onNewMessage);
+    //
+    //  return tipChatService;
+    //}])
+    //.controller('ChatController', ['chatSocket', 'Session', '$rootScope', '$location', '$anchorScroll', 'messageFactory',
+    //  function (chatSocket, Session, $rootScope, $location, $anchorScroll, messageFactory) {
+    //    var self = this;
+    //    self.message = '';
+    //    self.rooms = {};
+    //    self.currentRoom = '';
+    //    self.receiver = '';
+    //    self.canSend = false;
+    //
+    //    // Private
+    //    function getUserName(id) {
+    //      var username = '';
+    //
+    //      Object.keys(self.rooms)
+    //        .forEach(function (room) {
+    //          var currentRoom = self.rooms[room];
+    //          if (currentRoom.with.id === id) {
+    //            username = currentRoom.with.username;
+    //          }
+    //        });
+    //
+    //      return username;
+    //
+    //    }
+    //
+    //    // Priavate
+    //    function getRoom(username, id) {
+    //      var prop = username ? 'username' : (id ? 'id' : undefined),
+    //        roomName = '',
+    //        comparative = username || id || undefined;
+    //
+    //      if (prop && comparative) {
+    //        Object.keys(self.rooms)
+    //          .forEach(function (room) {
+    //            var currentRoom = self.rooms[room];
+    //            if (currentRoom.with[prop] === comparative) {
+    //              roomName = room;
+    //            }
+    //          });
+    //        return roomName;
+    //      }
+    //
+    //      return undefined;
+    //    }
+    //
+    //    // Private
+    //
+    //
+    //    // Private
+    //    function onConnectionSuccess() {
+    //      console.log('We are connected to chat server');
+    //    }
+    //
+    //    // Private
+    //    function onDeleteStream(event, id) {
+    //      var roomName = getRoom(undefined, id);
+    //      self.message = '';
+    //      if (self.rooms.hasOwnProperty(roomName) &&
+    //        self.rooms[roomName].messages.length > 0) {
+    //        self.save(id);
+    //      }
+    //    }
+    //
+    //    // Public
+    //    self.send = function () {
+    //
+    //      try {
+    //        chatSocket.emit('message-sent', messageFactory({
+    //          receiver: self.receiver,
+    //          message: self.message
+    //        }));
+    //      } catch (e) {
+    //        console.log(e.message);
+    //        self.rooms[getRoom(undefined, self.receiver)].messages.push({
+    //          dateTime: Date.now(),
+    //          message: e.message
+    //        });
+    //      }
+    //
+    //      self.message = '';
+    //    };
+    //
+    //    // Public
+    //    self.onNewRoom = function (room, username, id) {
+    //      self.rooms[room] = {
+    //        with: {
+    //          username: username,
+    //          id: id
+    //        },
+    //        messages: []
+    //      };
+    //    };
+    //
+    //    // Public
+    //    self.onNewMessage = function (data) {
+    //      var sender = data.sender,
+    //        receiver = data.receiver,
+    //        message = data.message,
+    //        dateTime = data.dateTime,
+    //        messageObject = {
+    //          from: '',
+    //          fromMe: false,
+    //          message: message,
+    //          dateTime: dateTime
+    //        },
+    //        username,
+    //        room;
+    //
+    //      if (sender == Session.user.objectId) {
+    //        messageObject.from = Session.user.username;
+    //        messageObject.fromMe = true;
+    //
+    //        username = getUserName(receiver);
+    //      } else {
+    //        username = getUserName(sender);
+    //        messageObject.from = username;
+    //      }
+    //
+    //      messageObject.id = 'm' + Math.round(Math.random() * 1000 + 1 + Date.now());
+    //
+    //      room = getRoom(username);
+    //
+    //      this.rooms[room].messages.push(messageObject);
+    //
+    //      if (room === self.currentRoom) {
+    //        $location.hash(messageObject.id);
+    //        $anchorScroll();
+    //      }
+    //    };
+    //
+    //    // Public
+    //    self.changeRoom = function (id) {
+    //      var room = getRoom(undefined, id);
+    //
+    //      if (room) {
+    //        self.receiver = self.rooms[room].with.id;
+    //        self.canSend = true;
+    //
+    //        if (self.currentRoom !== room) {
+    //          chatSocket.emit('change-room', room);
+    //          self.currentRoom = room;
+    //          $location.hash('chat-bottom');
+    //          $anchorScroll();
+    //        }
+    //
+    //      } else {
+    //        // TODO implement method that requests a chat with a user if not already chatting.
+    //        //self.requestChat(username);
+    //        self.canSend = false;
+    //        self.currentRoom = '';
+    //      }
+    //    };
+    //
+    //    // Public
+    //    self.save = function (id) {
+    //      // TODO SAVE
+    //      var room = getRoom(undefined, id);
+    //
+    //      // remove room from memory
+    //      delete self.rooms[room];
+    //      self.canSend = false;
+    //    };
+    //
+    //    chatSocket.emit('change-space', 'video-streams');
+    //
+    //    chatSocket.on('successful-connect', onConnectionSuccess);
+    //    $rootScope.$on('delete-stream', onDeleteStream);
+    //    chatSocket.on('new-message', self.onNewMessage);
+    //    chatSocket.on('new-room', self.onNewRoom);
+    //  }
+    //]);
   /* .controller('TipChatController', ['$scope', '$controller', 'tipChatService', 'chatSocket', 'Session', '$location', '$anchorScroll', 'messageFactory', '$timeout', '$state',
    function ($scope, $controller, tipChatService, chatSocket, Session, $location, $anchorScroll, messageFactory, $timeout, $state) {
    var self = this;

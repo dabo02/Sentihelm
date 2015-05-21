@@ -269,3 +269,15 @@ module.exports.addNewOfficer = function(officerData, clientId) {
     });
   });
 };
+
+module.exports.getUsername = function (objectId) {
+  return Q.Promise(function (resolve, reject) {
+    new db.Query(User)
+      .get(objectId)
+      .then(function (user) {
+        resolve(user.get('username'));
+      }, function (reason) {
+        reject(reason);
+      });
+  });
+};
