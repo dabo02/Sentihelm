@@ -234,12 +234,7 @@
         }]);
     }]);
 
-    //Initialize values needed throughout the app
-    app.run(function () {
-        //Initialize Parse
-        //Parse.initialize("csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd", "T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor");
-        Parse.initialize("ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL", "oC7TEezvGdh3FTZJneATR23UN47E9uAO7rzstK6A");
-    });
+
 
     //Autorhization events for log in functionality
   app.constant('AUTH_EVENTS', {
