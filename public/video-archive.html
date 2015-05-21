@@ -60,7 +60,7 @@
 
 					<!------NAME------>
         <span class="user" ng-class="{orange:!video.hasBeenWatched, white:video.hasBeenWatched}">
-          {{video.mobileUser.attributes.username}}
+          {{video.mobileUser}}
         </span>
 
 					<!------CONTROL NUMBER------>
@@ -101,8 +101,8 @@
 											{{video.hasBeenWatched ? 'Watched' : 'Un-watched'}}
 										</h2>
 									</div><br>
-									<div class="row"><em>Watched Live By:</em> {{video.officerUser.attributes.username}}</div>
-									<div class="row"><em>Last Watched By:</em> {{video.lastWatcher.attributes.username}}</div>
+									<div class="row"><em>Watched Live By:</em> {{video.officerUser}}</div>
+									<div class="row"><em>Last Watched By:</em> {{video.lastWatcher}}</div>
 									<div class="row" ng-if="video.duration>=60"><em>Stream Duration:</em> {{video.duration / 60 | number : 2}} {{video.duration / 60 == 1 ? ' minute' : ' minutes'}}
 									</div>
 									<div class="row" ng-if="video.duration<60"><em>Stream Duration:</em> {{video.duration}} {{video.duration == 1 ? ' second' : ' seconds'}}

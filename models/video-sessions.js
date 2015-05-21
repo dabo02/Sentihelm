@@ -22,8 +22,9 @@
       var lastVideoCreatedAt = data.lastVideoCreatedAt;
       var parseSkipLimit = 10000;
       
-      videoSessionQuery.include('mobileUser', 'officerUser', 'lastWatcher');
-      videoSessionQuery.containedIn('archiveStatus', ['uploaded','available']);
+      //videoSessionQuery.include('mobileUser', 'officerUser', 'lastWatcher');
+      //videoSessionQuery.include('mobileUser').include('officerUser').include('lastWatcher');
+      videoSessionQuery.containedIn('archiveStatus','uploaded','available');
       videoSessionQuery.equalTo('client', {
         __type: "Pointer",
         className: "Client",
@@ -57,6 +58,12 @@
         success: function(videos) {
           videoSessionQuery.count({
             success: function(count) {
+              videos.forEach(function(video){
+                video.mobileUser = video.attributes.mobileUser.attributes.username;
+                video.officerUser = video.attributes.officerUser.attributes.username;
+                video.lastWatcher = video.attributes.lastWatcher.attributes.username;
+
+              });
               var lastPageNum = Math.ceil(count/10);
               var data = {
                 videos: videos,

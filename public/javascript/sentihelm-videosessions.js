@@ -99,7 +99,7 @@
         var s3 = new AWS.S3();
 
         // This URL will expire in one minute (60 seconds)
-        var params = {Bucket: 'stream-archive', Key: '44755992/' + video.attributes.archiveId + '/archive.mp4', Expires: 500};
+        var params = {Bucket: 'stream-archive', Key: '44755992/' + video.archiveId + '/archive.mp4', Expires: 500};
         var videoUrl = s3.getSignedUrl('getObject', params);
 
         //ngDialog can only handle stringified JSONs
