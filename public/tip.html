@@ -102,4 +102,8 @@
     </div>
   </div>
   <!-- END TIP -->
+
+  <div id="chat" ng-show="!tipCtrl.tip.anonymous">
+    <sh-chatterbox chat-id="{{tipCtrl.tip.objectId}}" mobile-user-id="{{tipCtrl.tip.objectId}}"></sh-chatterbox>
+  </div>
 </div>

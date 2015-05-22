@@ -1,83 +1,57 @@
 <div class="container" ng-controller="VideoStreamsController as videoStreamsCtrl">
-    <div ng-controller="ChatController as chat">
-        <div id="video-streams-container" ng-if="videoStreamsCtrl.queue.length!=0">
 
-            <div id="video-streams-queue">
+    <div id="video-streams-container" ng-if="videoStreamsCtrl.queue.length!=0">
 
-                <ul class="video-streams-queue-list">
+        <div id="video-streams-queue">
 
-                    <li class="video-streams-queue-list-item"
-                        ng-repeat="stream in videoStreamsCtrl.queue track by $index">
-                        <button class="list-item-button"
-                                ng-click="videoStreamsCtrl.activateStream(stream); chat.changeRoom(stream.userObjectId)">
-                            {{stream.firstName+" "+stream.lastName}}
-                        </button>
-                    </li>
+            <ul class="video-streams-queue-list">
 
-                </ul>
+                <li class="video-streams-queue-list-item"
+                    ng-repeat="stream in videoStreamsCtrl.queue track by $index">
+                    <button class="list-item-button"
+                            ng-click="videoStreamsCtrl.activateStream(stream)">
+                        {{stream.firstName+" "+stream.lastName}}
+                    </button>
+                </li>
 
-            </div>
-
-            <div id="video-streams-video-container">
-                <div id="video-streams-video">
-
-                </div>
-            </div>
-            <form name="messageForm" novalidate>
-                <div id="video-streams-chat">
-                    <div id="video-streams-chat-log">
-                        <div ng-repeat="message in chat.rooms[chat.currentRoom].messages"
-                             ng-class="{sent: message.fromMe}"
-                             id="{{message.id}}"
-                             class="message">
-                            <span class="message-heading"><em>{{message.from}}</em> at {{message.dateTime | date:'short'}}</span>
-
-                            <p class="chat-message">
-                                - {{message.message}}
-                            </p>
-                        </div>
-                        <a id="chat-bottom"></a>
-                    </div>
-
-                    <div id="video-streams-chat-controls">
-                        <input name="message" ng-model="chat.message"
-                               type="text" minlength="1" required
-                               id="message-box"
-                               ng-disabled="!chat.canSend"
-                               placeholder="Enter message here..."/>
-                        <button ng-disabled="!chat.canSend" type="submit" ng-click="messageForm.$valid && chat.send()"
-                                class="send">Send
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-
-            <div id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
-                <ui-gmap-google-map
-                        center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"
-                        zoom="mapCtrl.zoom" draggable="true" ng-if="videoStreamsCtrl.currentStream" ng-cloak>
-                    <ui-gmap-marker idKey="videoStreamsCtrl.currentStream.connectionId"
-                                    coords="mapCtrl.getMarkerPosition({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"></ui-gmap-marker>
-                </ui-gmap-google-map>
-            </div>
-
-            <div id="video-streams-info-container">
-                <div id="video-streams-info">
-                    {{videoStreamsCtrl.currentStream.firstName+" "+videoStreamsCtrl.currentStream.lastName}}<br>
-                    {{videoStreamsCtrl.currentStream.email}}<br>
-                    {{videoStreamsCtrl.currentStream.phone}}<br>
-                </div>
-                <button type="submit" class="btn btn-success" ng-click="videoStreamsCtrl.stopStream(); chat.save(videoStreamsCtrl.currentStream.userObjectId)"
-                        ng-disabled="videoStreamsCtrl.hello">Stop Video Stream
-                </button>
-            </div>
+            </ul>
 
         </div>
 
-        <div class="container vertical-center" ng-if="videoStreamsCtrl.queue.length===0">
-            <h2 class="text-center" style="width: 100%;">No Video Streams Available</h2>
+        <div id="video-streams-video-container">
+            <div id="video-streams-video">
+
+            </div>
+        </div>
+        <sh-chatterbox chat-id="{{videoStreamsController.currentStream.connectionId}}"
+                       mobile-user-id="{{videoStreamsController.currentStream.userObjectId}}">
+        </sh-chatterbox>
+
+
+        <div id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
+            <ui-gmap-google-map
+                    center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"
+                    zoom="mapCtrl.zoom" draggable="true" ng-if="videoStreamsCtrl.currentStream" ng-cloak>
+                <ui-gmap-marker idKey="videoStreamsCtrl.currentStream.connectionId"
+                                coords="mapCtrl.getMarkerPosition({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"></ui-gmap-marker>
+            </ui-gmap-google-map>
         </div>
 
+        <div id="video-streams-info-container">
+            <div id="video-streams-info">
+                {{videoStreamsCtrl.currentStream.firstName+" "+videoStreamsCtrl.currentStream.lastName}}<br>
+                {{videoStreamsCtrl.currentStream.email}}<br>
+                {{videoStreamsCtrl.currentStream.phone}}<br>
+            </div>
+            <button type="submit" class="btn btn-success"
+                    ng-click="videoStreamsCtrl.stopStream(); chat.save(videoStreamsCtrl.currentStream.userObjectId)"
+                    ng-disabled="videoStreamsCtrl.hello">Stop Video Stream
+            </button>
+        </div>
+
+    </div>
+
+    <div class="container vertical-center" ng-if="videoStreamsCtrl.queue.length===0">
+        <h2 class="text-center" style="width: 100%;">No Video Streams Available</h2>
     </div>
 </div>

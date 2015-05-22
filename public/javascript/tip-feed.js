@@ -15,12 +15,12 @@
               authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
             },
             resolve: {
-              // Reads the Routing Service
+              //  Reads the Routing Service
               routingService: 'RoutingService',
 
-              // Receives the Routing Service, checks if user is logged in,
-              // executes the login dialog if needed and waits for the dialog
-              // to close before loading the state.
+              //  Receives the Routing Service, checks if user is logged in,
+              //  executes the login dialog if needed and waits for the dialog
+              //  to close before loading the state.
               authenticate: function (routingService) {
                 return routingService.checkUserStatus(this.data.authorizedRoles, "Tip");
               }
@@ -29,8 +29,8 @@
       }
     ])
     .config(['$httpProvider', function ($httpProvider) {
-      // this line ensures that people are able to download audio
-      // and video from sentihelm.
+      //  this line ensures that people are able to download audio
+      //  and video from sentihelm.
       $httpProvider.defaults.timeout = 5000;
     }])
     .factory('Tip', ['$http', 'ngDialog', '$log', '$q', '$location', 'socket', function ($http, ngDialog, $log, $q, $location, socket) {
@@ -53,7 +53,7 @@
         return $http.get('/tips/list', {
           params: searchParams
         })
-          .then(function (response) { // success
+          .then(function (response) { //  success
             tip.newTipCount = 0;
             var i;
             for (i = newTips.length - 1; i > 0; i--) {
@@ -61,7 +61,7 @@
               newTips.pop()
             }
             return response.data;
-          }, function (errResponse) { // error
+          }, function (errResponse) { //  error
             return $q.reject(errorResponse);
           });
       };
@@ -120,7 +120,7 @@
         self.tabs = ['All', 'Crime Reports', 'Tips'];
         self.currentTab = self.tabs[0];
 
-        //pagination variables
+        // pagination variables
         self.currentPageNum = 1;
         self.lastPageNum;
         self.pageNumbers;
@@ -248,8 +248,8 @@
         };
 
         self.showAttachmentDialog = function (tip, type) {
-          //Only show dialog if it, and notificationDialog,
-          //are not showing
+          // Only show dialog if it, and notificationDialog,
+          // are not showing
           if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
 
             self.showMediaSpinner = true;
@@ -258,18 +258,18 @@
               return;
             }
 
-            //If attachment is an audio file,
-            //don't show close control (X)
+            // If attachment is an audio file,
+            // don't show close control (X)
             var showClose = self.attachmentType !== 'AUDIO';
 
-            //Open dialog and pass control to AttachmentController
+            // Open dialog and pass control to AttachmentController
             $scope.attachmentDialog = Tip.getMedia(type, tip.objectId, showClose, $scope);
 
             $scope.attachmentDialog.closePromise.then(function () {
               self.attachmentDialogIsOn = false;
             });
 
-            //Attachment dialog is now showing
+            // Attachment dialog is now showing
             self.attachmentDialogIsOn = true;
           }
         };
@@ -294,12 +294,12 @@
       self.attachmentDialogIsOn = false;
 
       self.showSMSDialog = function () {
-        //ngDialog can only handle stringified JSONs
+        // ngDialog can only handle stringified JSONs
         var data = JSON.stringify({
           phoneNumber: self.tip.phone
         });
 
-        //Open dialog and pass control to AttachmentController
+        // Open dialog and pass control to AttachmentController
         $scope.SMSDialog = ngDialog.open({
           template: '/sms-dialog.html',
           className: 'ngdialog-theme-plain',
@@ -310,18 +310,18 @@
       };
 
       self.showNotificationDialog = function (firstName, lastName, controlNumber, channel) {
-        //Only show dialog if it, and attachmentDialog,
-        //are not showing
+        // Only show dialog if it, and attachmentDialog,
+        // are not showing
         if (!this.notificationDialogIsOn && !this.attachmentDialogIsOn) {
-          //ngDialog can only handle stringified JSONs
+          // ngDialog can only handle stringified JSONs
           var data = JSON.stringify({
             name: firstName + " " + lastName,
             controlNumber: controlNumber,
             channel: channel
           });
 
-          //Open dialog, and add it to the $scope
-          //so it can identify itself once open
+          // Open dialog, and add it to the $scope
+          // so it can identify itself once open
           $scope.notificationDialog = ngDialog.open({
             template: '/notification-dialog.html',
             className: 'ngdialog-theme-plain',
@@ -331,15 +331,15 @@
             data: data
           });
 
-          //NotificationDialog is now showing
+          // NotificationDialog is now showing
           this.notificationDialogIsOn = true;
         }
       };
 
 
       self.showAttachmentDialog = function (type) {
-        //Only show dialog if it, and notificationDialog,
-        //are not showing
+        // Only show dialog if it, and notificationDialog,
+        // are not showing
         if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
 
           self.showMediaSpinner = true;
@@ -348,18 +348,18 @@
             return;
           }
 
-          //If attachment is an audio file,
-          //don't show close control (X)
+          // If attachment is an audio file,
+          // don't show close control (X)
           var showClose = self.attachmentType !== 'AUDIO';
 
-          //Open dialog and pass control to AttachmentController
+          // Open dialog and pass control to AttachmentController
           $scope.attachmentDialog = Tip.getMedia(type, self.tip.objectId, showClose, $scope);
 
           $scope.attachmentDialog.closePromise.then(function () {
             self.attachmentDialogIsOn = false;
           });
 
-          //Attachment dialog is now showing
+          // Attachment dialog is now showing
           self.attachmentDialogIsOn = true;
         }
       };

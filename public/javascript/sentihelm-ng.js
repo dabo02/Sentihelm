@@ -1784,7 +1784,7 @@
           console.log("Error fetching video for lastWatcher update.");
         }
       });
-    }
+    };
 
     videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
 
