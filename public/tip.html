@@ -1,109 +1,111 @@
 <div ng-controller="TipController as tipCtrl" id="tip-container" class="container-fluid">
-  <!-------------------->
-  <!------TIP HEAD------>
-  <!-------------------->
-  <div class="tip-header row">
+  <div ng-if="tipCtrl.tip">
+    <!-------------------->
+    <!------TIP HEAD------>
+    <!-------------------->
+    <div class="tip-header row">
 
-    <!------DATE------>
+      <!------DATE------>
     <span class="white col-md-4 col-xs-3">
       {{tipCtrl.tip.date}}
     </span>
 
-    <!------NAME------>
+      <!------NAME------>
     <span class="user col-md-4 col-xs-2" ng-class="{white:tipCtrl.tip}">
       {{(tipCtrl.tip.firstName+" "+tipCtrl.tip.lastName)}}
     </span>
 
-    <!------CONTROL NUMBER------>
-    <div class="control-number col-md-4 col-xs-3" ng-class="{'orange-border':tipCtrl.tip.anonymous}">
-      {{tipCtrl.tip.controlNumber}}
-    </div>
-
-  </div>
-
-  <!-------------------->
-  <!------TIP BODY------>
-  <!-------------------->
-  <div class="tip-body row">
-
-    <!-------LEFT DIVISION------>
-    <!-------------------------->
-    <div class="left">
-
-      <!------CRIME IMAGE------>
-      <img ng-src="http://199.85.204.123/fb_images/{{tipCtrl.tip.crimeListPosition || 0}}.png" />
-      <br>
-
-      <!------CRIME TYPE------>
-      <span>{{tipCtrl.tip.crimeType}}</span>
-
-      <!------CONTACT USER INFORMATION------>
-      <div ng-hide="tipCtrl.tip.anonymous" class="contact-info">
-        CONTACT USER
-        <br>
-        <span class="contact-number">{{tipCtrl.tip.phone}}</span>
-        <span>{{tipCtrl.tip.user.email}}</span>
-        <br>
-        <button class="notification-button" ng-click="tipCtrl.showNotificationDialog(tipCtrl.tip.firstName, tipCtrl.tip.lastName, tipCtrl.tip.controlNumber, tipCtrl.tip.channel)">
-          Send Notification
-        </button>
-      </div>
-
-      <div ng-show="tipCtrl.tip.smsNumber" class="contact-info">
-        CONTACT USER
-        <br>
-        <span class="contact-number">{{tipCtrl.tip.phone}}</span>
-        <br>
-        <button class="notification-button" ng-click="tipCtrl.showSMSDialog()">
-          Send Text Message
-        </button>
+      <!------CONTROL NUMBER------>
+      <div class="control-number col-md-4 col-xs-3" ng-class="{'orange-border':tipCtrl.tip.anonymous}">
+        {{tipCtrl.tip.controlNumber}}
       </div>
 
     </div>
 
-    <!-------MID DIVISION------->
-    <!-------------------------->
-    <div class="center">
+    <!-------------------->
+    <!------TIP BODY------>
+    <!-------------------->
+    <div class="tip-body row">
 
-      <!------ATTACHMENTS------>
-      <div class="attachments" ng-class="{'orange-border':tipCtrl.tip.anonymous}">
+      <!-------LEFT DIVISION------>
+      <!-------------------------->
+      <div class="left">
 
-        <a id="videoAtt" ng-class="{'disabled-link': !tipCtrl.tip.attachmentVideo.url}" ng-click="tipCtrl.showAttachmentDialog('VID')">
-          <img src="./resources/images/videoAtt.png" ng-class="{'orange-bg':tipCtrl.tip.anonymous, 'light-blue-bg':!tipCtrl.tip.anonymous}" />
-        </a>
-        <a id="imageAtt" ng-class="{'disabled-link': !tipCtrl.tip.attachmentPhoto.url}" ng-click="tipCtrl.showAttachmentDialog('IMG')">
-          <img src="./resources/images/imageAtt.png" ng-class="{'orange-bg':tipCtrl.tip.anonymous, 'light-blue-bg':!tipCtrl.tip.anonymous}" />
-        </a>
-        <a id="audioAtt" ng-class="{'disabled-link': !tipCtrl.tip.attachmentAudio.url}" ng-click="tipCtrl.showAttachmentDialog('AUDIO')">
-          <img src="./resources/images/audioAtt.png" ng-class="{'orange-bg':tipCtrl.tip.anonymous, 'light-blue-bg':!tipCtrl.tip.anonymous}" />
-        </a>
+        <!------CRIME IMAGE------>
+        <img ng-src="http://199.85.204.123/fb_images/{{tipCtrl.tip.crimeListPosition || 0}}.png" />
+        <br>
+
+        <!------CRIME TYPE------>
+        <span>{{tipCtrl.tip.crimeType}}</span>
+
+        <!------CONTACT USER INFORMATION------>
+        <div ng-hide="tipCtrl.tip.anonymous" class="contact-info">
+          CONTACT USER
+          <br>
+          <span class="contact-number">{{tipCtrl.tip.phone}}</span>
+          <span>{{tipCtrl.tip.user.email}}</span>
+          <br>
+          <button class="notification-button" ng-click="tipCtrl.showNotificationDialog(tipCtrl.tip.firstName, tipCtrl.tip.lastName, tipCtrl.tip.controlNumber, tipCtrl.tip.channel)">
+            Send Notification
+          </button>
+        </div>
+
+        <div ng-show="tipCtrl.tip.smsNumber" class="contact-info">
+          CONTACT USER
+          <br>
+          <span class="contact-number">{{tipCtrl.tip.phone}}</span>
+          <br>
+          <button class="notification-button" ng-click="tipCtrl.showSMSDialog()">
+            Send Text Message
+          </button>
+        </div>
 
       </div>
 
-      <!------CRIME DESCRIPTION------>
-      <div class="crime-description" ng-class="{'orange-border':tipCtrl.tip.anonymous}">
-        <span>{{tipCtrl.tip.crimeDescription}}</span>
+      <!-------MID DIVISION------->
+      <!-------------------------->
+      <div class="center">
+
+        <!------ATTACHMENTS------>
+        <div class="attachments" ng-class="{'orange-border':tipCtrl.tip.anonymous}">
+
+          <a id="videoAtt" ng-class="{'disabled-link': !tipCtrl.tip.attachmentVideo.url}" ng-click="tipCtrl.showAttachmentDialog('VID')">
+            <img src="./resources/images/videoAtt.png" ng-class="{'orange-bg':tipCtrl.tip.anonymous, 'light-blue-bg':!tipCtrl.tip.anonymous}" />
+          </a>
+          <a id="imageAtt" ng-class="{'disabled-link': !tipCtrl.tip.attachmentPhoto.url}" ng-click="tipCtrl.showAttachmentDialog('IMG')">
+            <img src="./resources/images/imageAtt.png" ng-class="{'orange-bg':tipCtrl.tip.anonymous, 'light-blue-bg':!tipCtrl.tip.anonymous}" />
+          </a>
+          <a id="audioAtt" ng-class="{'disabled-link': !tipCtrl.tip.attachmentAudio.url}" ng-click="tipCtrl.showAttachmentDialog('AUDIO')">
+            <img src="./resources/images/audioAtt.png" ng-class="{'orange-bg':tipCtrl.tip.anonymous, 'light-blue-bg':!tipCtrl.tip.anonymous}" />
+          </a>
+
+        </div>
+
+        <!------CRIME DESCRIPTION------>
+        <div class="crime-description" ng-class="{'orange-border':tipCtrl.tip.anonymous}">
+          <span>{{tipCtrl.tip.crimeDescription}}</span>
+        </div>
+      </div>
+
+      <!------RIGHT DIVISION------>
+      <!-------------------------->
+      <div class="right" ng-controller="GoogleMapController as mapCtrl">
+        <div class="map-canvas" id="{{tipCtrl.tip.controlNumber}}">
+
+          <!------ANON NO LOCATION------>
+          <span ng-show="tipCtrl.tip.smsNumber" style="line-height: 290px;">NO LOCATION AVAILABLE</span>
+
+          <!------GOOGLE MAP------>
+          <ui-gmap-google-map ng-if="!tipCtrl.tip.smsNumber" center="mapCtrl.getMapCenter(tipCtrl.tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+            <ui-gmap-markers models="tipCtrl.tip.markers" coords="'self'" options="'options'"></ui-gmap-markers>
+          </ui-gmap-google-map>
+        </div>
       </div>
     </div>
+    <!-- END TIP -->
 
-    <!------RIGHT DIVISION------>
-    <!-------------------------->
-    <div class="right" ng-controller="GoogleMapController as mapCtrl">
-      <div class="map-canvas" id="{{tipCtrl.tip.controlNumber}}">
-
-        <!------ANON NO LOCATION------>
-        <span ng-show="tipCtrl.tip.smsNumber" style="line-height: 290px;">NO LOCATION AVAILABLE</span>
-
-        <!------GOOGLE MAP------>
-        <ui-gmap-google-map ng-if="!tipCtrl.tip.smsNumber" center="mapCtrl.getMapCenter(tipCtrl.tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
-          <ui-gmap-markers models="tipCtrl.tip.markers" coords="'self'" options="'options'"></ui-gmap-markers>
-        </ui-gmap-google-map>
-      </div>
+    <div id="chat" ng-show="!tipCtrl.tip.anonymous">
+      <sh-chatterbox chat-id="tipCtrl.tip.objectId" mobile-user-id="tipCtrl.tip.objectId"></sh-chatterbox>
     </div>
-  </div>
-  <!-- END TIP -->
-
-  <div id="chat" ng-show="!tipCtrl.tip.anonymous">
-    <sh-chatterbox chat-id="{{tipCtrl.tip.objectId}}" mobile-user-id="{{tipCtrl.tip.objectId}}"></sh-chatterbox>
   </div>
 </div>

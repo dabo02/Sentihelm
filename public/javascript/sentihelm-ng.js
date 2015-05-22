@@ -2038,7 +2038,7 @@
           notification.attachmentType = this.file.filetype.substring(0, 5);
         }
 
-        $http.post('/notification/followup', {
+        $http.post('/notifications/followup', {
             notification: notification
         })
           .then(function () {

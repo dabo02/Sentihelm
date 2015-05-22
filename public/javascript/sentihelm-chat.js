@@ -9,7 +9,7 @@
     .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 
       var namespace = '/chat/' + Session.clientId,
-        server = $location.host(),
+        server = $location.protocol() + '://' + $location.host() + ':' + $location.port(),
         socket = socketFactory({
           ioSocket: io.connect(server + namespace) // connect to chat server
         });
@@ -67,22 +67,26 @@
       return {
         restrict: 'E',
         scope: {
+          chatId: '=',
+          mobileUserId: '='
         },
         templateUrl: '/chat.html',
-        link: function ($scope, _, attrs) {
+        link: function (scope) {
+
+          shChat.enterChat(scope.chatId);
 
           // Send a message and reset the message text box
-          $scope.sendMessage = function () {
-            shChat.send($scope.messageText,
-              attrs.chatId,
-              attrs.mobileUserId);
+          scope.sendMessage = function () {
+            shChat.send(scope.messageText,
+              scope.chatId,
+              scope.mobileUserId);
             // reset form
-            $scope.messageText = '';
+            scope.messageText = '';
           };
 
           // Get all messages for a this chat.
-          $scope.messages = function () {
-            var messages = shChat.messages(attrs.chatId) || [];
+          scope.messages = function () {
+            var messages = shChat.messages(scope.chatId) || [];
 
             // Order by date.
             messages.sort(function (a, b) {
@@ -96,14 +100,13 @@
               return 0;
             });
 
-            $location.hash(messages[messages.length - 1].dateTime);
-            $anchorScroll();
+            if (messages.length >= 1) {
+              $location.hash(messages[messages.length - 1].dateTime || '');
+              $anchorScroll();
+            }
 
             return messages;
           };
-
-
-          shChat.enterChat(attrs.chatId);
         }
       }
     }]);
