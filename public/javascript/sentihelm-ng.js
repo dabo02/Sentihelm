@@ -1400,11 +1400,11 @@
             //Login was successful, create Session
             Session.create(user, user.roles, client, regions);
             // socket.emit('start-session');
-            $window.location.reload();
             Session.store(user, client);
             $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
             loginCtrl.submitting = false;
             $scope.closeThisDialog();
+            $window.location.reload();
 
           },
           function (error) {
