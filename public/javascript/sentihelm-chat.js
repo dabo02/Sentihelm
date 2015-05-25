@@ -17,7 +17,7 @@
       return socket;
     }])
     // Service that manages the nitty gritty
-    .factory('shChat', ['chatSocket', '$q', 'Session', function (chatSocket, $q, Session) {
+    .factory('shChat', ['chatSocket', '$q', 'Session', function (chatSocket) {
 
       // Memory store for the connected rooms.
       var connectedRooms = {};
@@ -63,7 +63,7 @@
     // <sh-chatterbox chat-id="xyz.." mobile-user-id="...">
     // </sh-chatterbox>
     // ```
-    .directive('shChatterbox', ['shChat', '$location', '$anchorScroll', function (shChat, $location, $anchorScroll) {
+    .directive('shChatterbox', ['shChat', '$location', '$anchorScroll', 'Session', function (shChat, $location, $anchorScroll, Session) {
       return {
         restrict: 'E',
         scope: {
@@ -74,6 +74,8 @@
         link: function (scope) {
 
           shChat.enterChat(scope.chatId);
+
+          scope.Session = Session;
 
           // Send a message and reset the message text box
           scope.sendMessage = function () {
@@ -90,10 +92,10 @@
 
             // Order by date.
             messages.sort(function (a, b) {
-              if (a.dateTime < b.dateTime) {
+              if (a.date < b.date) {
                 return -1
               }
-              if (a.dateTime > b.dateTime) {
+              if (a.date > b.date) {
                 return 1;
               }
 
@@ -101,7 +103,7 @@
             });
 
             if (messages.length >= 1) {
-              $location.hash(messages[messages.length - 1].dateTime || '');
+              $location.hash(messages[messages.length - 1].date || '');
               $anchorScroll();
             }
 
