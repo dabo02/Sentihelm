@@ -25,7 +25,7 @@
           var mostWantedArray = client.get('mostWantedList');
 
           var list = mostWantedArray.map(function (item) {
-            return item.toJSON();
+            return item ? item.toJSON() : {};
           });
 
           // Performming deep copy, as reference to object dies once this function, exits
