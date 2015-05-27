@@ -26,10 +26,8 @@
   //Other imports
   var Parse = require('./lib/db');
 
-  /**
-   * The server makes extensive use of socket.io to send real time notifications
-   * to connected users.
-   * */
+   // The server makes extensive use of socket.io to send real time notifications
+   // to connected users.
   module.exports.app = function (io) {
 
     //Create an non-overriding log file and feed it
@@ -60,6 +58,7 @@
     var dataAnalysis = require('./routes/data-analysis');
     var notifications = require('./routes/notifications');
 
+    // Attach routing middleware
     app
       .use(routes)
       .use('/tip', tip)
@@ -83,6 +82,7 @@
       }
     });
 
+    // Handle 404 page not found errors
     app.use(function (req, res, next) {
       var err = new Error('Not Found');
       err.status = 404;
@@ -117,5 +117,6 @@
 
   };
 
+  // Expose session to the outside.
   module.exports.session = sessionMiddleware;
 })();

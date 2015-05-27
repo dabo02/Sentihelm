@@ -36,6 +36,7 @@
         }
       });
     })
+    // List all the most wanted criminals.
     .put('/list', function (request, response) {
       var newList = request.body.list;
 
