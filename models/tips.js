@@ -99,15 +99,17 @@
       tipReportQuery.include('user');
 
 
+      // Switch between report types
       if (options.reportType) {
         var reportType = options.reportType.toLowerCase() || 'all';
 
+        // Show only crime reports
         if (reportType === 'crime reports') {
-          tipReportQuery.equalTo('anonymousPassword', undefined);
-        } else if (reportType === 'tips') {
+          tipReportQuery.exists('user');
+        }
+        // Show only anonymous tips
+        if (reportType === 'tips') {
           tipReportQuery.equalTo('user', undefined);
-        } else {
-          // empty
         }
 
       }
