@@ -24,7 +24,12 @@
 
       // Listen for new messages on joined rooms.
       chatSocket.on('new-message', function (message, chatId) {
-        connectedRooms[chatId].push(message);
+        if (!connectedRooms[chatId]) {
+          connectedRooms[chatId] = {
+            messages: []
+          };
+        }
+        connectedRooms[chatId].messages.push(message);
       });
 
       return {

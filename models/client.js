@@ -17,6 +17,7 @@ module.exports.getById = function (clientId) {
       .then(function (client) {
         if (client) {
           client.save();
+          // Just sends a whole client as a result in the promise.
           resolve(client);
         } else {
           reject(new Error("Couldn't get client"));

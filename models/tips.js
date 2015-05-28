@@ -74,8 +74,7 @@
 
       // Starts to find tips on a date greater than or equal to what was specified.
       if (options.registeredOn) {
-        tipReportQuery.greaterThanOrEqualTo('createdAt', new Date(
-          options.registeredOn));
+        tipReportQuery.greaterThanOrEqualTo('createdAt', new Date(options.registeredOn));
       }
 
       // Gets crimes of a type
@@ -89,6 +88,7 @@
         objectId: options.from
       });
 
+      // Sort by date
       tipReportQuery.descending("createdAt");
 
       if (options.skipping > parseSkipLimit) {
