@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>www.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="www.html">
+                  www.js
+                </a>
+              
+                
+                <a class="source" href="sentihelm-server.html">
+                  sentihelm-server.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>www.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>#!<span class="hljs-regexp">/usr/</span>bin/env node</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Module dependencies.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> webServer = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../sentihelm-server'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Get the session from the http to be attached on the socket.io server</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> io = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/io_servers'</span>)(webServer.session);
+<span class="hljs-keyword">var</span> app = webServer.app(io);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>var debug = require(‘debug’)(‘example-project:server’);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> http = <span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Get port from environment and store in Express.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">var</span> port = process.env.PORT || <span class="hljs-number">8080</span>;
+app.set(<span class="hljs-string">'port'</span>, port);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Create HTTP Server</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> server = http.createServer(app);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Run socket io server
+send the io server the same session that the express server uses.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>io.attach(server);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Listen on provided port, on all network interfaces.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+server.listen(port);
+server.on(<span class="hljs-string">'error'</span>, onError);
+server.on(<span class="hljs-string">'listening'</span>, onListening);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Listen for error messages here.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">onError</span><span class="hljs-params">(error)</span> </span>{
+  <span class="hljs-keyword">if</span> (error.syscall !== <span class="hljs-string">'listen'</span>) {
+    <span class="hljs-keyword">throw</span> error;
+  }
+
+  <span class="hljs-keyword">var</span> bind = <span class="hljs-keyword">typeof</span> port === <span class="hljs-string">'string'</span> ? <span class="hljs-string">'Pipe '</span> + port : <span class="hljs-string">'Port '</span> + port;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>handle specific listen errors with friendly messages</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-keyword">switch</span> (error.code) {
+  <span class="hljs-keyword">case</span> <span class="hljs-string">'EACCES'</span>:
+    <span class="hljs-built_in">console</span>.error(bind + <span class="hljs-string">' requires elevated privileges'</span>);
+    process.exit(<span class="hljs-number">1</span>);
+    <span class="hljs-keyword">break</span>;
+  <span class="hljs-keyword">case</span> <span class="hljs-string">'EADDRINUSE'</span>:
+    <span class="hljs-built_in">console</span>.error(bind + <span class="hljs-string">' is already in use'</span>);
+    process.exit(<span class="hljs-number">1</span>);
+    <span class="hljs-keyword">break</span>;
+  <span class="hljs-keyword">default</span>:
+    <span class="hljs-keyword">throw</span> error;
+  }
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Start listing.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">onListening</span><span class="hljs-params">()</span> </span>{
+  <span class="hljs-keyword">var</span> addr = server.address();
+  <span class="hljs-keyword">var</span> bind = <span class="hljs-keyword">typeof</span> addr === <span class="hljs-string">'string'</span> ? <span class="hljs-string">'pipe '</span> + addr : <span class="hljs-string">'port '</span> + addr.port;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>debug(‘Listening on ‘ + bind);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

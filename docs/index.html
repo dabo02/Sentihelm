@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>index.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="EncryptionManager.html">
+                  EncryptionManager.js
+                </a>
+              
+                
+                <a class="source" href="PasswordGenerator.html">
+                  PasswordGenerator.js
+                </a>
+              
+                
+                <a class="source" href="chat_server.html">
+                  chat_server.js
+                </a>
+              
+                
+                <a class="source" href="db.html">
+                  db.js
+                </a>
+              
+                
+                <a class="source" href="io_servers.html">
+                  io_servers.js
+                </a>
+              
+                
+                <a class="source" href="notification_server.html">
+                  notification_server.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+                
+                <a class="source" href="client.html">
+                  client.js
+                </a>
+              
+                
+                <a class="source" href="parse-adapter.html">
+                  parse-adapter.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+                
+                <a class="source" href="video-sessions.html">
+                  video-sessions.js
+                </a>
+              
+                
+                <a class="source" href="data-analysis.html">
+                  data-analysis.js
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.js
+                </a>
+              
+                
+                <a class="source" href="most-wanted.html">
+                  most-wanted.js
+                </a>
+              
+                
+                <a class="source" href="notifications.html">
+                  notifications.js
+                </a>
+              
+                
+                <a class="source" href="police-stations.html">
+                  police-stations.js
+                </a>
+              
+                
+                <a class="source" href="tip.html">
+                  tip.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>index.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+<span class="hljs-pi">  'use strict'</span>;
+  <span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+  <span class="hljs-keyword">var</span> router = express.Router();
+  <span class="hljs-keyword">var</span> _ = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lodash'</span>);
+  <span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/util'</span>);
+  <span class="hljs-keyword">var</span> clientModel = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../models/client'</span>);
+  <span class="hljs-keyword">var</span> usersModel = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../models/users'</span>);
+  <span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../config'</span>);
+  <span class="hljs-keyword">var</span> OpenTok = <span class="hljs-built_in">require</span>(<span class="hljs-string">'opentok'</span>);
+  <span class="hljs-keyword">var</span> opentok = <span class="hljs-keyword">new</span> OpenTok(config.opentok.key, config.opentok.secret);
+  <span class="hljs-keyword">var</span> db = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/db'</span>);
+  <span class="hljs-keyword">var</span> VideoSession = db.Object.extend(<span class="hljs-string">'VideoSession'</span>);
+
+  router
+    .post(<span class="hljs-string">'/login'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(req, res)</span> </span>{
+      <span class="hljs-keyword">var</span> username = req.body.userId;
+      <span class="hljs-keyword">var</span> password = req.body.password;
+
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendError</span><span class="hljs-params">(error)</span> </span>{
+        res.send(<span class="hljs-number">503</span>, error);
+      }
+
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sendLoginAnswer</span><span class="hljs-params">(client, user)</span> </span>{
+        <span class="hljs-keyword">var</span> answer = [];
+
+        answer.push(user);
+        answer.push(client.toJSON());
+        answer.push(client.get(<span class="hljs-string">'regions'</span>));
+        res.send(<span class="hljs-number">200</span>, answer);
+      }
+
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">userLogedIn</span><span class="hljs-params">(user)</span> </span>{
+        <span class="hljs-keyword">var</span> clientId = user.attributes.homeClient.id;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Get Client to which user belongs to
+and return a promise</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+        <span class="hljs-keyword">var</span> passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>user = util.encryptionManager.decryptUser(passPhrase, user);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+        user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
+        user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
+        user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
+        user.attributes.zipCode = <span class="hljs-built_in">parseInt</span>(util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64), <span class="hljs-number">10</span>);
+        user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+
+        req.session.regenerate(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err)</span> </span>{
+          <span class="hljs-keyword">if</span> (err) {
+            res.status(<span class="hljs-number">503</span>).send({});
+          }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>perform a deep copy of the user object to keep in the session.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">var</span> userJSON = user.toJSON();
+          req.session.user = _.clone(userJSON, <span class="hljs-literal">true</span>);
+        });
+
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'client for now is %s'</span>, clientId);
+
+        <span class="hljs-keyword">return</span> clientModel.getById(clientId)
+          .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(client)</span> </span>{
+            sendLoginAnswer(client, user);
+          });
+      }
+
+      util.logIn(username, password)
+        .then(userLogedIn)
+        .then(<span class="hljs-literal">null</span>, sendError);
+    })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Recieve  request to start archiving a video session
+and pass it along to front-end</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    .post(<span class="hljs-string">'/reset-password'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(request, response)</span> </span>{
+
+      <span class="hljs-keyword">var</span> email = request.body.email;
+
+      <span class="hljs-keyword">if</span> (email) {
+
+        usersModel.sendPasswordResetRequest(email)
+          .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Password reset request was sent successfully</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              response.send(<span class="hljs-number">200</span>);
+            },
+            <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Show the error message somewhere</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              response.send(<span class="hljs-number">401</span>);
+            });
+      }
+    })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Recieve a request for a video stream connection;
+get data form mobile client, save session info in
+db and pass on to front-end</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    .post(<span class="hljs-string">'/request-video-connection'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(request, response)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Check if password is valid</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> (request.body.password !== <span class="hljs-string">"hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"</span>) {
+        <span class="hljs-keyword">return</span>;
+      }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Get data representing the mobile client</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">var</span> connection = <span class="hljs-built_in">JSON</span>.parse(request.body.data);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Create OpenTok session</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      opentok.createSession({
+        mediaMode: <span class="hljs-string">"routed"</span>
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error, session)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>TODO
+Handle Error when session could not be created</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (error) {
+          response.send(<span class="hljs-number">400</span>, error);
+          <span class="hljs-keyword">return</span>;
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Create the token that will be sent to the mobile client</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> clientToken = opentok.generateToken(session.sessionId, {
+          role: <span class="hljs-string">'publisher'</span>,
+          expireTime: ((<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime()) + <span class="hljs-number">36000</span>),
+          data: <span class="hljs-built_in">JSON</span>.stringify(connection)
+        });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Create the token that officer will use to connect via web</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> webToken = opentok.generateToken(session.sessionId, {
+          role: <span class="hljs-string">'moderator'</span>,
+          data: <span class="hljs-built_in">JSON</span>.stringify(connection.currentClientId)
+        });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Prepare video session object</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> videoSession = <span class="hljs-keyword">new</span> VideoSession();
+        videoSession.set(<span class="hljs-string">'status'</span>, <span class="hljs-string">'pending'</span>);
+        videoSession.set(<span class="hljs-string">'sessionId'</span>, session.sessionId);
+        videoSession.set(<span class="hljs-string">'mobileClientToken'</span>, clientToken);
+        videoSession.set(<span class="hljs-string">'webClientToken'</span>, webToken);
+        videoSession.set(<span class="hljs-string">'latitude'</span>, connection.latitude);
+        videoSession.set(<span class="hljs-string">'longitude'</span>, connection.longitude);
+        videoSession.set(<span class="hljs-string">'mobileUser'</span>, {
+          __type: <span class="hljs-string">"Pointer"</span>,
+          className: <span class="hljs-string">"User"</span>,
+          objectId: connection.userObjectId
+        });
+        videoSession.set(<span class="hljs-string">'client'</span>, {
+          __type: <span class="hljs-string">"Pointer"</span>,
+          className: <span class="hljs-string">"Client"</span>,
+          objectId: connection.currentClientId
+        });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Save video session, respond to
+mobile client with sessionId and token,
+and pass connection on to front-end</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        videoSession.save().then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(videoSession)</span> </span>{
+          <span class="hljs-keyword">var</span> stream = connection;
+          stream.sessionId = session.sessionId;
+          stream.connectionId = videoSession.id;
+          stream.webClientToken = webToken;
+          response.send(<span class="hljs-number">200</span>, {
+            objectId: videoSession.id,
+            sessionId: session.sessionId,
+            token: clientToken
+          });
+          io.to(connection.currentClientId).emit(<span class="hljs-string">'new-video-stream'</span>, {
+            stream: stream
+          });
+
+          <span class="hljs-comment">/*  opentok.startArchive(stream.sessionId, { name: 'archive: ' + stream.sessionId }, function(err, archive) {
+           if (err) return console.log(err);
+
+</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>The id property is useful to save off into a database</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>           console.log("new archive:" + archive.id);
+           });*/
+        }, function (error, videoSession) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>TODO
+Handle error when couldn’t save video session</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">var</span> err = error;
+        });
+
+      });
+
+    })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Receive request to start archiving a video session
+and store the archiveId</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  .post(<span class="hljs-string">'/start-archive'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(request, response)</span> </span>{
+
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"\n\nIn start-archive...\n\n"</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>TODO why is the password check not being used?</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-comment">/*/Check if password is valid
+     if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+     return;
+     }*/</span>
+
+    <span class="hljs-keyword">var</span> videoSession = <span class="hljs-built_in">JSON</span>.parse(request.body.data);
+
+    opentok.startArchive(videoSession.sessionId, {
+      name: <span class="hljs-string">'archive: '</span> + videoSession.sessionId
+    }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err, archive)</span> </span>{
+      <span class="hljs-keyword">if</span> (err) {
+        response.send(<span class="hljs-number">400</span>, err);
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">console</span>.log(err + <span class="hljs-string">" Session id: "</span> + videoSession.sessionId);
+      }
+
+      <span class="hljs-keyword">var</span> videoSessionQuery = <span class="hljs-keyword">new</span> db.Query(VideoSession);
+      videoSessionQuery.equalTo(<span class="hljs-string">"sessionId"</span>, videoSession.sessionId);
+      videoSessionQuery.find({
+        success: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(videoSessions)</span> </span>{
+          videoSessions[<span class="hljs-number">0</span>].set(<span class="hljs-string">'archiveId'</span>, archive.id);
+          videoSessions[<span class="hljs-number">0</span>].save();
+        },
+        error: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(object, error)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>The object was not retrieved successfully.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Error fetching video for archive ID update."</span>);
+        }
+      });
+    });
+
+  })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Recieve  request to start archiving a video session
+and pass it along to front-end</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  .post(<span class="hljs-string">'/opentok-callback'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(request, response)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>TODO add another request with a password sent in parameters that would actually tend to the opentok callback</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"\n\nIn opentok-callback...\n\n"</span>);
+
+    <span class="hljs-keyword">var</span> opentokCallbackJSON = request.body;
+
+    <span class="hljs-keyword">var</span> videoSessionQuery = <span class="hljs-keyword">new</span> db.Query(VideoSession);
+    videoSessionQuery.equalTo(<span class="hljs-string">"sessionId"</span>, opentokCallbackJSON.sessionId);
+    videoSessionQuery.find({
+      success: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(videoSessions)</span> </span>{
+        videoSessions[<span class="hljs-number">0</span>].set(<span class="hljs-string">'archiveStatus'</span>, opentokCallbackJSON.status);
+        videoSessions[<span class="hljs-number">0</span>].set(<span class="hljs-string">'duration'</span>, opentokCallbackJSON.duration);
+        videoSessions[<span class="hljs-number">0</span>].set(<span class="hljs-string">'reason'</span>, opentokCallbackJSON.reason);
+        videoSessions[<span class="hljs-number">0</span>].set(<span class="hljs-string">'archiveSize'</span>, opentokCallbackJSON.size);
+        videoSessions[<span class="hljs-number">0</span>].save();
+      },
+      error: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(object, error)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>The object was not retrieved successfully.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Error fetching video for archive ID update on Opentok callback."</span>);
+      }
+    });
+
+  });
+
+  <span class="hljs-built_in">module</span>.exports = router;
+
+
+
+})();</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

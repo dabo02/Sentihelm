@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>tips.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="EncryptionManager.html">
+                  EncryptionManager.js
+                </a>
+              
+                
+                <a class="source" href="PasswordGenerator.html">
+                  PasswordGenerator.js
+                </a>
+              
+                
+                <a class="source" href="chat_server.html">
+                  chat_server.js
+                </a>
+              
+                
+                <a class="source" href="db.html">
+                  db.js
+                </a>
+              
+                
+                <a class="source" href="io_servers.html">
+                  io_servers.js
+                </a>
+              
+                
+                <a class="source" href="notification_server.html">
+                  notification_server.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+                
+                <a class="source" href="client.html">
+                  client.js
+                </a>
+              
+                
+                <a class="source" href="parse-adapter.html">
+                  parse-adapter.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+                
+                <a class="source" href="video-sessions.html">
+                  video-sessions.js
+                </a>
+              
+                
+                <a class="source" href="data-analysis.html">
+                  data-analysis.js
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.js
+                </a>
+              
+                
+                <a class="source" href="most-wanted.html">
+                  most-wanted.js
+                </a>
+              
+                
+                <a class="source" href="notifications.html">
+                  notifications.js
+                </a>
+              
+                
+                <a class="source" href="police-stations.html">
+                  police-stations.js
+                </a>
+              
+                
+                <a class="source" href="tip.html">
+                  tip.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>tips.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+<span class="hljs-pi">  'use strict'</span>;
+  <span class="hljs-keyword">var</span> tipsModel = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../models/tips'</span>);
+
+  <span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+  <span class="hljs-keyword">var</span> router = express.Router();
+  <span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/util'</span>);
+
+  router
+    .use(util.restrict)
+    .get(<span class="hljs-string">'/list'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(request, response)</span> </span>{
+      <span class="hljs-keyword">var</span> skip = <span class="hljs-built_in">parseInt</span>(request.query.skip, <span class="hljs-number">10</span>);
+      <span class="hljs-keyword">var</span> limit = <span class="hljs-built_in">parseInt</span>(request.query.limit, <span class="hljs-number">10</span>);
+      <span class="hljs-keyword">var</span> searchString = request.query.searchString;
+      <span class="hljs-keyword">var</span> registrationDate = request.query.registrationDate;
+      <span class="hljs-keyword">var</span> homeClient = request.session.user.homeClient.objectId;
+      <span class="hljs-keyword">var</span> crimeType = request.query.crimeType;
+      <span class="hljs-keyword">var</span> reportType = request.query.type;
+
+      tipsModel
+        .listTips({
+          skipping: skip,
+          limitTo: limit,
+          from: homeClient,
+          registeredOn: registrationDate,
+          type: crimeType,
+          searchString: searchString,
+          reportType: reportType
+        })
+        .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(data)</span> </span>{
+          <span class="hljs-keyword">var</span> tips = data[<span class="hljs-number">0</span>], totalTips = data[<span class="hljs-number">1</span>] || <span class="hljs-number">0</span>, lastPageNum = data[<span class="hljs-number">2</span>] || <span class="hljs-number">0</span>;
+          response.json({
+            tips: tips,
+            totalTips: totalTips,
+            lastPageNum: lastPageNum
+          });
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(err)</span> </span>{
+          <span class="hljs-built_in">console</span>.warn(err.message);
+          response
+            .status(<span class="hljs-number">503</span>)
+            .send(<span class="hljs-string">'Error getting list of tips'</span>);
+        });
+
+    });
+
+  <span class="hljs-built_in">module</span>.exports = router;
+})();</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

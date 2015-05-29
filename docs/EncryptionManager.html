@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>EncryptionManager.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="EncryptionManager.html">
+                  EncryptionManager.js
+                </a>
+              
+                
+                <a class="source" href="PasswordGenerator.html">
+                  PasswordGenerator.js
+                </a>
+              
+                
+                <a class="source" href="chat_server.html">
+                  chat_server.js
+                </a>
+              
+                
+                <a class="source" href="db.html">
+                  db.js
+                </a>
+              
+                
+                <a class="source" href="io_servers.html">
+                  io_servers.js
+                </a>
+              
+                
+                <a class="source" href="notification_server.html">
+                  notification_server.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+                
+                <a class="source" href="client.html">
+                  client.js
+                </a>
+              
+                
+                <a class="source" href="parse-adapter.html">
+                  parse-adapter.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+                
+                <a class="source" href="video-sessions.html">
+                  video-sessions.js
+                </a>
+              
+                
+                <a class="source" href="data-analysis.html">
+                  data-analysis.js
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.js
+                </a>
+              
+                
+                <a class="source" href="most-wanted.html">
+                  most-wanted.js
+                </a>
+              
+                
+                <a class="source" href="notifications.html">
+                  notifications.js
+                </a>
+              
+                
+                <a class="source" href="police-stations.html">
+                  police-stations.js
+                </a>
+              
+                
+                <a class="source" href="tip.html">
+                  tip.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>EncryptionManager.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>var CryptoJS = require(‘./crypto-js/index.js’);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> CryptoJS = <span class="hljs-built_in">require</span>(<span class="hljs-string">'crypto-js'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>var sjcl = require(‘./sjcl.js’);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> sjcl = <span class="hljs-built_in">require</span>(<span class="hljs-string">'sjcl'</span>);
+
+<span class="hljs-keyword">var</span> ivLength = <span class="hljs-number">16</span>;
+<span class="hljs-keyword">var</span> defaultKeySize = <span class="hljs-number">128</span>;
+<span class="hljs-keyword">var</span> defaultIterations = iterationCount = <span class="hljs-number">1000</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Used by the password generator</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> hmacSHA1 = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(key)</span> </span>{
+    <span class="hljs-keyword">var</span> hasher = <span class="hljs-keyword">new</span> sjcl.misc.hmac(key, sjcl.hash.sha1);
+    <span class="hljs-keyword">this</span>.encrypt = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+        <span class="hljs-keyword">return</span> hasher.encrypt.apply(hasher, <span class="hljs-built_in">arguments</span>);
+    };
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Initialize class</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> EncryptionManager = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+    <span class="hljs-keyword">this</span>.keySize = defaultKeySize;
+    <span class="hljs-keyword">this</span>.iterationCount = defaultIterations;
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Encrypt a plaintext with a password. Create
+random salt and iv, generate a key, encrypt
+the plaintext and put everything together
+into a base64 string.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>EncryptionManager.prototype.encrypt = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(password, plainText)</span> </span>{
+    <span class="hljs-keyword">var</span> saltSize = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">99</span>) + <span class="hljs-number">1</span>;
+    <span class="hljs-keyword">var</span> salt = <span class="hljs-keyword">this</span>.getRandomHexString(saltSize * <span class="hljs-number">2</span>);
+    <span class="hljs-keyword">var</span> iv = <span class="hljs-keyword">this</span>.getRandomHexString(ivLength * <span class="hljs-number">2</span>);
+    <span class="hljs-keyword">var</span> key = <span class="hljs-keyword">this</span>.generateKey(salt, password);
+    <span class="hljs-keyword">var</span> encrypted = CryptoJS.AES.encrypt(
+        plainText,
+        key,
+        {iv: CryptoJS.enc.Hex.parse(iv)});
+    <span class="hljs-keyword">var</span> array = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-number">1</span> + saltSize + ivLength + encrypted.ciphertext.sigBytes);
+    array[<span class="hljs-number">0</span>] = saltSize;
+
+    <span class="hljs-keyword">var</span> encryptedB64String = CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
+    <span class="hljs-keyword">var</span> encryptedBuf = <span class="hljs-keyword">new</span> Buffer(encryptedB64String, <span class="hljs-string">'base64'</span>);
+
+    <span class="hljs-keyword">var</span> saltBytes = CryptoJS.enc.Hex.parse(salt);
+    <span class="hljs-keyword">var</span> saltB64string = CryptoJS.enc.Base64.stringify(saltBytes);
+    <span class="hljs-keyword">var</span> saltBuf = <span class="hljs-keyword">new</span> Buffer(saltB64string, <span class="hljs-string">'base64'</span>);
+
+    <span class="hljs-keyword">var</span> ivBytes = CryptoJS.enc.Hex.parse(iv);
+    <span class="hljs-keyword">var</span> ivB64string = CryptoJS.enc.Base64.stringify(ivBytes);
+    <span class="hljs-keyword">var</span> ivBuf = <span class="hljs-keyword">new</span> Buffer(ivB64string, <span class="hljs-string">'base64'</span>);
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> j = <span class="hljs-number">0</span>; j &lt; saltSize; j++) {
+        array[j + <span class="hljs-number">1</span>] = saltBuf[j];
+    }
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> j = <span class="hljs-number">0</span>; j &lt; ivBuf.length; j++) {
+        array[saltSize + <span class="hljs-number">1</span> + j] = ivBuf[j];
+    }
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> j = <span class="hljs-number">0</span>; j &lt; encryptedBuf.length; j++) {
+        array[saltSize + <span class="hljs-number">1</span> + ivLength + j] = encryptedBuf[j];
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>console.log(array.toString(‘base64’));</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    <span class="hljs-keyword">return</span> array.toString(<span class="hljs-string">'base64'</span>);
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Decrypt. Receives the encryption as a base64
+string, populate the salt and iv used for
+encryption, and generate the key to decrypt.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>EncryptionManager.prototype.decrypt = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(password, arrayBase64)</span> </span>{
+
+    <span class="hljs-keyword">var</span> start = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().getTime();
+    <span class="hljs-keyword">var</span> array = <span class="hljs-keyword">new</span> Buffer(arrayBase64, <span class="hljs-string">'base64'</span>);
+
+    <span class="hljs-keyword">var</span> saltSize = array[<span class="hljs-number">0</span>];
+    <span class="hljs-keyword">var</span> saltBuf = array.slice(<span class="hljs-number">1</span>, saltSize + <span class="hljs-number">1</span>);
+    <span class="hljs-keyword">var</span> ivBuf = array.slice(saltSize + <span class="hljs-number">1</span>, saltSize + <span class="hljs-number">1</span> + ivLength);
+    <span class="hljs-keyword">var</span> cipherBuf = array.slice(saltSize + <span class="hljs-number">1</span> + ivLength, array.length);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Convert array of bytes to hex string (Ex. “A2B50986A1”)</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">bufToHexStr</span><span class="hljs-params">(bytesArr)</span> </span>{
+        <span class="hljs-keyword">var</span> hexString = <span class="hljs-string">""</span>;
+        <span class="hljs-keyword">var</span> hex = <span class="hljs-string">""</span>;
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; bytesArr.length; i++) {
+            hex = <span class="hljs-built_in">Number</span>(bytesArr[i]).toString(<span class="hljs-number">16</span>);
+            <span class="hljs-keyword">if</span> (hex.length == <span class="hljs-number">1</span>) {
+                hex = <span class="hljs-string">"0"</span> + hex;
+            }
+            hexString += hex;
+        }
+        <span class="hljs-keyword">return</span> hexString;
+    };
+
+    <span class="hljs-keyword">var</span> salt = bufToHexStr(saltBuf);
+    <span class="hljs-keyword">var</span> iv = bufToHexStr(ivBuf);
+    <span class="hljs-keyword">var</span> ciphertext = cipherBuf.toString(<span class="hljs-string">'base64'</span>);
+    <span class="hljs-keyword">var</span> key = <span class="hljs-keyword">this</span>.generateKey(salt, password);
+    <span class="hljs-keyword">var</span> cipherParams = CryptoJS.lib.CipherParams.create({
+        ciphertext: CryptoJS.enc.Base64.parse(ciphertext)
+    });
+    <span class="hljs-keyword">var</span> decrypted = CryptoJS.AES.decrypt(
+        cipherParams,
+        key,
+        {iv: CryptoJS.enc.Hex.parse(iv)});
+    <span class="hljs-keyword">return</span> decrypted.toString(CryptoJS.enc.Utf8);
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Generator the key with salt and password</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>EncryptionManager.prototype.generateKey = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(salt, password)</span> </span>{
+
+    <span class="hljs-keyword">var</span> sjclSalt = sjcl.codec.hex.toBits(salt);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p> var key1 = CryptoJS.PBKDF2(
+     password,
+     CryptoJS.enc.Hex.parse(salt),
+     { keySize: this.keySize/32, iterations: this.iterationCount });</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    <span class="hljs-keyword">var</span> key = sjcl.codec.hex.fromBits(sjcl.misc.pbkdf2(password, sjclSalt, <span class="hljs-keyword">this</span>.iterationCount, <span class="hljs-keyword">this</span>.keySize, hmacSHA1));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p> console.log(‘cryptojs:    ‘ + key1);
+ console.log(‘pbkdf2 SJCL: ‘ +  key + ‘\n’);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> key2 = CryptoJS.enc.Hex.parse(key);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p> console.log(‘pbkdf2 SJCL: ‘ +  key + ‘\n’);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (key2.toString() !== key) {
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Error creating word array."</span>);
+    }
+
+    <span class="hljs-keyword">return</span> key2;
+
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Creates random hex string of length ‘len’</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>EncryptionManager.prototype.getRandomHexString = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(len)</span> </span>{
+    <span class="hljs-keyword">var</span> text = <span class="hljs-string">""</span>;
+    <span class="hljs-keyword">var</span> characters = <span class="hljs-string">"ABCDEF0123456789"</span>;
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; len; i++) {
+        text += characters.charAt(<span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * characters.length));
+    }
+    <span class="hljs-keyword">return</span> text;
+
+};
+
+EncryptionManager.prototype.encryptUser = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(user, passPhrase)</span></span>{
+
+    <span class="hljs-keyword">var</span> encryptedUser = []</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Encrypted/Hashed Values</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.firstName));
+    encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.lastName));
+    encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.phoneNumber));
+    encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.zipCode.toString()));
+
+    <span class="hljs-keyword">if</span>(user.state){
+        encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.state));
+    }
+
+    <span class="hljs-keyword">if</span>(user.addressLine1){
+        encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.addressLine1));
+    }
+
+    <span class="hljs-keyword">if</span>(user.addressLine2){
+        encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.addressLine2));
+    }
+
+    <span class="hljs-keyword">if</span>(user.city){
+        encryptedUser.push(<span class="hljs-keyword">this</span>.encrypt(passPhrase, user.city));
+    }
+
+    <span class="hljs-keyword">return</span> encryptedUser;
+};
+
+EncryptionManager.prototype.decryptUser = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(passPhrase, user)</span></span>{
+
+    user.firstName = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.firstName.base64);
+    user.lastName = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.lastName.base64);
+    user.phoneNumber = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.phoneNumber.base64);
+    user.zipCode = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.zipCode.base64);
+
+    <span class="hljs-keyword">if</span>(user.state){
+        user.state = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.state.base64);
+    }
+
+    <span class="hljs-keyword">if</span>(user.addressLine1){
+        user.addressLine1 = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.addressLine1.base64);
+    }
+
+    <span class="hljs-keyword">if</span>(user.addressLine2){
+        user.addressLine2 = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.addressLine2.base64);
+    }
+
+    <span class="hljs-keyword">if</span>(user.city){
+        user.city = <span class="hljs-keyword">this</span>.decrypt(passPhrase, user.city.base64);
+    }
+
+    <span class="hljs-keyword">return</span> user;
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>=========================================</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <h1 id="-export-class"> EXPORT CLASS</h1>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-built_in">module</span>.exports = EncryptionManager;</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

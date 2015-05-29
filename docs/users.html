@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>users.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="EncryptionManager.html">
+                  EncryptionManager.js
+                </a>
+              
+                
+                <a class="source" href="PasswordGenerator.html">
+                  PasswordGenerator.js
+                </a>
+              
+                
+                <a class="source" href="chat_server.html">
+                  chat_server.js
+                </a>
+              
+                
+                <a class="source" href="db.html">
+                  db.js
+                </a>
+              
+                
+                <a class="source" href="io_servers.html">
+                  io_servers.js
+                </a>
+              
+                
+                <a class="source" href="notification_server.html">
+                  notification_server.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+                
+                <a class="source" href="client.html">
+                  client.js
+                </a>
+              
+                
+                <a class="source" href="parse-adapter.html">
+                  parse-adapter.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+                
+                <a class="source" href="video-sessions.html">
+                  video-sessions.js
+                </a>
+              
+                
+                <a class="source" href="data-analysis.html">
+                  data-analysis.js
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.js
+                </a>
+              
+                
+                <a class="source" href="most-wanted.html">
+                  most-wanted.js
+                </a>
+              
+                
+                <a class="source" href="notifications.html">
+                  notifications.js
+                </a>
+              
+                
+                <a class="source" href="police-stations.html">
+                  police-stations.js
+                </a>
+              
+                
+                <a class="source" href="tip.html">
+                  tip.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>users.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+<span class="hljs-keyword">var</span> router = express.Router();
+<span class="hljs-keyword">var</span> db = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/db'</span>);
+<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/util'</span>);
+<span class="hljs-keyword">var</span> usersModel = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../models/users'</span>);
+
+router
+    .use(util.restrict)
+    .get(<span class="hljs-string">'/list'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(req, res)</span> </span>{
+        <span class="hljs-keyword">var</span> User = db.Object.extend(<span class="hljs-string">"_User"</span>);
+        <span class="hljs-keyword">var</span> adminPanelQuery = <span class="hljs-keyword">new</span> db.Query(User);
+        <span class="hljs-keyword">var</span> skip = <span class="hljs-built_in">parseInt</span>(req.query.skip, <span class="hljs-number">10</span>);
+        <span class="hljs-keyword">var</span> limit = <span class="hljs-built_in">parseInt</span>(req.query.limit, <span class="hljs-number">10</span>);
+        <span class="hljs-keyword">var</span> searchString = req.query.searchString;
+        <span class="hljs-keyword">var</span> registrationDate = req.query.registrationDate;
+        <span class="hljs-keyword">var</span> role = req.query.role;
+        <span class="hljs-keyword">var</span> homeClient = req.query.homeClient;
+        <span class="hljs-keyword">var</span> lastUserCreatedAt = req.query.lastUserCreatedAt;
+        <span class="hljs-keyword">var</span> parseSkipLimit = <span class="hljs-number">10000</span>;
+
+        <span class="hljs-keyword">if</span> (homeClient) {
+            <span class="hljs-keyword">if</span> (searchString) {
+                <span class="hljs-keyword">var</span> usernameQuery = <span class="hljs-keyword">new</span> db.Query(<span class="hljs-string">"_User"</span>);
+                usernameQuery.startsWith(<span class="hljs-string">"username"</span>, searchString);
+
+                <span class="hljs-keyword">var</span> emailQuery = <span class="hljs-keyword">new</span> db.Query(<span class="hljs-string">"_User"</span>);
+                emailQuery.startsWith(<span class="hljs-string">"email"</span>, searchString);
+
+                adminPanelQuery = db.Query.or(usernameQuery, emailQuery);
+            }
+
+            <span class="hljs-keyword">if</span> (registrationDate) {
+                adminPanelQuery.greaterThanOrEqualTo(<span class="hljs-string">'createdAt'</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(registrationDate));
+            }
+
+            <span class="hljs-keyword">if</span>(role){
+                adminPanelQuery.equalTo(<span class="hljs-string">'roles'</span>, role);
+            }
+            <span class="hljs-keyword">else</span>{
+                adminPanelQuery.containedIn(<span class="hljs-string">'roles'</span>, [<span class="hljs-string">'admin'</span>,<span class="hljs-string">'employee'</span>]);
+            }
+
+            adminPanelQuery.equalTo(<span class="hljs-string">'homeClient'</span>, {
+            __type: <span class="hljs-string">"Pointer"</span>,
+            className: <span class="hljs-string">"Client"</span>,
+            objectId: homeClient
+            });
+
+            adminPanelQuery.descending(<span class="hljs-string">"createdAt"</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>parse skip limit hack for fetching more than 11,001 records..</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (skip &gt; parseSkipLimit) {
+                adminPanelQuery.lessThanOrEqualTo(<span class="hljs-string">"createdAt"</span>, lastUserCreatedAt); <span class="hljs-comment">// talk over this</span>
+            }
+
+            adminPanelQuery.skip(skip);
+            adminPanelQuery.limit(limit);
+            adminPanelQuery.find({
+            success: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(users)</span> </span>{
+
+
+              adminPanelQuery.count({
+                  success: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(count)</span> </span>{
+                    <span class="hljs-keyword">var</span> lastPageNum = <span class="hljs-built_in">Math</span>.ceil(count / limit);
+
+                      res.send({
+                          users: users,
+                          lastPageNum: lastPageNum,
+                          userTotal: count
+                      });
+                  },
+                  error: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(object, error)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>The object was not retrieved successfully.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Error counting video archives."</span>);
+                    res.status(<span class="hljs-number">503</span>)
+                      .send(<span class="hljs-string">'Error counting video archives.'</span>);
+                  }
+                })
+
+
+            },
+            error: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(object, error)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>The object was not retrieved successfully.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'Error fetching users list'</span>);
+              res.status(<span class="hljs-number">503</span>)
+                .send(<span class="hljs-string">'Error fetching users list'</span>);
+            }
+            });
+        }
+    })
+
+    .post(<span class="hljs-string">'/update/role'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(req, res)</span></span>{
+
+        <span class="hljs-keyword">var</span> data = {
+            users: req.body.users,
+            action: req.body.action,
+            role:req.body.role
+        };
+
+        usersModel.updateRole(req.body).then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+            res.send(<span class="hljs-string">"SUCCESS: Role has been updated."</span>);
+
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+            res.status(<span class="hljs-number">503</span>).send(<span class="hljs-string">"FAILURE: Role could not be updated."</span>);
+        });
+    })
+
+    .post(<span class="hljs-string">'/update'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(req, res)</span></span>{
+
+        usersModel.updateUser(req.body.user).then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+            res.send(<span class="hljs-string">"SUCCESS: Account details for "</span> + req.body.user.username + <span class="hljs-string">" have been updated."</span>);
+
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+            res.status(<span class="hljs-number">503</span>).send(<span class="hljs-string">"FAILURE: User could not be updated."</span>);
+        });
+    })
+
+  .post(<span class="hljs-string">'/delete'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(req, res)</span></span>{
+
+      usersModel.deleteUser(req.body.users).then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+          res.send(<span class="hljs-string">"SUCCESS: Deleted selected user(s)."</span>);
+
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+          res.status(<span class="hljs-number">503</span>).send(<span class="hljs-string">"FAILURE: Could not delete selected user(s)."</span>);
+      });
+  })
+
+  .post(<span class="hljs-string">'/decrypt'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(req, res)</span></span>{
+
+      usersModel.decryptUser(req.body.user).then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(user)</span> </span>{
+          res.send(user);
+
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+          res.status(<span class="hljs-number">503</span>).send(<span class="hljs-string">"FAILURE: Could not fetch the selected user's information."</span>);
+      });
+  })
+
+  .post(<span class="hljs-string">'/add'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(req, res)</span></span>{
+
+      usersModel.addNewOfficer(req.body.newOfficer, req.session.user.homeClient.objectId).then(<span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(data)</span> </span>{
+          res.send(<span class="hljs-string">"SUCCESS: "</span> + data);
+
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+          res.status(<span class="hljs-number">503</span>).send(<span class="hljs-string">"FAILURE: Could not add new user."</span>);
+      });
+  });
+
+
+<span class="hljs-built_in">module</span>.exports = router;</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>data-analysis.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="EncryptionManager.html">
+                  EncryptionManager.js
+                </a>
+              
+                
+                <a class="source" href="PasswordGenerator.html">
+                  PasswordGenerator.js
+                </a>
+              
+                
+                <a class="source" href="chat_server.html">
+                  chat_server.js
+                </a>
+              
+                
+                <a class="source" href="db.html">
+                  db.js
+                </a>
+              
+                
+                <a class="source" href="io_servers.html">
+                  io_servers.js
+                </a>
+              
+                
+                <a class="source" href="notification_server.html">
+                  notification_server.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+                
+                <a class="source" href="client.html">
+                  client.js
+                </a>
+              
+                
+                <a class="source" href="parse-adapter.html">
+                  parse-adapter.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+                
+                <a class="source" href="video-sessions.html">
+                  video-sessions.js
+                </a>
+              
+                
+                <a class="source" href="data-analysis.html">
+                  data-analysis.js
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.js
+                </a>
+              
+                
+                <a class="source" href="most-wanted.html">
+                  most-wanted.js
+                </a>
+              
+                
+                <a class="source" href="notifications.html">
+                  notifications.js
+                </a>
+              
+                
+                <a class="source" href="police-stations.html">
+                  police-stations.js
+                </a>
+              
+                
+                <a class="source" href="tip.html">
+                  tip.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>data-analysis.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+<span class="hljs-pi">  'use strict'</span>;
+
+  <span class="hljs-keyword">var</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express'</span>);
+  <span class="hljs-keyword">var</span> router = express.Router();
+  <span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/util'</span>);
+  <span class="hljs-keyword">var</span> db = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../lib/db'</span>);
+  <span class="hljs-keyword">var</span> TipReport = db.Object.extend(<span class="hljs-string">'TipReport'</span>);
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getChartsData</span><span class="hljs-params">(tips, month, year)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>  var data = google.visualization.arrayToDataTable([
+  [‘Year’, ‘Sales’, ‘Expenses’],
+  [‘2004’,  1000,      400],
+  [‘2005’,  1170,      460],
+  [‘2006’,  660,       1120],
+  [‘2007’,  1030,      540]
+]);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">var</span> crimeTypes = [<span class="hljs-string">"Assault"</span>, <span class="hljs-string">"Child Abuse"</span>, <span class="hljs-string">"Elderly Abuse"</span>, <span class="hljs-string">"Domestic Violence"</span>, <span class="hljs-string">"Drugs"</span>, <span class="hljs-string">"Homicide"</span>, <span class="hljs-string">"Animal Abuse"</span>,
+      <span class="hljs-string">"Robbery"</span>, <span class="hljs-string">"Sex Offenses"</span>, <span class="hljs-string">"Bullying"</span>, <span class="hljs-string">"Police Misconduct"</span>, <span class="hljs-string">"Bribery"</span>, <span class="hljs-string">"Vehicle Theft"</span>, <span class="hljs-string">"Vandalism"</span>,
+      <span class="hljs-string">"Auto Accident"</span>, <span class="hljs-string">"Civil Rights"</span>, <span class="hljs-string">"Arson"</span>, <span class="hljs-string">"Other"</span>
+    ];
+
+    <span class="hljs-keyword">var</span> months = [<span class="hljs-string">"January"</span>, <span class="hljs-string">"February"</span>, <span class="hljs-string">"March"</span>, <span class="hljs-string">"April"</span>, <span class="hljs-string">"May"</span>, <span class="hljs-string">"June"</span>, <span class="hljs-string">"July"</span>, <span class="hljs-string">"August"</span>, <span class="hljs-string">"September"</span>,
+      <span class="hljs-string">"October"</span>, <span class="hljs-string">"November"</span>, <span class="hljs-string">"December"</span>
+    ];
+
+    <span class="hljs-keyword">var</span> tipsTypeChart = {};
+    <span class="hljs-keyword">var</span> tipsDateChart = {};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Initialize # of Tips vs CrimeType chart</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    tipsTypeChart.type = <span class="hljs-string">'PieChart'</span>;
+    tipsTypeChart.options = {
+      <span class="hljs-string">'title'</span>: <span class="hljs-string">'Tip Count vs Crime Type'</span>
+    };
+    tipsTypeChart.data = {
+      <span class="hljs-string">"cols"</span>: [{
+        id: <span class="hljs-string">"t"</span>,
+        label: <span class="hljs-string">"Crime Type"</span>,
+        type: <span class="hljs-string">"string"</span>
+      }, {
+        id: <span class="hljs-string">"s"</span>,
+        label: <span class="hljs-string">"Tip Count"</span>,
+        type: <span class="hljs-string">"number"</span>
+      }],
+      <span class="hljs-string">"rows"</span>: []
+    };
+    tipsTypeChart.dataArray = [];
+    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; crimeTypes.length; i++) {
+      tipsTypeChart.data.rows.push({
+        c: [{
+          v: crimeTypes[i]
+        }, {
+          v: <span class="hljs-number">0</span>
+        }]
+      });
+      tipsTypeChart.dataArray.push({
+        a: crimeTypes[i],
+        b: <span class="hljs-number">0</span>
+      });
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Create column chart with months of the year</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">isNaN</span>(month)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Initialize # of Tips vs Date chart</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      tipsDateChart.type = <span class="hljs-string">'ColumnChart'</span>;
+      tipsDateChart.options = {
+        <span class="hljs-string">'title'</span>: <span class="hljs-string">'Tip Count vs Month'</span>
+      };
+      tipsDateChart.data = {
+        <span class="hljs-string">"cols"</span>: [{
+          id: <span class="hljs-string">"t"</span>,
+          label: <span class="hljs-string">"Month"</span>,
+          type: <span class="hljs-string">"string"</span>
+        }, {
+          id: <span class="hljs-string">"s"</span>,
+          label: <span class="hljs-string">"Tip Count"</span>,
+          type: <span class="hljs-string">"number"</span>
+        }],
+        <span class="hljs-string">"rows"</span>: []
+      };
+      tipsDateChart.dataArray = [];
+      <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; months.length; i++) {
+        tipsDateChart.data.rows.push({
+          c: [{
+            v: months[i]
+          }, {
+            v: <span class="hljs-number">0</span>
+          }]
+        });
+        tipsDateChart.dataArray.push({
+          a: months[i],
+          b: <span class="hljs-number">0</span>
+        });
+      }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Create line chart with days of month</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">else</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Initialize # of Tips vs Date chart</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      tipsDateChart.type = <span class="hljs-string">'LineChart'</span>;
+      tipsDateChart.options = {
+        title: <span class="hljs-string">'Tip Count vs Date (UTC Time)'</span>
+      };
+      tipsDateChart.data = {
+        <span class="hljs-string">"cols"</span>: [{
+          id: <span class="hljs-string">"t"</span>,
+          label: <span class="hljs-string">"Date"</span>,
+          type: <span class="hljs-string">"string"</span>
+        }, {
+          id: <span class="hljs-string">"s"</span>,
+          label: <span class="hljs-string">"Tip Count"</span>,
+          type: <span class="hljs-string">"number"</span>
+        }],
+        <span class="hljs-string">"rows"</span>: []
+      };
+      tipsDateChart.dataArray = [];
+
+      <span class="hljs-keyword">var</span> tempDate = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(year, month);
+      <span class="hljs-keyword">while</span> (tempDate.getUTCMonth() === month) {
+        tipsDateChart.data.rows.push({
+          c: [{
+            v: tempDate.getUTCDate()
+          }, {
+            v: <span class="hljs-number">0</span>
+          }]
+        });
+        tipsDateChart.dataArray.push({
+          a: tempDate.getUTCDate(),
+          b: <span class="hljs-number">0</span>
+        });
+        tempDate.setDate(tempDate.getUTCDate() + <span class="hljs-number">1</span>);
+      }
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Fill out data for both charts</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">for</span> (i = <span class="hljs-number">0</span>; i &lt; tips.length; i++) {
+      <span class="hljs-keyword">var</span> crimePos = tips[i].attributes.crimeListPosition;
+      <span class="hljs-keyword">var</span> monthPos = tips[i].createdAt.getUTCMonth();
+      <span class="hljs-keyword">var</span> date = tips[i].createdAt.getUTCDate() - <span class="hljs-number">1</span>; <span class="hljs-comment">//minus 1 to match the position on the array</span>
+      tipsTypeChart.data.rows[crimePos].c[<span class="hljs-number">1</span>].v++;
+      tipsTypeChart.dataArray[crimePos].b++;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Feel the column chart.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="hljs-keyword">if</span> (<span class="hljs-built_in">isNaN</span>(month)) {
+        tipsDateChart.data.rows[monthPos].c[<span class="hljs-number">1</span>].v++;
+        tipsDateChart.dataArray[monthPos].b++;
+      } <span class="hljs-keyword">else</span> {
+        tipsDateChart.data.rows[date].c[<span class="hljs-number">1</span>].v++;
+        tipsDateChart.dataArray[date].b++;
+      }
+    }
+
+    <span class="hljs-keyword">return</span> {
+      tipsTypeChart: tipsTypeChart,
+      tipsDateChart: tipsDateChart
+    };
+  }
+
+  router
+    .use(util.restrict)
+    .get(<span class="hljs-string">'/'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(request, response)</span> </span>{
+      <span class="hljs-keyword">var</span> charts = {},
+        year = request.query.year,
+        month = request.query.month,
+        isMonthSelected = !<span class="hljs-built_in">isNaN</span>(month);
+
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">analyzeData</span><span class="hljs-params">()</span> </span>{
+        <span class="hljs-keyword">var</span> clientId = request.session.user.homeClient.objectId;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>If not month was provided, set month to January</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span> (!isMonthSelected) {
+          month = <span class="hljs-number">0</span>;
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Make sure the values are integers</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> month == <span class="hljs-string">'string'</span> || month <span class="hljs-keyword">instanceof</span> <span class="hljs-built_in">String</span>) {
+          month = <span class="hljs-built_in">parseInt</span>(month);
+        }
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> year == <span class="hljs-string">'string'</span> || year <span class="hljs-keyword">instanceof</span> <span class="hljs-built_in">String</span>) {
+          year = <span class="hljs-built_in">parseInt</span>(year);
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Create query</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> tipQuery = <span class="hljs-keyword">new</span> db.Query(TipReport);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Filter by clientId</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        tipQuery.equalTo(<span class="hljs-string">'clientId'</span>, {
+          __type: <span class="hljs-string">"Pointer"</span>,
+          className: <span class="hljs-string">"Client"</span>,
+          objectId: clientId
+        });
+        tipQuery.limit(<span class="hljs-number">1000</span>);
+        <span class="hljs-keyword">if</span> (!isMonthSelected) {
+          tipQuery.greaterThanOrEqualTo(<span class="hljs-string">"createdAt"</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(year, month));
+          tipQuery.lessThanOrEqualTo(<span class="hljs-string">"createdAt"</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(year + <span class="hljs-number">1</span>, month));
+        } <span class="hljs-keyword">else</span> {
+          tipQuery.greaterThanOrEqualTo(<span class="hljs-string">"createdAt"</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(year, month));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>If month is 11(December), upper bound will be january 1 of the next year</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          tipQuery.lessThanOrEqualTo(<span class="hljs-string">"createdAt"</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(month !== <span class="hljs-number">11</span> ? year : year + <span class="hljs-number">1</span>, (month + <span class="hljs-number">1</span>) % <span class="hljs-number">12</span>));
+        }
+        <span class="hljs-keyword">return</span> tipQuery.find();
+
+      }
+
+      analyzeData().then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(tips)</span> </span>{
+
+        charts.tipCount = tips.length;
+
+        <span class="hljs-keyword">if</span> (isMonthSelected) {
+          charts = getChartsData(tips, month, year);
+        } <span class="hljs-keyword">else</span> {
+          charts = getChartsData(tips);
+        }
+
+        response.send(charts);
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+        response.status(<span class="hljs-number">503</span>).send(error);
+      });
+    });
+
+
+  <span class="hljs-built_in">module</span>.exports = router;
+})();</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

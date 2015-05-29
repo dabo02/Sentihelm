@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>chat_server.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="EncryptionManager.html">
+                  EncryptionManager.js
+                </a>
+              
+                
+                <a class="source" href="PasswordGenerator.html">
+                  PasswordGenerator.js
+                </a>
+              
+                
+                <a class="source" href="chat_server.html">
+                  chat_server.js
+                </a>
+              
+                
+                <a class="source" href="db.html">
+                  db.js
+                </a>
+              
+                
+                <a class="source" href="io_servers.html">
+                  io_servers.js
+                </a>
+              
+                
+                <a class="source" href="notification_server.html">
+                  notification_server.js
+                </a>
+              
+                
+                <a class="source" href="util.html">
+                  util.js
+                </a>
+              
+                
+                <a class="source" href="client.html">
+                  client.js
+                </a>
+              
+                
+                <a class="source" href="parse-adapter.html">
+                  parse-adapter.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+                
+                <a class="source" href="video-sessions.html">
+                  video-sessions.js
+                </a>
+              
+                
+                <a class="source" href="data-analysis.html">
+                  data-analysis.js
+                </a>
+              
+                
+                <a class="source" href="index.html">
+                  index.js
+                </a>
+              
+                
+                <a class="source" href="most-wanted.html">
+                  most-wanted.js
+                </a>
+              
+                
+                <a class="source" href="notifications.html">
+                  notifications.js
+                </a>
+              
+                
+                <a class="source" href="police-stations.html">
+                  police-stations.js
+                </a>
+              
+                
+                <a class="source" href="tip.html">
+                  tip.js
+                </a>
+              
+                
+                <a class="source" href="tips.html">
+                  tips.js
+                </a>
+              
+                
+                <a class="source" href="users.html">
+                  users.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>chat_server.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>This is the chat server for Sentiguard. The workflow of this chat is
+described visually in the repository wiki</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+<span class="hljs-pi">  'use strict'</span>;
+
+  <span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./util'</span>);
+  <span class="hljs-keyword">var</span> usersModel = <span class="hljs-built_in">require</span>(<span class="hljs-string">'../models/users'</span>);
+  <span class="hljs-keyword">var</span> db = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./db'</span>);
+  <span class="hljs-keyword">var</span> ChatLog = db.Object.extend(<span class="hljs-string">'ChatLog'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>Starts the chat server using the passed in socket.io instance on new namespaces corresponding
+to client ids on the system.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">startServer</span><span class="hljs-params">(io, sessionMiddleware)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Creates a connection function object that knows the specific client id it’s
+tied to.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> createConnection = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(clientId)</span> </span>{
+      <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">onConnection</span><span class="hljs-params">(socket)</span> </span>{
+        socket.session = socket.handshake.session;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Saves a message object into a ChatLog object.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> saveToLog = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(message, chatId)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Just create a new log if non already existed.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">var</span> createLog = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+            <span class="hljs-keyword">var</span> log = <span class="hljs-keyword">new</span> ChatLog();
+            log.set(<span class="hljs-string">'chatId'</span>, chatId);
+            log.set(<span class="hljs-string">'clientId'</span>, {
+              __type: <span class="hljs-string">'Pointer'</span>,
+              className: <span class="hljs-string">'Client'</span>,
+              objectId: socket.clientId
+            });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Make sure logs is an array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            log.set(<span class="hljs-string">'logs'</span>, []);
+            log.save();
+
+            <span class="hljs-keyword">return</span> log;
+          };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Query the database for a log.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">new</span> db.Query(ChatLog)
+            .equalTo(<span class="hljs-string">'chatId'</span>, chatId)
+            .first()
+            .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(log)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Here we check it the log already exists, if not we create one.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              <span class="hljs-keyword">if</span> (!log) {
+                log = createLog();
+              }
+
+              <span class="hljs-keyword">return</span> log;
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+              <span class="hljs-built_in">console</span>.warn(error.message);
+              <span class="hljs-keyword">var</span> log = createLog();
+              <span class="hljs-keyword">return</span> db.Promise.as(log);
+            })
+            .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(log)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Just add the message to the log array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              log.add(<span class="hljs-string">'logs'</span>, message);
+              log.save();
+            });
+        };
+
+        socket.clientId = clientId;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Gets called by mobile client using the ‘start’ message</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> mobileStart = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(data)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>If we have a session object with a user object, then we have a lodged in officer.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          util.logIn(data.username, data.password)
+            .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(mobileUser)</span> </span>{
+              <span class="hljs-keyword">if</span> (mobileUser) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Create a temporary mobile user session.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                socket.mobileSession = mobileUser.toJSON();
+                socket.mobileSession.chatId = data.chatId;
+                socket.join(socket.mobileSession.chatId + <span class="hljs-string">'-mobile'</span>);
+              } <span class="hljs-keyword">else</span> {
+                Q.reject(<span class="hljs-built_in">Error</span>(<span class="hljs-string">"No user!"</span>));
+              }
+            })
+            .then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(reason)</span> </span>{
+
+            });
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>Routes the message around the system, the message gets encrypted if the sender was an officer and it gets decrypted for an officer if the sender was mobile client.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> routeMessage = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(message, chatId)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>When the user is an admin then encode the message</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> (socket.session) {
+            <span class="hljs-keyword">if</span> (socket.session.user) {
+              usersModel.getUsername(message.receiver)
+                .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(username)</span> </span>{
+                  <span class="hljs-keyword">var</span> password = util.passwordGenerator.generatePassword(username);
+                  <span class="hljs-keyword">var</span> encryptedmessage = {
+                    sender: socket.session.user.objectId,
+                    receiver: message.receiver,
+                    message: util.encryptionManager.encrypt(password, message.message),
+                    date: <span class="hljs-built_in">Date</span>.now()
+                  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>chatId is only sent by an officer client</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                  <span class="hljs-keyword">if</span> (chatId ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Send encrypted message to mobile client</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                    socket.to(chatId + <span class="hljs-string">'-mobile'</span>)
+                      .emit(<span class="hljs-string">'new-message'</span>, encryptedmessage);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Send un-encrypted message to officers.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                    socket.to(chatId + <span class="hljs-string">'-officer'</span>)
+                      .emit(<span class="hljs-string">'new-message'</span>, message, chatId);
+                    saveToLog(encryptedmessage, chatId);
+                  }
+
+                }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>TODO Handle error case.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                });
+            }
+          }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>When it’s a mobile session let’s decrypt for the officers and re-send the encrypted one to the mobile users.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">if</span> (socket.mobileSession) {
+            <span class="hljs-keyword">var</span> password = util.passwordGenerator.generatePassword(socket.mobileSession.username);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>The decrypted message for the officers client</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> decryptedMessage = {
+              sender: socket.mobileSession.objectId,
+              receiver: socket.clientId,
+              message: util.encryptionManager.decrypt(password, message.message),
+              date: <span class="hljs-built_in">Date</span>.now()
+            };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Make sure to save the date for the server</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            message.date = decryptedMessage.date;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>chatId is only sent by an officer client, for a mobile user we use the one set during the start phase.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span> (socket.mobileSession.chatId) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>Send encrypted message to mobile client</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              socket.to(socket.mobileSession.chatId + <span class="hljs-string">'-mobile'</span>)
+                .emit(<span class="hljs-string">'new-message'</span>, message);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>Send un-encrypted message to officers.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              socket.to(socket.mobileSession.chatId + <span class="hljs-string">'-officer'</span>)
+                .emit(<span class="hljs-string">'new-message'</span>, decryptedMessage, socket.mobileSession.chatId);
+              saveToLog(message, socket.mobileSession.chatId);
+            }
+          }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>TODO maybe add push notifications here on two way??</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>puts an officer inside a room listening for messages on the specified chat id</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> officerEnterChatWithId = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(chatId)</span> </span>{
+          <span class="hljs-keyword">if</span> (socket.session) {
+            <span class="hljs-keyword">if</span> (socket.session.user) {
+              socket.join(chatId + <span class="hljs-string">'-officer'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>Send old messages to the officer as well.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              <span class="hljs-keyword">new</span> db.Query(ChatLog)
+                .equalTo(<span class="hljs-string">'chatId'</span>, chatId)
+                .first()
+                .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(log)</span> </span>{
+                  <span class="hljs-keyword">if</span> (log) {
+                    <span class="hljs-keyword">var</span> messages = log.get(<span class="hljs-string">'logs'</span>);
+                    messages.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(message)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>Get to objectId required to get the username for decryption</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                      <span class="hljs-keyword">var</span> objectId = message.sender === socket.session.user.objectId ?
+                        message.receiver : message.sender;
+
+                      usersModel.getUsername(objectId)
+                        .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(username)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>Start decrypting message</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                          <span class="hljs-keyword">var</span> password = util.passwordGenerator.generatePassword(username);
+
+                          message.message = util.encryptionManager.decrypt(password, message.message);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p>Send each message as they decrypt.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                          socket.emit(<span class="hljs-string">'new-message'</span>, message);
+                        });
+
+                    });
+                  }
+                }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(error)</span> </span>{
+
+                });
+            }
+          }
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>removes the offier from a chat</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> officerLeaveChatWithId = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(chatId)</span> </span>{
+          socket.leave(chatId + <span class="hljs-string">'-officer'</span>);
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>Sends a typing message to user on opposite spectrum.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> userTyping = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(chatId)</span> </span>{
+          <span class="hljs-keyword">if</span> (socket.mobileSession) {
+            socket.to(socket.mobileSession.chatId + <span class="hljs-string">'-officer'</span>)
+              .emit(<span class="hljs-string">'typing'</span>);
+          }
+
+          <span class="hljs-keyword">if</span> (socket.session.user) {
+            socket.to(chatId + <span class="hljs-string">'-mobile'</span>)
+              .emit(<span class="hljs-string">'typing'</span>);
+          }
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>Sends a stopped typing message to user on opposite spectrum.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> userStopTyping = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+          <span class="hljs-keyword">if</span> (socket.mobileSession) {
+            socket.to(socket.mobileSession.chatId + <span class="hljs-string">'-officer'</span>)
+              .emit(<span class="hljs-string">'stop-typing'</span>);
+          }
+
+          <span class="hljs-keyword">if</span> (socket.session.user) {
+            socket.to(chatId + <span class="hljs-string">'-mobile'</span>)
+              .emit(<span class="hljs-string">'stop-typing'</span>);
+          }
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p>This one only gets called by the mobile client. It should return an ArrayList of encrypted messages</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> onGetLog = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+          <span class="hljs-keyword">new</span> db.Query(ChatLog)
+            .equalTo(<span class="hljs-string">'chatId'</span>, socket.mobileSession.chatId)
+            .first()</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>let’s just dump all the logs in the list</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(log)</span> </span>{
+              <span class="hljs-keyword">if</span> (log) {
+                <span class="hljs-keyword">return</span> log.get(<span class="hljs-string">'logs'</span>) || [];
+              }
+
+              <span class="hljs-keyword">return</span> [];
+            })
+            .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(logs)</span> </span>{
+              socket.emit(<span class="hljs-string">'request-messages-result'</span>, logs);
+            });
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>set-up the messages the server can respond to.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        socket
+          .on(<span class="hljs-string">'start'</span>, mobileStart)
+          .on(<span class="hljs-string">'message-sent'</span>, routeMessage)
+          .on(<span class="hljs-string">'officer-enter-chat'</span>, officerEnterChatWithId)
+          .on(<span class="hljs-string">'officer-leave-chat'</span>, officerLeaveChatWithId)
+          .on(<span class="hljs-string">'user-typing'</span>, userTyping)
+          .on(<span class="hljs-string">'user-stop-typing'</span>, userStopTyping)
+          .on(<span class="hljs-string">'request-messages'</span>, onGetLog);
+      };
+    };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>Get the client names and start the namespaces</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    util.getClientIds()
+      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">whenWeHaveClients</span><span class="hljs-params">(clients)</span> </span>{
+        clients.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(clientId)</span> </span>{
+          io</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p>creates and starts the namespaces.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            .of(<span class="hljs-string">'/chat/'</span> + clientId)
+            .use(sessionMiddleware)
+            .on(<span class="hljs-string">'connection'</span>, createConnection(clientId));
+        });
+      }, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">thereIsAnError</span><span class="hljs-params">(error)</span> </span>{
+        <span class="hljs-built_in">console</span>.error(error.message);
+      });
+  }
+
+  <span class="hljs-built_in">module</span>.exports = startServer;
+})();</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

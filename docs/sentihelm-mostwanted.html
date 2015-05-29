@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>sentihelm-mostwanted.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="sentihelm-chat.html">
+                  sentihelm-chat.js
+                </a>
+              
+                
+                <a class="source" href="sentihelm-mostwanted.html">
+                  sentihelm-mostwanted.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>sentihelm-mostwanted.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/**
+ * Created by Victor Martinez &lt;victoramartinez@optivon.net&gt; on 1/12/2015.
+ */</span>
+
+(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+  <span class="hljs-comment">/**
+   * @ngdoc Module
+   * @name sh.mostwanted
+   * @requires none
+   * @description Creates the module for the controllers and directives of most wanted
+   * */</span>
+  angular.module(<span class="hljs-string">'sentihelm'</span>)
+
+  <span class="hljs-comment">/**
+   * @ngdoc Directive
+   * @name wantedPerson
+   * @param {ngService} $rootScope provide separation between the model and
+   * the view, via a mechanism for watching the model for changes.
+   * @returns {ngDirective}
+   * @restrict EA
+   * @scope
+   * @description custom angular directive used in html as wanted-person
+   * */</span>
+  .directive(<span class="hljs-string">'wantedPerson'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">($rootScope)</span> </span>{
+    <span class="hljs-keyword">return</span> {
+      restrict: <span class="hljs-string">'EA'</span>,
+      scope: {
+        change: <span class="hljs-string">"&amp;"</span>, <span class="hljs-comment">// for observing changes in models</span>
+        save: <span class="hljs-string">"&amp;"</span>, <span class="hljs-comment">// for saving changes</span>
+        confirm: <span class="hljs-string">"&amp;"</span>, <span class="hljs-comment">// for confirming deletion</span>
+        fileSelect: <span class="hljs-string">"&amp;"</span>, <span class="hljs-comment">// for selecting image file</span>
+        criminal: <span class="hljs-string">"="</span>, <span class="hljs-comment">// the person object for the model, information should be in person.attributes object</span>
+        disableNewButton: <span class="hljs-string">"="</span>, <span class="hljs-comment">// boolean value, disables/enables new button</span>
+        wantedArray: <span class="hljs-string">"="</span>, <span class="hljs-comment">// array of wanted people</span>
+        editedPeopleIndices: <span class="hljs-string">"="</span>, <span class="hljs-comment">// indices of people being edited</span>
+        index: <span class="hljs-string">"="</span> <span class="hljs-comment">// index of current element</span>
+      },
+      templateUrl: <span class="hljs-string">'/wanted-person-template.html'</span>,
+      link: <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(scope, element)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>creates boolean value from expression, if true this element was just created and added to the list
+by the new button. Otherwise, just normal ngRpeat directive.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        scope.justCreated = scope.editing = (scope.index === $rootScope.lastPersonAddedIndex);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>templates</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        scope.wantedCardTemplate = <span class="hljs-string">'/most-wanted-card.html'</span>;
+        scope.wantedEditorTemplate = <span class="hljs-string">'/most-wanted-editor.html'</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>toggles state of editing, shows and hides editing form and card respectively.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        scope.toggleEditing = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+          scope.editing = !scope.editing;
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>discards current card and editor for the wanted person
+can only be run if the card was just created and not saved
+to the database.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        scope.discard = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+          scope.toggleEditing();
+          element.controller().wantedArray.pop();
+          element.controller().disableNewButton = <span class="hljs-literal">false</span>;
+          element[<span class="hljs-number">0</span>].remove();
+        };
+      }
+
+    };
+  })
+
+  <span class="hljs-comment">/**
+   * @ngdoc Filter
+   * @name limitName
+   * @description limits the name to only two words for neater fit.
+   * */</span>
+  .filter(<span class="hljs-string">'limitName'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">limitName</span><span class="hljs-params">(inputName)</span> </span>{
+      <span class="hljs-keyword">if</span> (!inputName) {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>;
+      }
+      <span class="hljs-keyword">var</span> nameArray = inputName.split(<span class="hljs-string">' '</span>),
+        first = nameArray[<span class="hljs-number">0</span>] || <span class="hljs-string">''</span>, <span class="hljs-comment">// fixes undefined error</span>
+        last = nameArray[<span class="hljs-number">1</span>] || <span class="hljs-string">''</span>; <span class="hljs-comment">// fixes undefined error</span>
+
+      <span class="hljs-keyword">return</span> first + <span class="hljs-string">' '</span> + last;
+    }
+
+    <span class="hljs-keyword">return</span> limitName;
+  })
+
+  <span class="hljs-comment">/**
+   * @ngdoc Filter
+   * @name limitSummary
+   * @description limits the summary of a criminal to only 35 words.
+   * */</span>
+  .filter(<span class="hljs-string">'limitSummary'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">limitSummary</span><span class="hljs-params">(inputSummary)</span> </span>{
+        <span class="hljs-keyword">if</span> (!inputSummary) {
+          <span class="hljs-keyword">return</span> <span class="hljs-string">''</span>;
+        }
+        <span class="hljs-keyword">return</span> inputSummary.split(<span class="hljs-string">' '</span>).map(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(word, count)</span> </span>{
+          <span class="hljs-keyword">var</span> theWord = <span class="hljs-string">''</span>;
+          <span class="hljs-keyword">if</span> (count &lt; <span class="hljs-number">35</span>) {
+            <span class="hljs-keyword">if</span> (count === <span class="hljs-number">0</span>) {
+              theWord = word[<span class="hljs-number">0</span>].toUpperCase() + word.split(<span class="hljs-string">''</span>).slice(<span class="hljs-number">1</span>).join(<span class="hljs-string">''</span>).toLowerCase();
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (count === <span class="hljs-number">34</span>) {
+              theWord = word + <span class="hljs-string">'...'</span>;
+            } <span class="hljs-keyword">else</span> {
+              theWord = word.toLowerCase();
+            }
+            <span class="hljs-keyword">return</span> theWord;
+          }
+        }).join(<span class="hljs-string">' '</span>);
+      }
+
+      <span class="hljs-keyword">return</span> limitSummary;
+    })</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Service for managing the most wanted list. It can save, add
+or delete most wanted people to/from Parse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    .factory(<span class="hljs-string">"MostWantedService"</span>, [<span class="hljs-string">'errorFactory'</span>, <span class="hljs-string">'$http'</span>, <span class="hljs-string">'$upload'</span>,
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(errorFactory, $http, Upload)</span> </span>{
+        <span class="hljs-keyword">var</span> mostWantedService = {};
+        <span class="hljs-keyword">var</span> mostWantedArray = [];</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Request must wanted list from Parse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        mostWantedService.fetchMostWantedList = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+          <span class="hljs-keyword">return</span> $http.get(<span class="hljs-string">'/mostwanted/list'</span>).then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(response)</span> </span>{
+            mostWantedArray = angular.copy(response.data);
+            <span class="hljs-keyword">return</span> mostWantedArray;
+          });
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Save one most wanted person, whether
+it is a new one or an old one</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        mostWantedService.saveMostWanted = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(person, index)</span> </span>{
+          <span class="hljs-keyword">var</span> fields = {
+              person: person,
+              <span class="hljs-keyword">new</span>: index === -<span class="hljs-number">1</span> ? <span class="hljs-literal">true</span> : <span class="hljs-literal">false</span>
+            };
+
+          <span class="hljs-keyword">if</span> (!person.name) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>TODO show ‘must have a name’ error MOST-WANTED-NO-DATA</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            errorFactory.showError(<span class="hljs-string">'MOST-WANTED-NO-NAME'</span>);
+            <span class="hljs-keyword">return</span>;
+          }
+          <span class="hljs-comment">/**
+           * Ok, so here's the deal, we can't send too weird of objects to
+           * the server or else nothing will get through, especially object that
+           * need to be flattened. So what we do here is send the image that was
+           * newly added as a base64 array in string format. Otherwise we delete
+           * the image and we detect a new image in the server.
+           */</span>
+
+
+          <span class="hljs-keyword">if</span> (person.file) {
+            <span class="hljs-keyword">return</span> Upload.upload({
+              url: <span class="hljs-string">'/mostwanted/save'</span>,
+              data: fields,
+              file: person.file
+            });
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> $http.post(<span class="hljs-string">'/mostwanted/save'</span>, fields)
+              .then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(errResponse)</span> </span>{
+                <span class="hljs-keyword">return</span>;
+              });
+          }
+
+
+
+
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Delete a most wanted from parse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        mostWantedService.deleteMostWanted = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(index)</span> </span>{
+          <span class="hljs-keyword">var</span> wantedPerson = mostWantedArray[index];
+
+          $http.delete(<span class="hljs-string">'/mostwanted/remove/'</span> + wantedPerson.objectId)
+            .then(<span class="hljs-literal">null</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(errResponse)</span> </span>{
+              <span class="hljs-keyword">return</span>;
+            });
+        };
+
+
+        mostWantedService.rearrangeList = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(newList)</span> </span>{
+          <span class="hljs-keyword">if</span> (newList <span class="hljs-keyword">instanceof</span> <span class="hljs-built_in">Array</span> &amp;&amp; newList.length === mostWantedArray.length) {
+
+            <span class="hljs-keyword">return</span> $http.put(<span class="hljs-string">'/mostwanted/list'</span>, {
+              list: newList
+            });
+          }
+        };
+
+        <span class="hljs-keyword">return</span> mostWantedService;
+      }
+    ])</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>Controller for the Most-Wanted state</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    .controller(<span class="hljs-string">'MostWantedController'</span>, [<span class="hljs-string">'MostWantedService'</span>, <span class="hljs-string">'$scope'</span>, <span class="hljs-string">'fileReader'</span>, <span class="hljs-string">'ngDialog'</span>, <span class="hljs-string">'$rootScope'</span>,
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(MostWantedService, $scope, fileReader, ngDialog, $rootScope)</span> </span>{
+
+        <span class="hljs-keyword">var</span> MostWantedCtrl = <span class="hljs-keyword">this</span>,
+          oldList = [],
+          newList = [];
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">listUpdating</span><span class="hljs-params">(e, ui)</span> </span>{
+          oldList = angular.copy(MostWantedCtrl.wantedArray);
+        }
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">listSettled</span><span class="hljs-params">(e, ui)</span> </span>{
+          newList = angular.copy(MostWantedCtrl.wantedArray);
+
+          <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; newList.length; i++) {
+            <span class="hljs-keyword">if</span> (oldList[i] !== newList[i]) {
+              <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'new list order!'</span>);
+              MostWantedService.rearrangeList(newList)
+                .then(getList);
+              <span class="hljs-keyword">return</span>;
+            }
+          }
+        }
+
+        <span class="hljs-keyword">this</span>.sortableOptions = {
+          handle: <span class="hljs-string">'.most-wanted-move-handle'</span>,
+          update: listUpdating,
+          stop: listSettled
+        };
+
+        <span class="hljs-keyword">this</span>.wantedArray = [];
+        <span class="hljs-keyword">this</span>.parseArrayLength = <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">this</span>.disableNewButton = <span class="hljs-literal">false</span>;
+        <span class="hljs-keyword">this</span>.editedPeopleIndices = [];
+
+        <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getList</span><span class="hljs-params">(count)</span> </span>{
+          count = count|<span class="hljs-number">0</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Request most wanted list from Parse
+Receive the most wanted list from the Most Wanted
+service</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          MostWantedService.fetchMostWantedList()
+            .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(list)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>make sure the list is an Array of elements and that it has a length,
+otherwise try again.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>              list = list <span class="hljs-keyword">instanceof</span> <span class="hljs-built_in">Array</span> ? list : [];
+              <span class="hljs-keyword">if</span> (list.length &gt;= <span class="hljs-number">1</span>) {
+                MostWantedCtrl.wantedArray = angular.copy(list);
+
+                MostWantedCtrl.disableNewButton = <span class="hljs-literal">false</span>;
+                MostWantedCtrl.editedPeopleIndices = [];
+                MostWantedCtrl.parseArrayLength = list.length;
+              } <span class="hljs-keyword">else</span> {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>list was delivered blank, let’s try fetching it again,
+at a maximum of 10 times.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-keyword">if</span> (count &lt; <span class="hljs-number">10</span>) {
+                  getList(count+<span class="hljs-number">1</span>);
+                }
+              }
+            });
+        }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Once a file is selected, prep file for upload to Parse
+Used for attaching files to a most-wanted person</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">this</span>.onFileSelect = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">($files, index)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Fetch file</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          <span class="hljs-keyword">var</span> file = $files[<span class="hljs-number">0</span>];
+          <span class="hljs-keyword">var</span> mostWanted = MostWantedCtrl.wantedArray[index];
+
+          fileReader.readAsDataUrl(file, $scope)
+            .then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(result)</span> </span>{
+              mostWanted.photoUrl = result;
+              MostWantedCtrl.editedPeopleIndices[index] = <span class="hljs-literal">true</span>;
+            });
+
+          mostWanted.file = file;
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>Add new wanted to the controller array. Must
+use ‘save’ function to save to Parse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">this</span>.add = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+          <span class="hljs-keyword">this</span>.wantedArray.push({});
+          <span class="hljs-keyword">this</span>.disableNewButton = <span class="hljs-literal">true</span>;
+          $rootScope.lastPersonAddedIndex = <span class="hljs-keyword">this</span>.wantedArray.length - <span class="hljs-number">1</span>;
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>Save new most wanted, or update an old one,
+to Parse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">this</span>.save = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(index)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>Check if it is a new most wanted</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          MostWantedService
+            .saveMostWanted(<span class="hljs-keyword">this</span>.wantedArray[index], index === <span class="hljs-keyword">this</span>.parseArrayLength ? -<span class="hljs-number">1</span> : index)
+            .then(getList);
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>Delete most wanted from local array and from
+Parse</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">this</span>.delete = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(index)</span> </span>{
+          MostWantedService.deleteMostWanted(index).then(getList);
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>Enables the Save button if a change on an input
+field is detected</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">this</span>.onChange = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(index)</span> </span>{
+          <span class="hljs-keyword">this</span>.editedPeopleIndices[index] = <span class="hljs-literal">true</span>;
+        };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>Dialog to confirm if the user really wants to
+delete the most wanted from the list</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">this</span>.showConfirmDialog = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">(index)</span> </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>this.aboutToDeleteName = this.wantedArray[index].attributes.firstName;</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>          ngDialog.openConfirm({
+            template: <span class="hljs-string">'../most-wanted-confirm-dialog.html'</span>,
+            className: <span class="hljs-string">'ngdialog-theme-plain'</span>,
+            scope: $scope
+          }).then(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-params">()</span> </span>{
+            MostWantedCtrl.delete(index);
+          });
+        };
+
+        getList();
+      }
+    ]);
+
+})();</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
