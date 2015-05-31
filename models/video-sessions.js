@@ -5,7 +5,9 @@
 (function () {
   'use strict';
 
+  var config = require('../config');
   var db = require('../lib/db');
+  var AWS = require('../lib/aws');
   var VideoSession = db.Object.extend('VideoSession');
   var videoSessionQuery = new db.Query(VideoSession);
   var Q = require('q');
@@ -21,10 +23,9 @@
       var homeClient = data.homeClient;
       var lastVideoCreatedAt = data.lastVideoCreatedAt;
       var parseSkipLimit = 10000;
-      
-      //videoSessionQuery.include('mobileUser', 'officerUser', 'lastWatcher');
-      //videoSessionQuery.include('mobileUser').include('officerUser').include('lastWatcher');
-      videoSessionQuery.containedIn('archiveStatus','uploaded','available');
+
+      videoSessionQuery.include(['mobileUser', 'officerUser', 'lastWatcher']);
+      videoSessionQuery.containedIn('archiveStatus',['uploaded','available']);
       videoSessionQuery.equalTo('client', {
         __type: "Pointer",
         className: "Client",
@@ -42,7 +43,7 @@
           videoSessionQuery.equalTo('hasBeenWatched', true);
         }
         else{
-          videoSessionQuery.equalTo('hasBeenWatched', undefined);
+          videoSessionQuery.doesNotExist('hasBeenWatched');
         }
       }
 
@@ -58,15 +59,26 @@
         success: function(videos) {
           videoSessionQuery.count({
             success: function(count) {
-              videos.forEach(function(video){
-                video.mobileUser = video.attributes.mobileUser.attributes.username;
-                video.officerUser = video.attributes.officerUser.attributes.username;
-                video.lastWatcher = video.attributes.lastWatcher.attributes.username;
+              var updatedVideos = [];
+              videos.forEach(function(video, index){
+                var updatedVideo = video.toJSON();
+                // get mobile user, then get last watcher, the get officer user then resolve promise
+                if(video.attributes.mobileUser){
+                  updatedVideo.mobileUser = video.attributes.mobileUser.attributes.username;
+                }
+                if(video.attributes.lastWatcher){
+                  updatedVideo.lastWatcher = video.attributes.lastWatcher.attributes.username;
+                }
+                if(video.attributes.officerUser){
+                  updatedVideo.officerUser = video.attributes.officerUser.attributes.username;
+                }
+
+                updatedVideos.  push(updatedVideo);
 
               });
               var lastPageNum = Math.ceil(count/10);
               var data = {
-                videos: videos,
+                videos: updatedVideos,
                 lastPageNum: lastPageNum,
                 videoTotal: count
               };
@@ -85,6 +97,24 @@
           reject(error);
         }
       });
+    });
+  };
+
+  module.exports.getVideoUrl = function(data){
+
+    return Q.Promise(function(resolve, reject){
+
+      var archiveId = data.archiveId;
+      // This URL will expire in one minute (60 seconds)
+      var params = {Bucket: 'stream-archive', Key: config.opentok.key + '/' + archiveId + '/archive.mp4', Expires: 500};
+      var s3 = new AWS.S3();
+      try{
+        var videoUrl = s3.getSignedUrl('getObject', params);
+        resolve(videoUrl);
+      }
+      catch(e){
+        reject(e);
+      }
     });
   };
 

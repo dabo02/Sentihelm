@@ -987,6 +987,8 @@
 
         var otKey = '44755992';
 
+        //var otKey = '44999872';
+
         var VideoSession = Parse.Object.extend("VideoSession");
 
         var VideoStreamsService = {};
@@ -1406,8 +1408,8 @@
 
     //Controller for login dialog and login
     //landing page
-    app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', 'socket', 'ngDialog',
-        function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, socket, ngDialog) {
+    app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', 'socket', 'ngDialog', '$window',
+        function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, socket, ngDialog, $window) {
 
             var loginCtrl = this;
 
@@ -1456,6 +1458,7 @@
                         $rootScope.$broadcast(AUTH_EVENTS.loginSuccess, [user, client, regions]);
                         loginCtrl.submitting = false;
                         $scope.closeThisDialog();
+                        $window.location.reload();
 
                     },
                     function (error) {

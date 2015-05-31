@@ -26,7 +26,8 @@
     "parse": "^1.4.1",
     "q": "^1.2.0",
     "sjcl": "git+https://github.com/Optivon/sjcl.git",
-    "socket.io": "^1.0.6"
+    "socket.io": "^1.0.6",
+    "aws-sdk": "^2.1.11"
   },
   "scripts": {
     "start": "./bin/www"

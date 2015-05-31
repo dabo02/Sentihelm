@@ -87,7 +87,8 @@
 								<img src="./resources/images/videoAtt.png"
 									 ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
 							</a>
-							<a id="imageAtt" ng-href="https://s3.amazonaws.com/stream-archive/44755992/{{video.archiveId}}/archive.mp4" download="" >
+							<a id="imageAtt" href="javascript:angular.element(
+         document.getElementById('video-archive-list')).scope().fetchDownloadUrl(video.archiveId);" download="" >
 								<img src="./resources/images/downloadAtt.png" ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
 							</a>
 						</div>

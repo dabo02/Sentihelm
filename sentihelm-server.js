@@ -25,6 +25,10 @@
 
   //Other imports
   var Parse = require('./lib/db');
+  var OpenTok = require('opentok');
+  var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
+  var db = require('./lib/db');
+  var VideoSession = db.Object.extend('VideoSession');
 
   /**
    * The server makes extensive use of socket.io to send real time notifications
@@ -70,7 +74,7 @@
       .use('/analyze', dataAnalysis)
       .use('/videosessions', videoSessions);
 
-    app.post('/request-video-connection', function (request, response) {
+    app.post('/request-video-connection', bodyParser(), function (request, response) {
 
       console.log("\n\nIn request-video-connection...\n\n");
 

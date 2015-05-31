@@ -7,7 +7,7 @@
 
   angular.module('sentihelm')
 
-    .controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', '$http', function ($scope, Session, socket, ngDialog, usSpinnerService, $location, $anchorScroll, $http) {
+    .controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', '$http', '$sce', function ($scope, Session, socket, ngDialog, usSpinnerService, $location, $anchorScroll, $http, $sce) {
 
       var videoArchiveCtrl = this;
       videoArchiveCtrl.videoArchiveArray;
@@ -36,7 +36,7 @@
 
         var params = {
           videoDateFilter: videoArchiveCtrl.videoDateFilter,
-          watchStatusFilter: videoArchiveCtrl.registrationDate,
+          watchStatusFilter: videoArchiveCtrl.watchStatusFilter,
           lastVideoCreatedAt: false, // adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt || undefined,
           skip: videoArchiveCtrl.skip,
           limit: videoArchiveCtrl.limit
@@ -94,6 +94,7 @@
 
       videoArchiveCtrl.showVideo = function(video){
 
+        /*
         AWS.config.update({accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q', secretAccessKey: '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'});
         AWS.config.region = 'us-east-1';
         var s3 = new AWS.S3();
@@ -101,22 +102,40 @@
         // This URL will expire in one minute (60 seconds)
         var params = {Bucket: 'stream-archive', Key: '44755992/' + video.archiveId + '/archive.mp4', Expires: 500};
         var videoUrl = s3.getSignedUrl('getObject', params);
+        */
 
-        //ngDialog can only handle stringified JSONs
-        var data = JSON.stringify({
-          attachmentType: 'VID',
-          address: videoUrl
-        });
+        //$sce.trustAsResourceUrl('https://stream-archive.s3.amazonaws.com/44755992/**');
+        var videoUrl = '';
 
-        //Open dialog and pass control to AttachmentController
-        $scope.attachmentDialog = ngDialog.open({
-          template: '../attachment-dialog.html',
-          className: 'ngdialog-attachment',
-          showClose: true,
-          scope: $scope,
-          data: data
-        });
+        var params = {
+          archiveId: video.archiveId
+        }
 
+
+        $http.get('videosessions/getVideoUrl', {params: params})
+          .success(function(data){
+            videoUrl = data;
+          })
+          .error(function(error){
+            //TODO add error management
+          }).then(function(){
+            //ngDialog can only handle stringified JSONs
+            var data = JSON.stringify({
+              attachmentType: 'VID',
+              address: videoUrl
+            });
+
+            //Open dialog and pass control to AttachmentController
+            $scope.attachmentDialog = ngDialog.open({
+              template: '../attachment-dialog.html',
+              className: 'ngdialog-attachment',
+              showClose: true,
+              scope: $scope,
+              data: data
+            });
+          });
+
+/*
         //Update VideoSession's lastWatcher
         var VideoSession = Parse.Object.extend("VideoSession");
         var videoSessionQuery = new Parse.Query(VideoSession);
@@ -134,8 +153,23 @@
             // The object was not retrieved successfully.
             console.log("Error fetching video for lastWatcher update.");
           }
-        });
-      }
+        });*/
+      };
+
+      videoArchiveCtrl.fetchDownloadUrl = function(archiveId){
+
+        var params = {
+          archiveId: archiveId
+        }
+
+        $http.get('videosessions/getVideoUrl', {params: params})
+          .success(function(data){
+            return data;
+          })
+          .error(function(error){
+            return '';
+          });
+      };
 
       videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
 

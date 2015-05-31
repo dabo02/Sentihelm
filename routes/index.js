@@ -7,6 +7,7 @@
   var clientModel = require('../models/client');
   var usersModel = require('../models/users');
   var config = require('../config');
+  var bodyParser = require('body-parser');
   var OpenTok = require('opentok');
   var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
   var db = require('../lib/db');
@@ -121,7 +122,7 @@
 
   //Receive request to start archiving a video session
   //and store the archiveId
-  .post('/start-archive', function (request, response) {
+  .post('/start-archive', bodyParser(), function (request, response) {
 
     console.log("\n\nIn start-archive...\n\n");
     //TODO why is the password check not being used?
