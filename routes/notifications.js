@@ -189,11 +189,11 @@
           return db.Push.send({
             channels: channels,
             data: {
-              alert: notification.message,
+              alert: notification.attributes.message,
               badge: "Increment",
               sound: "cheering.caf",
-              title: notification.title,
-              pushId: notification.objectId,
+              title: notification.attributes.title,
+              pushId: notification.id,
               type: "regional"
             }
           });
