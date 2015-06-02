@@ -162,12 +162,13 @@
           archiveId: archiveId
         }
 
+        var downloadUrl = 'mera';
         $http.get('videosessions/getVideoUrl', {params: params})
           .success(function(data){
             return data;
           })
           .error(function(error){
-            return '';
+
           });
       };
 

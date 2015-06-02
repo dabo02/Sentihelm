@@ -87,8 +87,7 @@
 								<img src="./resources/images/videoAtt.png"
 									 ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
 							</a>
-							<a id="imageAtt" href="javascript:angular.element(
-         document.getElementById('video-archive-list')).scope().fetchDownloadUrl(video.archiveId);" download="" >
+							<a id="imageAtt" ng-href="{{videoArchiveCtrl.fetchDownloadUrl(video.archiveId)}}" download="">
 								<img src="./resources/images/downloadAtt.png" ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
 							</a>
 						</div>
