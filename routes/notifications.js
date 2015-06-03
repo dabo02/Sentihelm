@@ -15,13 +15,14 @@
   var path = require('path');
   var Q = require('q');
 
-  var PushNotification = db.Object.extend("FollowUpNotifications");
+  var FollowUpNotification = db.Object.extend("FollowUpNotifications");
+  var PushNotification = db.Object.extend("PushNotifications");
 
   //Delete saved notification; broadcast notification sent error
   //or partial success, depending on if it was deleted or not
   function deleteSavedNotification(notification, passedError) {
 
-    new db.Query(PushNotification)
+    new db.Query(FollowUpNotification)
       .get(notification.objectId)
       .then(function (notification) {
         notification.destroy({
@@ -78,7 +79,13 @@
         var username = user.attributes.username;
         passPhrase = util.passwordGenerator.generatePassword(username);
 
-        var notification = new PushNotification();
+        var notification = new FollowUpNotification();
+
+        notification.set('client', {
+          __type: "Pointer",
+          className: "Client",
+          objectId: connection.currentClientId
+        });
         notification.set("userId", notificationData.userId);
         notification.set("tipId", notificationData.controlNumber);
 
@@ -111,6 +118,7 @@
     .use(util.restrict)
     .post('/followup', function (request, response) {
       var notification = request.body.notification;
+      notification.homeClient = request.session.user.
 
       saveAndPushNotification(notification)
         .then(function () {
@@ -184,7 +192,7 @@
       notification.set("channels", channels);
 
 
-      notification.save()
+      save()
         .then(function (notification) {
           //Notification saved, now push it to channels
           //response.send(notification.toJSON());
