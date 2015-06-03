@@ -170,23 +170,25 @@
       var messageBytes = new Buffer(notificationData.message);
 
       var notification = new PushNotification();
-      notification.set("title", {
+      notification.set("title", notificationData.title);
+      notification.set("message", notificationData.message);
+      /*notification.set("title", {
         __type: 'Bytes',
         base64: titleBytes.toString('base64')
       });
       notification.set("message", {
         __type: 'Bytes',
         base64: messageBytes.toString('base64')
-      });
+      });*/
       notification.set("type", 'regional');
       notification.set("channels", channels);
 
 
-      save()
+      notification.save()
         .then(function (notification) {
           //Notification saved, now push it to channels
           //response.send(notification.toJSON());
-          return db.Push.send({
+          var notifParams = {
             channels: channels,
             data: {
               alert: notification.attributes.message,
@@ -196,7 +198,8 @@
               pushId: notification.id,
               type: "regional"
             }
-          });
+          }
+          return db.Push.send(notifParams);
         })
         .then(function () {
           response.send(200);
