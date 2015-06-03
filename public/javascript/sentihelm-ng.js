@@ -265,7 +265,7 @@
   app.constant('ERRORS', {
     'LOGIN-101': {
       title: 'Invalid Login Parameters',
-      message: 'The email or password you entered is incorrect',
+      message: 'The username or password you entered is incorrect',
       code: 'LOGIN-101',
       onClose: function () {
         document.getElementById("login-dialog-username").focus();
@@ -273,7 +273,7 @@
     },
     'LOGIN-NO-USERID': {
       title: 'No UserId',
-      message: 'You must provide a login ID',
+      message: 'You must provide a username',
       code: 'LOGIN-NO-USERID',
       onClose: function () {
         document.getElementById("login-dialog-username").focus();

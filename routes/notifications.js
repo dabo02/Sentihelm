@@ -84,7 +84,7 @@
         notification.set('client', {
           __type: "Pointer",
           className: "Client",
-          objectId: connection.currentClientId
+          objectId: notification.homeClient
         });
         notification.set("userId", notificationData.userId);
         notification.set("tipId", notificationData.controlNumber);
@@ -118,7 +118,7 @@
     .use(util.restrict)
     .post('/followup', function (request, response) {
       var notification = request.body.notification;
-      notification.homeClient = request.session.user.
+      notification.homeClient = request.session.user.homeClient.objectId;
 
       saveAndPushNotification(notification)
         .then(function () {
@@ -191,6 +191,11 @@
       notification.set("type", 'regional');
       notification.set("channels", channels);
 
+      notification.set('client', {
+        __type: "Pointer",
+        className: "Client",
+        objectId: request.session.user.homeClient.objectId
+      });
 
       save()
         .then(function (notification) {
