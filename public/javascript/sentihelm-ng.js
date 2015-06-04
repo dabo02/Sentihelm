@@ -14,6 +14,27 @@
 
         $stateProvider
 
+
+            //Dashboard pagel endpoint/url
+            .state('dashboard', {
+                url: "/dashboard",
+                templateUrl: "/dashboard.html",
+                data: {
+                    authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+                },
+                resolve: {
+                    // Reads the Routing Service
+                    routingService: 'RoutingService',
+
+                    // Receives the Routing Service, checks if user is logged in,
+                    // executes the login dialog if needed and waits for the dialog
+                    // to close before loading the state.
+                    authenticate: function (routingService) {
+                        return routingService.checkUserStatus(this.data.authorizedRoles, "Dashboard");
+                    }
+                }
+            })
+
             //Profile pagel endpoint/url
             .state('profile', {
                 url: "/profile",
@@ -1534,6 +1555,11 @@
         //Drawer options with name and icon;
         //entries are off by default
         this.entries = [{
+
+            name: 'Dash',
+            icon: 'glyphicon glyphicon-dashboard',
+            state: 'dashboard'
+        }, {
             name: 'Tip Feed',
             icon: 'glyphicon glyphicon-inbox',
             state: 'tipfeed'
