@@ -113,7 +113,7 @@
     .get('/:tipId', function (request, response) {
       var tipId = request.params.tipId;
 
-      tipModel.getById(tipId).spread(function (tip, tipUser) {
+      tipModel.getById(tipId).spread(function (tip, tipUser, tipNonJSON) {
         var passPhrase;
         if (!tip.smsId) {
           passPhrase = util.passwordGenerator.generatePassword((!!tipUser ? tipUser.username : tip.anonymousPassword), !tipUser);
@@ -128,7 +128,7 @@
           tip.username = tipUser.username;
           tip.phone = util.encryptionManager.decrypt(passPhrase, tipUser.phoneNumber.base64);
           tip.anonymous = false;
-          tip.channel = "user_" + tipUser.id;
+          tip.channel = "user_" + tipNonJSON.attributes.user.id;
         } else {
           //Set tip to anonymous if the user was not found
           tip.firstName = "ANONYMOUS";

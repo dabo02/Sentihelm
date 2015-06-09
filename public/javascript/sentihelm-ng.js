@@ -724,7 +724,7 @@
           if (notification.type === 'follow-up') {
             $rootScope.$broadcast('notification-success', [notification]);
           } else {
-            $rootScope.$broadcast('regional-notification-success', [notification]);
+            $rootScope.$broadcast('regional-notification-success');
           }
         }, function (response) {
           var notification = response.data.notification;
@@ -1941,9 +1941,9 @@
       this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
       this.channel = $scope.$parent.ngDialogData.channel;
       this.userId = this.channel.substring(5);
-      this.sending = false;
       this.file = undefined;
       var notificationCtrl = this;
+      notificationCtrl.sending = false;
       var thisDialogId = $scope.$parent.notificationDialog.id;
 
       //Set focus on message box once dialog pops up
@@ -2017,7 +2017,7 @@
         }
 
         //Toggle sending animation
-        this.sending = true;
+        notificationCtrl.sending = true;
 
         //--USED FOR NON ENCRYPTED FOLLOW UP--
         //--
@@ -2043,9 +2043,17 @@
         })
           .then(function () {
             notificationCtrl.sending = false;
-            $scope.$apply();
-            $scope.closeThisDialog();
-          });
+            notificationCtrl.hasError = true;
+            notificationCtrl.successMessage = 'SUCCESS: Follow up notification has been sent.';
+            //todo check why dialog does not work for sending consecutive follow up notifs w.o. refresh..
+            //$scope.closeThisDialog();
+          },
+        function(error){
+          notificationCtrl.sending = false;
+          notificationCtrl.hasError = true;
+          notificationCtrl.successMessage = 'FAILED: Follow up notification could not be sent.';
+          //$scope.closeThisDialog();
+        });
 
 
         //--USED FOR NON ENCRYPTED FOLLOW UP--
@@ -2129,10 +2137,13 @@
   app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
     function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory) {
 
-      this.sending = false;
+
       this.regions = $scope.currentRegions;
       this.allRegions = false;
       var regionalNotificationCtrl = this;
+      regionalNotificationCtrl.sending = false;
+      regionalNotificationCtrl.hasError = false;
+      regionalNotificationCtrl.successMessage = '';
 
       //Once a file is selected, prep file for upload to Parse
       this.onFileSelect = function ($files) {
@@ -2181,7 +2192,7 @@
           return;
         }
 
-        this.sending = true;
+        regionalNotificationCtrl.sending = true;
 
         //Prepare notification
         var notification = {};
@@ -2193,14 +2204,18 @@
           notification.attachmentType = this.fileType;
         }
 
+        regionalNotificationCtrl.successMessage = '';
+        regionalNotificationCtrl.hasError = false;
         //Create Parse notification and send it
         parseNotificationService.newRegionalNotification(notification);
       };
 
       //Notification was successfully saved and pushed (sent)
-      $scope.$on('regional-notification-success', function (notification) {
+      $scope.$on('regional-notification-success', function () {
         regionalNotificationCtrl.sending = false;
-        $scope.$apply();
+        regionalNotificationCtrl.hasError = false;
+        regionalNotificationCtrl.successMessage = 'SUCCESS: Regional notification has been sent.';
+        //$scope.$apply();
       });
 
       //Notification was saved, but not pushed
@@ -2215,7 +2230,8 @@
       $scope.$on('regional-notification-error', function (notification) {
         errorFactory.showError('NOTIF-FAILED');
         regionalNotificationCtrl.sending = false;
-        $scope.$apply();
+        regionalNotificationCtrl.hasError = true;
+        regionalNotificationCtrl.successMessage = 'FAILED: Regional notification could not be sent.';
       });
 
     }

@@ -84,7 +84,7 @@
         notification.set('client', {
           __type: "Pointer",
           className: "Client",
-          objectId: notification.homeClient
+          objectId: notificationData.homeClient
         });
         notification.set("userId", notificationData.userId);
         notification.set("tipId", notificationData.controlNumber);

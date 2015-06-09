@@ -39,7 +39,7 @@
             t.user = tip.get('user').toJSON();
           }
 
-          resolve([t, t.user]);
+          resolve([t, t.user, tip]);
 
         }, function (e) {
           reject(e);
