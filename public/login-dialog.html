@@ -7,13 +7,13 @@
       <form class="form-horizontal" role="form" name="loginForm" ng-if="loginCtrl.resetPasswordAvailable" novalidate>
 
         <div class="form-group">
-          <label for="login-dialog-username" class="col-sm-3 control-label">User ID</label>
+          <label for="login-dialog-username" class="col-sm-3 control-label">{{login-userId}}</label>
           <div class="col-sm-7">
             <input id="login-dialog-username" type="text" class="form-control" ng-model="loginCtrl.credentials.userId" placeholder="User ID"/>
           </div>
         </div>
         <div class="form-group">
-          <label for="login-dialog-password" class="col-sm-3 control-label">Password</label>
+          <label for="login-dialog-password" class="col-sm-3 control-label">{{login-password}}</label>
           <div class="col-sm-7">
             <input id="login-dialog-password" type="password" class="form-control" type="password" ng-model="loginCtrl.credentials.password" placeholder="Password"/>
           </div>
@@ -25,7 +25,7 @@
         </div>
         <div class="form-group">
           <button type="submit" class="btn btn-primary col-xs-offset-4 col-xs-4" ng-click="loginForm.$valid && loginCtrl.login()">
-            <span ng-hide="loginCtrl.submitting">Sign in</span>
+            <span ng-hide="loginCtrl.submitting">{{login-signin}}</span>
             <div class="spinner" ng-show="loginCtrl.submitting">
               <div class="bounce1 charcoal-spinner"></div>
               <div class="bounce2 charcoal-spinner"></div>
@@ -39,17 +39,17 @@
       <form class="form-horizontal" role="form" name="resetPasswordForm" ng-if="!loginCtrl.resetPasswordAvailable" novalidate>
 
         <div class="form-group" ng-if="!loginCtrl.resetPasswordAvailable">
-          <label class="col-sm-3 control-label">Email</label>
+          <label class="col-sm-3 control-label">{{login-email}}</label>
           <div class="col-sm-7">
             <input type="email" class="form-control" ng-model="loginCtrl.credentials.email" placeholder="Email">
           </div>
         </div>
         <div class="form-group">
           <button type="submit" class="btn btn-danger col-xs-offset-2 col-xs-3" ng-click="loginCtrl.cancelResetPassword()">
-            <span>Cancel</span>
+            <span>{{login-cancel}}</span>
           </button>
           <button type="submit" class="btn btn-primary col-xs-offset-2 col-xs-3" ng-click="loginCtrl.resetPassword()">
-            <span ng-hide="loginCtrl.submitting">Reset</span>
+            <span ng-hide="loginCtrl.submitting">{{login-reset}}</span>
             <div class="spinner" ng-show="loginCtrl.submitting">
               <div class="bounce1 charcoal-spinner"></div>
               <div class="bounce2 charcoal-spinner"></div>

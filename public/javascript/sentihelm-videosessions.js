@@ -69,6 +69,14 @@
           });
       }
 
+      videoArchiveCtrl.VideoClick = function(){
+        var link = 'http://www.oclc.org/content/dam/research/presentations/massie/oclc-research-system-wide-collection-sharing-webinar-2015.pptx';
+        var win = window.open(link, '_blank');
+              win.focus();
+          
+
+        }
+
       videoArchiveCtrl.refreshPageNumbers = function(){
 
         var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / videoArchiveCtrl.limit);
@@ -94,6 +102,8 @@
 
       videoArchiveCtrl.showVideo = function(video){
 
+
+
         /*
         AWS.config.update({accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q', secretAccessKey: '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'});
         AWS.config.region = 'us-east-1';
@@ -110,6 +120,8 @@
         var params = {
           archiveId: video.archiveId
         }
+
+
 
 
         $http.get('videosessions/getVideoUrl', {params: params})

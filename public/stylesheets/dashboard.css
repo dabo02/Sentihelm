@@ -1,0 +1,30 @@
+.dashboard-mid-container {
+    
+    
+    padding-left:  5%;
+    padding-right:  5%;
+}
+
+#dashH1{
+    text-align: center;
+}
+
+#wrapper {
+    width: 100%;
+}
+
+#dashIcons{
+    font-size: 50px;
+}
+
+.dashChart{
+    text-align: center;
+}
+
+.huge {
+    font-size: 40px;
+}
+.dashPanel{
+    padding-top:5px;
+}
+

@@ -91,6 +91,8 @@
          document.getElementById('video-archive-list')).scope().fetchDownloadUrl(video.archiveId);" download="" >
 								<img src="./resources/images/downloadAtt.png" ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
 							</a>
+
+							<button ng-click = "videoArchiveCtrl.VideoClick()">Video</button>
 						</div>
 
 						<!------CRIME DESCRIPTION------>
@@ -130,6 +132,8 @@
 	</div>
 	<!-- end archive main content -->
 	<br>
+
+	<div><button ng-click = "videoArchiveCtrl.VideoClick()">Video</button></div>
 
 	<!--=====PAGINATOR======-->
 	<!--====================-->
