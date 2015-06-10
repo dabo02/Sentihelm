@@ -247,6 +247,7 @@
           });
         };
 
+
         self.showAttachmentDialog = function (tip, type) {
           // Only show dialog if it, and notificationDialog,
           // are not showing
@@ -292,6 +293,43 @@
       self.tip = null;
       self.notificationDialogIsOn = false;
       self.attachmentDialogIsOn = false;
+      self.hasError = false;
+      self.sendingFollowUp = false;
+      self.successMessage = '';
+
+      //Note that notification dialog is off
+      $scope.$on('notification-dialog-closed', function (event, data) {
+        self.notificationDialogIsOn = false;
+      });
+
+      //Note that attachment dialog is off
+      $scope.$on('attachment-dialog-closed', function (event, data) {
+        self.attachmentDialogIsOn = false;
+      });
+
+      $scope.$on('notification-success', function (notification) {
+        self.sendingFollowUp = false;
+        self.hasError = false;
+        self.successMessage = 'SUCCESS: Follow up notification has been sent.';
+      });
+
+      $scope.$on('notification-error', function (error) {
+        self.sendingFollowUp = false;
+        self.hasError = true;
+        self.successMessage = 'FAILURE: Follow up notification could not be sent.';
+      });
+
+      $scope.$on('sms-notification-success', function (notification) {
+        self.sendingFollowUp = false;
+        self.hasError = false;
+        self.successMessage = 'SUCCESS: SMS notification has been sent.';
+      });
+
+      $scope.$on('sms-notification-error', function (error) {
+        self.sendingFollowUp = false;
+        self.hasError = true;
+        self.successMessage = 'FAILURE: SMS notification could not be sent.';
+      });
 
       self.showSMSDialog = function () {
         // ngDialog can only handle stringified JSONs
@@ -310,6 +348,8 @@
       };
 
       self.showNotificationDialog = function (firstName, lastName, controlNumber, channel) {
+        self.sendingFollowUp = false;
+        self.successMessage = '';
         // Only show dialog if it, and attachmentDialog,
         // are not showing
         if (!this.notificationDialogIsOn && !this.attachmentDialogIsOn) {

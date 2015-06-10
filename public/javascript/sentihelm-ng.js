@@ -702,9 +702,10 @@
             notification: angular.copy(notificationData),
             channels: parseNotificationService.channels
           };
-          fields.attachment = null;
+          //fields.attachment = null;
           return $upload.upload({
             url: '/notifications/regional',
+            method: 'POST',
             data: fields,
             file: notificationData.attachment
           });
@@ -1960,29 +1961,6 @@
         }
       });
 
-      //Notification was successfully saved and pushed (sent)
-      $scope.$on('notification-success', function (notification) {
-        notificationCtrl.sending = false;
-        $scope.$apply();
-        $scope.closeThisDialog();
-      });
-
-      //Notification was saved, but not pushed
-      $scope.$on('notification-partial-success', function (notification) {
-        //Right now same as success event, but might change
-        notificationCtrl.sending = false;
-        $scope.$apply();
-        $scope.closeThisDialog();
-      });
-
-      //Notification either wasn't saved, or did save
-      //but push failed and error clause removed said save
-      $scope.$on('notification-error', function (notification) {
-        errorFactory.showError('NOTIF-FAILED');
-        notificationCtrl.sending = false;
-        $scope.$apply();
-      });
-
       //    //Once a file is selected, prep file for upload to Parse
       //    this.onFileSelect = function($files){
       //      //Fetch file
@@ -2046,13 +2024,15 @@
             notificationCtrl.hasError = true;
             notificationCtrl.successMessage = 'SUCCESS: Follow up notification has been sent.';
             //todo check why dialog does not work for sending consecutive follow up notifs w.o. refresh..
-            //$scope.closeThisDialog();
+            $scope.closeThisDialog();
+            $rootScope.$broadcast('notification-success');
           },
         function(error){
           notificationCtrl.sending = false;
           notificationCtrl.hasError = true;
           notificationCtrl.successMessage = 'FAILED: Follow up notification could not be sent.';
-          //$scope.closeThisDialog();
+          $scope.closeThisDialog();
+          $rootScope.$broadcast('notification-error');
         });
 
 
@@ -2071,18 +2051,19 @@
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
-  app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session',
-    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session) {
+  app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session', '$http',
+    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session, $http) {
       //Get data from ngDialog directive
       this.phone = $scope.$parent.ngDialogData.phoneNumber;
       // this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
       // this.channel = $scope.$parent.ngDialogData.channel;
       // this.userId = this.channel.substring(5);
-      this.sending = false;
+
       // this.file = undefined;
 
       var smsCtrl = this;
       var thisDialogId = $scope.$parent.SMSDialog.id;
+      smsCtrl.sending = false;
 
       //Set focus on message box once dialog pops up
       $scope.$on('ngDialog.opened', function (event, $dialog) {
@@ -2107,6 +2088,22 @@
         //Toggle sending animation
         this.sending = true;
 
+        $http.post('/notifications/sms', {
+          To: this.phone,
+          From: Session.clientPhoneNumber,
+          Body: this.message
+        })
+          .then(function () {
+            smsCtrl.sending = false;
+            $scope.closeThisDialog();
+            $rootScope.$broadcast('sms-notification-success');
+          },
+          function(error){
+            smsCtrl.sending = false;
+            $scope.closeThisDialog();
+            $rootScope.$broadcast('sms-notification-error');
+          });
+/*
         Parse.Cloud.run('sendSMS', {
           To: this.phone,
           From: Session.clientPhoneNumber,
@@ -2119,7 +2116,7 @@
             console.log('Error: ' + error.message);
             smsCtrl.sending = false;
           }
-        });
+        });*/
       };
 
       //SMS was successfully saved and sent
@@ -2201,12 +2198,13 @@
         //If a file is present, attach it and set its type
         if (this.file) {
           notification.attachment = this.file;
-          notification.attachmentType = this.fileType;
+          notification.attachmentType = this.file.type;
         }
 
         regionalNotificationCtrl.successMessage = '';
         regionalNotificationCtrl.hasError = false;
         //Create Parse notification and send it
+
         parseNotificationService.newRegionalNotification(notification);
       };
 
@@ -2231,7 +2229,7 @@
         errorFactory.showError('NOTIF-FAILED');
         regionalNotificationCtrl.sending = false;
         regionalNotificationCtrl.hasError = true;
-        regionalNotificationCtrl.successMessage = 'FAILED: Regional notification could not be sent.';
+        regionalNotificationCtrl.successMessage = 'FAILURE: Regional notification could not be sent.';
       });
 
     }

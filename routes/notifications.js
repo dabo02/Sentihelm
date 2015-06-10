@@ -222,6 +222,22 @@
           deleteSavedNotification(notification, error);
           response.status(400).send(error);
         });
+    })
+
+    .post('/sms', function(req, res){
+
+      db.Cloud.run('sendSMS', {
+        To: req.body.To,
+        From: req.body.From,
+        Body: req.body.Body
+      }, {
+        success: function (result) {
+          res.send(result);
+        },
+        error: function (error) {
+          res.status(503).send(error.message);
+        }
+      });
     });
 
   module.exports = router;
