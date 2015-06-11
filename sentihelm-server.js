@@ -24,7 +24,6 @@
   //var io = require('socket.io')(server);
 
   //Other imports
-  var Parse = require('./lib/db');
   var OpenTok = require('opentok');
   var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
   var db = require('./lib/db');
