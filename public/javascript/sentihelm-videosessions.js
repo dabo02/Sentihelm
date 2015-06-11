@@ -156,16 +156,16 @@
         });*/
       };
 
-      videoArchiveCtrl.fetchDownloadUrl = function(archiveId){
+      videoArchiveCtrl.fetchDownloadUrl = function(archiveId, index){
 
         var params = {
           archiveId: archiveId
         }
 
-        var downloadUrl = 'mera';
         $http.get('videosessions/getVideoUrl', {params: params})
           .success(function(data){
-            return data;
+            videoArchiveCtrl.videoArchiveArray[index].downloadLink = data;
+            $('.downloadLink' + index)[0].click();
           })
           .error(function(error){
 

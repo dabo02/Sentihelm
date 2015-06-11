@@ -46,7 +46,7 @@
         </span>
 			<p ng-show="videoArchiveCtrl.videosAvailable">Page {{videoArchiveCtrl.currentPageNum}} of {{videoArchiveCtrl.lastPageNum}}</p>
 			<p ng-show="videoArchiveCtrl.videosAvailable">Showing Videos {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}}</p>
-			<li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray" ng-show="video" ng-class="{'orange-border':!video.hasBeenWatched}">
+			<li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray track by $index" ng-show="video" ng-class="{'orange-border':!video.hasBeenWatched}">
 
 				<!-------------------->
 				<!------TIP HEAD------>
@@ -87,7 +87,7 @@
 								<img src="./resources/images/videoAtt.png"
 									 ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
 							</a>
-							<a id="imageAtt" ng-href="{{videoArchiveCtrl.fetchDownloadUrl(video.archiveId)}}" download="">
+							<a id="imageAtt" class="downloadLink{{$index}}" ng-href="{{video.downloadLink}}" ng-click="videoArchiveCtrl.fetchDownloadUrl(video.archiveId, $index)" download="">
 								<img src="./resources/images/downloadAtt.png" ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
 							</a>
 						</div>

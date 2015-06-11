@@ -146,11 +146,15 @@
       videoSessionQuery.find({
         success: function (videoSessions) {
           videoSessions[0].set('archiveId', archive.id);
-          videoSessions[0].save();
+          videoSessions[0].save().then(function(){
+            console.log('Archive started and saved to parse..');
+            response.send('Archive started and saved to parse..');
+          });
         },
         error: function (object, error) {
           // The object was not retrieved successfully.
           console.log("Error fetching video for archive ID update.");
+          response.status(503).send("Error fetching video for archive ID update.");
         }
       });
     });
