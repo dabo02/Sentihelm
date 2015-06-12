@@ -697,6 +697,12 @@
 
 
       function upload() {
+        return $http.post('/notifications/regional', {
+
+          notification: notificationData,
+          channels: parseNotificationService.channels
+        });
+        /*
         if (notificationData.attachment) {
           var fields = {
             notification: angular.copy(notificationData),
@@ -704,7 +710,7 @@
           };
           //fields.attachment = null;
           return $upload.upload({
-            url: '/notifications/regional',
+            url: 'http://sentihelmtesting.elasticbeanstalk.com/notifications/regional',
             method: 'POST',
             data: fields,
             file: notificationData.attachment
@@ -715,28 +721,20 @@
             notification: notificationData,
             channels: parseNotificationService.channels
           });
-        }
+        }*/
       }
 
       return upload()
         .then(function (response) {
           var notification = response.data;
           parseNotificationService.channels = [];
-          if (notification.type === 'follow-up') {
-            $rootScope.$broadcast('notification-success', [notification]);
-          } else {
-            $rootScope.$broadcast('regional-notification-success');
-          }
+          $rootScope.$broadcast('regional-notification-success');
         }, function (response) {
           var notification = response.data.notification;
           var error = response.data.error;
           //Notification could not be saved, pass control back to controller
           //and reset channels
-          if (notification.type === 'follow-up') {
-            $rootScope.$broadcast('notification-error', [notification, error]);
-          } else {
-            $rootScope.$broadcast('regional-notification-error', [notification, error]);
-          }
+          $rootScope.$broadcast('regional-notification-error');
           parseNotificationService.channels = [];
         });
 
@@ -1134,7 +1132,7 @@
     var onLoad = function (reader, deferred, scope) {
       return function () {
         scope.$apply(function () {
-          deferred.resolve(reader.result);
+          deferred.resolve(reader.result);z
         });
       };
     };
@@ -2226,7 +2224,7 @@
       //Notification either wasn't saved, or did save
       //but push failed and error clause removed said save
       $scope.$on('regional-notification-error', function (notification) {
-        errorFactory.showError('NOTIF-FAILED');
+        //errorFactory.showError('NOTIF-FAILED');
         regionalNotificationCtrl.sending = false;
         regionalNotificationCtrl.hasError = true;
         regionalNotificationCtrl.successMessage = 'FAILURE: Regional notification could not be sent.';

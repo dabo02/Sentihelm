@@ -129,9 +129,9 @@
         });
 
     })
-    .post('/regional', multipart({
+    .post('/regional', /*multipart({
       uploadDir: config.tmp
-    }), function (request, response) {
+    }),*/ function (request, response) {
       if (request.files) {
         var attachment = request.files.file || null;
       }
@@ -139,7 +139,7 @@
       function save() {
         return Q.Promise(function (resolve, reject) {
           if (attachment) {
-            var tempFile = path.join(config.tmp, attachment.name);
+           /* var tempFile = path.join(config.tmp, attachment.name);
             fs.readFile(tempFile, function (err, file) {
               if (!err) {
                 notification.set(notificationData.attachmentType, new db.File('attachment', file));
@@ -156,7 +156,7 @@
                   }
                 });
               }
-            });
+            });*/
           } else {
             notification.save()
               .then(function (notification) {
@@ -196,6 +196,7 @@
         className: "Client",
         objectId: request.session.user.homeClient.objectId
       });
+      notification.set(notificationData.attachmentType, new db.File('file', notificationData.attachment));
 
       save()
         .then(function (notification) {
