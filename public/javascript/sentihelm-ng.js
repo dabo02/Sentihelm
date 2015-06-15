@@ -702,7 +702,7 @@
           notification: notificationData,
           channels: parseNotificationService.channels
         });
-        /*
+
         if (notificationData.attachment) {
           var fields = {
             notification: angular.copy(notificationData),
@@ -710,9 +710,9 @@
           };
           //fields.attachment = null;
           return $upload.upload({
-            url: 'http://sentihelmtesting.elasticbeanstalk.com/notifications/regional',
-            method: 'POST',
-            data: fields,
+            url: '/notifications/regional',
+            //method: 'POST',
+            fields: fields,
             file: notificationData.attachment
           });
         } else {
@@ -721,7 +721,7 @@
             notification: notificationData,
             channels: parseNotificationService.channels
           });
-        }*/
+        }
       }
 
       return upload()
