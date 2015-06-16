@@ -1613,181 +1613,7 @@
       }
     }
   }]);
-
-//Controller for the video-archive state
-
-
-  app.controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', function ($scope, Session, socket, ngDialog, usSpinnerService, $location, $anchorScroll) {
-
-    var videoArchiveCtrl = this;
-    videoArchiveCtrl.videoArchiveArray;
-    videoArchiveCtrl.videoWatchStatuses = ['Watched', 'Unwatched', 'All'];
-    videoArchiveCtrl.videosAvailable = true;
-
-    //pagination variables
-    videoArchiveCtrl.currentPageNum = 1;
-    videoArchiveCtrl.lastPageNum;
-    videoArchiveCtrl.pageNumbers;
-    videoArchiveCtrl.limit = 10;
-    videoArchiveCtrl.skip;
-    videoArchiveCtrl.videoTotal;
-
-    videoArchiveCtrl.getPage = function (pageNum) {
-
-      if (pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum) {
-        return;
-      }
-
-      usSpinnerService.spin('loading-video-archive-spinner');
-      var parseSkipLimit = 10000;
-      videoArchiveCtrl.videoArchiveArray = [];
-      videoArchiveCtrl.currentPageNum = pageNum;
-      videoArchiveCtrl.skip = (videoArchiveCtrl.currentPageNum - 1) * videoArchiveCtrl.limit;
-
-      var VideoSession = Parse.Object.extend("VideoSession");
-      var videoArchiveQuery = new Parse.Query(VideoSession);
-      videoArchiveQuery.include('mobileUser', 'officerUser', 'lastWatcher');
-      videoArchiveQuery.containedIn('archiveStatus', ['uploaded', 'available']);
-      videoArchiveQuery.equalTo('client', {
-        __type: "Pointer",
-        className: "Client",
-        objectId: Session.clientId
-      });
-      videoArchiveQuery.descending("createdAt");
-
-      if (videoArchiveCtrl.videoDateFilter) {
-        videoArchiveQuery.greaterThanOrEqualTo('createdAt', new Date(videoArchiveCtrl.videoDateFilter));
-      }
-
-      if (videoArchiveCtrl.watchStatusFilter && videoArchiveCtrl.watchStatusFilter != "All") {
-        if (videoArchiveCtrl.watchStatusFilter === "Watched") {
-          videoArchiveQuery.equalTo('hasBeenWatched', true);
-        }
-        else {
-          videoArchiveQuery.equalTo('hasBeenWatched', undefined);
-        }
-      }
-
-      //parse skip limit hack for fetching more than 11,001 records..
-      if (videoArchiveCtrl.skip > parseSkipLimit) {
-        videoArchiveQuery.lessThanOrEqualTo("createdAt", videoArchiveCtrl.videoArchiveArray[videoArchiveCtrl.limit - 1].createdAt)
-        videoArchiveCtrl.skip = 0;
-      }
-
-      videoArchiveQuery.skip(videoArchiveCtrl.skip);
-      videoArchiveQuery.limit(videoArchiveCtrl.limit);
-      videoArchiveQuery.find({
-        success: function (videos) {
-          videoArchiveCtrl.videoArchiveArray = angular.copy(videos);
-          if (videoArchiveCtrl.videoArchiveArray.length === 0) {
-            videoArchiveCtrl.videosAvailable = false;
-          }
-          else {
-            videoArchiveCtrl.videosAvailable = true;
-          }
-          usSpinnerService.stop('loading-video-archive-spinner');
-          //videoArchiveCtrl.lastPageNum = Math.ceil(videoArchiveCtrl.videoArchiveArray.length / 10);
-          $location.hash('top');
-          $anchorScroll();
-        },
-        error: function (object, error) {
-          // The object was not retrieved successfully.
-          console.log("Error fetching video archive.");
-        }
-      });
-
-      videoArchiveQuery.count({
-        success: function (count) {
-          videoArchiveCtrl.lastPageNum = Math.ceil(count / 10);
-          videoArchiveCtrl.videoTotal = count;
-        },
-        error: function (object, error) {
-          // The object was not retrieved successfully.
-          console.log("Error counting video archives.");
-        }
-      }).then(function () {
-        videoArchiveCtrl.refreshPageNumbers();
-      });
-    }
-
-    videoArchiveCtrl.refreshPageNumbers = function () {
-
-      var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / videoArchiveCtrl.limit);
-      var firstNum = videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0 ? (baseNum - 1) * videoArchiveCtrl.limit + 1 : baseNum * videoArchiveCtrl.limit + 1;
-      var lastNum = 0;
-
-      if (videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0) {
-        lastNum = videoArchiveCtrl.currentPageNum;
-      }
-      else if (baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit > videoArchiveCtrl.lastPageNum) {
-        lastNum = videoArchiveCtrl.lastPageNum;
-      }
-      else {
-        lastNum = baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit;
-      }
-
-      videoArchiveCtrl.pageNumbers = [];
-
-      for (var i = 0, j = firstNum; j <= lastNum; i++, j++) {
-        videoArchiveCtrl.pageNumbers[i] = j;
-      }
-    }
-
-    videoArchiveCtrl.showVideo = function (video) {
-
-      AWS.config.update({
-        accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q',
-        secretAccessKey: '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'
-      });
-      AWS.config.region = 'us-east-1';
-      var s3 = new AWS.S3();
-
-      // This URL will expire in one minute (60 seconds)
-      var params = {
-        Bucket: 'stream-archive',
-        Key: '44755992/' + video.attributes.archiveId + '/archive.mp4',
-        Expires: 500
-      };
-      var videoUrl = s3.getSignedUrl('getObject', params);
-
-      //ngDialog can only handle stringified JSONs
-      var data = JSON.stringify({
-        attachmentType: 'VID',
-        address: videoUrl
-      });
-
-      //Open dialog and pass control to AttachmentController
-      $scope.attachmentDialog = ngDialog.open({
-        template: '../attachment-dialog.html',
-        className: 'ngdialog-attachment',
-        showClose: true,
-        scope: $scope,
-        data: data
-      });
-
-      //Update VideoSession's lastWatcher
-      var VideoSession = Parse.Object.extend("VideoSession");
-      var videoSessionQuery = new Parse.Query(VideoSession);
-      videoSessionQuery.get(video.id, {
-        success: function (videoSession) {
-          videoSession.set('hasBeenWatched', true);
-          videoSession.set('lastWatcher', {
-            __type: "Pointer",
-            className: "User",
-            objectId: Session.userId
-          });
-          videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
-        },
-        error: function (object, error) {
-          // The object was not retrieved successfully.
-          console.log("Error fetching video for lastWatcher update.");
-        }
-      });
-    };
-
-    videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
-
-  }]);
+  
 
 //Controller for VideStreams route; controls
 //the video streams view, which contains queue,
@@ -2487,8 +2313,8 @@
     adminPanelCtrl.addingUser = false;
 
 
-    adminPanelCtrl.states = ["Select", "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VI", "VT", "VA", "WA", "WV", "WI", "WY"];
-    adminPanelCtrl.roles = ["Select", "employee", "admin"];
+    adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
+    adminPanelCtrl.roles = ["Select","employee","admin"];
 
     adminPanelCtrl.adminPanelUsersArray = [];
     adminPanelCtrl.selectedUsers = [];
@@ -2505,9 +2331,9 @@
     adminPanelCtrl.fetchingUsers = true;
     adminPanelCtrl.rolesFilter = "";
 
-    adminPanelCtrl.getPage = function (pageNum) {
+    adminPanelCtrl.getPage = function(pageNum){
 
-      if (pageNum < 1 || (pageNum > adminPanelCtrl.lastPageNum && adminPanelCtrl.lastPageNum > 0)) {
+      if(pageNum < 1 || (pageNum > adminPanelCtrl.lastPageNum && adminPanelCtrl.lastPageNum > 0)){
         return;
       }
 
@@ -2527,25 +2353,25 @@
 
       adminPanelCtrl.fetchingUsers = true;
       $http.get('/users/list', {params: params})
-        .success(function (data) {
+        .success(function(data){
 
           adminPanelCtrl.lastPageNum = data.lastPageNum;
           adminPanelCtrl.userTotal = data.userTotal;
 
           adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
 
-          if (adminPanelCtrl.adminPanelUsersArray.length === 0) {
+          if(adminPanelCtrl.adminPanelUsersArray.length===0){
             adminPanelCtrl.usersAvailable = false;
           }
-          else {
+          else{
             adminPanelCtrl.usersAvailable = true;
           }
 
         })
-        .error(function (err) {
+        .error(function(err){
           adminPanelCtrl.usersAvailable = false;
 
-        }).then(function () {
+        }).then(function(){
           usSpinnerService.stop('loading-video-archive-spinner');
           $location.hash('top');
           $anchorScroll();
@@ -2554,37 +2380,37 @@
         });
     };
 
-    adminPanelCtrl.sortRoles = function (roles) {
+    adminPanelCtrl.sortRoles = function(roles){
       roles.sort();
     }
 
-    adminPanelCtrl.refreshPageNumbers = function () {
+    adminPanelCtrl.refreshPageNumbers = function(){
 
       var baseNum = Math.floor(adminPanelCtrl.currentPageNum / adminPanelCtrl.limit);
-      var firstNum = adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0 ? (baseNum - 1) * adminPanelCtrl.limit + 1 : baseNum * adminPanelCtrl.limit + 1;
+      var firstNum =  adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0 ? (baseNum - 1) * adminPanelCtrl.limit + 1 : baseNum  * adminPanelCtrl.limit + 1;
       var lastNum = 0;
 
-      if (adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0) {
+      if(adminPanelCtrl.currentPageNum % adminPanelCtrl.limit === 0){
         lastNum = adminPanelCtrl.currentPageNum;
       }
-      else if (baseNum * adminPanelCtrl.limit + adminPanelCtrl.limit > adminPanelCtrl.lastPageNum) {
+      else if(baseNum * adminPanelCtrl.limit + adminPanelCtrl.limit > adminPanelCtrl.lastPageNum){
         lastNum = adminPanelCtrl.lastPageNum;
       }
-      else {
+      else{
         lastNum = baseNum * adminPanelCtrl.limit + adminPanelCtrl.limit;
       }
 
       adminPanelCtrl.pageNumbers = [];
 
-      for (var i = 0, j = firstNum; j <= lastNum; i++, j++) {
+      for(var i = 0, j = firstNum; j <= lastNum; i++, j++){
         adminPanelCtrl.pageNumbers[i] = j;
       }
     }
 
-    this.saveUser = function () {
+    this.saveUser = function(){
 
-      if (adminPanelCtrl.formUser.state !== 'Select' || adminPanelCtrl.formUser.role !== 'Select') {
-        if (/(^\d{1,5}$)|(^\d{1,5}-\d{1,4}$)/.test(adminPanelCtrl.formUser.zipCode)) {
+      if(adminPanelCtrl.formUser.state !== 'Select' || adminPanelCtrl.formUser.role !== 'Select') {
+        if(/(^\d{1,5}$)|(^\d{1,5}-\d{1,4}$)/.test(adminPanelCtrl.formUser.zipCode)){
           if (adminPanelCtrl.addingUser) {
             adminPanelCtrl.addUser(adminPanelCtrl.formUser);
           }
@@ -2595,7 +2421,7 @@
             return;
           }
         }
-        else {
+        else{
           adminPanelCtrl.successMessage = "Please enter a valid zip code."
           adminPanelCtrl.hasError = true;
         }
@@ -2617,23 +2443,23 @@
       }
 
       $http.post('/users/add', data)
-        .success(function (data) {
+        .success(function(data){
           adminPanelCtrl.sending = false;
           adminPanelCtrl.successMessage = data;
           adminPanelCtrl.hasError = false;
         })
-        .error(function (err) {
+        .error(function(err){
           adminPanelCtrl.sending = false;
           adminPanelCtrl.successMessage = err;
-          adminPanelCtrl.hasError = true;
+          adminPanelCtrl.hasError =  true;
 
-        }).then(function () {
+        }).then(function(){
           $location.hash('top');
           $anchorScroll();
         });
     };
 
-    adminPanelCtrl.updateUser = function (user) {
+    adminPanelCtrl.updateUser = function(user){
 
       adminPanelCtrl.successMessage = "";
       adminPanelCtrl.sending = true;
@@ -2643,27 +2469,27 @@
       }
 
       $http.post('/users/update', data)
-        .success(function (data) {
+        .success(function(data){
           adminPanelCtrl.sending = false;
           adminPanelCtrl.successMessage = data;
           adminPanelCtrl.hasError = false;
         })
-        .error(function (err) {
+        .error(function(err){
           adminPanelCtrl.sending = false;
           adminPanelCtrl.successMessage = err;
-          adminPanelCtrl.hasError = true;
+          adminPanelCtrl.hasError =  true;
 
-        }).then(function () {
+        }).then(function(){
           $location.hash('top');
           $anchorScroll();
         });
     };
 
-    adminPanelCtrl.updateRole = function (action, role) {
+    adminPanelCtrl.updateRole = function(action, role){
 
       adminPanelCtrl.findSelectedUsers();
 
-      if (adminPanelCtrl.selectedUsers.length == 0) {
+      if(adminPanelCtrl.selectedUsers.length == 0){
         adminPanelCtrl.successMessage = "Please selected at least one user to apply any actions.";
         adminPanelCtrl.hasError = true;
         return;
@@ -2674,23 +2500,23 @@
       var roleString;
       var roleAction;
       //determine role string
-      if (role === "admin") {
+      if(role === "admin"){
         roleString = "Administrator";
       }
-      else {
+      else{
         roleString = "Officer";
       }
 
-      if (action === "add") {
+      if(action === "add"){
         roleAction = "ADDED to";
       }
-      else {
+      else{
         roleAction = "REMOVED from";
       }
 
       var roleChangeConfirm = confirm("The " + roleString + " role will be " + roleAction + " selected user(s).");
 
-      if (roleChangeConfirm) {
+      if(roleChangeConfirm){
         var data = {
           users: adminPanelCtrl.selectedUsers,
           action: action,
@@ -2698,14 +2524,14 @@
         }
 
         $http.post('/users/update/role', data)
-          .success(function (data) {
+          .success(function(data){
             adminPanelCtrl.successMessage = data;
             adminPanelCtrl.hasError = false;
           })
-          .error(function (err) {
+          .error(function(err){
             adminPanelCtrl.successMessage = err;
             adminPanelCtrl.hasError = true;
-          }).then(function () {
+          }).then(function(){
             adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
           });
       }
@@ -2713,11 +2539,11 @@
       usSpinnerService.stop('loading-video-archive-spinner');
     };
 
-    adminPanelCtrl.deleteUser = function () {
+    adminPanelCtrl.deleteUser = function(){
 
       adminPanelCtrl.findSelectedUsers();
 
-      if (adminPanelCtrl.selectedUsers.length == 0) {
+      if(adminPanelCtrl.selectedUsers.length == 0){
         adminPanelCtrl.successMessage = "Please selected at least one user to apply any actions.";
         adminPanelCtrl.hasError = true;
         return;
@@ -2727,20 +2553,20 @@
 
       var deleteUserConfirm = confirm("The selected user(s) will be DELETED.");
 
-      if (deleteUserConfirm) {
+      if(deleteUserConfirm){
         var data = {
           users: adminPanelCtrl.selectedUsers
         }
 
         $http.post('/users/delete', data)
-          .success(function (data) {
+          .success(function(data){
             adminPanelCtrl.successMessage = data;
             adminPanelCtrl.hasError = false;
           })
-          .error(function (err) {
+          .error(function(err){
             adminPanelCtrl.successMessage = err;
             adminPanelCtrl.hasError = true;
-          }).then(function () {
+          }).then(function(){
             adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
           });
       }
@@ -2748,38 +2574,37 @@
       usSpinnerService.stop('loading-video-archive-spinner');
     };
 
-    adminPanelCtrl.selectUser = function (user) {
+    adminPanelCtrl.selectUser = function(user){
       user.selected = true;
     };
 
-    adminPanelCtrl.findSelectedUsers = function () {
+    adminPanelCtrl.findSelectedUsers = function(){
 
       adminPanelCtrl.selectedUsers = [];
 
-      adminPanelCtrl.adminPanelUsersArray.forEach(function (user) {
-        if (user.selected) {
+      adminPanelCtrl.adminPanelUsersArray.forEach(function(user){
+        if(user.selected){
           adminPanelCtrl.selectedUsers.push(user);
         }
       });
     };
 
-    adminPanelCtrl.decryptUser = function (user) {
+    adminPanelCtrl.decryptUser = function(user){
 
       var data = {
         user: user
       }
 
       $http.post('/users/decrypt', data)
-        .success(function (data) {
+        .success(function(data){
           adminPanelCtrl.editedUser = angular.copy(data);
-          adminPanelCtrl.editedUser.zipCode = parseInt(adminPanelCtrl.editedUser.zipCode, 10);
         })
-        .error(function (err) {
+        .error(function(err){
           adminPanelCtrl.successMessage = err;
           adminPanelCtrl.hasError = true;
-        }).then(function () {
+        }).then(function(){
           adminPanelCtrl.formUser = adminPanelCtrl.editedUser;
-          if (adminPanelCtrl.formUser.permissions !== undefined && adminPanelCtrl.formUser.permissions !== null) {
+          if(adminPanelCtrl.formUser.permissions !== undefined && adminPanelCtrl.formUser.permissions !== null) {
             adminPanelCtrl.formUser.permissions.forEach(function (perm) {
               $('#' + perm + '-access').attr('selected', 'selected');
             });
@@ -2789,7 +2614,7 @@
         });
     };
 
-    adminPanelCtrl.changeView = function (view) {
+    adminPanelCtrl.changeView = function(view){
 
       adminPanelCtrl.viewingAll = false;
       adminPanelCtrl.viewingUsers = false;
@@ -2802,7 +2627,7 @@
       adminPanelCtrl.successMessage = "";
       adminPanelCtrl.hasError = false;
 
-      switch (view) {
+      switch(view){
 
         case 'all':
           adminPanelCtrl.viewingAll = true;
@@ -2844,8 +2669,7 @@
           //$scope.addOfficerForm.$set();
           adminPanelCtrl.formUser = {};
           break;
-      }
-      ;
+      };
     };
     adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
     $('.selectpicker').selectpicker();
