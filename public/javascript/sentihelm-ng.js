@@ -1613,7 +1613,7 @@
       }
     }
   }]);
-  
+
 
 //Controller for VideStreams route; controls
 //the video streams view, which contains queue,
