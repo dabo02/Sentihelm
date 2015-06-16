@@ -25,5 +25,6 @@ module.exports = {
         secretAccessKey: 'Ns5gLkbRKso9Smfzk2e56AyfiWkdOJ2/wlhKogqL'
     },
 
-    tmp: path.join(__dirname, './tmp')
+    tmp: path.join(__dirname, './tmp'),
+    serverRoot: __dirname
 };
