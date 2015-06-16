@@ -14,7 +14,7 @@ router
         var searchString = req.query.searchString;
         var registrationDate = req.query.registrationDate;
         var role = req.query.role;
-        var homeClient = req.query.homeClient;
+        var homeClient = req.session.user.homeClient.objectId;
         var lastUserCreatedAt = req.query.lastUserCreatedAt;
         var parseSkipLimit = 10000;
 
@@ -51,6 +51,7 @@ router
             //parse skip limit hack for fetching more than 11,001 records..
             if (skip > parseSkipLimit) {
                 adminPanelQuery.lessThanOrEqualTo("createdAt", lastUserCreatedAt); // talk over this
+                skip = 0;
             }
 
             adminPanelQuery.skip(skip);
@@ -87,6 +88,10 @@ router
             }
             });
         }
+      else{
+            res.status(503)
+              .send('Error fetching users list');
+        }
     })
 
     .post('/update/role', function(req, res){
@@ -114,6 +119,16 @@ router
             res.status(503).send("FAILURE: User could not be updated.");
         });
     })
+
+  .post('/update/password', function(req, res){
+
+      usersModel.updatePassword(req.body).then(function () {
+          res.send("SUCCESS: Password for " + req.body.user.username + " has been updated.");
+
+      }, function (error) {
+          res.status(503).send("FAILURE: Password could not be updated.");
+      });
+  })
 
   .post('/delete', function(req, res){
 

@@ -7,6 +7,7 @@
   var clientModel = require('../models/client');
   var usersModel = require('../models/users');
   var config = require('../config');
+  var bodyParser = require('body-parser');
   var OpenTok = require('opentok');
   var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
   var db = require('../lib/db');
@@ -25,7 +26,8 @@
         var answer = [];
 
         answer.push(user);
-        answer.push(client.toJSON());
+        // fixes serialization issue.
+        answer.push(client.attributes);
         answer.push(client.get('regions'));
         res.send(200, answer);
       }
@@ -42,8 +44,24 @@
         user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
         user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
         user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
-        user.attributes.zipCode = parseInt(util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64), 10);
-        user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+        user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
+        //user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+
+        if(user.attributes.state){
+          user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+        }
+
+        if(user.attributes.addressLine1){
+          user.attributes.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
+        }
+
+        if(user.attributes.addressLine2){
+          user.attributes.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
+        }
+
+        if(user.attributes.city){
+          user.attributes.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
+        }
 
         req.session.regenerate(function (err) {
           if (err) {
@@ -85,99 +103,26 @@
             });
       }
     })
+    .post('/new-tip', function (request, response) {
+      var tip = request.body;
+      var pass = tip.pass;
+      var clientId = tip.clientId;
+      if (pass == 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@') {
+        io.to(clientId).emit('new-tip', {
+          tip: tip,
+          clientId: clientId
+        });
+        response.send(200);
+      }
+    })
     //Recieve a request for a video stream connection;
     //get data form mobile client, save session info in
     //db and pass on to front-end
-    .post('/request-video-connection', function (request, response) {
 
-      //Check if password is valid
-      if (request.body.password !== "hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@") {
-        return;
-      }
-
-      //Get data representing the mobile client
-      var connection = JSON.parse(request.body.data);
-
-      //Create OpenTok session
-      opentok.createSession({
-        mediaMode: "routed"
-      }, function (error, session) {
-
-        //TODO
-        //Handle Error when session could not be created
-        if (error) {
-          response.send(400, error);
-          return;
-        }
-
-        //Create the token that will be sent to the mobile client
-        var clientToken = opentok.generateToken(session.sessionId, {
-          role: 'publisher',
-          expireTime: ((new Date().getTime()) + 36000),
-          data: JSON.stringify(connection)
-        });
-
-        //Create the token that officer will use to connect via web
-        var webToken = opentok.generateToken(session.sessionId, {
-          role: 'moderator',
-          data: JSON.stringify(connection.currentClientId)
-        });
-
-        //Prepare video session object
-        var videoSession = new VideoSession();
-        videoSession.set('status', 'pending');
-        videoSession.set('sessionId', session.sessionId);
-        videoSession.set('mobileClientToken', clientToken);
-        videoSession.set('webClientToken', webToken);
-        videoSession.set('latitude', connection.latitude);
-        videoSession.set('longitude', connection.longitude);
-        videoSession.set('mobileUser', {
-          __type: "Pointer",
-          className: "User",
-          objectId: connection.userObjectId
-        });
-        videoSession.set('client', {
-          __type: "Pointer",
-          className: "Client",
-          objectId: connection.currentClientId
-        });
-
-        //Save video session, respond to
-        //mobile client with sessionId and token,
-        //and pass connection on to front-end
-        videoSession.save().then(function (videoSession) {
-          var stream = connection;
-          stream.sessionId = session.sessionId;
-          stream.connectionId = videoSession.id;
-          stream.webClientToken = webToken;
-          response.send(200, {
-            objectId: videoSession.id,
-            sessionId: session.sessionId,
-            token: clientToken
-          });
-          io.to(connection.currentClientId).emit('new-video-stream', {
-            stream: stream
-          });
-
-          /*  opentok.startArchive(stream.sessionId, { name: 'archive: ' + stream.sessionId }, function(err, archive) {
-           if (err) return console.log(err);
-
-           // The id property is useful to save off into a database
-           console.log("new archive:" + archive.id);
-           });*/
-        }, function (error, videoSession) {
-          //TODO
-          //Handle error when couldn't save video session
-          var err = error;
-        });
-
-      });
-
-    })
 
   //Receive request to start archiving a video session
   //and store the archiveId
-  .post('/start-archive', function (request, response) {
+  .post('/start-archive', bodyParser(), function (request, response) {
 
     console.log("\n\nIn start-archive...\n\n");
     //TODO why is the password check not being used?
@@ -201,11 +146,15 @@
       videoSessionQuery.find({
         success: function (videoSessions) {
           videoSessions[0].set('archiveId', archive.id);
-          videoSessions[0].save();
+          videoSessions[0].save().then(function(){
+            console.log('Archive started and saved to parse..');
+            response.send('Archive started and saved to parse..');
+          });
         },
         error: function (object, error) {
           // The object was not retrieved successfully.
           console.log("Error fetching video for archive ID update.");
+          response.status(503).send("Error fetching video for archive ID update.");
         }
       });
     });
@@ -237,10 +186,22 @@
       }
     });
 
+  })
+
+  //send sms message using cloud code
+  .post('/sendSMS', function (request, response) {
+    db.Cloud.run('sendSMS', request.body, {
+      success: function (result) {
+        response.send(200);
+      },
+      error: function (error) {
+        response.send(401);
+      }
+    });
+
   });
 
   module.exports = router;
-
 
 
 })();

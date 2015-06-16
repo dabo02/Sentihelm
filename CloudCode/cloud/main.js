@@ -401,6 +401,46 @@ Parse.Cloud.define("updateUserRole", function(req, res){
   });
 });
 
+Parse.Cloud.define("updatePassword", function(req, res){
+
+  var PasswordGenerator = require('cloud/PasswordGenerator.js').PasswordGenerator;
+
+  //Generates the password for the encription manager.
+  var passwordGenerator = new PasswordGenerator();
+
+  var User = Parse.Object.extend("_User");
+  var userQuery = new Parse.Query(User);
+  var user = req.params.user;
+  var prevPass = req.params.prevPass;
+  var newPass = req.params.newPass;
+  var confirmPass = req.params.confirmPass;
+
+
+  userQuery.get(user.objectId).then(function(fetchedUser) {
+
+    //Change pass
+    if (passwordGenerator.md5(prevPass) === fetchedUser.attributes.userPassword && newPass === confirmPass) {
+
+      //Throw pass incorrect
+      fetchedUser.set("password", newPass);
+      fetchedUser.set("userPassword", passwordGenerator.md5(newPass));
+      Parse.Cloud.useMasterKey();
+
+      fetchedUser.save().then(function(savedUser){
+        res.success(savedUser);
+      }).then(null, function(error){
+        res.error(error);
+      });
+    } else {
+      res.error("Passwords don't match");
+    }
+
+  }).then(null, function(error){
+    res.error(error);
+  });
+
+});
+
 Parse.Cloud.define("deleteUser", function(req, res){
 
   var User = Parse.Object.extend("_User");
@@ -452,7 +492,7 @@ Parse.Cloud.define("updateUser", function(req, res){
           user.remove(attrs[i], "employee");
         }
         else{
-          return;
+
         }
 
         Parse.Cloud.useMasterKey();

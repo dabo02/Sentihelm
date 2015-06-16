@@ -16,7 +16,7 @@
 			<div class="col-xs-3 col-xs-offset-3">
 				<div class="form-group">
 					<label for="new-officer-fname" class="dark-gray">First Name</label>
-					<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="profileCtrl.formUser.firstName"  required/>
+					<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="profileCtrl.user.firstName"  required/>
 				</div>
 
 				<div class="form-group">
@@ -57,8 +57,8 @@
 
 				<div class="form-group">
 					<label for="new-officer-state" class="dark-gray">State</label>
-					<select id="new-officer-state" class="form-control" ng-model="profileCtrl.user.state" ng-init="profileCtrl.user.state='Select'">
-						<option ng-repeat="state in profileCtrl.states" value="{{state}}">{{state}}</option>
+					<select id="new-officer-state" class="form-control"  ng-model="profileCtrl.user.state">
+						<option ng-repeat="state in profileCtrl.states" value="{{state}}" ng-selected="{{state == profileCtrl.user.state}}">{{state}}</option>
 					</select>
 				</div>
 

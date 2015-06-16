@@ -24,10 +24,15 @@
   //var io = require('socket.io')(server);
 
   //Other imports
-  var Parse = require('./lib/db');
+  var OpenTok = require('opentok');
+  var opentok = new OpenTok(config.opentok.key, config.opentok.secret);
+  var db = require('./lib/db');
+  var VideoSession = db.Object.extend('VideoSession');
 
-   // The server makes extensive use of socket.io to send real time notifications
-   // to connected users.
+  /**
+   * The server makes extensive use of socket.io to send real time notifications
+   * to connected users.
+   * */
   module.exports.app = function (io) {
 
     //Create an non-overriding log file and feed it
@@ -56,9 +61,8 @@
     var mostwanted = require('./routes/most-wanted');
     var policeStations = require('./routes/police-stations');
     var dataAnalysis = require('./routes/data-analysis');
-    var notifications = require('./routes/notifications');
+    var videoSessions = require('./routes/video-sessions');
 
-    // Attach routing middleware
     app
       .use(routes)
       .use('/tip', tip)
@@ -67,9 +71,98 @@
       .use('/stations', policeStations)
       .use('/mostwanted', mostwanted)
       .use('/analyze', dataAnalysis)
-      .use('/notifications', notifications);
+      .use('/videosessions', videoSessions);
 
-    app.post('/new-tip', function (request, response) {
+    app.post('/request-video-connection', bodyParser(), function (request, response) {
+
+      console.log("\n\nIn request-video-connection...\n\n");
+
+      //Check if password is valid
+      if (request.body.password !== "hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@") {
+        return;
+      }
+
+      //Get data representing the mobile client
+      var connection = JSON.parse(request.body.data);
+
+      //Create OpenTok session
+      opentok.createSession({
+        mediaMode: "routed"
+      }, function (error, session) {
+
+        //TODO
+        //Handle Error when session could not be created
+        if (error) {
+          response.send(400, error);
+          return;
+        }
+
+        //Create the token that will be sent to the mobile client
+        var clientToken = opentok.generateToken(session.sessionId, {
+          role: 'publisher',
+          expireTime: ((new Date().getTime()) + 36000),
+          data: JSON.stringify(connection)
+        });
+
+        //Create the token that officer will use to connect via web
+        var webToken = opentok.generateToken(session.sessionId, {
+          role: 'moderator',
+          data: JSON.stringify(connection.currentClientId)
+        });
+
+        //Prepare video session object
+        var videoSession = new VideoSession();
+        videoSession.set('status', 'pending');
+        videoSession.set('sessionId', session.sessionId);
+        videoSession.set('mobileClientToken', clientToken);
+        videoSession.set('webClientToken', webToken);
+        videoSession.set('latitude', connection.latitude);
+        videoSession.set('longitude', connection.longitude);
+        videoSession.set('mobileUser', {
+          __type: "Pointer",
+          className: "User",
+          objectId: connection.userObjectId
+        });
+        videoSession.set('client', {
+          __type: "Pointer",
+          className: "Client",
+          objectId: connection.currentClientId
+        });
+
+        //Save video session, respond to
+        //mobile client with sessionId and token,
+        //and pass connection on to front-end
+        videoSession.save().then(function (videoSession) {
+          var stream = connection;
+          stream.sessionId = session.sessionId;
+          stream.connectionId = videoSession.id;
+          stream.webClientToken = webToken;
+          response.send(200, {
+            objectId: videoSession.id,
+            sessionId: session.sessionId,
+            token: clientToken
+          });
+          io.to(connection.currentClientId).emit('new-video-stream', {
+            stream: stream
+          });
+
+          /*  opentok.startArchive(stream.sessionId, { name: 'archive: ' + stream.sessionId }, function(err, archive) {
+           if (err) return console.log(err);
+
+           // The id property is useful to save off into a database
+           console.log("new archive:" + archive.id);
+           });*/
+        }, function (error, videoSession) {
+          //TODO
+          //Handle error when couldn't save video session
+          var err = error;
+        });
+
+      });
+
+    })
+
+      .post('/new-tip', function (request, response) {
       var tip = request.body;
       var pass = tip.pass;
       var clientId = tip.clientId;
@@ -82,7 +175,6 @@
       }
     });
 
-    // Handle 404 page not found errors
     app.use(function (req, res, next) {
       var err = new Error('Not Found');
       err.status = 404;
@@ -117,6 +209,5 @@
 
   };
 
-  // Expose session to the outside.
   module.exports.session = sessionMiddleware;
 })();

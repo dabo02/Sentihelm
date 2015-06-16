@@ -1,63 +1,164 @@
 
-        
-<div class="jumbotron vertical-center video-archive-list" style="background-color:white;" ng-controller="VideoArchiveController as videoArchiveCtrl">
 
-	<!-- archive entry -->
-	<div class="most-wanted-mid-container">
-		<div class="video-archive-entry" ng-repeat="video in videoArchiveCtrl.videoArchiveArray track by $index">
-			<div class="row">
-				
-				<div class="col-xs-6 pointer thumbnail profile">
-					<img src="./resources/images/no-profile-pic.png" alt="..."/>
-				</div> 
-				
-				<div class="col-xs-6">
-				
-					<div class="row">
-						<div class="col-xs-12">
-							<em>Streamer:</em> {{video.streamer}}
-						</div>
-					</div>
-					
-					<div class="row">
-						<div class="col-xs-12">
-							<em>Watcher:</em> {{video.watcher}}
-						</div>
-					</div>
-					
-					<div class="row">
-						<div class="col-xs-12">
-							<em>Stream Duration:</em> {{video.duration}}
-						</div>
-					</div>
-					
-					<div class="row">
-						<div class="col-xs-12">
-							<em>Created On:</em> {{video.creationDate}}
-						</div>
-					</div>
-					
-					<div class="row">
-						<div class="col-xs-12">
-							<em>Geo-Location:</em> {{video.geoLocation}}
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-xs-12 play-button">
-							<div class="btn btn-success">Play <span class="glyphicon glyphicon-play-circle"></span></div>
-						</div>
-					</div>
-							
+<div class="vertical-center" id="video-archive-list" style="background-color:white;" ng-controller="VideoArchiveController as videoArchiveCtrl">
+
+	<!-- archive main content -->
+	<div class="video-archive-mid-container">
+		<h1>Video Archives</h1><br>
+		<div class="tip-filter-container row">
+			<div class="filter-controls">
+
+				<div class="crime-filter col-xs-5">
+					<label class="">Video Creation Date</label>
+					<input class="crime-date" type="date" ng-model="videoArchiveCtrl.videoDateFilter"/>
 				</div>
-				
+
+				<div class="crime-filter col-xs-6">
+					<label>Watch Status</label>
+					<select class="crime-type" ng-model="videoArchiveCtrl.watchStatusFilter">
+						<option value="{{status}}" ng-repeat="status in videoArchiveCtrl.videoWatchStatuses">
+							{{status}}
+						</option>
+					</select>
+				</div>
+
+				<button class="btn btn-primary filter-submit col-xs-1" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum)">Filter</button>
+
 			</div>
 		</div>
+
+
+
+
+		<!--======TIP FEED======-->
+		<!--====================-->
+		<ul id="tip-feed" >
+			<!--ANCHOR MARKER FOR SCROLLING TO TOP WHEN PAGE CHANGES-->
+			<a id="top"></a>
+			<!--Show if NO video archives are available -->
+			<div ng-if="!videoArchiveCtrl.videosAvailable">
+				<h2 class="text-center">No Records Found</h2>
+			</div>
+
+			<!--======SPINNER (LOADING)======-->
+        <span  us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-video-archive-spinner" spinner-start-active="1">
+
+        </span>
+			<p ng-show="videoArchiveCtrl.videosAvailable">Page {{videoArchiveCtrl.currentPageNum}} of {{videoArchiveCtrl.lastPageNum}}</p>
+			<p ng-show="videoArchiveCtrl.videosAvailable">Showing Videos {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}}</p>
+			<li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray track by $index" ng-show="video" ng-class="{'orange-border':!video.hasBeenWatched}">
+
+				<!-------------------->
+				<!------TIP HEAD------>
+				<!-------------------->
+				<div class="video-archive-entry-header">
+
+					<!------DATE------>
+        <span class="white tip-date">
+          {{video.createdAt | date:'short'}}
+        </span>
+
+					<!------NAME------>
+        <span class="user" ng-class="{orange:!video.hasBeenWatched, white:video.hasBeenWatched}">
+          {{video.mobileUser}}
+        </span>
+
+					<!------CONTROL NUMBER------>
+					<div class="control-number" ng-class="{'orange-border':!video.hasBeenWatched}">
+						{{video.objectId}}
+					</div>
+
+				</div>
+
+				<!-------------------->
+				<!------TIP BODY------>
+				<!-------------------->
+				<div class="tip-body">
+
+
+					<!-------MID DIVISION------->
+					<!-------------------------->
+					<div class="center">
+
+						<!------ATTACHMENTS------>
+						<div class="attachments" ng-class="{'orange-border':!video.hasBeenWatched}">
+
+							<a id="videoAtt" ng-click="videoArchiveCtrl.showVideo(video)">
+								<img src="./resources/images/videoAtt.png"
+									 ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
+							</a>
+							<a id="imageAtt" class="downloadLink{{$index}}" ng-href="{{video.downloadLink}}" ng-click="videoArchiveCtrl.fetchDownloadUrl(video.archiveId, $index)" download="">
+								<img src="./resources/images/downloadAtt.png" ng-class="{'orange-bg':!video.hasBeenWatched, 'light-blue-bg':video.hasBeenWatched}"/>
+							</a>
+						</div>
+
+						<!------CRIME DESCRIPTION------>
+						<div class="crime-description" ng-class="{'orange-border':!video.hasBeenWatched}">
+							<div class="row">
+								<div class="col-xs-12">
+									<div class="row">
+										<h2 ng-class="{'orange':!video.hasBeenWatched, 'light-blue':video.hasBeenWatched}">
+											{{video.hasBeenWatched ? 'Watched' : 'Un-watched'}}
+										</h2>
+									</div><br>
+									<div class="row"><em>Watched Live By:</em> {{video.officerUser}}</div>
+									<div class="row"><em>Last Watched By:</em> {{video.lastWatcher}}</div>
+									<div class="row" ng-if="video.duration>=60"><em>Stream Duration:</em> {{video.duration / 60 | number : 2}} {{video.duration / 60 == 1 ? ' minute' : ' minutes'}}
+									</div>
+									<div class="row" ng-if="video.duration<60"><em>Stream Duration:</em> {{video.duration}} {{video.duration == 1 ? ' second' : ' seconds'}}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!------RIGHT DIVISION------>
+					<!-------------------------->
+					<div class="right" ng-controller="GoogleMapController as mapCtrl">
+						<div class="map-canvas" id="{{tip.controlNumber}}">
+							<!------GOOGLE MAP------>
+							<ui-gmap-google-map center="mapCtrl.getMapCenter({latitude: video.latitude, longitude: video.longitude})" zoom="mapCtrl.zoom" draggable="true" ng-cloak>
+								<ui-gmap-markers models="[{id: video.id, latitude: video.latitude, longitude: video.longitude, options: {draggable: false, title: 'Stream Location', visible: true}}]" coords="'self'" options="'options'"></ui-gmap-markers>
+							</ui-gmap-google-map>
+						</div>
+					</div>
+				</div>
+				<!-- END TIP -->
+			</li>
+		</ul>
 	</div>
-	<!-- end archive entry -->
-	
-	<!--Show if NO most wanted are available-->
-	<div class="container" ng-if="videoArchiveCtrl.videoArchiveArray.length===0">
-	  <h2 class="text-center">No Records Found</h2>
+	<!-- end archive main content -->
+	<br>
+
+	<!--=====PAGINATOR======-->
+	<!--====================-->
+	<div ng-if="videoArchiveCtrl.videosAvailable" class="video-archive-paginator-container">
+		<ul id="paginator">
+
+			<li class="paginator-control" ng-click="videoArchiveCtrl.getPage(1)">
+				<span class="fa fa-chevron-left fa-lg" ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum===1}"></span><span class="fa fa-chevron-left fa-lg " ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum===1}"></span>
+			</li>
+
+			<li id="page-previous" class="paginator-control" ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum===1}" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum - 1)">
+				<span class="fa fa-chevron-left fa-lg"></span>
+			</li>
+
+
+			<li class="paginator-control" ng-repeat="pageNumber in videoArchiveCtrl.pageNumbers" ng-class="{'light-blue': videoArchiveCtrl.currentPageNum === pageNumber}" ng-click="videoArchiveCtrl.getPage(pageNumber)">
+				{{pageNumber}}
+			</li>
+
+
+			<li id="page-next" class="paginator-control" ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum === videoArchiveCtrl.lastPageNum}" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum + 1)">
+				<span class="fa fa-chevron-right fa-lg"></span>
+			</li>
+
+			<li class="paginator-control" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.lastPageNum)">
+				<span class="fa fa-chevron-right fa-lg" ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum === videoArchiveCtrl.lastPageNum}"></span><span class="fa fa-chevron-right fa-lg" ng-class="{'disabled-link': videoArchiveCtrl.currentPageNum === videoArchiveCtrl.lastPageNum}"></span>
+			</li>
+
+		</ul>
 	</div>
-	
+
+
 </div>
