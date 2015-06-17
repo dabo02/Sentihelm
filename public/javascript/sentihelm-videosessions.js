@@ -67,7 +67,7 @@
             $anchorScroll();
             videoArchiveCtrl.refreshPageNumbers();
           });
-      }
+      };
 
       videoArchiveCtrl.refreshPageNumbers = function(){
 
@@ -133,6 +133,18 @@
               scope: $scope,
               data: data
             });
+          });
+
+        var data = {
+          videoId: video.objectId
+        }
+
+        $http.post('videosessions/updateWatchersList', data)
+          .success(function(data){
+            videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
+          })
+          .error(function(error){
+            //TODO add error management
           });
 
 /*

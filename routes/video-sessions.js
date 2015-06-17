@@ -29,6 +29,15 @@
       }, function(error){
         res.status(503).send(error);
       });
+    })
+
+    .post('/updateWatchersList', function(req, res){
+      req.body.userId = req.session.user.objectId;
+      videoSessionsModel.updateWatchersList(req.body).then(function(data){
+        res.send(data);
+      }, function(error){
+        res.status(503).send(error);
+      });
     });
 
 

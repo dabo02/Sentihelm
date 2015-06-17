@@ -9,7 +9,6 @@
   var db = require('../lib/db');
   var AWS = require('../lib/aws');
   var VideoSession = db.Object.extend('VideoSession');
-  var videoSessionQuery = new db.Query(VideoSession);
   var Q = require('q');
 
   module.exports.list = function(data){
@@ -23,6 +22,8 @@
       var homeClient = data.homeClient;
       var lastVideoCreatedAt = data.lastVideoCreatedAt;
       var parseSkipLimit = 10000;
+
+      var videoSessionQuery = new db.Query(VideoSession);
 
       videoSessionQuery.include(['mobileUser', 'officerUser', 'lastWatcher']);
       videoSessionQuery.containedIn('archiveStatus',['uploaded','available']);
@@ -115,6 +116,44 @@
       catch(e){
         reject(e);
       }
+    });
+  };
+
+  module.exports.updateWatchersList = function(data){
+
+    return Q.Promise(function(resolve, reject){
+
+      var videoId = data.videoId;
+      var userId = data.userId;
+
+      var videoSessionQuery = new db.Query(VideoSession);
+
+      videoSessionQuery.get(videoId, {
+        success: function(videoSession) {
+          videoSession.set('hasBeenWatched', true);
+          videoSession.set('lastWatcher', {
+            __type: "Pointer",
+            className: "User",
+            objectId: userId
+          });
+          if(!videoSession.get('officerUser')){
+            videoSession.set('officerUser',{
+              __type: "Pointer",
+              className: "User",
+              objectId: userId
+            })
+          }
+          videoSession.save().then(function(object){
+            resolve(object);
+          });
+        },
+        error: function(object, error) {
+          // The object was not retrieved successfully.
+          console.log("Error fetching video for lastWatcher update.");
+          reject(error);
+        }
+      });
+
     });
   };
 

@@ -45,7 +45,6 @@
         user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
         user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
         user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
-        //user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
 
         if(user.attributes.state){
           user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);

@@ -929,7 +929,7 @@
     return paginator;
   }]);
 
-  app.factory('VideoStreamsService', ['socket', '$rootScope', function (socket, $rootScope) {
+  app.factory('VideoStreamsService', ['socket', '$rootScope', '$http', function (socket, $rootScope, $http) {
 
     var otKey = '44755992';
 
@@ -1055,6 +1055,17 @@
               return;
             }
 
+            var data = {
+              videoId: stream.connectionId
+            }
+
+            $http.post('videosessions/updateWatchersList', data)
+              .success(function(data){
+              })
+              .error(function(error){
+                //TODO add error management
+              });
+            /*
             var query = new Parse.Query(VideoSession);
             query.get(stream.connectionId)
               .then(function (videoSession) {
@@ -1069,7 +1080,7 @@
               .then(function (videoSession) {
                 //Session was upated with officer
               });
-
+              */
           });
 
         currStream = event.stream;
