@@ -14,6 +14,26 @@
 
     $stateProvider
 
+      //Dashboard pagel endpoint/url
+      .state('dashboard', {
+        url: "/dashboard",
+        templateUrl: "/dashboard.html",
+        data: {
+          authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+        },
+        resolve: {
+                    // Reads the Routing Service
+                    routingService: 'RoutingService',
+
+                    // Receives the Routing Service, checks if user is logged in,
+                    // executes the login dialog if needed and waits for the dialog
+                    // to close before loading the state.
+                    authenticate: function (routingService) {
+                      return routingService.checkUserStatus(this.data.authorizedRoles, "Dashboard");
+                    }
+                  }
+                })
+
       //Profile pagel endpoint/url
       .state('profile', {
         url: "/profile",
@@ -193,7 +213,7 @@
           }
         }
       });
-  }]);
+    }]);
 
   //Sets up the options for snapRemote, which is
   //the snap.js instance that allows for a slidable
@@ -445,7 +465,311 @@
 
       return routingService;
     }
-  ]);
+    ]);
+
+
+  //Provides the controller with the correct language diccionary
+  app.factory('languageService',['$http', '$q' ,function($http , $q){
+
+    self = {};
+    self.EN = 
+    {    
+      "dashboardH1" : "Dashboard", 
+      "dashboardUnreadTips" : "Unread Tips", 
+      "dashboardUnwatch" : "Unwatch Videos", 
+      "dashboardUnreadChats" : "Unread Chats", 
+      "dashboardResponse" : "Avg. Response time", 
+      "dashboardYear" : "Year", 
+      "dashboardSelectYear" : "Select Year", 
+      "dashboardRecent" : "Recent Acitvity", 
+      "profileH1" : "Profile",
+      "profilePassword" : "Change Password",
+      "profileFName" : "First Name",
+      "profileLName" : "Last Name",
+      "profileUsername" : "Username",
+      "profileEmail" : "Email",
+      "profilePhone" : "Phone Number",
+      "profileAddress1" : "Address Line 1",
+      "profileAddress2" : "Address Line 2",
+      "profileCity" : "City",
+      "profileState" : "State",
+      "profileZip" : "Zip Code",
+      "profileSaveProfile" : "Save Profile",
+      "profileCPassword" :"Current Password",
+      "profileNPassword" : "New password",
+      "profileSPassword" : "Save Password",
+      "profileConfirmPassword" : "Confirm Password",
+      "wantedFor" : "Wanted For:",
+      "wantedAge" : "Age",
+      "wantedHeight" : "Height",
+      "wantedName" : "Name",
+      "wantedAdd" : "Add Most Wanted",
+      "wantedNotFound" : "No Records Found",
+      "wantedName" : "Name:",
+      "wantedAge" : "Age:",
+      "wantedHeight" : "Height:",
+      "wantedWantedFor" : "Wanted For:",
+      "wantedBirthdate" : "Bithdate",
+      "wantedEye" : "Eye Color",
+      "wantedHair" : "Hair Color",
+      "wantedWeight" : "Weight",
+      "wantedRace" : "Race",
+      "wantedCharacteristics" : "Characteristics",
+      "wantedSummary" : "Summary",
+      "wantedFinish" : "Finish Editing",
+      "wantedWdelete" : "Delete",
+      "wantedDiscard" : "Discard",
+      "analysisYear" : "Year",
+      "analysisSelectYear" : "Select Year",
+      "analysisCvs" : "Export CSV",
+      "analysisData" : "Analizing Data",
+      "analysisError" : "Error Parsing the Data",
+      "drawerAdmin" : "Administrator Panel",
+      "drawerLogout" : "Log Out",
+      "adminH1" : "Administrator Panel",
+      "adminAll" : "All",
+      "adminOfficers" : "Officers",
+      "adminAdmin" :"Administrators",
+      "adminNewuser" : "Add New User",
+      "adminBulk" : "Bulk Action",
+      "adminAddo" : "Add to Officers",
+      "adminRemoveO" : "Remove from Officers",
+      "adminAddA" : "Add to Administrators",
+      "adminDeleteS" : "Delete Selected Users",
+      "adminRegistration" : "Registration Date:",
+      "adminFilter" : "Filter",
+      "adminRecord" : "No Records Found",
+      "adminError" : "Try a different filter or refresh your browser",
+      "adminUser" : "Username",
+      "adminEmail" : "Email",
+      "adminRole" : "Role",
+      "adminRegistered" : "Registered",
+      "adminAction" : "Action",
+      "adminAddofficer" : "Add New Officer",
+      "adminEditOfficer" : "Edit Officer",
+      "adminFName" : "First Name",
+      "adminLName"    : "Last Name", 
+      "adminPhone" : "Phone Number",
+      "adminAddress1" : "Address Line 1",
+      "adminAddress2" : "Address Line 2",
+      "adminCity" : "City",
+      "adminState" : "State",
+      "adminPassword" : "Password",
+      "adminSetRole" : "Set Role",
+      "adminPermissions" : "Set Special Permissions",
+      "adminNone" : "None",
+      "admin-video" : "Video Access",
+      "adminChat" : "Chat Access",
+      "adminNotifications" : "Notifications Access",
+      "adminSave" : "Save User",
+      "login" : "Login",
+      "loginUserId" : "User ID",
+      "loginPassword" : "Password",
+      "loginSignin" : "Sign In",
+      "loginEmail" : "Email",
+      "loginCancel" : "Cancel",
+      "loginReset" : "Reset",
+      "loginResetP" : "Reset Password",
+      "tipContactUser" : "CONTACT USER",
+      "tipSend" : "Send Notification",
+      "tipSendText" : "Send Text Message",
+      "tipNoLocation" : "NO LOCATION AVAILABLE",
+      "tipfeed-tipFeed" : "Tip Feed",
+      "tipfeedCrimeType" : "Crime Type: ",
+      "tipfeedSubmitted" : "Submitted At:",
+      "tipfeedFilter" : "Filter",
+      "tipfeedRecord" : "No Records Found",
+      "tipfeedError" : "Try a different filter or refresh your browser",
+      "tipfeedControl" : "Control Number",
+      "tipfeedUser" : "Username",
+      "tipfeedCrimeType" : "Crime Type",
+      "tipfeedReadBy" : "Read By",
+      "tipfeedReadOn" : "Read On",
+      "tipfeedAction" : "Action",
+      "drawerTipFeed" : "Tip Feed",
+      "drawerVideo" : "Video Streams",
+      "drawerVideoArchive" : "Video Archive",
+      "drawerNotifications" : "Send Notification",
+      "drawerMaps" : "Maps",
+      "drawerWanted" : "Wanted List",
+      "drawerData" : "Data Analysis",
+      "tipFeedAll" :  "All",
+      "tipFeedAssault" : "Assault",
+      "tipFeedChildAbuse" : "Child Abuse",
+      "tipFeedElderlyAbuse" : "Elderly Abuse",
+      "tipFeedDomesticViolence" : "Domestic Violence",
+      "tipFeedDrugs" : "Drugs",
+      "tipFeedHomicide" : "Homicide",
+      "tipFeedAnimalAbuse" : "Animal Abuse",
+      "tipFeedRoberry" : "Roberry",
+      "tipFeedSexOffenses" : "Sex Offenses",
+      "tipFeedBullying" : "Bullying",
+      "tipFeedPoliceMisconduct" : "Police Misconduct",
+      "tipFeedBribery" : "Bribery",
+      "tipFeedVehicleTheft" : "Vehicle Theft",
+      "tipFeedVandalism" : "Vandalism",
+      "tipFeedAutoAccident" : "Auto Accident", 
+      "tipFeedCivilRights" : "Civil Rights",
+      "tipFeedArson" : "Arson",
+      "tipFeedOther" : "Other",
+      "tipFeedNew" : "new tips available",
+      "resetPasswordMessage" : "Forgot Password?"
+    };
+
+    self.ES = {
+
+      "dashboardH1" : "Centro de Comando",
+      "dashboardUnreadTips" : "Reportes sin leer",
+      "dashboardUnwatch" : "Videos Nuevos",
+      "dashboardUnreadChats" : "Conversaciones nuevas",
+      "dashboardResponse" : "Tiempo de respuesta promedio",
+      "dashboardYear" : "Año",
+      "dashboardSelectYear" : "Seleccione el Año",
+      "dashboardRecent" : "Actividad Reciente",
+      "profileH1" : "Perfil",
+      "profilePassword" : "Cambiar Contraseña",
+      "profileFName" : "Nombre",
+      "profileLName" : "Apellidos",
+      "profileUsername" : "Nombre de Usuario",
+      "profileEmail" : "Correo Electronico",
+      "profilePhone" : "Numero telefonico",
+      "profileAddress1" : "Direccion 1",
+      "profileAddress2" : "Direccion 2",
+      "profileCity" : "Ciudad",
+      "profileState" : "Estado",
+      "profileZip" : "Zip Code",
+      "profileSaveProfile" : "Guardar Perfil",
+      "profileCPassword" :"Contraseña Actual",
+      "profileNPassword" : "Contraseña Nueva",
+      "profileSPassword" : "Guardar Contraseña",
+      "profileConfirmPassword" : "Confirmar Contraseña",
+      "wantedFor" : "Buscado Por:",
+      "wantedHeight" : "Estatura",
+      "wantedAge" : "Edad",
+      "wantedName" : "Nombre",
+      "wantedAdd" : "Añadir a los Mas Buscados",
+      "wantedNotFound" : "Record no Encontrado",
+      "wantedName" : "Nombre:",
+      "wantedAge" : "Edad:",
+      "wantedHeight" : "Altura:",
+      "wantedWantedFor" : "Buscado Por",
+      "wantedBirthdate" : "Fecha de Nacimiento",
+      "wantedEye" : "Color de Ojos",
+      "wantedHair" : "Color de Pelo",
+      "wantedWeight" : "Peso",
+      "wantedRace" : "Raza",
+      "wantedCharacteristics" : "Caracteristicas",
+      "wantedSummary" : "Resumen",
+      "wantedFinish" : "Acabar de Editar",
+
+      "tipFeedAll" :  "All",
+      "tipFeedAssault" : "Asalto",
+      "tipFeedChildAbuse" : "Abuso Infantil",
+      "tipFeedElderlyAbuse" : "Abusos de Ancianos",
+      "tipFeedDomesticViolence" : "Violencia Doméstica",
+      "tipFeedDrugs" : "Drogas",
+      "tipFeedHomicide" : "Homicidio",
+      "tipFeedAnimalAbuse" : "Abuso de Animales",
+      "tipFeedRoberry" : "Robo",
+      "tipFeedSexOffenses" : "Delitos Sexuales",
+      "tipFeedBullying" : "Bullying",
+      "tipFeedPoliceMisconduct" : "Mala Conducta Policial",
+      "tipFeedBribery" : "Soborno",
+      "tipFeedVehicleTheft" : "Robo de Vehículos",
+      "tipFeedVandalism" : "Vandalismo",
+      "tipFeedAutoAccident" : "Accidente de Auto", 
+      "tipFeedCivilRights" : "Derechos Civile",
+      "tipFeedArson" : "Incendio",
+      "tipFeedOther" : "Otro",
+      "tipFeedNoNew" : "No new Tips available",
+
+      "wantedWdelete" : "Borrar",
+      "wantedDiscard" : "Descartar",
+      "analysisYear" : "Año",
+      "analysisSelectYear" : "Seleccione el Año",
+      "analysisCvs" : "Exportar CSV",
+      "analysisData" : "Analizando la Data",
+      "analysisError" : "Error",
+      "drawerAdmin" : "Administrator Panel", 
+      "drawerLogout" : "Cerrar Seccion",
+      "adminH1" : "Panel de Administracion",
+      "adminAll" : "Todos",
+      "adminOfficers" : "Oficiales",
+      "adminAdmin" :"Administradores",
+      "adminNewuser" : "Añadir Nuevo Usuario",
+      "adminBulk" : "Bulk Action",
+      "adminAddo" : "Añadir a Oficiales",
+      "adminRemoveO" : "Remover de los Oficiales",
+      "adminAddA" : "Añadir a Administradores",
+      "adminDeleteS" : "Borrar Usuarios Seleccionados",
+      "adminRegistration" : "Dia de Registro:",
+      "adminFilter" : "Filtrar",
+      "adminRecord" : "Archivo no Encontrado",
+      "adminError" : "Intente usar otro filtro o refresque el navegador",
+      "adminUser" : "Nombre de usuario",
+      "adminEmail" : "Correo Electronico",
+      "adminRole" : "Rol",
+      "adminRegistered" : "Registrado",
+      "adminAction" : "Accion",
+      "adminAddofficer" : "Añadir un Nuevo Oficial",
+      "adminEditOfficer" : "Editar Oficial",
+      "adminFName" : "Nombre",
+      "adminLName"    : "apellidos",
+      "adminPhone" : "Numero Telefonico",
+      "adminAddress1" : "Direccion linea 1",
+      "adminAddress1" : "Direccion linea 2",
+      "adminCity" : "Ciudad",
+      "adminState" : "Estado",
+      "adminPassword" : "Contraseña",
+      "adminSetRole" : "seleccionar rol",
+      "adminPermissions" : "Asignar Permisos Especiales",
+      "adminNone" : "Ninguno",
+      "adminVideo" : "Acceso a Videos",
+      "adminChat" : "Acceso a las Conversaciones",
+      "adminNotifications" : "acceso a las Notificaciones",
+      "adminSave" : "Gurdar Usuario",
+      "login" : "Iniciar Sesión",
+      "loginUserId" : "ID de Usuario",
+      "loginPassword" : "Contraseña",
+      "loginSignin" : "Ingresar",
+      "loginEmail" : "Correo Electronico",
+      "loginCancel" : "Cancelar",
+      "loginReset" : "Reajustar",
+      "loginResetP" : "Restablecer Contraseña",
+      "tipContactUser" : "CONTACTAR USUARIO",
+      "tipSend" : "Enviar Notificacion",
+      "tipSendText" : "Enviar Mensage de Texto",
+      "tipNoLocation" : "UBICACION NO DISPONIBLE",
+      "tipfeed" : "Tip Feed",
+      "tipfeedCrimeType" : "Tipo de Crimen: ",
+      "tipfeedSubmitted" : "Sometido:",
+      "tipfeedFilter" : "Filtro",
+      "tipfeedRecord" : "Archivo no Encontrado",
+      "tipfeedError" : "Intente usar otro filtro o refresque el navegador",
+      "tipfeedControl" : "Numero de Control",
+      "tipfeedUser" : "Nombre de Usuario",
+      "tipfeedCrimeType" : "Tipo de Crimen",
+      "tipfeedReadBy" : "Leido Por",
+      "tipfeedReadOn" : "Leido el",
+      "tipfeedAction" : "Accion",
+      "tipFeedNoNew" : "No Hay Reportes Nuevos",
+      
+      "tipFeedNew" : "Reportes Nuevos",
+
+      "drawerTipFeed" : "Lista de Reportes",
+      "drawerVideo" : "Video en Vivo",
+      "drawerVideoArchive" : "Archivos de video",
+      "drawerNotifications" : "Enviar una Notificacion",
+      "drawerMaps" : "Mapas",
+      "drawerWanted" : "Los Mas Buscados",
+      "drawerData" : "Analisis de Datos",
+      "resetPasswordMessage" : "¿Olvidaste tu contraseña?"
+    };
+
+    console.log(self.EN);
+
+    return self.ES;
+  }]);
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
@@ -725,13 +1049,13 @@
       }
 
       return upload()
-        .then(function (response) {
-          var notification = response.data;
-          parseNotificationService.channels = [];
-          $rootScope.$broadcast('regional-notification-success');
-        }, function (response) {
-          var notification = response.data.notification;
-          var error = response.data.error;
+      .then(function (response) {
+        var notification = response.data;
+        parseNotificationService.channels = [];
+        $rootScope.$broadcast('regional-notification-success');
+      }, function (response) {
+        var notification = response.data.notification;
+        var error = response.data.error;
           //Notification could not be saved, pass control back to controller
           //and reset channels
           $rootScope.$broadcast('regional-notification-error');
@@ -742,7 +1066,7 @@
 
 
     /**NOT BEING USED, BUT MIGHT BE IN THE FUTURE IF WE WANT
-     TO ASSOCIATE NOTIFICATION WITH TIP BEFORE PUSHING**/
+    TO ASSOCIATE NOTIFICATION WITH TIP BEFORE PUSHING**/
 
     // //Associates already saved notification by inserting
     // //it into it's corresponding tips followUpNotifications
@@ -929,25 +1253,25 @@
     return paginator;
   }]);
 
-  app.factory('VideoStreamsService', ['socket', '$rootScope', function (socket, $rootScope) {
+app.factory('VideoStreamsService', ['socket', '$rootScope', function (socket, $rootScope) {
 
-    var otKey = '44755992';
+  var otKey = '44755992';
 
-    var VideoSession = Parse.Object.extend("VideoSession");
+  var VideoSession = Parse.Object.extend("VideoSession");
 
-    var VideoStreamsService = {};
+  var VideoStreamsService = {};
 
-    VideoStreamsService.currentSession = null;
+  VideoStreamsService.currentSession = null;
 
-    var currStream;
-    var storedStreams = [];
-    var currSubscriber;
+  var currStream;
+  var storedStreams = [];
+  var currSubscriber;
 
     //Used to create a new div inside the video-streams-video
     //div to subscribe the stream to it.
     var createDivElement = function (sessionId) {
       var div = document.createElement('div'),
-        node = document.getElementById('video-streams-video');
+      node = document.getElementById('video-streams-video');
       div.setAttribute('id', 'video-streams-video-' + sessionId);
       while (node.hasChildNodes()) {
         node.removeChild(node.firstChild);
@@ -970,12 +1294,12 @@
     VideoStreamsService.checkActiveStream = function () {
       if (!!VideoStreamsService.currentSession) {
         var subscriber = VideoStreamsService.currentSession.subscribe(currStream, createDivElement(VideoStreamsService.currentSession.id), {
-            insertMode: 'replace',
-            height: '400.6',
-            width: '591'
-          },
-          function (error) {
-            if (!!error) {
+          insertMode: 'replace',
+          height: '400.6',
+          width: '591'
+        },
+        function (error) {
+          if (!!error) {
               //TODO
               //Handle error when couldn't subscribe to published streams
               console.log(error);
@@ -1018,12 +1342,12 @@
         }
 
         var subscriber = session.subscribe(currStream, createDivElement(session.id), {
-            insertMode: 'replace',
-            height: '400.6',
-            width: '591'
-          },
-          function (error) {
-            if (!!error) {
+          insertMode: 'replace',
+          height: '400.6',
+          width: '591'
+        },
+        function (error) {
+          if (!!error) {
               //TODO
               //Handle error when couldn't subscribe to published streams
               console.log(error);
@@ -1043,12 +1367,12 @@
         });
 
         var subscriber = session.subscribe(event.stream, createDivElement(session.id), {
-            insertMode: 'replace',
-            height: '400.6',
-            width: '591'
-          },
-          function (error) {
-            if (!!error) {
+          insertMode: 'replace',
+          height: '400.6',
+          width: '591'
+        },
+        function (error) {
+          if (!!error) {
               //TODO
               //Handle error when couldn't subscribe to published streams
               console.log(error);
@@ -1057,16 +1381,16 @@
 
             var query = new Parse.Query(VideoSession);
             query.get(stream.connectionId)
-              .then(function (videoSession) {
-                videoSession.set('hasBeenWatched', true);
-                videoSession.set('officerUser', {
-                  __type: "Pointer",
-                  className: "User",
-                  objectId: currentUser.objectId
-                });
-                return videoSession.save();
-              })
-              .then(function (videoSession) {
+            .then(function (videoSession) {
+              videoSession.set('hasBeenWatched', true);
+              videoSession.set('officerUser', {
+                __type: "Pointer",
+                className: "User",
+                objectId: currentUser.objectId
+              });
+              return videoSession.save();
+            })
+            .then(function (videoSession) {
                 //Session was upated with officer
               });
 
@@ -1206,12 +1530,12 @@
               editedMarkerId: editedMarkerId
             }
           })
-            .then(function (response) {
-              stationsMarkers = angular.copy(response.data);
-              return stationsMarkers;
-            }, function () {
-              return stationsMarkers;
-            });
+          .then(function (response) {
+            stationsMarkers = angular.copy(response.data);
+            return stationsMarkers;
+          }, function () {
+            return stationsMarkers;
+          });
         }
       };
 
@@ -1226,9 +1550,9 @@
       PoliceStationsService.getCenter = function () {
         //Get region center-location from Parse
         return $http.get('/stations/center')
-          .then(function (response) {
-            return response.data;
-          });
+        .then(function (response) {
+          return response.data;
+        });
       };
 
       //Changes the station info in Parse after user saves the edited station
@@ -1260,9 +1584,9 @@
           stationInfo: stationInfo,
           tempMarker: PoliceStationsService.getTempMarker()
         })
-          .then(function () {
-            PoliceStationsService.getStationsMarkers();
-          });
+        .then(function () {
+          PoliceStationsService.getStationsMarkers();
+        });
 
 
       };
@@ -1280,14 +1604,14 @@
       //Delete a station from Parse.
       PoliceStationsService.deleteStation = function (id) {
         $http.delete('/mostwanted/remove/' + id)
-          .then(function () {
+        .then(function () {
 
-          });
+        });
       };
 
       return PoliceStationsService;
     }
-  ]);
+    ]);
 
   //Creates a Data analysis service which retreives the data from Parse
   //and organizes the data that will be used in the charts.
@@ -1307,20 +1631,20 @@
             year: year
           }
         })
-          .then(function onSuccess(response) {
-            var charts = response.data;
+        .then(function onSuccess(response) {
+          var charts = response.data;
 
-            $rootScope.$broadcast('data-analysis', charts);
-            usSpinnerService.stop('analizing-data-spinner');
-          }, function onError(response) {
-            var error = response.data;
-            $rootScope.$broadcast('data-analysis-error', error);
-          });
+          $rootScope.$broadcast('data-analysis', charts);
+          usSpinnerService.stop('analizing-data-spinner');
+        }, function onError(response) {
+          var error = response.data;
+          $rootScope.$broadcast('data-analysis-error', error);
+        });
       };
 
       return analysisService;
     }
-  ]);
+    ]);
 
   //Controller which assigns to its $scope
   //all controls necessary for user management;
@@ -1349,17 +1673,18 @@
         controllerScope.setCurrentClient(data[1], data[2]);
       });
     }
-  ]);
+    ]);
 
   //Controller for login dialog and login
   //landing page
-  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', '$window', 'ngDialog',
-    function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, $window, ngDialog) {
+  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', '$window', 'ngDialog', 'languageService',
+    function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, $window, ngDialog, languageService) {
 
       var loginCtrl = this;
 
       this.resetPasswordAvailable = true;
-      this.resetPasswordMessage = "Forgot Password?";
+      
+      this.lang = languageService;
 
       //Credentials that will be passed to the authenticator service
       this.credentials = {
@@ -1411,7 +1736,7 @@
             errorFactory.showError('LOGIN-' + error.data.code);
             loginCtrl.submitting = false;
           }
-        );
+          );
       };
 
       loginCtrl.showResetPasswordForm = function () {
@@ -1431,7 +1756,7 @@
                 template: '../reset-pass.html',
                 className: 'ngdialog-theme-plain'
               }).closePromise.then(function () {
-                  loginCtrl.resetPasswordAvailable = true;
+                loginCtrl.resetPasswordAvailable = true;
                   //Resolve the promise, proceed to load
                   //the state and change active state in drawer
                   return Promise.resolve("");
@@ -1450,7 +1775,7 @@
       };
 
     }
-  ]);
+    ]);
 
   //Controller for the header; contains a button
   //that triggers drawer element when clicked
@@ -1466,8 +1791,8 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip',
-    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip', 'languageService',
+    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip, languageService) {
       var drawer = this;
       this.newTips = 0;
       this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
@@ -1476,35 +1801,41 @@
       drawer.clientLogo = Session.clientLogo;
       drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
       drawer.newTips = Tip.newTipCount;
+      drawer.lang = languageService;
 
       //Drawer options with name and icon;
       //entries are off by default
       this.entries = [{
-        name: 'Tip Feed',
+
+        name: drawer.lang.dashboardH1,
+        icon: 'glyphicon glyphicon-dashboard',
+        state: 'dashboard'
+      }, {
+        name: drawer.lang.drawerTipFeed,
         icon: 'glyphicon glyphicon-inbox',
         state: 'tipfeed'
       }, {
-        name: 'Video Streams',
+        name: drawer.lang.drawerVideo,
         icon: 'glyphicon glyphicon-facetime-video',
         state: 'video-streams'
       }, {
-        name: 'Video Archive',
+        name: drawer.lang.drawerVideoArchive,
         icon: 'glyphicon glyphicon-film',
         state: 'video-archive'
       }, {
-        name: 'Send Notification',
-        icon: 'glyphicon glyphicon-send',
+        name: drawer.lang.drawerNotifications,
+        icon: 'glyphicon glyphicon-send', 
         state: 'regional-notifications'
       }, {
-        name: 'Maps',
+        name: drawer.lang.drawerMaps,
         icon: 'glyphicon glyphicon-map-marker',
         state: 'maps'
       }, {
-        name: 'Wanted List',
+        name: drawer.lang.drawerWanted,
         icon: 'glyphicon glyphicon-list-alt',
         state: 'most-wanted'
       }, {
-        name: 'Data Analysis',
+        name: drawer.lang.drawerData,
         icon: 'glyphicon glyphicon-stats',
         state: 'data-analysis'
       }];
@@ -1577,42 +1908,42 @@
        });
        drawer.sound.play();
        });
-       */
+*/
 
-      $scope.$on('update-user', function (event, data) {
-        drawer.userFullName = Session.userFullName;
-      });
+$scope.$on('update-user', function (event, data) {
+  drawer.userFullName = Session.userFullName;
+});
 
-      $scope.$watch(function () {
-        return Tip.newTipCount;
-      }, function (after, before) {
-        if (before != after) {
-          drawer.newTips = Tip.newTipCount;
-        }
-      });
+$scope.$watch(function () {
+  return Tip.newTipCount;
+}, function (after, before) {
+  if (before != after) {
+    drawer.newTips = Tip.newTipCount;
+  }
+});
 
-    }]);
+}]);
 
 //Controller for the toast that notifies the user that a
 //new video stream is available.
-  app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($scope, $state, ngToast) {
-    var toastCtrl = this;
-    toastCtrl.goToVideoStreams = function () {
-      if ($state.current.name !== "video-streams") {
-        $state.go("video-streams", {
-          newTips: 0
-        }, {
-          reload: true
-        });
-      }
-    };
-
-    toastCtrl.goToVideoArchive = function () {
-      if ($state.current.name !== 'video-archive') {
-        $state.go("video-archive", {}, {reload: true});
-      }
+app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($scope, $state, ngToast) {
+  var toastCtrl = this;
+  toastCtrl.goToVideoStreams = function () {
+    if ($state.current.name !== "video-streams") {
+      $state.go("video-streams", {
+        newTips: 0
+      }, {
+        reload: true
+      });
     }
-  }]);
+  };
+
+  toastCtrl.goToVideoArchive = function () {
+    if ($state.current.name !== 'video-archive') {
+      $state.go("video-archive", {}, {reload: true});
+    }
+  }
+}]);
 
 
 //Controller for VideStreams route; controls
@@ -1620,10 +1951,10 @@
 //current video, chat with current mobile client,
 //information on current call and all other controls
 //to swap video calls
-  app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', '$rootScope', function ($scope, socket, VideoStreamsService, ngToast, $rootScope) {
-    var vidStrmCtrl = this;
-    this.queue = [];
-    this.currentStream = {};
+app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', '$rootScope', function ($scope, socket, VideoStreamsService, ngToast, $rootScope) {
+  var vidStrmCtrl = this;
+  this.queue = [];
+  this.currentStream = {};
 
     // clear all toasts:
     ngToast.dismiss();
@@ -1642,7 +1973,7 @@
       var stream = data.stream;
       vidStrmCtrl.queue.unshift(stream);
 //            vidStrmCtrl.currentSessionId = stream.sessionId;
-    });
+});
 
     $scope.$on('stream-destroyed', function (event, data) {
       for (var i = 0; i < vidStrmCtrl.queue.length; i++) {
@@ -1660,20 +1991,20 @@
     //   $scope.$apply();
     // });
 
-    vidStrmCtrl.activateStream = function (stream) {
-      this.currentStream = stream;
-      VideoStreamsService.subscribeToStream(stream, $scope.currentUser);
-    };
+vidStrmCtrl.activateStream = function (stream) {
+  this.currentStream = stream;
+  VideoStreamsService.subscribeToStream(stream, $scope.currentUser);
+};
 
-    vidStrmCtrl.stopStream = function () {
-      VideoStreamsService.stopStream();
-    };
+vidStrmCtrl.stopStream = function () {
+  VideoStreamsService.stopStream();
+};
 
-  }]);
+}]);
 //Controller for the tip's attachments; must display
 //video and images, and play audio files
-  app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce', 'socket', 'usSpinnerService',
-    function ($scope, $rootScope, ngDialog, $sce, socket, usSpinnerService) {
+app.controller('AttachmentController', ['$scope', '$rootScope', 'ngDialog', '$sce', 'socket', 'usSpinnerService',
+  function ($scope, $rootScope, ngDialog, $sce, socket, usSpinnerService) {
       //Needed so that attachment-dialog.html can open the media files from parse.
       this.trustAsResourceUrl = $sce.trustAsResourceUrl;
       this.address = $scope.$parent.ngDialogData.address;
@@ -1687,12 +2018,12 @@
         }
       });
     }
-  ]);
+    ]);
 
 //Controller for Google map in the maps state;
 //sets map center and police station position
 //in map
-  app.controller('GoogleMapController', function () {
+app.controller('GoogleMapController', function () {
 
     //This position variables will store the position
     //data so that the tip.center variable remain unchanged.
@@ -1759,8 +2090,8 @@
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', '$http',
-    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, $http) {
+app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', '$http',
+  function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, $http) {
       //Get data from ngDialog directive
       this.name = $scope.$parent.ngDialogData.name;
       this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -1841,23 +2172,23 @@
         }
 
         $http.post('/notifications/followup', {
-            notification: notification
+          notification: notification
         })
-          .then(function () {
-            notificationCtrl.sending = false;
-            notificationCtrl.hasError = true;
-            notificationCtrl.successMessage = 'SUCCESS: Follow up notification has been sent.';
+        .then(function () {
+          notificationCtrl.sending = false;
+          notificationCtrl.hasError = true;
+          notificationCtrl.successMessage = 'SUCCESS: Follow up notification has been sent.';
             //todo check why dialog does not work for sending consecutive follow up notifs w.o. refresh..
             $scope.closeThisDialog();
             $rootScope.$broadcast('notification-success');
           },
-        function(error){
-          notificationCtrl.sending = false;
-          notificationCtrl.hasError = true;
-          notificationCtrl.successMessage = 'FAILED: Follow up notification could not be sent.';
-          $scope.closeThisDialog();
-          $rootScope.$broadcast('notification-error');
-        });
+          function(error){
+            notificationCtrl.sending = false;
+            notificationCtrl.hasError = true;
+            notificationCtrl.successMessage = 'FAILED: Follow up notification could not be sent.';
+            $scope.closeThisDialog();
+            $rootScope.$broadcast('notification-error');
+          });
 
 
         //--USED FOR NON ENCRYPTED FOLLOW UP--
@@ -1871,12 +2202,12 @@
       };
 
     }
-  ]);
+    ]);
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
-  app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session', '$http',
-    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session, $http) {
+app.controller('SMSController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', 'socket', 'Session', '$http',
+  function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, socket, Session, $http) {
       //Get data from ngDialog directive
       this.phone = $scope.$parent.ngDialogData.phoneNumber;
       // this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -1917,16 +2248,16 @@
           From: Session.clientPhoneNumber,
           Body: this.message
         })
-          .then(function () {
-            smsCtrl.sending = false;
-            $scope.closeThisDialog();
-            $rootScope.$broadcast('sms-notification-success');
-          },
-          function(error){
-            smsCtrl.sending = false;
-            $scope.closeThisDialog();
-            $rootScope.$broadcast('sms-notification-error');
-          });
+        .then(function () {
+          smsCtrl.sending = false;
+          $scope.closeThisDialog();
+          $rootScope.$broadcast('sms-notification-success');
+        },
+        function(error){
+          smsCtrl.sending = false;
+          $scope.closeThisDialog();
+          $rootScope.$broadcast('sms-notification-error');
+        });
 /*
         Parse.Cloud.run('sendSMS', {
           To: this.phone,
@@ -1941,7 +2272,7 @@
             smsCtrl.sending = false;
           }
         });*/
-      };
+};
 
       //SMS was successfully saved and sent
       $scope.$on('sms-success', function () {
@@ -1950,21 +2281,21 @@
         $scope.closeThisDialog();
       });
     }
-  ]);
+    ]);
 
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
-  app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
-    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory) {
+app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
+  function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory) {
 
 
-      this.regions = $scope.currentRegions;
-      this.allRegions = false;
-      var regionalNotificationCtrl = this;
-      regionalNotificationCtrl.sending = false;
-      regionalNotificationCtrl.hasError = false;
-      regionalNotificationCtrl.successMessage = '';
+    this.regions = $scope.currentRegions;
+    this.allRegions = false;
+    var regionalNotificationCtrl = this;
+    regionalNotificationCtrl.sending = false;
+    regionalNotificationCtrl.hasError = false;
+    regionalNotificationCtrl.successMessage = '';
 
       //Once a file is selected, prep file for upload to Parse
       this.onFileSelect = function ($files) {
@@ -2057,12 +2388,12 @@
       });
 
     }
-  ]);
+    ]);
 
 //Controller for error dialog which is reusable throughout the
 //app; decoupled from everything else
-  app.controller('ErrorController', ['$scope', 'ERRORS', 'errorFactory',
-    function ($scope, ERRORS, errorFactory) {
+app.controller('ErrorController', ['$scope', 'ERRORS', 'errorFactory',
+  function ($scope, ERRORS, errorFactory) {
       //Set controller title and message
       var error = ERRORS[$scope.$parent.ngDialogData.errorCode];
       this.title = error.title;
@@ -2081,12 +2412,12 @@
       });
 
     }
-  ]);
+    ]);
 
 //Controller for Google map in the 'Maps' state.
-  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function (PoliceStationsService, $scope) {
+app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function (PoliceStationsService, $scope) {
 
-    var mapCtrl = this;
+  var mapCtrl = this;
 
     //Hack to avoid google-map directive bug when updating
     //marker's window.
@@ -2103,9 +2434,9 @@
     };
 
     PoliceStationsService.getCenter()
-      .then(function (center) {
-        mapCtrl.map.center = angular.copy(center);
-      });
+    .then(function (center) {
+      mapCtrl.map.center = angular.copy(center);
+    });
 
     PoliceStationsService.map = mapCtrl.map;
 
@@ -2145,10 +2476,10 @@
     mapCtrl.refresh = function () {
 
       PoliceStationsService.getStationsMarkers()
-        .then(function setMarkers(markers) {
-          mapCtrl.policeStationsMarkers = markers;
-          PoliceStationsService.redrawMarkers = false;
-        });
+      .then(function setMarkers(markers) {
+        mapCtrl.policeStationsMarkers = markers;
+        PoliceStationsService.redrawMarkers = false;
+      });
     };
 
     // get first points
@@ -2166,8 +2497,8 @@
 
 //The buttons on the map need a new controller for themselves.
 //This is it.
-  app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
-    var buttonCtrl = this;
+app.controller('AddStationController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
+  var buttonCtrl = this;
 
     //Check if the user is adding a new station to
     //enable/disable the buttons.
@@ -2248,8 +2579,8 @@
   }]);
 
 //Controller for the ngDialog pop-up for editing the station.
-  app.controller('StationDialogController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
-    var dialogCtrl = this;
+app.controller('StationDialogController', ['PoliceStationsService', '$scope', 'ngDialog', function (PoliceStationsService, $scope, ngDialog) {
+  var dialogCtrl = this;
 
     //Populate station data if we are opening the dialog
     //for editing a station
@@ -2299,26 +2630,27 @@
   }]);
 
 //Controller for Administrator Panel
-  app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', '$scope', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http, $scope) {
+app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', '$scope', 'languageService', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http, $scope , languageService) {
 
-    var adminPanelCtrl = this;
-    this.sending = false;
-    adminPanelCtrl.hasError = false;
+  var adminPanelCtrl = this;
+  this.sending = false;
+  adminPanelCtrl.hasError = false;
 
-    adminPanelCtrl.viewingAll = true;
-    adminPanelCtrl.viewingUsers = false;
-    adminPanelCtrl.viewingEmployees = false;
-    adminPanelCtrl.viewingAdministrators = false;
-    adminPanelCtrl.viewingLoggedIn = false;
-    adminPanelCtrl.addingUser = false;
+  adminPanelCtrl.viewingAll = true;
+  adminPanelCtrl.viewingUsers = false;
+  adminPanelCtrl.viewingEmployees = false;
+  adminPanelCtrl.viewingAdministrators = false;
+  adminPanelCtrl.viewingLoggedIn = false;
+  adminPanelCtrl.addingUser = false;
+  adminPanelCtrl.lang = languageService;
 
 
-    adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
-    adminPanelCtrl.roles = ["Select","employee","admin"];
+  adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
+  adminPanelCtrl.roles = ["Select","employee","admin"];
 
-    adminPanelCtrl.adminPanelUsersArray = [];
-    adminPanelCtrl.selectedUsers = [];
-    adminPanelCtrl.editedUser;
+  adminPanelCtrl.adminPanelUsersArray = [];
+  adminPanelCtrl.selectedUsers = [];
+  adminPanelCtrl.editedUser;
 
     //pagination variables
     adminPanelCtrl.currentPageNum = 1;
@@ -2353,31 +2685,31 @@
 
       adminPanelCtrl.fetchingUsers = true;
       $http.get('/users/list', {params: params})
-        .success(function(data){
+      .success(function(data){
 
-          adminPanelCtrl.lastPageNum = data.lastPageNum;
-          adminPanelCtrl.userTotal = data.userTotal;
+        adminPanelCtrl.lastPageNum = data.lastPageNum;
+        adminPanelCtrl.userTotal = data.userTotal;
 
-          adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
+        adminPanelCtrl.adminPanelUsersArray = angular.copy(data.users);
 
-          if(adminPanelCtrl.adminPanelUsersArray.length===0){
-            adminPanelCtrl.usersAvailable = false;
-          }
-          else{
-            adminPanelCtrl.usersAvailable = true;
-          }
-
-        })
-        .error(function(err){
+        if(adminPanelCtrl.adminPanelUsersArray.length===0){
           adminPanelCtrl.usersAvailable = false;
+        }
+        else{
+          adminPanelCtrl.usersAvailable = true;
+        }
 
-        }).then(function(){
-          usSpinnerService.stop('loading-video-archive-spinner');
-          $location.hash('top');
-          $anchorScroll();
-          adminPanelCtrl.refreshPageNumbers();
-          adminPanelCtrl.fetchingUsers = false;
-        });
+      })
+      .error(function(err){
+        adminPanelCtrl.usersAvailable = false;
+
+      }).then(function(){
+        usSpinnerService.stop('loading-video-archive-spinner');
+        $location.hash('top');
+        $anchorScroll();
+        adminPanelCtrl.refreshPageNumbers();
+        adminPanelCtrl.fetchingUsers = false;
+      });
     };
 
     adminPanelCtrl.sortRoles = function(roles){
@@ -2443,20 +2775,20 @@
       }
 
       $http.post('/users/add', data)
-        .success(function(data){
-          adminPanelCtrl.sending = false;
-          adminPanelCtrl.successMessage = data;
-          adminPanelCtrl.hasError = false;
-        })
-        .error(function(err){
-          adminPanelCtrl.sending = false;
-          adminPanelCtrl.successMessage = err;
-          adminPanelCtrl.hasError =  true;
+      .success(function(data){
+        adminPanelCtrl.sending = false;
+        adminPanelCtrl.successMessage = data;
+        adminPanelCtrl.hasError = false;
+      })
+      .error(function(err){
+        adminPanelCtrl.sending = false;
+        adminPanelCtrl.successMessage = err;
+        adminPanelCtrl.hasError =  true;
 
-        }).then(function(){
-          $location.hash('top');
-          $anchorScroll();
-        });
+      }).then(function(){
+        $location.hash('top');
+        $anchorScroll();
+      });
     };
 
     adminPanelCtrl.updateUser = function(user){
@@ -2469,20 +2801,20 @@
       }
 
       $http.post('/users/update', data)
-        .success(function(data){
-          adminPanelCtrl.sending = false;
-          adminPanelCtrl.successMessage = data;
-          adminPanelCtrl.hasError = false;
-        })
-        .error(function(err){
-          adminPanelCtrl.sending = false;
-          adminPanelCtrl.successMessage = err;
-          adminPanelCtrl.hasError =  true;
+      .success(function(data){
+        adminPanelCtrl.sending = false;
+        adminPanelCtrl.successMessage = data;
+        adminPanelCtrl.hasError = false;
+      })
+      .error(function(err){
+        adminPanelCtrl.sending = false;
+        adminPanelCtrl.successMessage = err;
+        adminPanelCtrl.hasError =  true;
 
-        }).then(function(){
-          $location.hash('top');
-          $anchorScroll();
-        });
+      }).then(function(){
+        $location.hash('top');
+        $anchorScroll();
+      });
     };
 
     adminPanelCtrl.updateRole = function(action, role){
@@ -2524,16 +2856,16 @@
         }
 
         $http.post('/users/update/role', data)
-          .success(function(data){
-            adminPanelCtrl.successMessage = data;
-            adminPanelCtrl.hasError = false;
-          })
-          .error(function(err){
-            adminPanelCtrl.successMessage = err;
-            adminPanelCtrl.hasError = true;
-          }).then(function(){
-            adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
-          });
+        .success(function(data){
+          adminPanelCtrl.successMessage = data;
+          adminPanelCtrl.hasError = false;
+        })
+        .error(function(err){
+          adminPanelCtrl.successMessage = err;
+          adminPanelCtrl.hasError = true;
+        }).then(function(){
+          adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+        });
       }
 
       usSpinnerService.stop('loading-video-archive-spinner');
@@ -2559,16 +2891,16 @@
         }
 
         $http.post('/users/delete', data)
-          .success(function(data){
-            adminPanelCtrl.successMessage = data;
-            adminPanelCtrl.hasError = false;
-          })
-          .error(function(err){
-            adminPanelCtrl.successMessage = err;
-            adminPanelCtrl.hasError = true;
-          }).then(function(){
-            adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
-          });
+        .success(function(data){
+          adminPanelCtrl.successMessage = data;
+          adminPanelCtrl.hasError = false;
+        })
+        .error(function(err){
+          adminPanelCtrl.successMessage = err;
+          adminPanelCtrl.hasError = true;
+        }).then(function(){
+          adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+        });
       }
 
       usSpinnerService.stop('loading-video-archive-spinner');
@@ -2596,22 +2928,22 @@
       }
 
       $http.post('/users/decrypt', data)
-        .success(function(data){
-          adminPanelCtrl.editedUser = angular.copy(data);
-        })
-        .error(function(err){
-          adminPanelCtrl.successMessage = err;
-          adminPanelCtrl.hasError = true;
-        }).then(function(){
-          adminPanelCtrl.formUser = adminPanelCtrl.editedUser;
-          if(adminPanelCtrl.formUser.permissions !== undefined && adminPanelCtrl.formUser.permissions !== null) {
-            adminPanelCtrl.formUser.permissions.forEach(function (perm) {
-              $('#' + perm + '-access').attr('selected', 'selected');
-            });
-          }
+      .success(function(data){
+        adminPanelCtrl.editedUser = angular.copy(data);
+      })
+      .error(function(err){
+        adminPanelCtrl.successMessage = err;
+        adminPanelCtrl.hasError = true;
+      }).then(function(){
+        adminPanelCtrl.formUser = adminPanelCtrl.editedUser;
+        if(adminPanelCtrl.formUser.permissions !== undefined && adminPanelCtrl.formUser.permissions !== null) {
+          adminPanelCtrl.formUser.permissions.forEach(function (perm) {
+            $('#' + perm + '-access').attr('selected', 'selected');
+          });
+        }
 
-          $('.selectpicker').selectpicker('refresh');
-        });
+        $('.selectpicker').selectpicker('refresh');
+      });
     };
 
     adminPanelCtrl.changeView = function(view){
@@ -2630,70 +2962,70 @@
       switch(view){
 
         case 'all':
-          adminPanelCtrl.viewingAll = true;
-          adminPanelCtrl.rolesFilter = "";
-          adminPanelCtrl.getPage(1);
-          break;
+        adminPanelCtrl.viewingAll = true;
+        adminPanelCtrl.rolesFilter = "";
+        adminPanelCtrl.getPage(1);
+        break;
 
         case 'users':
-          adminPanelCtrl.viewingUsers = true;
+        adminPanelCtrl.viewingUsers = true;
           // TODO call getPage with corresponding filter
           break;
 
-        case 'employees':
+          case 'employees':
           adminPanelCtrl.viewingEmployees = true;
           adminPanelCtrl.rolesFilter = "employee";
           adminPanelCtrl.getPage(1);
           break;
 
-        case 'administrators':
+          case 'administrators':
           adminPanelCtrl.viewingAdministrators = true;
           adminPanelCtrl.rolesFilter = "admin";
           adminPanelCtrl.getPage(1);
           break;
 
-        case 'loggedIn':
+          case 'loggedIn':
           adminPanelCtrl.viewingLoggedIn = true;
           // TODO call getPage with corresponding filter
           break;
 
-        case 'addUser':
+          case 'addUser':
           adminPanelCtrl.addingUser = true;
           $scope.addOfficerForm.$setPristine();
           adminPanelCtrl.formUser = {};
           $('.selectpicker').selectpicker('refresh');
           break;
 
-        case 'editUser':
+          case 'editUser':
           adminPanelCtrl.editingUser = true;
           //$scope.addOfficerForm.$set();
           adminPanelCtrl.formUser = {};
           break;
+        };
       };
-    };
-    adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
-    $('.selectpicker').selectpicker();
+      adminPanelCtrl.getPage(adminPanelCtrl.currentPageNum);
+      $('.selectpicker').selectpicker();
 
-  }]);
+    }]);
 
 //Controller for Data Analysis page
-  app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function ($scope, DataAnalysisService) {
+app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function ($scope, DataAnalysisService) {
 
-    var analysisCtrl = this;
-    analysisCtrl.loading = true;
-    analysisCtrl.currentYear = new Date().getFullYear();
-    analysisCtrl.previousAvailableYears = [];
-    analysisCtrl.selectedYear = analysisCtrl.currentYear;
-    analysisCtrl.yearInSelector = analysisCtrl.currentYear;
-    analysisCtrl.selectedMonth = null;
-    analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
-    analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
-    analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
-    analysisCtrl.showErrorMessage = false;
+  var analysisCtrl = this;
+  analysisCtrl.loading = true;
+  analysisCtrl.currentYear = new Date().getFullYear();
+  analysisCtrl.previousAvailableYears = [];
+  analysisCtrl.selectedYear = analysisCtrl.currentYear;
+  analysisCtrl.yearInSelector = analysisCtrl.currentYear;
+  analysisCtrl.selectedMonth = null;
+  analysisCtrl.dateChartCsvHeader = ["Date", "Amount of Tips"];
+  analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
+  analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
+  analysisCtrl.showErrorMessage = false;
 
-    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
-      "October", "November", "December"
-    ];
+  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+  "October", "November", "December"
+  ];
 
     //Get years from current year to 2014
     for (var i = 1; i <= analysisCtrl.currentYear - 2014; i++) {

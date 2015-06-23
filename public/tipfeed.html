@@ -2,7 +2,7 @@
     <a id="top"></a>
 
     <h1 class="text-center">
-        Tip Feed
+        {{tipFeed.lang.drawerTipFeed}}
     </h1>
     <br>
 
@@ -11,10 +11,10 @@
              ng-class="{'disabled-counter':tipFeed.count()===0}"
              ng-click="tipFeed.loadNewTips()">
           <span ng-show="tipFeed.count()>0" class="col-md-12" ng-class="{'active-counter':tipFeed.count()>0}">
-            <span style="text-decoration: underline;" class="col-md-12">{{tipFeed.count()}} new tips available</span>
+            <span style="text-decoration: underline;" class="col-md-12">{{tipFeed.count()}} {{tipFeed.lang.tipFeedNew}}</span>
           </span>
           <span ng-hide="tipFeed.count()>0">
-            No new Tips available
+            {{tipFeed.lang.tipFeedNoNew}}
           </span>
         </div>
     </div>
@@ -22,8 +22,7 @@
     <div class="row">
         <div class="row-fluid">
             <ul class="nav nav-tabs nav-justified">
-                <li class="main-menu-list-item" ng-repeat="tab in tipFeed.tabs" ng-class="tipFeed.getTabClass(tab)"
-                    ng-click="tipFeed.changeView(tab)">
+                <li class="main-menu-list-item" ng-repeat="p
                     <a href="" class="pointer">{{tab}}</a>
                 </li>
             </ul>

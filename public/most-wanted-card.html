@@ -1,4 +1,4 @@
-<div class="container-fluid wanted-card">
+<div class="container-fluid wanted-card" ng-controller="MostWantedController as mostWantedCtrl">
   <div class="row">
     <div class="btn btn-default most-wanted-move-handle" ng-hide="editingList">
       <span class="glyphicon glyphicon-align-justify"></span>
@@ -13,21 +13,21 @@
         <span class="glyphicon glyphicon-pencil"></span>
       </div>
       <div class="col-xs-5">
-        <em>Name:</em> {{criminal.name | limitName}}</div>
+        <em>{{mostWantedCtrl.lang.wantedName}}</em> {{criminal.name | limitName}}</div>
       <div class="col-xs-5">
         <em>Alias:</em> {{criminal.alias}}</div>
       <br/>
       <br/>
 
       <div class="col-xs-3">
-        <em>Age:</em> {{criminal.age || "Unknown"}}</div>
+        <em>{{mostWantedCtrl.lang.wantedAge}}</em> {{criminal.age || "Unknown"}}</div>
       <div class="col-xs-3 col-xs-offset-2">
-        <em>Height:</em> {{criminal.height || "Unknown"}}</div>
+        <em>{{mostWantedCtrl.lang.wantedHeight}}</em> {{criminal.height || "Unknown"}}</div>
 
       <br/>
 
       <div class="col-xs-9">
-        <em>Wanted For:</em> {{criminal.summary || "Reasons: unknown." | limitSummary}}
+        <em>{{mostWantedCtrl.lang.wantedFor}}</em> {{criminal.summary || "Reasons: unknown." | limitSummary}}
       </div>
       <br/>
       <br/>

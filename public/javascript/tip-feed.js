@@ -108,8 +108,8 @@
         ioSocket: tipSocket
       });
     }])
-    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location',
-      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location) {
+    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService',
+      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService) {
         var self = this;
 
 
@@ -129,11 +129,12 @@
         self.tipsAvailable = false;
         self.tips;
         self.totalTips;
-        self.crimeTypes = ['All', 'Assault', 'Child Abuse', 'Elderly Abuse',
-          'Domestic Violence', 'Drugs', 'Homicide', 'Animal Abuse', 'Roberry',
-          'Robbery', 'Sex Offenses', 'Bullying', 'Police Misconduct', 'Bribery',
-          'Vehicle Theft', 'Vandalism', 'Auto Accident', 'Civil Rights', 'Arson',
-          'Other'
+        self.lang = languageService; 
+        self.crimeTypes = [languageService.tipFeedAll, languageService.tipFeedAssault, languageService.tipFeedChildAbuse, languageService.tipFeedElderlyAbuse,
+          languageService.tipFeedDomesticViolence, languageService.tipFeedDrugs, languageService.tipFeedHomicide, languageService.tipFeedAnimalAbuse,
+          languageService.tipFeedRobbery, languageService.tipFeedSexOffenses, languageService.tipFeedBullying, languageService.tipFeedPoliceMisconduct, languageService.tipFeedBribery,
+          languageService.tipFeedVehicleTheft, languageService.tipFeedVandalism, languageService.tipFeedAutoAccident, languageService.tipFeedCivilRights, languageService.tipFeedArson,
+          languageService.tipFeedOther
         ].sort();
 
         self.notificationDialogIsOn = false;
@@ -286,7 +287,7 @@
         self.getPage(self.currentPageNum);
       }
     ])
-    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', 'ngDialog', function ($http, $stateParams, $scope, Tip, ngDialog) {
+    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', 'ngDialog', 'languageService', function ($http, $stateParams, $scope, Tip, ngDialog, languageService) {
       var self = this;
 
       self.tipError = null;
@@ -296,6 +297,7 @@
       self.hasError = false;
       self.sendingFollowUp = false;
       self.successMessage = '';
+      self.lang = languageService;
 
       //Note that notification dialog is off
       $scope.$on('notification-dialog-closed', function (event, data) {
