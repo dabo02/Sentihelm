@@ -1,4 +1,5 @@
 
+
 <div class="container mid" ng-controller="AdminPanelController as adminPanelCtrl">
     <a id="top"></a>
 	<h1 class="text-center">
@@ -129,8 +130,8 @@
                 </div>
                 <div class="tab-pane" ng-class="{'active':adminPanelCtrl.addingUser || adminPanelCtrl.editingUser}">
                     <div class="row">
-                        <h3 ng-show="adminPanelCtrl.addingUser" class="text-center">{{admin-addofficer}}</h3>
-                        <h3 ng-show="adminPanelCtrl.editingUser" class="text-center">{{admin-editOfficer}}</h3>
+                        <h3 ng-show="adminPanelCtrl.addingUser" class="text-center">{{adminPanelCtrl.lang.adminAddofficer}}</h3>
+                        <h3 ng-show="adminPanelCtrl.editingUser" class="text-center">{{adminPanelCtrl.lang.adminEditOfficer}}</h3>
                         <h3 class="text-center"  ng-class="{'green':!adminPanelCtrl.hasError, 'red':adminPanelCtrl.hasError}" ng-show="!adminPanelCtrl.sending">{{adminPanelCtrl.successMessage}}</h3>
                         <br>
 
@@ -139,49 +140,49 @@
                                 <div class="col-xs-3 col-xs-offset-1">
                                     <div class="form-group">
                                         <label for="new-officer-fname" class="dark-gray">{{adminPanelCtrl.lang.adminFName}}</label>
-                                        <input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="adminPanelCtrl.formUser.firstName"  required/>
+                                        <input type="text" class="form-control" id="new-officer-fname" placeholder={{adminPanelCtrl.lang.adminFName}} ng-model="adminPanelCtrl.formUser.firstName"  required/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="new-officer-lname" class="dark-gray">{{adminPanelCtrl.lang.adminLName}}</label>
-                                        <input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="adminPanelCtrl.formUser.lastName" required/>
+                                        <input type="text" class="form-control" id="new-officer-lname" placeholder={{adminPanelCtrl.lang.adminLName}} ng-model="adminPanelCtrl.formUser.lastName" required/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="new-officer-username" class="dark-gray">{{adminPanelCtrl.lang.adminUser}}</label>
-                                        <input ng-disabled="adminPanelCtrl.editingUser" type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="adminPanelCtrl.formUser.username" name="username" ng-required="adminPanelCtrl.addingUser"/>
+                                        <input ng-disabled="adminPanelCtrl.editingUser" type="text" class="form-control" id="new-officer-username" placeholder={{adminPanelCtrl.lang.adminUser}} ng-model="adminPanelCtrl.formUser.username" name="username" ng-required="adminPanelCtrl.addingUser"/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="new-officer-email" class="dark-gray">{{adminPanelCtrl.lang.adminEmail}}</label>
-                                        <input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="adminPanelCtrl.formUser.email" required/>
+                                        <input type="email" class="form-control" id="new-officer-email" placeholder={{adminPanelCtrl.lang.adminEmail}} ng-model="adminPanelCtrl.formUser.email" required/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="new-officer-phone" class="dark-gray">{{adminPanelCtrl.lang.adminPhone}}</label>
-                                        <input type="text" class="form-control" id="new-officer-phone" placeholder="Phone Number" ng-model="adminPanelCtrl.formUser.phoneNumber" required/>
+                                        <input type="text" class="form-control" id="new-officer-phone" placeholder={{adminPanelCtrl.lang.adminEmail}} ng-model="adminPanelCtrl.formUser.phoneNumber" required/>
                                     </div>
                                 </div>
                                 <div class="col-xs-3">
                                     <div class="form-group">
                                         <label for="address-1" class="dark-gray">{{adminPanelCtrl.lang.adminAddress1}}</label>
-                                        <input type="text" class="form-control" id="address-1" placeholder="Address line 1" ng-model="adminPanelCtrl.formUser.addressLine1"/>
+                                        <input type="text" class="form-control" id="address-1" placeholder={{adminPanelCtrl.lang.adminAddress1}} ng-model="adminPanelCtrl.formUser.addressLine1"/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="address-2" class="dark-gray">{{adminPanelCtrl.lang.adminAddress2}}</label>
-                                        <input type="text" class="form-control" id="address-2" placeholder="Address line 2" ng-model="adminPanelCtrl.formUser.addressLine2"/>
+                                        <input type="text" class="form-control" id="address-2" placeholder={{adminPanelCtrl.lang.adminAddress2}} ng-model="adminPanelCtrl.formUser.addressLine2"/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="city" class="dark-gray">{{adminPanelCtrl.lang.adminCity}}</label>
-                                        <input type="text" class="form-control" id="city" placeholder="City" ng-model="adminPanelCtrl.formUser.city"/>
+                                        <input type="text" class="form-control" id="city" placeholder={{adminPanelCtrl.lang.adminCity}} ng-model="adminPanelCtrl.formUser.city"/>
                                     </div>
 
                                     <div class="form-group">
                                         <label for="new-officer-state" class="dark-gray">{{adminPanelCtrl.lang.adminState}}</label>
                                         <select id="new-officer-state" class="form-control" ng-model="adminPanelCtrl.formUser.state" ng-init="adminPanelCtrl.formUser.state='Select'">
-                                            <option ng-repeat="state in adminPanelCtrl.states" value="{{state}}">{{adminPanelCtrl.lang.adminState}}</option>
+                                            <option ng-repeat="state in adminPanelCtrl.states" value="{{state}}">{{state}}</option>
                                         </select>
                                     </div>
 
@@ -193,7 +194,7 @@
                                 <div class="col-xs-3">
                                     <div ng-show="adminPanelCtrl.addingUser" class="form-group">
                                         <label for="new-officer-password" class="dark-gray">{{adminPanelCtrl.lang.adminPassword}}</label>
-                                        <input ng-disabled="adminPanelCtrl.editingUser" type="password" class="form-control" id="new-officer-password" placeholder="Password" ng-model="adminPanelCtrl.formUser.password" ng-required="adminPanelCtrl.addingUser"/>
+                                        <input ng-disabled="adminPanelCtrl.editingUser" type="password" class="form-control" id="new-officer-password" placeholder={{adminPanelCtrl.lang.adminPassword}} ng-model="adminPanelCtrl.formUser.password" ng-required="adminPanelCtrl.addingUser"/>
                                     </div>
 
                                     <div ng-show="adminPanelCtrl.editingUser" class="form-group">

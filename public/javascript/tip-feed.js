@@ -117,7 +117,8 @@
         var spinner = 'loading-tips-spinner';
         self.hasError = false;
 
-        self.tabs = ['All', 'Crime Reports', 'Tips'];
+        self.lang = languageService;
+        self.tabs = [self.lang.tipFeedAll, self.lang.tipFeedCrimeReports, self.lang.tipFeedTip];
         self.currentTab = self.tabs[0];
 
         // pagination variables
