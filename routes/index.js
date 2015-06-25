@@ -169,7 +169,7 @@
 
     var opentokCallbackJSON = request.body;
 
-    if(opentokCallbackJSON.partnerId === config.opentok.key){
+    //if(opentokCallbackJSON.partnerId === config.opentok.key){
       var videoSessionQuery = new db.Query(VideoSession);
       videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
       videoSessionQuery.find({
@@ -185,7 +185,7 @@
           console.log("Error fetching video for archive ID update on Opentok callback.");
         }
       });
-    }
+    //}
   })
 
   //send sms message using cloud code
