@@ -8,6 +8,15 @@
   min-width: 800px;
 }
 
+.tips-color {
+  background-color: #F8F8F8;
+}
+
+.unread-filter {
+  background-color: white;
+  font-weight: bold;
+}
+
 #tip-container {
   height: 60%;
   min-height: 400px;

@@ -130,18 +130,18 @@
         self.tipsAvailable = false;
         self.tips;
         self.totalTips;
-        self.lang = languageService; 
+        
         self.crimeTypes = [languageService.tipFeedAll, languageService.tipFeedAssault, languageService.tipFeedChildAbuse, languageService.tipFeedElderlyAbuse,
           languageService.tipFeedDomesticViolence, languageService.tipFeedDrugs, languageService.tipFeedHomicide, languageService.tipFeedAnimalAbuse,
           languageService.tipFeedRobbery, languageService.tipFeedSexOffenses, languageService.tipFeedBullying, languageService.tipFeedPoliceMisconduct, languageService.tipFeedBribery,
           languageService.tipFeedVehicleTheft, languageService.tipFeedVandalism, languageService.tipFeedAutoAccident, languageService.tipFeedCivilRights, languageService.tipFeedArson,
           languageService.tipFeedOther
-        ].sort();
+        ];
 
         self.notificationDialogIsOn = false;
         self.attachmentDialogIsOn = false;
 
-        self.selectedCrimeType = 'All';
+        self.selectedCrimeType = languageService.tipFeedAll;
 
         self.setCrimeType = function (type) {
           var index = self.crimeTypes.indexOf(type);
@@ -154,7 +154,27 @@
           return {
             'selected-filter': b
           };
+
+          
+          
+            
         };
+
+        self.changeView = function (filter) {
+
+          var tabIndex = self.tabs.indexOf(filter);
+          self.successMessage = "";
+          self.hasError = false;
+          
+
+          self.currentTab = self.tabs[tabIndex] || self.currentTab;
+        
+          
+          self.getPage(1);
+
+        };
+
+        
 
         self.showHidePanel = function () {
           return {
@@ -180,13 +200,13 @@
           self.skip = (self.currentPageNum - 1) * self.limit;
 
           var params = {
-            list: self.currentTab,
+            list: self.tabs.indexOf(self.currentTab),
             searchString: self.searchString,
             registrationDate: self.registrationDate,
-            crimeType: self.selectedCrimeType,
+            crimeType: self.crimeTypes.indexOf(self.selectedCrimeType)-1,
             skip: self.skip,
             limit: self.limit,
-            type: self.currentTab
+            type: self.tabs.indexOf(self.currentTab)
           };
 
           Tip.getTips(params)
@@ -232,14 +252,7 @@
         };
 
 
-        self.changeView = function (filter) {
-
-          var tabIndex = self.tabs.indexOf(filter);
-          self.successMessage = "";
-          self.hasError = false;
-          self.currentTab = self.tabs[tabIndex] || self.currentTab;
-          self.getPage(1);
-        };
+        
 
         self.showTip = function (tip) {
           $state.go('tip', {
@@ -249,10 +262,9 @@
           });
         };
 
-
         self.showAttachmentDialog = function (tip, type) {
-          // Only show dialog if it, and notificationDialog,
-          // are not showing
+          //Only show dialog if it, and notificationDialog,
+          //are not showing
           if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
 
             self.showMediaSpinner = true;
@@ -261,18 +273,18 @@
               return;
             }
 
-            // If attachment is an audio file,
-            // don't show close control (X)
+            //If attachment is an audio file,
+            //don't show close control (X)
             var showClose = self.attachmentType !== 'AUDIO';
 
-            // Open dialog and pass control to AttachmentController
+            //Open dialog and pass control to AttachmentController
             $scope.attachmentDialog = Tip.getMedia(type, tip.objectId, showClose, $scope);
 
             $scope.attachmentDialog.closePromise.then(function () {
               self.attachmentDialogIsOn = false;
             });
 
-            // Attachment dialog is now showing
+            //Attachment dialog is now showing
             self.attachmentDialogIsOn = true;
           }
         };
@@ -288,59 +300,21 @@
         self.getPage(self.currentPageNum);
       }
     ])
-    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', 'ngDialog', 'languageService', function ($http, $stateParams, $scope, Tip, ngDialog, languageService) {
+    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', 'ngDialog', function ($http, $stateParams, $scope, Tip, ngDialog) {
       var self = this;
 
       self.tipError = null;
       self.tip = null;
       self.notificationDialogIsOn = false;
       self.attachmentDialogIsOn = false;
-      self.hasError = false;
-      self.sendingFollowUp = false;
-      self.successMessage = '';
-      self.lang = languageService;
-
-      //Note that notification dialog is off
-      $scope.$on('notification-dialog-closed', function (event, data) {
-        self.notificationDialogIsOn = false;
-      });
-
-      //Note that attachment dialog is off
-      $scope.$on('attachment-dialog-closed', function (event, data) {
-        self.attachmentDialogIsOn = false;
-      });
-
-      $scope.$on('notification-success', function (notification) {
-        self.sendingFollowUp = false;
-        self.hasError = false;
-        self.successMessage = 'SUCCESS: Follow up notification has been sent.';
-      });
-
-      $scope.$on('notification-error', function (error) {
-        self.sendingFollowUp = false;
-        self.hasError = true;
-        self.successMessage = 'FAILURE: Follow up notification could not be sent.';
-      });
-
-      $scope.$on('sms-notification-success', function (notification) {
-        self.sendingFollowUp = false;
-        self.hasError = false;
-        self.successMessage = 'SUCCESS: SMS notification has been sent.';
-      });
-
-      $scope.$on('sms-notification-error', function (error) {
-        self.sendingFollowUp = false;
-        self.hasError = true;
-        self.successMessage = 'FAILURE: SMS notification could not be sent.';
-      });
 
       self.showSMSDialog = function () {
-        // ngDialog can only handle stringified JSONs
+        //ngDialog can only handle stringified JSONs
         var data = JSON.stringify({
           phoneNumber: self.tip.phone
         });
 
-        // Open dialog and pass control to AttachmentController
+        //Open dialog and pass control to AttachmentController
         $scope.SMSDialog = ngDialog.open({
           template: '/sms-dialog.html',
           className: 'ngdialog-theme-plain',
@@ -351,20 +325,18 @@
       };
 
       self.showNotificationDialog = function (firstName, lastName, controlNumber, channel) {
-        self.sendingFollowUp = false;
-        self.successMessage = '';
-        // Only show dialog if it, and attachmentDialog,
-        // are not showing
+        //Only show dialog if it, and attachmentDialog,
+        //are not showing
         if (!this.notificationDialogIsOn && !this.attachmentDialogIsOn) {
-          // ngDialog can only handle stringified JSONs
+          //ngDialog can only handle stringified JSONs
           var data = JSON.stringify({
             name: firstName + " " + lastName,
             controlNumber: controlNumber,
             channel: channel
           });
 
-          // Open dialog, and add it to the $scope
-          // so it can identify itself once open
+          //Open dialog, and add it to the $scope
+          //so it can identify itself once open
           $scope.notificationDialog = ngDialog.open({
             template: '/notification-dialog.html',
             className: 'ngdialog-theme-plain',
@@ -374,15 +346,15 @@
             data: data
           });
 
-          // NotificationDialog is now showing
+          //NotificationDialog is now showing
           this.notificationDialogIsOn = true;
         }
       };
 
 
       self.showAttachmentDialog = function (type) {
-        // Only show dialog if it, and notificationDialog,
-        // are not showing
+        //Only show dialog if it, and notificationDialog,
+        //are not showing
         if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
 
           self.showMediaSpinner = true;
@@ -391,18 +363,18 @@
             return;
           }
 
-          // If attachment is an audio file,
-          // don't show close control (X)
+          //If attachment is an audio file,
+          //don't show close control (X)
           var showClose = self.attachmentType !== 'AUDIO';
 
-          // Open dialog and pass control to AttachmentController
+          //Open dialog and pass control to AttachmentController
           $scope.attachmentDialog = Tip.getMedia(type, self.tip.objectId, showClose, $scope);
 
           $scope.attachmentDialog.closePromise.then(function () {
             self.attachmentDialogIsOn = false;
           });
 
-          // Attachment dialog is now showing
+          //Attachment dialog is now showing
           self.attachmentDialogIsOn = true;
         }
       };

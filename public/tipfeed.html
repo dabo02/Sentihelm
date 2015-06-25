@@ -99,7 +99,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="tip in tipFeed.tips" class="pointer">
+                        <tr ng-repeat="tip in tipFeed.tips" class="pointer tips-color"  ng-class="{'unread-filter':tip.readBy== null}">
                             <td ng-click="tipFeed.showTip(tip)">{{tip.objectId + "-" + tip.controlNumber}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.user.username || 'anonymous'}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.crimeType || 'not set'}}</td>
