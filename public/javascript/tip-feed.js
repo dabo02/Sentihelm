@@ -62,7 +62,7 @@
             }
             return response.data;
           }, function (errResponse) { //  error
-            return $q.reject(errorResponse);
+            return $q.reject(errResponse);
           });
       };
       tip.getTip = function (tipId) {
@@ -110,8 +110,6 @@
     }])
     .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location',
       function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location) {
-        var self = this;
-
 
         var self = this;
         var spinner = 'loading-tips-spinner';
@@ -130,11 +128,10 @@
         self.tips;
         self.totalTips;
         self.crimeTypes = ['All', 'Assault', 'Child Abuse', 'Elderly Abuse',
-          'Domestic Violence', 'Drugs', 'Homicide', 'Animal Abuse', 'Roberry',
-          'Robbery', 'Sex Offenses', 'Bullying', 'Police Misconduct', 'Bribery',
-          'Vehicle Theft', 'Vandalism', 'Auto Accident', 'Civil Rights', 'Arson',
-          'Other'
-        ].sort();
+          'Domestic Violence', 'Drugs', 'Homicide', 'Animal Abuse','Robbery',
+          'Sex Offenses', 'Bullying', 'Police Misconduct', 'Bribery','Vehicle Theft',
+          'Vandalism', 'Auto Accident', 'Civil Rights', 'Arson','Other'
+        ];
 
         self.notificationDialogIsOn = false;
         self.attachmentDialogIsOn = false;
@@ -178,13 +175,13 @@
           self.skip = (self.currentPageNum - 1) * self.limit;
 
           var params = {
-            list: self.currentTab,
+            list: self.tabs.indexOf(self.currentTab),
             searchString: self.searchString,
             registrationDate: self.registrationDate,
-            crimeType: self.selectedCrimeType,
+            crimeType: self.crimeTypes.indexOf(self.selectedCrimeType) - 1,
             skip: self.skip,
             limit: self.limit,
-            type: self.currentTab
+            type: self.tabs.indexOf(self.currentTab)
           };
 
           Tip.getTips(params)

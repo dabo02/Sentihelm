@@ -119,20 +119,49 @@
           .error(function(error){
             //TODO add error management
           }).then(function(){
-            //ngDialog can only handle stringified JSONs
-            var data = JSON.stringify({
-              attachmentType: 'VID',
-              address: videoUrl
-            });
 
-            //Open dialog and pass control to AttachmentController
-            $scope.attachmentDialog = ngDialog.open({
-              template: '../attachment-dialog.html',
-              className: 'ngdialog-attachment',
-              showClose: true,
-              scope: $scope,
-              data: data
-            });
+            if(videoArchiveCtrl.watchStatusFilter === 'Unwatched'){
+              // inform user of unwatched list updates when video is watched
+              ngDialog.open({
+                template: '../info-dialog.html',
+                className: 'ngdialog-theme-plain',
+                showClose: false
+              }).closePromise.then(function () {
+                  //ngDialog can only handle stringified JSONs
+                  var data = JSON.stringify({
+                    attachmentType: 'VID',
+                    address: videoUrl
+                  });
+
+                  // show video
+                  //Open dialog and pass control to AttachmentController
+                  $scope.attachmentDialog = ngDialog.open({
+                    template: '../attachment-dialog.html',
+                    className: 'ngdialog-attachment',
+                    showClose: true,
+                    scope: $scope,
+                    data: data
+                  });
+                });
+            }
+            else{
+              //ngDialog can only handle stringified JSONs
+              var data = JSON.stringify({
+                attachmentType: 'VID',
+                address: videoUrl
+              });
+
+              // show video
+              //Open dialog and pass control to AttachmentController
+              $scope.attachmentDialog = ngDialog.open({
+                template: '../attachment-dialog.html',
+                className: 'ngdialog-attachment',
+                showClose: true,
+                scope: $scope,
+                data: data
+              });
+            }
+
           });
 
         var data = {

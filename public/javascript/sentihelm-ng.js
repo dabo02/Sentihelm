@@ -234,12 +234,6 @@
     }]);
   }]);
 
-  //Initialize values needed throughout the app
-  app.run(function () {
-    //Initialize Parse
-    Parse.initialize("ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL", "oC7TEezvGdh3FTZJneATR23UN47E9uAO7rzstK6A");
-  });
-
   //Autorhization events for log in functionality
   app.constant('AUTH_EVENTS', {
     loginSuccess: 'auth-login-success',
@@ -931,7 +925,7 @@
 
   app.factory('VideoStreamsService', ['socket', '$rootScope', '$http', function (socket, $rootScope, $http) {
 
-    var otKey = '44755992';
+
 
     var VideoSession = Parse.Object.extend("VideoSession");
 
@@ -999,61 +993,48 @@
     //Subscribe to streams in the current session
     VideoStreamsService.subscribeToStream = function (stream, currentUser) {
 
-      //Create OpenTok Session
-      var session = OT.initSession(otKey, stream.sessionId);
+      var otKey = '';
 
-      //If another session is active, disconnect
-      if (!!VideoStreamsService.currentSession) {
-        VideoStreamsService.currentSession.unsubscribe(currSubscriber);
-      }
+      $http.get('videosessions/getOTKey')
+        .success(function(data){
+          otKey = data;
+        })
+        .error(function(error){
+          //TODO add error management
+        }).then(function(){
+          //Create OpenTok Session
+          var session = OT.initSession(otKey, stream.sessionId);
 
-      if (session.isConnected()) {
-
-        for (var i = 0; i < storedStreams.length; i++) {
-          var object = storedStreams[i];
-          if (object.session.id == session.id) {
-            currStream = object.stream;
-            break;
+          //If another session is active, disconnect
+          if (!!VideoStreamsService.currentSession) {
+            VideoStreamsService.currentSession.unsubscribe(currSubscriber);
           }
-        }
 
-        var subscriber = session.subscribe(currStream, createDivElement(session.id), {
-            insertMode: 'replace',
-            height: '400.6',
-            width: '591'
-          },
-          function (error) {
-            if (!!error) {
-              //TODO
-              //Handle error when couldn't subscribe to published streams
-              console.log(error);
+          if (session.isConnected()) {
 
+            for (var i = 0; i < storedStreams.length; i++) {
+              var object = storedStreams[i];
+              if (object.session.id == session.id) {
+                currStream = object.stream;
+                break;
+              }
             }
-          });
 
-        currSubscriber = subscriber;
-      }
+            var subscriber = session.subscribe(currStream, createDivElement(session.id), {
+                insertMode: 'replace',
+                height: '400.6',
+                width: '591'
+              },
+              function (error) {
+                if (!!error) {
+                  //TODO
+                  //Handle error when couldn't subscribe to published streams
+                  console.log(error);
 
-      //Set up callback that handles mobileUser's streams
-      session.on("streamCreated", function (event) {
+                }
+              });
 
-        storedStreams.push({
-          session: session,
-          stream: event.stream
-        });
-
-        var subscriber = session.subscribe(event.stream, createDivElement(session.id), {
-            insertMode: 'replace',
-            height: '400.6',
-            width: '591'
-          },
-          function (error) {
-            if (!!error) {
-              //TODO
-              //Handle error when couldn't subscribe to published streams
-              console.log(error);
-              return;
-            }
+            currSubscriber = subscriber;
 
             var data = {
               videoId: stream.connectionId
@@ -1065,74 +1046,113 @@
               .error(function(error){
                 //TODO add error management
               });
-            /*
-            var query = new Parse.Query(VideoSession);
-            query.get(stream.connectionId)
-              .then(function (videoSession) {
-                videoSession.set('hasBeenWatched', true);
-                videoSession.set('officerUser', {
-                  __type: "Pointer",
-                  className: "User",
-                  objectId: currentUser.objectId
-                });
-                return videoSession.save();
-              })
-              .then(function (videoSession) {
-                //Session was upated with officer
+          }
+
+          //Set up callback that handles mobileUser's streams
+          session.on("streamCreated", function (event) {
+
+            storedStreams.push({
+              session: session,
+              stream: event.stream
+            });
+
+            var subscriber = session.subscribe(event.stream, createDivElement(session.id), {
+                insertMode: 'replace',
+                height: '400.6',
+                width: '591'
+              },
+              function (error) {
+                if (!!error) {
+                  //TODO
+                  //Handle error when couldn't subscribe to published streams
+                  console.log(error);
+                  return;
+                }
+
+
+                /*
+                 var query = new Parse.Query(VideoSession);
+                 query.get(stream.connectionId)
+                 .then(function (videoSession) {
+                 videoSession.set('hasBeenWatched', true);
+                 videoSession.set('officerUser', {
+                 __type: "Pointer",
+                 className: "User",
+                 objectId: currentUser.objectId
+                 });
+                 return videoSession.save();
+                 })
+                 .then(function (videoSession) {
+                 //Session was upated with officer
+                 });
+                 */
               });
-              */
+
+            currStream = event.stream;
+            currSubscriber = subscriber;
+
+            var data = {
+              videoId: stream.connectionId
+            }
+
+            $http.post('videosessions/updateWatchersList', data)
+              .success(function(data){
+              })
+              .error(function(error){
+                //TODO add error management
+              });
+
           });
 
-        currStream = event.stream;
-        currSubscriber = subscriber;
+          //Set up callback that handles when a mobile user disconnects
+          session.on("streamDestroyed", function (event) {
 
-      });
+            //Remove stream from storedStreams
+            for (var i = 0; i < storedStreams.length; i++) {
+              if (storedStreams[i].stream.id === event.stream.id) {
+                storedStreams[i].session.disconnect();
+                storedStreams.splice(i, 1);
+                break;
+              }
+            }
 
-      //Set up callback that handles when a mobile user disconnects
-      session.on("streamDestroyed", function (event) {
+            if (currStream.id === event.stream.id) {
+              currStream = null;
+              currSubscriber = null;
+              VideoStreamsService.currentSession = null;
+            }
 
-        //Remove stream from storedStreams
-        for (var i = 0; i < storedStreams.length; i++) {
-          if (storedStreams[i].stream.id === event.stream.id) {
-            storedStreams[i].session.disconnect();
-            storedStreams.splice(i, 1);
-            break;
-          }
-        }
+            $rootScope.$broadcast('stream-destroyed', {
+              sessionId: event.target.sessionId
+            });
+          });
 
-        if (currStream.id === event.stream.id) {
-          currStream = null;
-          currSubscriber = null;
-          VideoStreamsService.currentSession = null;
-        }
+          //TODO VERIFY
+          //Set up callback that handles disconnection
+          session.on("sessionDisconnected", function (event) {
 
-        $rootScope.$broadcast('stream-destroyed', {
-          sessionId: event.target.sessionId
+            // access to disconnected session: event.target
+            //TODO Change broadcast so it manages when video call is
+            //changed for another one
+            // $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
+          });
+
+          //Try and connect to the session
+          session.connect(stream.webClientToken, function (error) {
+            if (!!error) {
+              //TODO
+              //Handle error when couldn't connect to session
+              return;
+            }
+            //Save current session
+            VideoStreamsService.currentSession = session;
+
+
+          });
+
         });
-      });
-
-      //TODO VERIFY
-      //Set up callback that handles disconnection
-      session.on("sessionDisconnected", function (event) {
-
-        // access to disconnected session: event.target
-        //TODO Change broadcast so it manages when video call is
-        //changed for another one
-        // $rootScope.$broadcast('stream-destroyed', {sessionId:event.target.sessionId});
-      });
-
-      //Try and connect to the session
-      session.connect(stream.webClientToken, function (error) {
-        if (!!error) {
-          //TODO
-          //Handle error when couldn't connect to session
-          return;
-        }
-        //Save current session
-        VideoStreamsService.currentSession = session;
 
 
-      });
     };
 
     return VideoStreamsService;

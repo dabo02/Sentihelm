@@ -10,6 +10,7 @@
   var util = require('../lib/util');
   var videoSessionsModel = require('../models/video-sessions');
   var bodyParser = require('body-parser');
+  var config = require('../config');
 
   router
     .use(util.restrict)
@@ -38,6 +39,10 @@
       }, function(error){
         res.status(503).send(error);
       });
+    })
+
+    .get('/getOTKey', function(req,res){
+      res.send(config.opentok.key);
     });
 
 

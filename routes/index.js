@@ -169,22 +169,23 @@
 
     var opentokCallbackJSON = request.body;
 
-    var videoSessionQuery = new db.Query(VideoSession);
-    videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
-    videoSessionQuery.find({
-      success: function (videoSessions) {
-        videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
-        videoSessions[0].set('duration', opentokCallbackJSON.duration);
-        videoSessions[0].set('reason', opentokCallbackJSON.reason);
-        videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
-        videoSessions[0].save();
-      },
-      error: function (object, error) {
-        // The object was not retrieved successfully.
-        console.log("Error fetching video for archive ID update on Opentok callback.");
-      }
-    });
-
+    if(opentokCallbackJSON.partnerId === config.opentok.key){
+      var videoSessionQuery = new db.Query(VideoSession);
+      videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
+      videoSessionQuery.find({
+        success: function (videoSessions) {
+          videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
+          videoSessions[0].set('duration', opentokCallbackJSON.duration);
+          videoSessions[0].set('reason', opentokCallbackJSON.reason);
+          videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
+          videoSessions[0].save();
+        },
+        error: function (object, error) {
+          // The object was not retrieved successfully.
+          console.log("Error fetching video for archive ID update on Opentok callback.");
+        }
+      });
+    }
   })
 
   //send sms message using cloud code

@@ -78,8 +78,8 @@
       }
 
       // Gets crimes of a type
-      if (options.type && options.type !== 'All') {
-        tipReportQuery.equalTo('crimeListPosition', crimeTypes.indexOf(options.type));
+      if (parseInt(options.type) && parseInt(options.type) > -1) {
+        tipReportQuery.equalTo('crimeListPosition', parseInt(options.type));
       }
 
       tipReportQuery.equalTo('clientId', {
@@ -100,15 +100,15 @@
 
 
       // Switch between report types
-      if (options.reportType) {
-        var reportType = options.reportType.toLowerCase() || 'all';
+      if (parseInt(options.reportType) > 0) {
+        //var reportType = options.reportType.toLowerCase() || 'all';
 
         // Show only crime reports
-        if (reportType === 'crime reports') {
+        if (parseInt(options.reportType) == 1) {
           tipReportQuery.exists('user');
         }
         // Show only anonymous tips
-        if (reportType === 'tips') {
+        if (parseInt(options.reportType) == 2) {
           tipReportQuery.equalTo('user', undefined);
         }
 
