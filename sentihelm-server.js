@@ -62,6 +62,7 @@
     var policeStations = require('./routes/police-stations');
     var dataAnalysis = require('./routes/data-analysis');
     var videoSessions = require('./routes/video-sessions');
+    var dashboard = require('./routes/dashboard');
 
     app
       .use(routes)
@@ -71,7 +72,8 @@
       .use('/stations', policeStations)
       .use('/mostwanted', mostwanted)
       .use('/analyze', dataAnalysis)
-      .use('/videosessions', videoSessions);
+      .use('/videosessions', videoSessions)
+      .use('/dashboard', dashboard);
 
     app.post('/request-video-connection', bodyParser(), function (request, response) {
 
