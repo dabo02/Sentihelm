@@ -7,7 +7,7 @@
 
   angular.module('sentihelm')
 
-    .controller('ProfileController', ['socket', 'Session', '$scope', '$http', function (socket, Session, $scope, $http) {
+    .controller('ProfileController', ['socket', 'Session', '$scope', '$http', 'languageService', function (socket, Session, $scope, $http, languageService) {
 
       var profileCtrl = this;
       profileCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
@@ -16,6 +16,8 @@
       profileCtrl.savingPass = false;
       profileCtrl.showPasswordChanger = false;
       profileCtrl.user = angular.copy(Session.user);
+      profileCtrl.lang = languageService;
+      console.log(profileCtrl.lang);
 
       //Adds new SentiHelm user
       profileCtrl.saveUser = function (user) {

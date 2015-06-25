@@ -14,6 +14,26 @@
 
     $stateProvider
 
+      //Dashboard pagel endpoint/url
+      .state('dashboard', {
+        url: "/dashboard",
+        templateUrl: "/dashboard.html",
+        data: {
+          authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
+        },
+        resolve: {
+                    // Reads the Routing Service
+                    routingService: 'RoutingService',
+
+                    // Receives the Routing Service, checks if user is logged in,
+                    // executes the login dialog if needed and waits for the dialog
+                    // to close before loading the state.
+                    authenticate: function (routingService) {
+                      return routingService.checkUserStatus(this.data.authorizedRoles, "Dashboard");
+                    }
+                  }
+                })
+
       //Profile pagel endpoint/url
       .state('profile', {
         url: "/profile",
@@ -193,7 +213,7 @@
           }
         }
       });
-  }]);
+    }]);
 
   //Sets up the options for snapRemote, which is
   //the snap.js instance that allows for a slidable
@@ -439,7 +459,7 @@
 
       return routingService;
     }
-  ]);
+    ]);
 
   //Creates a session service that can create
   //and destroy a session which manages (logged in) users
@@ -1384,13 +1404,14 @@
 
   //Controller for login dialog and login
   //landing page
-  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', '$window', 'ngDialog',
-    function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, $window, ngDialog) {
+  app.controller('LoginController', ['$rootScope', '$scope', 'authenticator', 'AUTH_EVENTS', 'Session', 'errorFactory', '$state', '$window', 'ngDialog', 'languageService',
+    function ($rootScope, $scope, authenticator, AUTH_EVENTS, Session, errorFactory, $state, $window, ngDialog, languageService) {
 
       var loginCtrl = this;
 
       this.resetPasswordAvailable = true;
-      this.resetPasswordMessage = "Forgot Password?";
+      
+      this.lang = languageService;
 
       //Credentials that will be passed to the authenticator service
       this.credentials = {
@@ -1442,7 +1463,7 @@
             errorFactory.showError('LOGIN-' + error.data.code);
             loginCtrl.submitting = false;
           }
-        );
+          );
       };
 
       loginCtrl.showResetPasswordForm = function () {
@@ -1462,7 +1483,7 @@
                 template: '../reset-pass.html',
                 className: 'ngdialog-theme-plain'
               }).closePromise.then(function () {
-                  loginCtrl.resetPasswordAvailable = true;
+                loginCtrl.resetPasswordAvailable = true;
                   //Resolve the promise, proceed to load
                   //the state and change active state in drawer
                   return Promise.resolve("");
@@ -1481,7 +1502,7 @@
       };
 
     }
-  ]);
+    ]);
 
   //Controller for the header; contains a button
   //that triggers drawer element when clicked
@@ -1497,8 +1518,8 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip',
-    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip', 'languageService',
+    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip, languageService) {
       var drawer = this;
       this.newTips = 0;
       this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
@@ -1507,35 +1528,41 @@
       drawer.clientLogo = Session.clientLogo;
       drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
       drawer.newTips = Tip.newTipCount;
+      drawer.lang = languageService;
 
       //Drawer options with name and icon;
       //entries are off by default
       this.entries = [{
-        name: 'Tip Feed',
+
+        name: drawer.lang.dashboardH1,
+        icon: 'glyphicon glyphicon-dashboard',
+        state: 'dashboard'
+      }, {
+        name: drawer.lang.drawerTipFeed,
         icon: 'glyphicon glyphicon-inbox',
         state: 'tipfeed'
       }, {
-        name: 'Video Streams',
+        name: drawer.lang.drawerVideo,
         icon: 'glyphicon glyphicon-facetime-video',
         state: 'video-streams'
       }, {
-        name: 'Video Archive',
+        name: drawer.lang.drawerVideoArchive,
         icon: 'glyphicon glyphicon-film',
         state: 'video-archive'
       }, {
-        name: 'Send Notification',
-        icon: 'glyphicon glyphicon-send',
+        name: drawer.lang.drawerNotifications,
+        icon: 'glyphicon glyphicon-send', 
         state: 'regional-notifications'
       }, {
-        name: 'Maps',
+        name: drawer.lang.drawerMaps,
         icon: 'glyphicon glyphicon-map-marker',
         state: 'maps'
       }, {
-        name: 'Wanted List',
+        name: drawer.lang.drawerWanted,
         icon: 'glyphicon glyphicon-list-alt',
         state: 'most-wanted'
       }, {
-        name: 'Data Analysis',
+        name: drawer.lang.drawerData,
         icon: 'glyphicon glyphicon-stats',
         state: 'data-analysis'
       }];
@@ -1608,42 +1635,42 @@
        });
        drawer.sound.play();
        });
-       */
+*/
 
-      $scope.$on('update-user', function (event, data) {
-        drawer.userFullName = Session.userFullName;
-      });
+$scope.$on('update-user', function (event, data) {
+  drawer.userFullName = Session.userFullName;
+});
 
-      $scope.$watch(function () {
-        return Tip.newTipCount;
-      }, function (after, before) {
-        if (before != after) {
-          drawer.newTips = Tip.newTipCount;
-        }
-      });
+$scope.$watch(function () {
+  return Tip.newTipCount;
+}, function (after, before) {
+  if (before != after) {
+    drawer.newTips = Tip.newTipCount;
+  }
+});
 
-    }]);
+}]);
 
 //Controller for the toast that notifies the user that a
 //new video stream is available.
-  app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($scope, $state, ngToast) {
-    var toastCtrl = this;
-    toastCtrl.goToVideoStreams = function () {
-      if ($state.current.name !== "video-streams") {
-        $state.go("video-streams", {
-          newTips: 0
-        }, {
-          reload: true
-        });
-      }
-    };
-
-    toastCtrl.goToVideoArchive = function () {
-      if ($state.current.name !== 'video-archive') {
-        $state.go("video-archive", {}, {reload: true});
-      }
+app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($scope, $state, ngToast) {
+  var toastCtrl = this;
+  toastCtrl.goToVideoStreams = function () {
+    if ($state.current.name !== "video-streams") {
+      $state.go("video-streams", {
+        newTips: 0
+      }, {
+        reload: true
+      });
     }
-  }]);
+  };
+
+  toastCtrl.goToVideoArchive = function () {
+    if ($state.current.name !== 'video-archive') {
+      $state.go("video-archive", {}, {reload: true});
+    }
+  }
+}]);
 
 
 //Controller for VideStreams route; controls
@@ -2330,18 +2357,19 @@
   }]);
 
 //Controller for Administrator Panel
-  app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', '$scope', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http, $scope) {
+app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', '$scope', 'languageService', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http, $scope , languageService) {
 
     var adminPanelCtrl = this;
     this.sending = false;
     adminPanelCtrl.hasError = false;
 
-    adminPanelCtrl.viewingAll = true;
-    adminPanelCtrl.viewingUsers = false;
-    adminPanelCtrl.viewingEmployees = false;
-    adminPanelCtrl.viewingAdministrators = false;
-    adminPanelCtrl.viewingLoggedIn = false;
-    adminPanelCtrl.addingUser = false;
+  adminPanelCtrl.viewingAll = true;
+  adminPanelCtrl.viewingUsers = false;
+  adminPanelCtrl.viewingEmployees = false;
+  adminPanelCtrl.viewingAdministrators = false;
+  adminPanelCtrl.viewingLoggedIn = false;
+  adminPanelCtrl.addingUser = false;
+  adminPanelCtrl.lang = languageService;
 
 
     adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];

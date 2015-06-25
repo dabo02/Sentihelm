@@ -38,6 +38,7 @@
 
 .nav-tabs.nav-justified>li>a {
     border-bottom: none;
+    background: none;
 }
 
 .nav-tabs.nav-justified>li>a:hover {

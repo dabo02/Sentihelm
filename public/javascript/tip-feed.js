@@ -108,14 +108,15 @@
         ioSocket: tipSocket
       });
     }])
-    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location',
-      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location) {
-
+    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService',
+      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService) {
+        
         var self = this;
         var spinner = 'loading-tips-spinner';
         self.hasError = false;
 
-        self.tabs = ['All', 'Crime Reports', 'Tips'];
+        self.lang = languageService;
+        self.tabs = [self.lang.tipFeedAll, self.lang.tipFeedCrimeReports, self.lang.tipFeedTip];
         self.currentTab = self.tabs[0];
 
         // pagination variables
@@ -127,16 +128,18 @@
         self.tipsAvailable = false;
         self.tips;
         self.totalTips;
-        self.crimeTypes = ['All', 'Assault', 'Child Abuse', 'Elderly Abuse',
-          'Domestic Violence', 'Drugs', 'Homicide', 'Animal Abuse','Robbery',
-          'Sex Offenses', 'Bullying', 'Police Misconduct', 'Bribery','Vehicle Theft',
-          'Vandalism', 'Auto Accident', 'Civil Rights', 'Arson','Other'
+        
+        self.crimeTypes = [languageService.tipFeedAll, languageService.tipFeedAssault, languageService.tipFeedChildAbuse, languageService.tipFeedElderlyAbuse,
+          languageService.tipFeedDomesticViolence, languageService.tipFeedDrugs, languageService.tipFeedHomicide, languageService.tipFeedAnimalAbuse,
+          languageService.tipFeedRobbery, languageService.tipFeedSexOffenses, languageService.tipFeedBullying, languageService.tipFeedPoliceMisconduct, languageService.tipFeedBribery,
+          languageService.tipFeedVehicleTheft, languageService.tipFeedVandalism, languageService.tipFeedAutoAccident, languageService.tipFeedCivilRights, languageService.tipFeedArson,
+          languageService.tipFeedOther
         ];
 
         self.notificationDialogIsOn = false;
         self.attachmentDialogIsOn = false;
 
-        self.selectedCrimeType = 'All';
+        self.selectedCrimeType = languageService.tipFeedAll;
 
         self.setCrimeType = function (type) {
           var index = self.crimeTypes.indexOf(type);
@@ -150,6 +153,22 @@
             'selected-filter': b
           };
         };
+
+        self.changeView = function (filter) {
+
+          var tabIndex = self.tabs.indexOf(filter);
+          self.successMessage = "";
+          self.hasError = false;
+          
+
+          self.currentTab = self.tabs[tabIndex] || self.currentTab;
+        
+          
+          self.getPage(1);
+
+        };
+
+        
 
         self.showHidePanel = function () {
           return {
@@ -227,14 +246,7 @@
         };
 
 
-        self.changeView = function (filter) {
-
-          var tabIndex = self.tabs.indexOf(filter);
-          self.successMessage = "";
-          self.hasError = false;
-          self.currentTab = self.tabs[tabIndex] || self.currentTab;
-          self.getPage(1);
-        };
+        
 
         self.showTip = function (tip) {
           $state.go('tip', {
@@ -244,10 +256,9 @@
           });
         };
 
-
         self.showAttachmentDialog = function (tip, type) {
-          // Only show dialog if it, and notificationDialog,
-          // are not showing
+          //Only show dialog if it, and notificationDialog,
+          //are not showing
           if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
 
             self.showMediaSpinner = true;
@@ -256,18 +267,18 @@
               return;
             }
 
-            // If attachment is an audio file,
-            // don't show close control (X)
+            //If attachment is an audio file,
+            //don't show close control (X)
             var showClose = self.attachmentType !== 'AUDIO';
 
-            // Open dialog and pass control to AttachmentController
+            //Open dialog and pass control to AttachmentController
             $scope.attachmentDialog = Tip.getMedia(type, tip.objectId, showClose, $scope);
 
             $scope.attachmentDialog.closePromise.then(function () {
               self.attachmentDialogIsOn = false;
             });
 
-            // Attachment dialog is now showing
+            //Attachment dialog is now showing
             self.attachmentDialogIsOn = true;
           }
         };
@@ -329,12 +340,12 @@
       });
 
       self.showSMSDialog = function () {
-        // ngDialog can only handle stringified JSONs
+        //ngDialog can only handle stringified JSONs
         var data = JSON.stringify({
           phoneNumber: self.tip.phone
         });
 
-        // Open dialog and pass control to AttachmentController
+        //Open dialog and pass control to AttachmentController
         $scope.SMSDialog = ngDialog.open({
           template: '/sms-dialog.html',
           className: 'ngdialog-theme-plain',
@@ -350,15 +361,15 @@
         // Only show dialog if it, and attachmentDialog,
         // are not showing
         if (!this.notificationDialogIsOn && !this.attachmentDialogIsOn) {
-          // ngDialog can only handle stringified JSONs
+          //ngDialog can only handle stringified JSONs
           var data = JSON.stringify({
             name: firstName + " " + lastName,
             controlNumber: controlNumber,
             channel: channel
           });
 
-          // Open dialog, and add it to the $scope
-          // so it can identify itself once open
+          //Open dialog, and add it to the $scope
+          //so it can identify itself once open
           $scope.notificationDialog = ngDialog.open({
             template: '/notification-dialog.html',
             className: 'ngdialog-theme-plain',
@@ -368,15 +379,15 @@
             data: data
           });
 
-          // NotificationDialog is now showing
+          //NotificationDialog is now showing
           this.notificationDialogIsOn = true;
         }
       };
 
 
       self.showAttachmentDialog = function (type) {
-        // Only show dialog if it, and notificationDialog,
-        // are not showing
+        //Only show dialog if it, and notificationDialog,
+        //are not showing
         if (!self.notificationDialogIsOn && !self.attachmentDialogIsOn) {
 
           self.showMediaSpinner = true;
@@ -385,18 +396,18 @@
             return;
           }
 
-          // If attachment is an audio file,
-          // don't show close control (X)
+          //If attachment is an audio file,
+          //don't show close control (X)
           var showClose = self.attachmentType !== 'AUDIO';
 
-          // Open dialog and pass control to AttachmentController
+          //Open dialog and pass control to AttachmentController
           $scope.attachmentDialog = Tip.getMedia(type, self.tip.objectId, showClose, $scope);
 
           $scope.attachmentDialog.closePromise.then(function () {
             self.attachmentDialogIsOn = false;
           });
 
-          // Attachment dialog is now showing
+          //Attachment dialog is now showing
           self.attachmentDialogIsOn = true;
         }
       };

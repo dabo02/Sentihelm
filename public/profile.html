@@ -4,10 +4,10 @@
 	<form ng-hide="profileCtrl.showPasswordChanger" role="form" name="editProfileForm" novalidate>
 		
 		<h1 class="text-center">
-			Profile
+			{{profileCtrl.lang.profileH1}}
 		</h1>
 
-		<a class="pointer" ng-click="profileCtrl.changePassword()">Change Password</a>
+		<a class="pointer" ng-click="profileCtrl.changePassword()">{{profileCtrl.lang.profilePassword}}</a>
 
 		<h3 class="text-center"  ng-class="{'green':!profileCtrl.hasError, 'red':profileCtrl.hasError}" ng-show="!(profileCtrl.savingPass || profileCtrl.savingUser)">{{profileCtrl.successMessage}}</h3>
 		<br>
@@ -15,62 +15,62 @@
 		<div class="row">
 			<div class="col-xs-3 col-xs-offset-3">
 				<div class="form-group">
-					<label for="new-officer-fname" class="dark-gray">First Name</label>
-					<input type="text" class="form-control" id="new-officer-fname" placeholder="First Name" ng-model="profileCtrl.user.firstName"  required/>
+					<label for="new-officer-fname" class="dark-gray">{{profileCtrl.lang.profileFName}}</label>
+					<input type="text" class="form-control" id="new-officer-fname" placeholder={{profileCtrl.lang.profileFName}} ng-model="profileCtrl.user.firstName"  required/>
 				</div>
 
 				<div class="form-group">
-					<label for="new-officer-lname" class="dark-gray">Last Name</label>
-					<input type="text" class="form-control" id="new-officer-lname" placeholder="Last Name" ng-model="profileCtrl.user.lastName" required/>
+					<label for="new-officer-lname" class="dark-gray">{{profileCtrl.lang.profileLName}}</label>
+					<input type="text" class="form-control" id="new-officer-lname" placeholder={{profileCtrl.lang.profileLName}} ng-model="profileCtrl.user.lastName" required/>
 				</div>
 
 				<div class="form-group">
-					<label for="new-officer-username" class="dark-gray">Username</label>
+					<label for="new-officer-username" class="dark-gray">{{profileCtrl.lang.profileUsername}}</label>
 					<input type="text" class="form-control" id="new-officer-username" placeholder="Username or Badge Number" ng-model="profileCtrl.user.username" name="username" disabled/>
 				</div>
 
 				<div class="form-group">
-					<label for="new-officer-email" class="dark-gray">Email</label>
-					<input type="email" class="form-control" id="new-officer-email" placeholder="Email" ng-model="profileCtrl.user.email" required/>
+					<label for="new-officer-email" class="dark-gray">{{profileCtrl.lang.profileEmail}}</label>
+					<input type="email" class="form-control" id="new-officer-email" placeholder={{profileCtrl.lang.profileEmail}} ng-model="profileCtrl.user.email" required/>
 				</div>
 
 				<div class="form-group">
-					<label for="new-officer-phone" class="dark-gray">Phone Number</label>
-					<input type="text" class="form-control" id="new-officer-phone" placeholder="Phone Number" ng-model="profileCtrl.user.phoneNumber" required/>
+					<label for="new-officer-phone" class="dark-gray">{{profileCtrl.lang.profilePhone}}</label>
+					<input type="text" class="form-control" id="new-officer-phone" placeholder={{profileCtrl.lang.profilePhone}} ng-model="profileCtrl.user.phoneNumber" required/>
 				</div>
 			</div>
 			<div class="col-xs-3">
 				<div class="form-group">
-					<label for="address-1" class="dark-gray">Address Line 1</label>
-					<input type="text" class="form-control" id="address-1" placeholder="Address line 1" ng-model="profileCtrl.user.addressLine1"/>
+					<label for="address-1" class="dark-gray">{{profileCtrl.lang.profileAddress1}}</label>
+					<input type="text" class="form-control" id="address-1" placeholder={{profileCtrl.lang.profileAddress1}} ng-model="profileCtrl.user.addressLine1"/>
 				</div>
 
 				<div class="form-group">
-					<label for="address-2" class="dark-gray">Address Line 2</label>
-					<input type="text" class="form-control" id="address-2" placeholder="Address line 2" ng-model="profileCtrl.user.addressLine2"/>
+					<label for="address-2" class="dark-gray">{{profileCtrl.lang.profileAddress2}}</label>
+					<input type="text" class="form-control" id="address-2" placeholder={{profileCtrl.lang.profileAddress2}} ng-model="profileCtrl.user.addressLine2"/>
 				</div>
 
 				<div class="form-group">
-					<label for="city" class="dark-gray">City</label>
-					<input type="text" class="form-control" id="city" placeholder="City" ng-model="profileCtrl.user.city"/>
+					<label for="city" class="dark-gray">{{profileCtrl.lang.profileCity}}</label>
+					<input type="text" class="form-control" id="city" placeholder={{profileCtrl.lang.profileCity}} ng-model="profileCtrl.user.city"/>
 				</div>
 
 				<div class="form-group">
-					<label for="new-officer-state" class="dark-gray">State</label>
+					<label for="new-officer-state" class="dark-gray">{{profileCtrl.lang.profileState}}</label>
 					<select id="new-officer-state" class="form-control"  ng-model="profileCtrl.user.state">
 						<option ng-repeat="state in profileCtrl.states" value="{{state}}" ng-selected="{{state == profileCtrl.user.state}}">{{state}}</option>
 					</select>
 				</div>
 
 				<div class="form-group">
-					<label for="new-officer-zip-code" class="dark-gray">Zip Code</label>
+					<label for="new-officer-zip-code" class="dark-gray">{{profileCtrl.lang.profileZip}}</label>
 					<input type="text" maxlength="11" class="form-control" id="new-officer-zip-code" placeholder="Zip Code" ng-model="profileCtrl.user.zipCode" required/>
 				</div>
 			</div>
 		</div>
 		<div class="row">
 			<button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="editProfileForm.$valid && profileCtrl.user.state!=='Select' && profileCtrl.saveUser(profileCtrl.user)">
-				<span ng-hide="profileCtrl.savingUser" class="">Save Profile</span>
+				<span ng-hide="profileCtrl.savingUser" class="">{{profileCtrl.lang.profileSaveProfile}}</span>
 				<div class="spinner ng-hide" ng-show="profileCtrl.savingUser">
 					<div class="bounce1"></div>
 					<div class="bounce2"></div>
@@ -83,30 +83,30 @@
 	<form ng-show="profileCtrl.showPasswordChanger" role="form" name="changePasswordForm" novalidate>
 
 		<h1>
-			Change Password
+			{{profileCtrl.lang.profilePassword}}
 		</h1><br>
 		<a class="pointer" ng-click="profileCtrl.editProfile()">Back</a>
 
-		<h3 class="text-center"  ng-class="{'green':!profileCtrl.hasError, 'red':profileCtrl.hasError}" ng-show="!(profileCtrl.savingPass || profileCtrl.savingUser)">{{profileCtrl.successMessage}}</h3>
+		<h3 class="text-center"  ng-class="{'green':!profileCtrl.hasError, 'red':profileCtrl.hasError}" ng-show="!(profileCtrl.savingPass || profileCtrl.savingUser)">{{profileCtrl.lang.successMessage}}</h3>
 		<br>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-password" class="dark-gray">Current Password</label>
-			<input type="password" class="form-control" id="new-officer-password" placeholder="Current Password" ng-model="profileCtrl.user.prevPassword" required/>
+			<label for="new-officer-password" class="dark-gray">{{profileCtrl.lang.profileCPassword}}</label>
+			<input type="password" class="form-control" id="new-officer-password" placeholder={{profileCtrl.lang.profileCPassword}} ng-model="profileCtrl.user.prevPassword" required/>
 		</div>
 
 		<div class="form-group col-sm-4 col-sm-offset-4">
-			<label for="new-officer-password" class="dark-gray">New Password</label>
-			<input type="password" class="form-control" id="new-officer-password" placeholder="New Password" ng-model="profileCtrl.user.newPassword" required/>
+			<label for="new-officer-password" class="dark-gray">{{profileCtrl.lang.profileNPassword}}</label>
+			<input type="password" class="form-control" id="new-officer-password" placeholder={{profileCtrl.lang.profileNPassword}} ng-model="profileCtrl.user.newPassword" required/>
 		</div>
 
 		<div ng-class="{'form-group col-sm-4 col-sm-offset-4 ':true, 'has-error':profileCtrl.user.newPassword !== profileCtrl.user.confirmPassword}">
-			<label for="new-officer-password" class="dark-gray">Confirm Password</label>
-			<input type="password" class="form-control" id="new-officer-password" placeholder="Confirm Password" ng-model="profileCtrl.user.confirmPassword" required />
+			<label for="new-officer-password" class="dark-gray">{{profileCtrl.lang.profileConfirmPassword}}</label>
+			<input type="password" class="form-control" id="new-officer-password" placeholder={{profileCtrl.lang.profileConfirmPassword}} ng-model="profileCtrl.user.confirmPassword" required />
 		</div>
 
 		<button type="submit" class="btn btn-primary col-sm-2 col-sm-offset-5" ng-click="changePasswordForm.$valid && profileCtrl.savePassword(profileCtrl.user.prevPassword, profileCtrl.user.newPassword, profileCtrl.user.confirmPassword)" ng-disabled="profileCtrl.user.newPassword !== profileCtrl.user.confirmPassword ">
-			<span ng-hide="profileCtrl.savingPass">Save Password</span>
+			<span ng-hide="profileCtrl.savingPass">{{profileCtrl.lang.profileSPassword}}</span>
 			<div class="spinner" ng-show="profileCtrl.savingPass">
 				<div class="bounce1"></div>
 				<div class="bounce2"></div>

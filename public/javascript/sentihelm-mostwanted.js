@@ -190,8 +190,8 @@
       }
     ])
     //Controller for the Most-Wanted state
-    .controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog', '$rootScope',
-      function (MostWantedService, $scope, fileReader, ngDialog, $rootScope) {
+    .controller('MostWantedController', ['MostWantedService', '$scope', 'fileReader', 'ngDialog', '$rootScope', 'languageService',
+      function (MostWantedService, $scope, fileReader, ngDialog, $rootScope, languageService) {
 
         var MostWantedCtrl = this,
           oldList = [],
@@ -224,6 +224,7 @@
         this.parseArrayLength = 0;
         this.disableNewButton = false;
         this.editedPeopleIndices = [];
+        this.lang = languageService;
 
         function getList(count) {
           count = count|0;

@@ -1,4 +1,4 @@
-<form class="form-horizontal most-wanted-item" role="form" class="editor">
+<form class="form-horizontal most-wanted-item" ng-controller="MostWantedController as mostWantedCtrl" role="form" class="editor">
 
   <div class="col-md-3 most-wanted-ranking-number">{{index + 1}}</div>
 
@@ -12,10 +12,10 @@
     <br>
     <br>
     <br>
-    <label for="name" class="col-md-1 control-label">Name</label>
+    <label for="name" class="col-md-1 control-label">{{mostWantedCtrl.lang.wantedName}}</label>
 
     <div class="col-md-3">
-      <input type="text" class="form-control" placeholder="Name" ng-model="criminal.name" ng-change="change({index:index})">
+      <input type="text" class="form-control" placeholder={{mostWantedCtrl.lang.wantedName}} ng-model="criminal.name" ng-change="change({index:index})">
     </div>
     <br>
     <br>
@@ -28,59 +28,59 @@
   </div>
 
   <div class="form-group">
-    <label for="birthdate" class="col-md-3 control-label">Birthdate</label>
+    <label for="birthdate" class="col-md-3 control-label">{{mostWantedCtrl.lang.wantedBirthdate}}</label>
 
     <div class="col-md-2">
-      <input class="form-control" placeholder="Birthdate" ng-model="criminal.birthdate" ng-change="change({index:index})">
+      <input class="form-control" placeholder={{mostWantedCtrl.lang.wantedBirthdate}} ng-model="criminal.birthdate" ng-change="change({index:index})">
     </div>
-    <label for="age" class="col-md-2 control-label">Age</label>
+    <label for="age" class="col-md-2 control-label">{{mostWantedCtrl.lang.wantedAge}}</label>
 
     <div class="col-md-2">
-      <input class="form-control" placeholder="Age" ng-model="criminal.age" ng-change="change({index:index})">
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label for="eyeColor" class="col-md-3 control-label">Eye Color</label>
-
-    <div class="col-md-2">
-      <input class="form-control" placeholder="Eye Color" ng-model="criminal.eyeColor" ng-change="change({index:index})">
-    </div>
-    <label for="hairColor" class="col-md-2 control-label">Hair Color</label>
-
-    <div class="col-md-2">
-      <input class="form-control" placeholder="Hair Color" ng-model="criminal.hairColor" ng-change="change({index:index})">
+      <input class="form-control" placeholder={{mostWantedCtrl.lang.wantedAge}} ng-model="criminal.age" ng-change="change({index:index})">
     </div>
   </div>
 
   <div class="form-group">
-    <label for="height" class="col-md-3 control-label">Height</label>
+    <label for="eyeColor" class="col-md-3 control-label">{{mostWantedCtrl.lang.wantedEye}}</label>
 
     <div class="col-md-2">
-      <input class="form-control" placeholder="Height" ng-model="criminal.height" ng-change="change({index:index})">
+      <input class="form-control" placeholder={{mostWantedCtrl.lang.wantedEye}} ng-model="criminal.eyeColor" ng-change="change({index:index})">
     </div>
-    <label for="weight" class="col-md-2 control-label">Weight</label>
+    <label for="hairColor" class="col-md-2 control-label">{{mostWantedCtrl.lang.wantedHair}}</label>
 
     <div class="col-md-2">
-      <input class="form-control" placeholder="Weight" ng-model="criminal.weight" ng-change="change({index:index})">
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label for="race" class="col-md-3 control-label">Race</label>
-
-    <div class="col-md-2">
-      <input class="form-control" placeholder="Race" ng-model="criminal.race" ng-change="change({index:index})">
-    </div>
-    <label for="characteristics" class="col-md-2 control-label">Characteristics</label>
-
-    <div class="col-md-2">
-      <input class="form-control" placeholder="Characteristics" ng-model="criminal.characteristics" ng-change="change({index:index})">
+      <input class="form-control" placeholder={{mostWantedCtrl.lang.wantedHair}} ng-model="criminal.hairColor" ng-change="change({index:index})">
     </div>
   </div>
 
   <div class="form-group">
-    <label for="summary" class="col-md-3 control-label">Summary</label>
+    <label for="height" class="col-md-3 control-label">{{mostWantedCtrl.lang.wantedHeight}}</label>
+
+    <div class="col-md-2">
+      <input class="form-control" placeholder={{mostWantedCtrl.lang.wantedHeight}} ng-model="criminal.height" ng-change="change({index:index})">
+    </div>
+    <label for="weight" class="col-md-2 control-label">{{mostWantedCtrl.lang.wantedWeight}}</label>
+
+    <div class="col-md-2">
+      <input class="form-control" placeholder={{mostWantedCtrl.lang.wantedWeight}} ng-model="criminal.weight" ng-change="change({index:index})">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="race" class="col-md-3 control-label">{{mostWantedCtrl.lang.wantedRace}}</label>
+
+    <div class="col-md-2">
+      <input class="form-control" placeholder="{{mostWantedCtrl.lang.wantedCharacteristics}} "ng-model="criminal.race" ng-change="change({index:index})">
+    </div>
+    <label for="characteristics" class="col-md-2 control-label">{{mostWantedCtrl.lang.wantedCharacteristics}}</label>
+
+    <div class="col-md-2">
+      <input class="form-control" placeholder={{mostWantedCtrl.lang.wantedCharacteristics}} ng-model="criminal.characteristics" ng-change="change({index:index})">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="summary" class="col-md-3 control-label">{{mostWantedCtrl.lang.wantedSummary}}</label>
 
     <div class="col-md-6">
       <textarea style="resize:none" class="form-control" rows="4" id="global-notification-body" placeholder="Message" ng-model="criminal.summary" ng-change="change({index:index})"></textarea>
@@ -91,16 +91,16 @@
     <div class=" col-md-offset-4 col-md-2">
       <div class="btn btn-success done-editing-btn" ng-click="save({index:index}); toggleEditing()" ng-disabled="!editedPeopleIndices[index]">
         <span class="glyphicon glyphicon-ok"></span>
-        Finish Editing
+        {{mostWantedCtrl.lang.Finish}}
       </div>
     </div>
     <div class="col-md-1">
       <button type="submit" class="btn btn-danger" ng-click="confirm({index: index}); toggleEditing()" ng-disabled="disableNewButton
                     && index === (wantedArray.length-1)" ng-hide="justCreated">
-        Delete
+        {{mostWantedCtrl.lang.wantedWdelete}}
       </button>
       <button class="btn btn-danger" type="submit" ng-click="discard()" ng-show="justCreated">
-        Discard
+        {{mostWantedCtrl.lang.Discard}}
       </button>
     </div>
   </div>
