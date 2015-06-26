@@ -945,10 +945,6 @@
 
   app.factory('VideoStreamsService', ['socket', '$rootScope', '$http', function (socket, $rootScope, $http) {
 
-
-
-    var VideoSession = Parse.Object.extend("VideoSession");
-
     var VideoStreamsService = {};
 
     VideoStreamsService.currentSession = null;
