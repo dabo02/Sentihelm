@@ -26,6 +26,11 @@
 }
 .dashPanel{
     padding-top:5px;
+
+}
+
+.panel-body{
+    padding-bottom: 0px;
 }
 .panel-time{
 	 border-color: #0F4A6B;

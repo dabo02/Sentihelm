@@ -5,7 +5,7 @@
 	 //Provides the controller with the correct language diccionary
 	 .factory('languageService',[function(){
 
-	 	self = {};
+	 	var self = {};
 	 	self.EN = 
 	 	{    
 	 		"dashboardH1" : "Dashboard", 
@@ -39,9 +39,7 @@
 	 		"wantedName" : "Name",
 	 		"wantedAdd" : "Add Most Wanted",
 	 		"wantedNotFound" : "No Records Found",
-	 		"wantedName" : "Name:",
-	 		"wantedAge" : "Age:",
-	 		"wantedHeight" : "Height:",
+
 	 		"wantedWantedFor" : "Wanted For:",
 	 		"wantedBirthdate" : "Bithdate",
 	 		"wantedEye" : "Eye Color",
@@ -109,7 +107,7 @@
 	 		"tipSendText" : "Send Text Message",
 	 		"tipNoLocation" : "NO LOCATION AVAILABLE",
 	 		"tipfeed-tipFeed" : "Tip Feed",
-	 		"tipfeedCrimeType" : "Crime Type: ",
+
 	 		"tipfeedSubmitted" : "Submitted At:",
 	 		"tipfeedFilter" : "Filter",
 	 		"tipfeedRecord" : "No Records Found",
@@ -198,9 +196,7 @@
 	 		"wantedName" : "Nombre",
 	 		"wantedAdd" : "Añadir a los Más Buscados",
 	 		"wantedNotFound" : "Record no Encontrado",
-	 		"wantedName" : "Nombre:",
-	 		"wantedAge" : "Edad:",
-	 		"wantedHeight" : "Altura:",
+
 	 		"wantedWantedFor" : "Buscado Por",
 	 		"wantedBirthdate" : "Fecha de Nacimiento",
 	 		"wantedEye" : "Color de Ojos",
@@ -230,7 +226,7 @@
 	 		"tipFeedCivilRights" : "Derechos Civiles",
 	 		"tipFeedArson" : "Incendio",
 	 		"tipFeedOther" : "Otro",
-	 		"tipFeedNoNew" : "No new Tips available",
+
 	 		"tipFeedNamePlaceholder" : "Usuario o Correo Electrónico",
 
 	 		"wantedWdelete" : "Borrar",
@@ -291,7 +287,7 @@
 	 		"tipSendText" : "Enviar Mensaje de Texto",
 	 		"tipNoLocation" : "UBICACION NO DISPONIBLE",
 	 		"tipfeed" : "Tip Feed",
-	 		"tipfeedCrimeType" : "Tipo de Crimen: ",
+
 	 		"tipfeedSubmitted" : "Sometido:",
 	 		"tipfeedFilter" : "Filtro",
 	 		"tipfeedRecord" : "Archivo no Encontrado",
@@ -329,9 +325,9 @@
 
 	 	};
 
-	 	console.log(self.EN);
 
-	 	return self.ES;
+
+	 	return self.EN;
 	 }]);
 
 })();

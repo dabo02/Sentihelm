@@ -60,6 +60,7 @@
               delete newTips[i];
               newTips.pop()
             }
+            console.log(response);
             return response.data;
           }, function (errResponse) { //  error
             return $q.reject(errResponse);
@@ -207,6 +208,8 @@
             .then(function (data) {
               self.lastPageNum = data.lastPageNum;
               self.totalTips = data.totalTips;
+
+
 
               self.tips = angular.copy(data.tips);
 

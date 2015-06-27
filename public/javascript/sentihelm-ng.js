@@ -10,7 +10,7 @@
     $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44755992/**']);
 
     // For any unmatched url, redirect to /tipfeed
-    $urlRouterProvider.otherwise("/tipfeed");
+    $urlRouterProvider.otherwise("/dashboard");
 
     $stateProvider
 
