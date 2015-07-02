@@ -8,11 +8,12 @@
   angular.module('sentihelm')
     .factory('chatSocket', ['socketFactory', 'Session', '$location', function (socketFactory, Session, $location) {
 
-      var namespace = '/chat/' + Session.clientId,
+      var namespace = '/chat/' + Session.user.homeClient.objectId,
         server = $location.protocol() + '://' + $location.host() + ':' + $location.port(),
         socket = socketFactory({
           ioSocket: io.connect(server + namespace) // connect to chat server
         });
+      console.log('socket connected to: ' + server + '' + namespace);
 
       return socket;
     }])
@@ -38,6 +39,7 @@
           connectedRooms[chatId] = {
             messages: []
           };
+          console.log('Entered chat : ' + chatId);
           chatSocket.emit('officer-enter-chat', chatId);
         },
 
