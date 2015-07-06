@@ -103,12 +103,13 @@
                             <td ng-click="tipFeed.showTip(tip)">{{tip.objectId + "-" + tip.controlNumber}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.user.username || 'anonymous'}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.crimeType || 'not set'}}</td>
-                            <td ng-click="tipFeed.showTip(tip)">{{tip.createdAt | date:'shortDate'}}</td>
+                            <td ng-click="tipFeed.showTip(tip)">{{tip.createdAt}} {{tip.time}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.readBy ? tip.readBy[tip.readBy.length -
                                 1].username : "unread"}}
                             </td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.readBy[tip.readBy.length - 1].date |
-                                date:"shortDate"}}
+                                date:"" +
+                                ""}}
                             </td>
                             <td>
                                 <a id="videoAtt" ng-class="{'disabled-link': !tip.attachmentVideo.url}"

@@ -76,7 +76,7 @@
 			</div>
 
 			<div class="col-lg-3 col-md-6">
-				<div class="panel panel-time">
+				<div class="panel panel-time" >
 					<div class="panel-heading">
 						<div class="row">
 							<div class="col-xs-3">
@@ -84,8 +84,9 @@
 							</div>
 							<div class="col-xs-9 text-right">
 								<div class="huge">{{dashCtrl.responseTime}} </div>
-								<div>{{dashCtrl.lang.dashboardResponse}}</div>
+
 							</div>
+							<div class="text-right">{{dashCtrl.lang.dashboardResponse}} ({{dashCtrl.time}})</div>
 						</div>
 					</div>
 					<a href="#/tipfeed">
@@ -142,7 +143,7 @@
 								<div ng-repeat ="notification in dashCtrl.getTips"  ng-click="dashCtrl.changeState('tipfeed')">
 									<a href="#/tipfeed" class="list-group-item">
 										<i class="fa fa-folder-open fa-fw"></i> {{notification.crimeType}}
-										<span class="pull-right text-muted small"><em>{{notification.createdAt | date: 'shortTime'}}</em>
+										<span class="pull-right text-muted small"><em>{{notification.timeAgo}} {{dashCtrl.lang.minutesAgo}}</em>
 									</span>
 									</a>
 								</div>
@@ -151,7 +152,7 @@
 								<div ng-repeat ="notification in dashCtrl.getVideos" >
 									<a href="#/video-archive" class="list-group-item">
 										<i class="fa fa-play fa-fw"></i> {{notification.mobileUser}}
-										<span class="pull-right text-muted small"><em>{{notification.createdAt | date: 'shortTime'}}</em>
+										<span class="pull-right text-muted small"><em>{{notification.timeAgo}} {{dashCtrl.lang.minutesAgo}}</em>
 										</span>
 									</a>
 								</div>

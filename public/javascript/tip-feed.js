@@ -33,7 +33,7 @@
       //  and video from sentihelm.
       $httpProvider.defaults.timeout = 5000;
     }])
-    .factory('Tip', ['$http', 'ngDialog', '$log', '$q', '$location', 'socket', function ($http, ngDialog, $log, $q, $location, socket) {
+    .factory('Tip', ['$http', 'ngDialog', '$log', '$q', '$location', 'socket','$filter', function ($http, ngDialog, $log, $q, $location, socket, $filter) {
 
       var newTips = [];
 
@@ -60,7 +60,27 @@
               delete newTips[i];
               newTips.pop()
             }
-            console.log(response);
+            //submitted At logic
+            response.data.tips.forEach(function(element){
+              var currentTime = new Date();
+              currentTime = Date.parse(currentTime);
+              var createdAt = Date.parse(element.createdAt);
+              var timeSince = (currentTime-createdAt)/60000;
+              if(timeSince <= 60){
+                element.createdAt = Math.floor(timeSince);
+                element.time = "minutes ago";
+              }
+              else if(timeSince > 60 && timeSince <= 1440){
+                element.createdAt =Math.floor(timeSince/60);
+                element.time = "hours ago";
+
+              }
+              else{
+                element.createdAt = $filter('date')(element.createdAt, 'shortDate') ;
+                element.time = "";
+
+              }
+            });
             return response.data;
           }, function (errResponse) { //  error
             return $q.reject(errResponse);

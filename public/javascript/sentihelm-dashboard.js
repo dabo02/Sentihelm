@@ -71,8 +71,15 @@
 
 
         self.getTips = self.dashService.getTips(self.params).then(function (response) {
-          console.log(response.tips);
-          self.getTips = response.tips;
+
+          var tips = response.tips;
+          tips.forEach(function (element, index, array) {
+            var currentTime = new Date();
+            currentTime = Date.parse(currentTime);
+
+            element.timeAgo = Math.floor((currentTime - Date.parse(element.createdAt))/60000);
+          });
+          self.getTips = tips;
         });
 
         var videoParams = {
@@ -82,8 +89,15 @@
         };
 
         self.getVideos = self.dashService.getVideos(videoParams).then(function (response) {
-          console.log(response.data.videos);
-          self.getVideos = response.data.videos;
+          var videos = response.data.videos;
+          videos.forEach(function (element, index, array) {
+            var currentTime = new Date();
+            currentTime = Date.parse(currentTime);
+
+            element.timeAgo = Math.floor((currentTime - Date.parse(element.createdAt))/60000);
+          });
+
+          self.getVideos = videos;
         });
 
 
@@ -129,13 +143,16 @@
             });
 
             if ( Math.floor(sum/response.data.length) >60){
-              self.responseTime = Math.floor((sum/response.data.length)/60)+' Hours';
+              self.responseTime = Math.floor((sum/response.data.length)/60);
+              console.log((sum/response.data.length)/60);
+              self.time = self.lang.dashboardHour;
             }
             else{
-              self.responseTime = Math.floor(sum/response.data.length)+' Min';
+              self.responseTime = Math.floor(sum/response.data.length);
+              self.time = self.lang.dashboardMinutes;
             }
 
-            console.log(self.responseTimetime);
+            console.log(self.responseTime);
           });
         };
 
