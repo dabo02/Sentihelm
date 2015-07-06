@@ -24,6 +24,12 @@
             </div>
         </div>
 
+        <!-- This is experimental-->
+        <sh-chatterbox chat-id="videoStreamsController.currentStream.connectionId"
+                       mobile-user-id="videoStreamsController.currentStream.userObjectId">
+        </sh-chatterbox>
+        <!-- End experiment -->
+
         <div id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
             <ui-gmap-google-map
                     center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"
@@ -44,12 +50,6 @@
                     ng-disabled="videoStreamsCtrl.hello">Stop Video Stream
             </button>
         </div>
-
-        <!-- This is experimental -->
-        <sh-chatterbox chat-id="videoStreamsController.currentStream.connectionId"
-                       mobile-user-id="videoStreamsController.currentStream.userObjectId">
-        </sh-chatterbox>
-        <!-- End experiment -->
 
     </div>
 

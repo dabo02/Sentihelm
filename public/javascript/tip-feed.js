@@ -355,7 +355,7 @@
         });
       };
 
-      self.showNotificationDialog = function (firstName, lastName, controlNumber, channel) {
+      self.showNotificationDialog = function (firstName, lastName, controlNumber, channel, tipId) {
         self.sendingFollowUp = false;
         self.successMessage = '';
         // Only show dialog if it, and attachmentDialog,
@@ -365,6 +365,7 @@
           var data = JSON.stringify({
             name: firstName + " " + lastName,
             controlNumber: controlNumber,
+            tipId: tipId,
             channel: channel
           });
 

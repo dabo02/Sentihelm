@@ -1,7 +1,7 @@
 /**
- * Created by vectorhacker on 5/7/15.
- *
+ * Created by brianlandron on 7/6/15.
  */
+
 (function () {
   'use strict';
 
@@ -87,7 +87,8 @@
           objectId: notificationData.homeClient
         });
         notification.set("userId", notificationData.userId);
-        notification.set("tipId", notificationData.controlNumber);
+        notification.set("tipId", notificationData.tipId);
+        notification.set("type", 'follow-up');
 
         notification.set('title', {
           __type: "Bytes",
@@ -181,13 +182,13 @@
       notification.set("title", notificationData.title);
       notification.set("message", notificationData.message);
       /*notification.set("title", {
-        __type: 'Bytes',
-        base64: titleBytes.toString('base64')
-      });
-      notification.set("message", {
-        __type: 'Bytes',
-        base64: messageBytes.toString('base64')
-      });*/
+       __type: 'Bytes',
+       base64: titleBytes.toString('base64')
+       });
+       notification.set("message", {
+       __type: 'Bytes',
+       base64: messageBytes.toString('base64')
+       });*/
       notification.set("type", 'regional');
       notification.set("channels", channels);
 

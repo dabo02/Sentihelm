@@ -1819,6 +1819,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       this.name = $scope.$parent.ngDialogData.name;
       this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
       this.channel = $scope.$parent.ngDialogData.channel;
+      this.tipid = $scope.$parent.ngDialogData.tipId;
       this.userId = this.channel.substring(5);
       this.file = undefined;
       var notificationCtrl = this;
@@ -1888,6 +1889,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
         notification.controlNumber = this.controlNumber;
         notification.title = this.title;
         notification.message = this.message;
+        notification.tipId = this.tipId;
         //If a file is present, attach it and set its type
         if (this.file) {
           notification.attachment = this.file.base64;
