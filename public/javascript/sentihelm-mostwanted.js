@@ -196,6 +196,11 @@
         var MostWantedCtrl = this,
           oldList = [],
           newList = [];
+        languageService.getlang().then(function(response){
+          console.log('mostwanted');
+          console.log(response);
+          MostWantedCtrl.lang = response;
+        });
 
         function listUpdating(e, ui) {
           oldList = angular.copy(MostWantedCtrl.wantedArray);
@@ -224,7 +229,7 @@
         this.parseArrayLength = 0;
         this.disableNewButton = false;
         this.editedPeopleIndices = [];
-        this.lang = languageService;
+
 
         function getList(count) {
           count = count|0;

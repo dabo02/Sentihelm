@@ -1,5 +1,5 @@
 <div class="container mid" ng-controller="TipFeedController as tipFeed">
-    <a id="top"></a>
+
 
     <h1 class="text-center">
         {{tipFeed.lang.drawerTipFeed}}
@@ -11,7 +11,8 @@
              ng-class="{'disabled-counter':tipFeed.count()===0}"
              ng-click="tipFeed.loadNewTips()">
           <span ng-show="tipFeed.count()>0" class="col-md-12" ng-class="{'active-counter':tipFeed.count()>0}">
-            <span style="text-decoration: underline;" class="col-md-12">{{tipFeed.count()}} {{tipFeed.lang.tipFeedNew}}</span>
+            <span style="text-decoration: underline;"
+                  class="col-md-12">{{tipFeed.count()}} {{tipFeed.lang.tipFeedNew}}</span>
           </span>
           <span ng-hide="tipFeed.count()>0">
             {{tipFeed.lang.tipFeedNoNew}}
@@ -22,10 +23,9 @@
     <div class="row">
         <div class="row-fluid">
             <ul class="nav nav-tabs nav-justified">
-                <li class="main-menu-list-item" ng-repeat="tab in tipFeed.tabs" ng-class="tipFeed.getTabClass(tab)"
-                    ng-click="tipFeed.changeView(tab)">
-                    <a href="" class="pointer">{{tab}}</a>
-                </li>
+                <li class="main-menu-list-item" ng-class="tipFeed.getTabClass(0)" ng-click="tipFeed.changeView(0)"><a class="pointer">{{tipFeed.lang.tipFeedAll}}</a></li>
+                <li class="main-menu-list-item" ng-class="tipFeed.getTabClass(1)" ng-click="tipFeed.changeView(1)"><a class="pointer">{{tipFeed.lang.tipFeedCrimeReports}}</a></li>
+                <li class="main-menu-list-item" ng-class="tipFeed.getTabClass(2)" ng-click="tipFeed.changeView(2)"><a class="pointer">{{tipFeed.lang.tipFeedTip}}</a></li>
             </ul>
         </div>
 
@@ -36,12 +36,46 @@
                     <ul class="nav navbar-nav navbar-left">
                         <li class="dropdown">
                             <a class="dropdown-toggle pointer" data-toggle="dropdown" role="button"
-                               aria-expanded="false">{{tipFeed.lang.tipfeedCrimeType}}: {{tipFeed.selectedCrimeType}}<span
+                               aria-expanded="false">{{tipFeed.lang.tipfeedCrimeType}}<span
                                     class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
-                                <li ng-repeat="crimeType in tipFeed.crimeTypes">
-                                    <a class="pointer" ng-click="tipFeed.setCrimeType(crimeType)">{{crimeType}}</a>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(0)">{{tipFeed.lang.tipFeedAll}}</a>
                                 </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(1)">{{tipFeed.lang.tipFeedAssault}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(2)">{{tipFeed.lang.tipFeedChildAbuse}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(3)">{{tipFeed.lang.tipFeedElderlyAbuse}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(4)">{{tipFeed.lang.tipFeedDomesticViolence}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(5)">{{tipFeed.lang.tipFeedDrugs}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(6)">{{tipFeed.lang.tipFeedHomicide}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(7)">{{tipFeed.lang.tipFeedAnimalAbuse}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(8)">{{tipFeed.lang.tipFeedRobbery}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(9)">{{tipFeed.lang.tipFeedSexOffenses}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(10)">{{tipFeed.lang.tipFeedBullying}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(11)">{{tipFeed.lang.tipFeedPoliceMisconduct}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(12)">{{tipFeed.lang.tipFeedBribery}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(13)">{{tipFeed.lang.tipFeedVehicleTheft}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(14)">{{tipFeed.lang.tipFeedVandalism}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(15)">{{tipFeed.lang.tipFeedAutoAccident}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(16)">{{tipFeed.lang.tipFeedCivilRights}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(17)">{{tipFeed.lang.tipFeedArson}}</a>
+                                </li>
+                                <li><a class="pointer" ng-click="tipFeed.setCrimeType(18)">{{tipFeed.lang.tipFeedOther}}</a>
                             </ul>
                         </li>
                     </ul>
@@ -51,7 +85,7 @@
                                    ng-model="tipFeed.registrationDate"/>
                         </div>
                         <div class="form-group">
-                            <input type="text" class="form-control" placeholder= {{tipFeed.lang.tipFeedNamePlaceholder}}
+                            <input type="text" class="form-control" placeholder={{tipFeed.lang.tipFeedNamePlaceholder}}
                                    ng-model="tipFeed.searchString"/>
                         </div>
                         <button type="submit" class="btn btn-default btn-primary"
@@ -71,11 +105,14 @@
                 </div>
                 <div class="tab-pane user-list" ng-class="tipFeed.showHidePanel()">
                     <div class="paginationText" ng-show="tipFeed.tipsAvailable">
-                        <p>{{tipFeed.lang.tipFeedPage}} {{tipFeed.currentPageNum}} {{tipFeed.lang.tipFeedOf}} {{tipFeed.lastPageNum}}
+                        <p>{{tipFeed.lang.tipFeedPage}} {{tipFeed.currentPageNum}} {{tipFeed.lang.tipFeedOf}}
+                            {{tipFeed.lastPageNum}}
                         </p>
 
-                        <p>{{tipFeed.lang.tipFeedShowing}} {{tipFeed.skip + 1}} - {{tipFeed.skip + 10 > tipFeed.totalTips ? tipFeed.totalTips :
-                            tipFeed.skip + 10}} {{tipFeed.lang.tipFeedOf}} {{tipFeed.totalTips}} {{tipFeed.lang.tipFeedTips}}</p>
+                        <p>{{tipFeed.lang.tipFeedShowing}} {{tipFeed.skip + 1}} - {{tipFeed.skip + 10 >
+                            tipFeed.totalTips ? tipFeed.totalTips :
+                            tipFeed.skip + 10}} {{tipFeed.lang.tipFeedOf}} {{tipFeed.totalTips}}
+                            {{tipFeed.lang.tipFeedTips}}</p>
                     </div>
 
                     <!--======SPINNER (LOADING)======-->
@@ -95,11 +132,12 @@
                             <th>{{tipFeed.lang.tipFeedReadBy}}</th>
                             <th>{{tipFeed.lang.tipFeedReadOn}}</th>
                             <th>{{tipFeed.lang.tipFeedAction}}</th>
-                            
+
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="tip in tipFeed.tips" class="pointer tips-color"  ng-class="{'unread-filter':tip.readBy== null}">
+                        <tr ng-repeat="tip in tipFeed.tips" class="pointer tips-color"
+                            ng-class="{'unread-filter':tip.readBy== null}">
                             <td ng-click="tipFeed.showTip(tip)">{{tip.objectId + "-" + tip.controlNumber}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.user.username || 'anonymous'}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.crimeType || 'not set'}}</td>

@@ -9,8 +9,8 @@
     //$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://s3.amazonaws.com/stream-archive/44755992/**']);
     $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44755992/**']);
 
-    // For any unmatched url, redirect to /tipfeed
-    $urlRouterProvider.otherwise("/tipfeed");
+    // For any unmatched url, redirect to /dashboard
+    $urlRouterProvider.otherwise("/dashboard");
 
     $stateProvider
 
@@ -1411,7 +1411,7 @@
 
       this.resetPasswordAvailable = true;
       
-      this.lang = languageService;
+
 
       //Credentials that will be passed to the authenticator service
       this.credentials = {
@@ -1528,7 +1528,9 @@
       drawer.clientLogo = Session.clientLogo;
       drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
       drawer.newTips = Tip.newTipCount;
-      drawer.lang = languageService;
+      drawer.lang = languageService.getlang().then(function(response){
+        drawer.lang = response;
+      });
 
       //Drawer options with name and icon;
       //entries are off by default
@@ -2356,7 +2358,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
     };
   }]);
 
-//Controller for Administrator Panel
+//Controller for languageSeristrator Panel
 app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$location', 'usSpinnerService', '$http', '$scope', 'languageService', function (socket, Session, $anchorScroll, $location, usSpinnerService, $http, $scope , languageService) {
 
     var adminPanelCtrl = this;
@@ -2369,7 +2371,11 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
   adminPanelCtrl.viewingAdministrators = false;
   adminPanelCtrl.viewingLoggedIn = false;
   adminPanelCtrl.addingUser = false;
-  adminPanelCtrl.lang = languageService;
+  adminPanelCtrl.lang = languageService.getlang().then(function(response){
+    console.log('login');
+    console.log(response);
+    adminPanelCtrl.lang = response;
+  });
 
 
     adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
