@@ -18,6 +18,13 @@
   var FollowUpNotification = db.Object.extend("FollowUpNotifications");
   var PushNotification = db.Object.extend("PushNotifications");
 
+  var multer = require('multer');
+
+  var uploading = multer({
+    dest: __dirname + '../public/temp/',
+    limits: {fileSize: 1000000, files:1},
+  })
+
   //Delete saved notification; broadcast notification sent error
   //or partial success, depending on if it was deleted or not
   function deleteSavedNotification(notification, passedError) {
@@ -129,9 +136,7 @@
         });
 
     })
-    .post('/regional', multipart({
-      uploadDir: config.tmp
-    }), function (request, response) {
+    .post('/regional', uploading, function (request, response) {
       if (request.files) {
         var attachment = request.files.file || null;
       }
@@ -139,7 +144,8 @@
       function save() {
         return Q.Promise(function (resolve, reject) {
           if (attachment) {
-            var tempFile = path.join(config.tmp, attachment.name);
+
+            var tempFile = request.files.picture.path; //path.join(config.tmp, attachment.name);
             fs.readFile(tempFile, function (err, file) {
               if (!err) {
                 notification.set(notificationData.attachmentType, new db.File('attachment', file));
