@@ -1,12 +1,38 @@
 
+<form name="messageForm" novalidate>
+    <div id="video-streams-chat">
+        <div id="video-streams-chat-log">
+            <div ng-repeat="message in messages()"
+                 ng-class="{sent: message.sender === Session.user.userId}"
+                 id="{{message.date}}">
+                <span class="message-heading"><em>{{message.from}}</em> at {{message.dateTime | date:'short'}}</span>
 
+                <p class="chat-message">
+                    - {{message.message}}
+                </p>
+            </div>
+            <a id="chat-bottom"></a>
+        </div>
 
+        <div id="video-streams-chat-controls">
+            <input name="message" ng-model="messageText"
+                   type="text" minlength="1" required
+                   id="message-box"
+                   placeholder="Enter message here..."/>
+            <button type="submit" ng-click="messageForm.$valid && sendMessage()"
+                    class="send">Send
+            </button>
+        </div>
+    </div>
+</form>
+
+<!--
 <form name="messageForm" novalidate>
     <div class="video-streams-chat">
         <div class="video-streams-chat-log">
            <!--
            Here we just iterate over the list of messages that we relieved over the socket.
-           The sent class is set only if the sender objectId matches the current user's -->
+           The sent class is set only if the sender objectId matches the current user's
 
             <div ng-repeat="message in messages()"
                  ng-class="{sent: message.sender === Session.user.objectId}"
@@ -33,3 +59,4 @@
         </div>
     </div>
 </form>
+-->

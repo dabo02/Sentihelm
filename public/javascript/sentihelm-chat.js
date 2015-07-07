@@ -46,7 +46,7 @@
         // Leave a room listening for messages on a specific chat.
         leaveChat: function (chatId) {
           delete connectedRooms[chatId];
-          chatSocket.emit('officer-leave-chat', chatId);
+          //chatSocket.emit('officer-leave-chat', chatId);
         },
 
         // Send a message to all users listening to a chat identified by a specific id.
@@ -54,7 +54,7 @@
           chatSocket.emit('message-sent', {
             receiver: receiver,
             message: message,
-            sender: null
+            sender: sender,
           }, chatId);
 
         },
@@ -97,7 +97,7 @@
           // Send a message and reset the message text box
           scope.sendMessage = function () {
             shChat.send(scope.messageText,
-              scope.chatId,
+              scope.chatId, scope.session.user.userId,
               scope.mobileUserId);
             // reset form
             scope.messageText = '';
@@ -126,6 +126,11 @@
 
             return messages;
           };
+
+          $scope.$on('stream-destroyed', function (event, data) {
+            // todo notify officer user has stopped streaming
+            alert('stopped stream');
+          });
         }
       }
     }]);
