@@ -56,7 +56,7 @@
 
       //Tipfeed endpoint/url
       .state('tipfeed', {
-        url: "/tipfeed",
+        url: "/tipfeed/:pageNum/",
         templateUrl: "/tipfeed.html",
         data: {
           authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
@@ -72,6 +72,7 @@
             return routingService.checkUserStatus(this.data.authorizedRoles, "Tip Feed");
           }
         }
+
       })
 
       //Video Streams endpoint/url
@@ -1518,8 +1519,8 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip', 'languageService',
-    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip, languageService) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip', 'languageService', '$stateParams',
+    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip, languageService, $stateParams) {
       var drawer = this;
       this.newTips = 0;
       this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
@@ -1575,6 +1576,7 @@
         snapRemote.close();
       };
 
+
       //Navigates/changes/reloads view to the corresponding state (page)
       this.changeState = function (state) {
         if (state === "tipfeed") {
@@ -1584,6 +1586,13 @@
           newTips: 0
         }, {
           reload: true
+        });
+
+        var num = 1;
+        $state.go('tipfeed', {
+          pageNum: num
+        }, {
+          location: true
         });
       };
 

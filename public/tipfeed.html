@@ -179,7 +179,7 @@
                     <div ng-if="tipFeed.tipsAvailable" class="admin-panel-paginator-container">
                         <ul id="paginator">
 
-                            <li class="paginator-control" ng-click="tipFeed.getPage(1)">
+                            <li class="paginator-control" ng-click="tipFeed.updateTipFeedState(1)">
                                 <span class="fa fa-chevron-left fa-lg"
                                       ng-class="{'disabled-link': tipFeed.currentPageNum===1}"></span>
                                 <span class="fa fa-chevron-left fa-lg "
@@ -188,25 +188,25 @@
 
                             <li id="page-previous" class="paginator-control"
                                 ng-class="{'disabled-link': tipFeed.currentPageNum===1}"
-                                ng-click="tipFeed.getPage(tipFeed.currentPageNum - 1)">
+                                ng-click="tipFeed.updateTipFeedState(tipFeed.currentPageNum - 1)">
                                 <span class="fa fa-chevron-left fa-lg"></span>
                             </li>
 
 
                             <li class="paginator-control" ng-repeat="pageNumber in tipFeed.pageNumbers"
                                 ng-class="{'light-blue': tipFeed.currentPageNum === pageNumber}"
-                                ng-click="tipFeed.getPage(pageNumber)">
+                                ng-click="tipFeed.updateTipFeedState(pageNumber)">
                                 {{pageNumber}}
                             </li>
 
 
                             <li id="page-next" class="paginator-control"
                                 ng-class="{'disabled-link': tipFeed.currentPageNum === tipFeed.lastPageNum}"
-                                ng-click="tipFeed.getPage(tipFeed.currentPageNum + 1)">
+                                ng-click="tipFeed.updateTipFeedState(tipFeed.currentPageNum + 1)">
                                 <span class="fa fa-chevron-right fa-lg"></span>
                             </li>
 
-                            <li class="paginator-control" ng-click="tipFeed.getPage(tipFeed.lastPageNum)">
+                            <li class="paginator-control" ng-click="tipFeed.updateTipFeedState(tipFeed.lastPageNum)">
                                 <span class="fa fa-chevron-right fa-lg"
                                       ng-class="{'disabled-link': tipFeed.currentPageNum === tipFeed.lastPageNum}"></span>
                                 <span class="fa fa-chevron-right fa-lg"

@@ -324,11 +324,11 @@
         "tipFeeduser": "Nombre de Usuario",
         "tipFeedCrimeType": "Tipo de crimen",
         "tipFeedSubmitted": "Sometido el",
-        "tipFeedReadBy": "Leido por",
-        "tipFeedReadOn": "Leido el",
-        "tipFeedAction": "Accion",
+        "tipFeedReadBy": "Leído por",
+        "tipFeedReadOn": "Leído el",
+        "tipFeedAction": "Acción",
         "tipFeedCrimeReports": "Reportes",
-        "tipFeedTip": "Reportes Anonimos",
+        "tipFeedTip": "Reportes Anónimos",
 
         "drawerTipFeed": "Lista de Reportes",
         "drawerVideo": "Video en Vivo",
@@ -339,6 +339,7 @@
         "drawerData": "Análisis de Datos",
         "resetPasswordMessage": "¿Olvidaste tu contraseña?",
         "tipFeedNoNew": "No hay nuevos reportes"
+
 
       };
 

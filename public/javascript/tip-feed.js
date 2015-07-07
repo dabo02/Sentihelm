@@ -60,6 +60,7 @@
               delete newTips[i];
               newTips.pop()
             }
+
             return response.data;
           }, function (errResponse) { //  error
             return $q.reject(errResponse);
@@ -108,8 +109,8 @@
         ioSocket: tipSocket
       });
     }])
-    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService',
-      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService) {
+    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService', '$stateParams',
+      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService, $stateParams) {
 
         var self = this;
         var spinner = 'loading-tips-spinner';
@@ -118,11 +119,11 @@
           self.lang = response;
         });
 
-        self.tabs = [self.lang.tipFeedAll, self.lang.tipFeedCrimeReports, self.lang.tipFeedTip];
+
         self.currentTab = 0;
 
         // pagination variables
-        self.currentPageNum = 1;
+
         self.lastPageNum;
         self.pageNumbers;
         self.limit = 10;
@@ -130,10 +131,11 @@
         self.tipsAvailable = false;
         self.tips;
         self.totalTips;
+        self.currentPageNum = parseInt($stateParams.pageNum);
 
 
 
-        self.tabs = [self.lang.tipFeedAll, self.lang.tipFeedCrimeReports, self.lang.tipFeedTip];
+        //self.tabs = [self.lang.tipFeedAll, self.lang.tipFeedCrimeReports, self.lang.tipFeedTip];
 
         //self.crimeTypes = [self.lang.tipFeedAll, self.lang.tipFeedAssault, self.lang.tipFeedChildAbuse, self.lang.tipFeedElderlyAbuse,
         //  self.lang.tipFeedDomesticViolence, self.lang.tipFeedDrugs, self.lang.tipFeedHomicide, self.lang.tipFeedAnimalAbuse,
@@ -187,7 +189,17 @@
             newTips: Tip.getNewTips().length > 0,
             howMany: Tip.getNewTips().length
           };
-        }
+        };
+
+        self.updateTipFeedState = function(pageNum){
+          $state.go('tipfeed', {
+            pageNum: pageNum
+          }, {
+            location: true
+          });
+          self.refreshPageNumbers();
+
+        };
 
         self.getPage = function (pageNum) {
 
@@ -195,7 +207,7 @@
             return;
           }
 
-          usSpinnerService.spin(spinner);
+          usSpinnerService.spin('loading-tips-spinner');
           self.currentPageNum = pageNum;
           self.skip = (self.currentPageNum - 1) * self.limit;
 
@@ -207,6 +219,7 @@
             skip: self.skip,
             limit: self.limit,
             type: self.currentTab
+
           };
 
           Tip.getTips(params)
@@ -223,7 +236,7 @@
               self.successMessag = err.message;
             })
             .then(function () {
-              usSpinnerService.stop(spinner);
+              usSpinnerService.stop('loading-tips-spinner');
               $location.hash('top');
               $anchorScroll();
               self.refreshPageNumbers();
@@ -261,6 +274,7 @@
             location: true
           });
         };
+
 
         self.showAttachmentDialog = function (tip, type) {
           //Only show dialog if it, and notificationDialog,
@@ -300,6 +314,12 @@
         self.getPage(self.currentPageNum);
       }
     ])
+
+
+
+
+
+
     .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', 'ngDialog', function ($http, $stateParams, $scope, Tip, ngDialog) {
       var self = this;
 
@@ -310,6 +330,8 @@
       self.hasError = false;
       self.sendingFollowUp = false;
       self.successMessage = '';
+
+
 
       //Note that notification dialog is off
       $scope.$on('notification-dialog-closed', function (event, data) {
