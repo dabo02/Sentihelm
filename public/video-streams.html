@@ -9,7 +9,7 @@
                 <li class="video-streams-queue-list-item"
                     ng-repeat="stream in videoStreamsCtrl.queue track by $index">
                     <button class="list-item-button"
-                            ng-click="videoStreamsCtrl.activateStream(stream)">
+                            ng-click="videoStreamsCtrl.activateStream(stream);joinChat(stream.connectionId, stream.userObjectId)">
                         {{stream.firstName+" "+stream.lastName}}
                     </button>
                 </li>
@@ -46,7 +46,7 @@
                 {{videoStreamsCtrl.currentStream.phone}}<br>
             </div>
             <button type="submit" class="btn btn-success"
-                    ng-click="videoStreamsCtrl.stopStream(); chat.save(videoStreamsCtrl.currentStream.userObjectId)"
+                    ng-click="videoStreamsCtrl.stopStream(); leaveChat()"
                     ng-disabled="videoStreamsCtrl.hello">Stop Video Stream
             </button>
         </div>

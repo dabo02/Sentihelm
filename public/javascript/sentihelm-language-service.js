@@ -5,7 +5,7 @@
 	 //Provides the controller with the correct language diccionary
 	 .factory('languageService',[function(){
 
-	 	self = {};
+	 	var self = {};
 	 	self.EN = 
 	 	{    
 	 		"dashboardH1" : "Dashboard", 

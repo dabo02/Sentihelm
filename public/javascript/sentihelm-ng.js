@@ -1819,7 +1819,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       this.name = $scope.$parent.ngDialogData.name;
       this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
       this.channel = $scope.$parent.ngDialogData.channel;
-      this.tipid = $scope.$parent.ngDialogData.tipId;
+      this.tipId = $scope.$parent.ngDialogData.tipId;
       this.userId = this.channel.substring(5);
       this.file = undefined;
       var notificationCtrl = this;

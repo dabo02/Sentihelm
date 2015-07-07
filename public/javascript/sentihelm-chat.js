@@ -59,7 +59,7 @@
 
         },
         messages: function (chatId) {
-          return connectedRooms[chatId].messages || [];
+          return connectedRooms[chatId] ? connectedRooms[chatId].messages : [];
         }
       }
     }])
@@ -73,14 +73,24 @@
     .directive('shChatterbox', ['shChat', '$location', '$anchorScroll', 'Session', function (shChat, $location, $anchorScroll, Session) {
       return {
         restrict: 'E',
-        scope: {
+        scope: false/*{
           chatId: '=',
           mobileUserId: '='
-        },
+        }*/,
         templateUrl: '/chat.html',
-        link: function (scope) {
+        link: function (scope, attrs) {
 
-          shChat.enterChat(scope.chatId);
+          scope.joinChat = function (chatId, mobileUserId){
+            shChat.enterChat(chatId);
+            scope.chatId = chatId;
+            scope.mobileUserId = mobileUserId;
+          };
+
+          scope.leaveChat = function (){
+            shChat.leaveChat(scope.chatId);
+            scope.chatId = null;
+            scope.mobileUserId = null;
+          };
 
           scope.Session = Session;
 
@@ -95,7 +105,7 @@
 
           // Get all messages for a this chat.
           scope.messages = function () {
-            var messages = shChat.messages(scope.chatId) || [];
+            var messages = shChat.messages(scope.chatId);
 
             // Order by date.
             messages.sort(function (a, b) {
