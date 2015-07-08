@@ -5,7 +5,7 @@
             <div ng-repeat="message in messages()"
                  ng-class="{sent: message.sender === Session.user.userId}"
                  id="{{message.date}}">
-                <span class="message-heading"><em>{{message.from}}</em> at {{message.dateTime | date:'short'}}</span>
+                <span class="message-heading"><em>{{message.from}}</em> at {{message.date | date:'short'}}</span>
 
                 <p class="chat-message">
                     - {{message.message}}

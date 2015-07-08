@@ -50,11 +50,11 @@
         },
 
         // Send a message to all users listening to a chat identified by a specific id.
-        send: function (message, chatId, receiver) {
+        send: function (message, chatId, sender, receiver) {
           chatSocket.emit('message-sent', {
             receiver: receiver,
             message: message,
-            sender: sender,
+            sender: null
           }, chatId);
 
         },
@@ -96,8 +96,10 @@
 
           // Send a message and reset the message text box
           scope.sendMessage = function () {
+            console.log(scope.Session);
             shChat.send(scope.messageText,
-              scope.chatId, scope.session.user.userId,
+              scope.chatId,
+              scope.Session.user.objectId,
               scope.mobileUserId);
             // reset form
             scope.messageText = '';
@@ -126,11 +128,6 @@
 
             return messages;
           };
-
-          $scope.$on('stream-destroyed', function (event, data) {
-            // todo notify officer user has stopped streaming
-            alert('stopped stream');
-          });
         }
       }
     }]);
