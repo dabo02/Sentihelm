@@ -94,7 +94,8 @@
           objectId: notificationData.homeClient
         });
         notification.set("userId", notificationData.userId);
-        notification.set("tipId", notificationData.controlNumber);
+        notification.set("tipId", notificationData.tipId);
+        notification.set("type", 'follow-up');
 
         notification.set('title', {
           __type: "Bytes",
