@@ -41,6 +41,7 @@
 
     //Attach a bodyParser in order to handle json and urlencoded
     //bodies.
+    app.use(bodyParser({limit: '10mb'}));
     app.use(bodyParser.json());
     app.set('view engine', 'hjs');
 
