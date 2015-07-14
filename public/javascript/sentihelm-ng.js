@@ -719,7 +719,7 @@
 
         if (notificationData.attachment) {
           var fields = {
-            notification: angular.copy(notificationData),
+            notification: notificationData,
             channels: parseNotificationService.channels
           };
           //fields.attachment = null;
@@ -741,7 +741,7 @@
       return upload()
         .then(function (response) {
           var notification = response.data;
-          parseNotificationService.channels = [];
+          channels: parseNotificationService.channels
           $rootScope.$broadcast('regional-notification-success');
         }, function (response) {
           var notification = response.data.notification;
@@ -1894,6 +1894,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
         if (this.file) {
           notification.attachment = this.file.base64;
           notification.attachmentType = this.file.filetype.substring(0, 5);
+          console.log(notification);
         }
 
         $http.post('/notifications/followup', {
@@ -2021,23 +2022,24 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       regionalNotificationCtrl.sending = false;
       regionalNotificationCtrl.hasError = false;
       regionalNotificationCtrl.successMessage = '';
+      this.file = undefined;
 
       //Once a file is selected, prep file for upload to Parse
-      this.onFileSelect = function ($files) {
-        //Fetch file
-        this.file = $files[0];
-
-        //Set file type
-        if (this.file.type.match('image.*')) {
-          this.fileType = "image";
-        } else if (this.file.type.match('video.*')) {
-          this.fileType = "video";
-        } else {
-          this.fileType = "audio";
-        }
-        //Set file name
-        this.fileLabel = this.file.name;
-      };
+      //this.onFileSelect = function ($files) {
+      //  //Fetch file
+      //  this.file = $files[0];
+      //
+      //  //Set file type
+      //  if (this.file.type.match('image.*')) {
+      //    this.fileType = "image";
+      //  } else if (this.file.type.match('video.*')) {
+      //    this.fileType = "video";
+      //  } else {
+      //    this.fileType = "audio";
+      //  }
+      //  //Set file name
+      //  this.fileLabel = this.file.name;
+      //};
 
       //Send the notification to the user
       this.submitNotification = function () {
@@ -2053,12 +2055,12 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
         }
 
         if (this.allRegions) {
-          parseNotificationService.channels.push($scope.$parent.currentClient.objectId);
+          parseNotificationService.channels.push($scope.$parent.$parent.currentUser.homeClient.objectId.objectId);
         } else {
           for (var i = 0; i < this.regions.length; i++) {
             if (!!this.regions[i].selected) {
               for (var j = 0; j < this.regions[i].zipCodes.length; j++) {
-                parseNotificationService.channels.push($scope.$parent.currentClient.objectId + "_" + this.regions[i].zipCodes[j]);
+                parseNotificationService.channels.push($scope.$parent.$parent.currentUser.homeClient.objectId + "_" + this.regions[i].zipCodes[j]);
               }
             }
           }
@@ -2077,8 +2079,9 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
         notification.message = this.message;
         //If a file is present, attach it and set its type
         if (this.file) {
-          notification.attachment = this.file;
-          notification.attachmentType = this.file.type;
+          notification.attachment = this.file.base64;
+          notification.attachmentType = this.file.filetype.substring(0, 5);
+         
         }
 
         regionalNotificationCtrl.successMessage = '';

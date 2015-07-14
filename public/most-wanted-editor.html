@@ -91,7 +91,7 @@
     <div class=" col-md-offset-4 col-md-2">
       <div class="btn btn-success done-editing-btn" ng-click="save({index:index}); toggleEditing()" ng-disabled="!editedPeopleIndices[index]">
         <span class="glyphicon glyphicon-ok"></span>
-        {{mostWantedCtrl.lang.Finish}}
+        {{mostWantedCtrl.lang.wantedFinish}}
       </div>
     </div>
     <div class="col-md-1">
@@ -100,7 +100,7 @@
         {{mostWantedCtrl.lang.wantedWdelete}}
       </button>
       <button class="btn btn-danger" type="submit" ng-click="discard()" ng-show="justCreated">
-        {{mostWantedCtrl.lang.Discard}}
+        {{mostWantedCtrl.lang.wantedDiscard}}
       </button>
     </div>
   </div>

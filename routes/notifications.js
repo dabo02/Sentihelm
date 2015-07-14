@@ -22,7 +22,7 @@
 
   var uploading = multer({
     dest: __dirname + '../public/temp/',
-    limits: {fileSize: 1000000, files:1},
+    limits: {fileSize: 1000000, files: 1},
   })
 
   //Delete saved notification; broadcast notification sent error
@@ -138,33 +138,13 @@
 
     })
     .post('/regional', uploading, function (request, response) {
-      if (request.files) {
-        var attachment = request.files.file || null;
-      }
+
+
+      var attachment = request.body.notification.attachment;
 
       function save() {
         return Q.Promise(function (resolve, reject) {
-          if (attachment) {
 
-            var tempFile = request.files.picture.path; //path.join(config.tmp, attachment.name);
-            fs.readFile(tempFile, function (err, file) {
-              if (!err) {
-                notification.set(notificationData.attachmentType, new db.File('attachment', file));
-                notification.save();
-                resolve(notification)
-                  .then(function (notification) {
-                    resolve(notification);
-                  }, function () {
-                    reject();
-                  });
-                fs.unlink(tempFile, function (err) {
-                  if (!err) {
-                    console.log("Temp file deleted");
-                  }
-                });
-              }
-            });
-          } else {
             notification.save()
               .then(function (notification) {
                 resolve(notification);
@@ -172,82 +152,92 @@
                 reject();
               });
 
-          }
         });
+
+
+        };
+
+
+        // if being uploaded, it might stringify the json and this might cause a crash
+        // let's just parse the json string and get on with our (and I mean mine) lives.
+        var notificationData = typeof request.body.notification !== 'object' ? JSON.parse(request.body.notification) : request.body.notification;
+        var channels = typeof request.body.channels !== 'object' ? JSON.parse(request.body.channels) : request.body.channels;
+
+        var titleBytes = new Buffer(notificationData.title);
+        var messageBytes = new Buffer(notificationData.message);
+
+        var notification = new PushNotification();
+        notification.set("title", notificationData.title);
+        notification.set("message", notificationData.message);
+        /*notification.set("title", {
+         __type: 'Bytes',
+         base64: titleBytes.toString('base64')
+         });
+         notification.set("message", {
+         __type: 'Bytes',
+         base64: messageBytes.toString('base64')
+         });*/
+        notification.set("type", 'regional');
+        notification.set("channels", channels);
+
+        notification.set('client', {
+          __type: "Pointer",
+          className: "Client",
+          objectId: request.session.user.homeClient.objectId
+        });
+
+
+      if (attachment) {
+        notification.set(notificationData.attachmentType, new db.File('file', {base64: notificationData.attachment}));
+      }
+        //notification.set(notificationData.attachmentType, new db.File('file', notificationData.attachment));
+
+        save()
+          .then(function (notification) {
+            //Notification saved, now push it to channels
+            //response.send(notification.toJSON());
+            var notifParams = {
+              channels: channels,
+              data: {
+                alert: notification.attributes.message,
+                badge: "Increment",
+                sound: "cheering.caf",
+                title: notification.attributes.title,
+                pushId: notification.id,
+                type: "regional"
+              }
+            }
+            return db.Push.send(notifParams);
+          })
+          .then(function () {
+            response.send(200);
+          }, function (error) {
+            //Push was unsuccessful
+            //Try and nuke notification
+            deleteSavedNotification(notification, error);
+            response.status(400).send(error);
+          });
       }
 
-      // if being uploaded, it might stringify the json and this might cause a crash
-      // let's just parse the json string and get on with our (and I mean mine) lives.
-      var notificationData = typeof request.body.notification !== 'object' ? JSON.parse(request.body.notification) : request.body.notification;
-      var channels = typeof request.body.channels !== 'object' ? JSON.parse(request.body.channels) : request.body.channels;
+      )
 
-      var titleBytes = new Buffer(notificationData.title);
-      var messageBytes = new Buffer(notificationData.message);
+      .
+      post('/sms', function (req, res) {
 
-      var notification = new PushNotification();
-      notification.set("title", notificationData.title);
-      notification.set("message", notificationData.message);
-      /*notification.set("title", {
-        __type: 'Bytes',
-        base64: titleBytes.toString('base64')
-      });
-      notification.set("message", {
-        __type: 'Bytes',
-        base64: messageBytes.toString('base64')
-      });*/
-      notification.set("type", 'regional');
-      notification.set("channels", channels);
-
-      notification.set('client', {
-        __type: "Pointer",
-        className: "Client",
-        objectId: request.session.user.homeClient.objectId
-      });
-      //notification.set(notificationData.attachmentType, new db.File('file', notificationData.attachment));
-
-      save()
-        .then(function (notification) {
-          //Notification saved, now push it to channels
-          //response.send(notification.toJSON());
-          var notifParams = {
-            channels: channels,
-            data: {
-              alert: notification.attributes.message,
-              badge: "Increment",
-              sound: "cheering.caf",
-              title: notification.attributes.title,
-              pushId: notification.id,
-              type: "regional"
-            }
+        db.Cloud.run('sendSMS', {
+          To: req.body.To,
+          From: req.body.From,
+          Body: req.body.Body
+        }, {
+          success: function (result) {
+            res.send(result);
+          },
+          error: function (error) {
+            res.status(503).send(error.message);
           }
-          return db.Push.send(notifParams);
-        })
-        .then(function () {
-          response.send(200);
-        }, function (error) {
-          //Push was unsuccessful
-          //Try and nuke notification
-          deleteSavedNotification(notification, error);
-          response.status(400).send(error);
         });
-    })
-
-    .post('/sms', function(req, res){
-
-      db.Cloud.run('sendSMS', {
-        To: req.body.To,
-        From: req.body.From,
-        Body: req.body.Body
-      }, {
-        success: function (result) {
-          res.send(result);
-        },
-        error: function (error) {
-          res.status(503).send(error.message);
-        }
       });
-    });
 
-  module.exports = router;
+      module.exports = router;
 
-})();
+    })();

@@ -8,7 +8,7 @@
     <h3 class="text-center"  ng-class="{'green':!regionalNotifCtrl.hasError, 'red':regionalNotifCtrl.hasError}" ng-show="!regionalNotifCtrl.sending">{{regionalNotifCtrl.successMessage}}</h3>
     <br>
 
-    <form class="form-horizontal" role="form">
+    <form class="form-horizontal" role="form" enctype="multipart/form-data">
 
       <div class="form-group">
         <label class="sr-only"></label>
@@ -25,10 +25,11 @@
       </div>
 
       <div class="form-group">
+
+
+
         <div class="col-md-6 col-md-offset-3">
-            <div class="btn btn-block white" accept="image/*,video/*,audio/*" ng-class="{'btn-success': regionalNotifCtrl.file.name, 'btn-primary':!regionalNotifCtrl.file.name}" ng-file-select="regionalNotifCtrl.onFileSelect($files)">
-            {{ regionalNotifCtrl.file.name || 'Attach a File'}}
-          </div>
+          <input type="file" ng-model="regionalNotifCtrl.file" base-sixty-four-input>
         </div>
       </div>
 
