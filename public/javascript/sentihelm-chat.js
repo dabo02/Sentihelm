@@ -18,7 +18,7 @@
       return socket;
     }])
     // Service that manages the nitty gritty
-    .factory('shChat', ['chatSocket', '$q', 'Session', function (chatSocket) {
+    .factory('shChat', ['chatSocket', '$q', function (chatSocket, $q) {
 
       // Memory store for the connected rooms.
       var connectedRooms = {};
@@ -33,20 +33,31 @@
         connectedRooms[chatId].messages.push(message);
       });
 
+      // Listen for new messages on joined rooms.
+      chatSocket.on('mobile-disconnect', function (chatId) {
+        stopChat(chatId);
+      });
+
       return {
         // Join a room that is listening to messages on the specified chat id.
         enterChat: function (chatId) {
+          //leave current room
           connectedRooms[chatId] = {
             messages: []
           };
           console.log('Entered chat : ' + chatId);
+
           chatSocket.emit('officer-enter-chat', chatId);
+        },
+
+        stopChat: function(chatId){
+          delete connectedRooms[chatId];
         },
 
         // Leave a room listening for messages on a specific chat.
         leaveChat: function (chatId) {
-          delete connectedRooms[chatId];
-          //chatSocket.emit('officer-leave-chat', chatId);
+          chatSocket.emit('officer-leave-chat',chatId);
+          stopChat(chatId);
         },
 
         // Send a message to all users listening to a chat identified by a specific id.
@@ -70,7 +81,7 @@
     // <sh-chatterbox chat-id="xyz.." mobile-user-id="...">
     // </sh-chatterbox>
     // ```
-    .directive('shChatterbox', ['shChat', '$location', '$anchorScroll', 'Session', function (shChat, $location, $anchorScroll, Session) {
+    .directive('shChatterbox', ['shChat', '$location', '$anchorScroll', 'Session', '$q', function (shChat, $location, $anchorScroll, Session, $q) {
       return {
         restrict: 'E',
         scope: false/*{
@@ -81,15 +92,32 @@
         link: function (scope, attrs) {
 
           scope.joinChat = function (chatId, mobileUserId){
-            shChat.enterChat(chatId);
+            if(scope.chatId){
+              scope.leaveChat().then(function(){
+                shChat.enterChat(chatId, scope.Session.user.objectId, mobileUserId);
+              });
+            }
+            else{
+              shChat.enterChat(chatId, scope.Session.user.objectId, mobileUserId);
+            }
             scope.chatId = chatId;
             scope.mobileUserId = mobileUserId;
           };
 
+          scope.stopChat = function(){
+            shChat.stopChat(scope.chatId);
+            scope.chatId = null;
+            scope.mobileUser = null;
+          };
+
           scope.leaveChat = function (){
-            shChat.leaveChat(scope.chatId);
+            var deferred = $q.defer();
+            shChat.leaveChat(scope.chatId, scope.Session.user.objectId, scope.mobileUserId);
             scope.chatId = null;
             scope.mobileUserId = null;
+            deferred.resolve();
+
+            return deferred.promise;
           };
 
           scope.Session = Session;
@@ -120,12 +148,12 @@
 
               return 0;
             });
-
+            /*
             if (messages.length >= 1) {
               $location.hash(messages[messages.length - 1].date || '');
               $anchorScroll();
             }
-
+            */
             return messages;
           };
         }
