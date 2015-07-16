@@ -34,9 +34,16 @@
       });
 
       // Listen for new messages on joined rooms.
-      chatSocket.on('mobile-disconnect', function (chatId) {
-        stopChat(chatId);
+      chatSocket.on('mobile-disconnect', function (status) {
+        alert('The stream you were watching was dropped by the mobile user');
+        //stopChat(chatId);
       });
+
+      chatSocket.on('mobile-paused', function () {
+        alert('The stream you are watching was paused by the mobile user');
+        //stopChat(chatId);
+      });
+
 
       return {
         // Join a room that is listening to messages on the specified chat id.
@@ -57,7 +64,7 @@
         // Leave a room listening for messages on a specific chat.
         leaveChat: function (chatId) {
           chatSocket.emit('officer-leave-chat',chatId);
-          stopChat(chatId);
+          //stopChat(chatId);
         },
 
         // Send a message to all users listening to a chat identified by a specific id.
