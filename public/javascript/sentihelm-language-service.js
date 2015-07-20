@@ -178,6 +178,10 @@
         "tipFeedAction": "Action",
         "tipFeedCrimeReports": "Crime Reports",
         "tipFeedTip": "Tips",
+        "AdminUsers" : "Users",
+        "mapSearch" : "Search",
+        "mapAdd" : "Add Police Station",
+        "mapSelect" : "Select Location"
 
 
       };
@@ -255,7 +259,7 @@
         "analysisData": "Analizando la Data",
         "analysisError": "Error",
         "drawerAdmin": "Panel de Administración",
-        "drawerLogout": "Cerrar Sección",
+        "drawerLogout": "Cerrar Sesión",
         "adminH1": "Panel de Administración",
         "adminAll": "Todos",
         "adminOfficers": "Oficiales",
@@ -338,7 +342,11 @@
         "drawerWanted": "Los Más Buscados",
         "drawerData": "Análisis de Datos",
         "resetPasswordMessage": "¿Olvidaste tu contraseña?",
-        "tipFeedNoNew": "No hay nuevos reportes"
+        "tipFeedNoNew": "No hay nuevos reportes",
+        "AdminUsers" : "Usuarios",
+        "mapSearch" : "Search",
+        "mapAdd" : "Añadir Estacion de Policia",
+        "mapSelect" : "Elegir Direccion"
 
 
       };

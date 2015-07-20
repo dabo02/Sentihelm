@@ -118,6 +118,7 @@
         self.lang = languageService.getlang().then(function(response){
           self.lang = response;
         });
+        console.log(self.lang);
 
 
         self.currentTab = 0;

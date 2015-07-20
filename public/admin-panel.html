@@ -57,8 +57,8 @@
             <div class="tab-content">
                 <div class="tab-pane user-list" ng-class="{'active':!adminPanelCtrl.addingUser && !adminPanelCtrl.editingUser}" ng-show="adminPanelCtrl.usersAvailable && !adminPanelCtrl.fetchingUsers">
                     <div class="paginationText">
-                        <p ng-show="adminPanelCtrl.usersAvailable">Page {{adminPanelCtrl.currentPageNum}} of {{adminPanelCtrl.lastPageNum}}</p>
-                        <p ng-show="adminPanelCtrl.usersAvailable">Showing {{adminPanelCtrl.skip + 1}} - {{adminPanelCtrl.skip + 10 > adminPanelCtrl.userTotal ? adminPanelCtrl.userTotal : adminPanelCtrl.skip + 10}} of {{adminPanelCtrl.userTotal}} Users</p>
+                        <p ng-show="adminPanelCtrl.usersAvailable">{{adminPanelCtrl.lang.tipFeedPage}}  {{adminPanelCtrl.currentPageNum}} {{adminPanelCtrl.lang.tipFeedOf}} {{adminPanelCtrl.lastPageNum}}</p>
+                        <p ng-show="adminPanelCtrl.usersAvailable">{{adminPanelCtrl.lang.tipFeedShowing}} {{adminPanelCtrl.skip + 1}} - {{adminPanelCtrl.skip + 10 > adminPanelCtrl.userTotal ? adminPanelCtrl.userTotal : adminPanelCtrl.skip + 10}} {{adminPanelCtrl.lang.tipFeedOf}} {{adminPanelCtrl.userTotal}} {{adminPanelCtrl.lang.AdminUsers}}</p>
                     </div>
                     <!--Show if NO video archives are available -->
                     <div ng-show="!adminPanelCtrl.usersAvailable">
