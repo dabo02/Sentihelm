@@ -66,7 +66,11 @@
               currentTime = Date.parse(currentTime);
               var createdAt = Date.parse(element.createdAt);
               var timeSince = (currentTime-createdAt)/60000;
-              if(timeSince <= 60){
+              if(timeSince <1){
+                element.createdAt = "";
+                element.time = "Now";
+              }
+              else if(timeSince <= 60){
                 element.createdAt = Math.floor(timeSince);
                 element.time = "minutes ago";
               }

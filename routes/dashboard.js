@@ -1,6 +1,4 @@
-/**
- * Created by brianlandron on 6/25/15.
- */
+
 (function () {
   'use strict';
 
