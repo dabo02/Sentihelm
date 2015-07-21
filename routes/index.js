@@ -46,19 +46,19 @@
         user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
         user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
 
-        if(user.attributes.state){
+        if (user.attributes.state) {
           user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
         }
 
-        if(user.attributes.addressLine1){
+        if (user.attributes.addressLine1) {
           user.attributes.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
         }
 
-        if(user.attributes.addressLine2){
+        if (user.attributes.addressLine2) {
           user.attributes.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
         }
 
-        if(user.attributes.city){
+        if (user.attributes.city) {
           user.attributes.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
         }
 
@@ -93,13 +93,13 @@
 
         usersModel.sendPasswordResetRequest(email)
           .then(function () {
-              // Password reset request was sent successfully
-              response.send(200);
-            },
-            function (error) {
-              // Show the error message somewhere
-              response.send(401);
-            });
+            // Password reset request was sent successfully
+            response.send(200);
+          },
+          function (error) {
+            // Show the error message somewhere
+            response.send(401);
+          });
       }
     })
     .post('/new-tip', function (request, response) {
@@ -119,87 +119,96 @@
     //db and pass on to front-end
 
 
-  //Receive request to start archiving a video session
-  //and store the archiveId
-  .post('/start-archive', bodyParser(), function (request, response) {
+    //Receive request to start archiving a video session
+    //and store the archiveId
+    .post('/start-archive', bodyParser(), function (request, response) {
 
-    console.log("\n\nIn start-archive...\n\n");
-    //TODO why is the password check not being used?
-    /*/Check if password is valid
-     if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
-     return;
-     }*/
+      console.log("\n\nIn start-archive...\n\n");
+      //TODO why is the password check not being used?
+      /*/Check if password is valid
+       if(request.body.password!=="hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@"){
+       return;
+       }*/
 
-    var videoSession = JSON.parse(request.body.data);
+      var videoSession = JSON.parse(request.body.data);
 
-    opentok.startArchive(videoSession.sessionId, {
-      name: 'archive: ' + videoSession.sessionId
-    }, function (err, archive) {
-      if (err) {
-        response.send(400, err);
-        return console.log(err + " Session id: " + videoSession.sessionId);
-      }
-
-      var videoSessionQuery = new db.Query(VideoSession);
-      videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
-      videoSessionQuery.find({
-        success: function (videoSessions) {
-          videoSessions[0].set('archiveId', archive.id);
-          videoSessions[0].save().then(function(){
-            console.log('Archive started and saved to parse..');
-            response.send('Archive started and saved to parse..');
-          });
-        },
-        error: function (object, error) {
-          // The object was not retrieved successfully.
-          console.log("Error fetching video for archive ID update.");
-          response.status(503).send("Error fetching video for archive ID update.");
+      opentok.startArchive(videoSession.sessionId, {
+        name: 'archive: ' + videoSession.sessionId
+      }, function (err, archive) {
+        if (err) {
+          response.send(400, err);
+          return console.log(err + " Session id: " + videoSession.sessionId);
         }
+
+        var videoSessionQuery = new db.Query(VideoSession);
+        videoSessionQuery.equalTo("sessionId", videoSession.sessionId);
+        videoSessionQuery.find({
+          success: function (videoSessions) {
+            videoSessions[0].set('archiveId', archive.id);
+            videoSessions[0].save().then(function () {
+              console.log('Archive started and saved to parse..');
+              response.send('Archive started and saved to parse..');
+            });
+          },
+          error: function (object, error) {
+            // The object was not retrieved successfully.
+            console.log("Error fetching video for archive ID update.");
+            response.status(503).send("Error fetching video for archive ID update.");
+          }
+        });
+      });
+
+    })
+
+    //Recieve  request to start archiving a video session
+    //and pass it along to front-end
+    .post('/opentok-callback', function (request, response) {
+
+      //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
+      console.log("\n\nIn opentok-callback...\n\n");
+
+      var opentokCallbackJSON = request.body;
+
+      if (opentokCallbackJSON.partnerId === config.opentok.key) {
+        var videoSessionQuery = new db.Query(VideoSession);
+        videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
+        videoSessionQuery.find({
+          success: function (videoSessions) {
+            videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
+            videoSessions[0].set('duration', opentokCallbackJSON.duration);
+            videoSessions[0].set('reason', opentokCallbackJSON.reason);
+            videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
+            videoSessions[0].save();
+          },
+          error: function (object, error) {
+            // The object was not retrieved successfully.
+            console.log("Error fetching video for archive ID update on Opentok callback.");
+          }
+        });
+      }
+    })
+
+    //send sms message using cloud code
+    .post('/sendSMS', function (request, response) {
+      db.Cloud.run('sendSMS', request.body, {
+        success: function (result) {
+          response.send(200);
+        },
+        error: function (error) {
+          response.send(401);
+        }
+      });
+
+    })
+    .get('/language', function (req, res) {
+      clientModel.language(req.body, req.session.user.homeClient.objectId).then(function (lang) {
+        res.send(lang);
+
+      }, function (error) {
+        res.status(503).send("FAILURE: Could not get language. " + error.message);
       });
     });
 
-  })
-
-  //Recieve  request to start archiving a video session
-  //and pass it along to front-end
-  .post('/opentok-callback', function (request, response) {
-
-    //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
-    console.log("\n\nIn opentok-callback...\n\n");
-
-    var opentokCallbackJSON = request.body;
-
-    if(opentokCallbackJSON.partnerId === config.opentok.key){
-      var videoSessionQuery = new db.Query(VideoSession);
-      videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
-      videoSessionQuery.find({
-        success: function (videoSessions) {
-          videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
-          videoSessions[0].set('duration', opentokCallbackJSON.duration);
-          videoSessions[0].set('reason', opentokCallbackJSON.reason);
-          videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
-          videoSessions[0].save();
-        },
-        error: function (object, error) {
-          // The object was not retrieved successfully.
-          console.log("Error fetching video for archive ID update on Opentok callback.");
-        }
-      });
-    }
-  })
-
-  //send sms message using cloud code
-  .post('/sendSMS', function (request, response) {
-    db.Cloud.run('sendSMS', request.body, {
-      success: function (result) {
-        response.send(200);
-      },
-      error: function (error) {
-        response.send(401);
-      }
-    });
-
-  });
 
   module.exports = router;
 

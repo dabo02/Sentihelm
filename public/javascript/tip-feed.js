@@ -133,19 +133,22 @@
         ioSocket: tipSocket
       });
     }])
-    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService',
-      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService) {
-        
+    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService', '$stateParams',
+      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService, $stateParams) {
+
         var self = this;
         var spinner = 'loading-tips-spinner';
         self.hasError = false;
+        self.lang = languageService.getlang().then(function(response){
+          self.lang = response;
+        });
+        console.log(self.lang);
 
-        self.lang = languageService;
-        self.tabs = [self.lang.tipFeedAll, self.lang.tipFeedCrimeReports, self.lang.tipFeedTip];
-        self.currentTab = self.tabs[0];
+
+        self.currentTab = 0;
 
         // pagination variables
-        self.currentPageNum = 1;
+
         self.lastPageNum;
         self.pageNumbers;
         self.limit = 10;
@@ -153,22 +156,16 @@
         self.tipsAvailable = false;
         self.tips;
         self.totalTips;
-        
-        self.crimeTypes = [languageService.tipFeedAll, languageService.tipFeedAssault, languageService.tipFeedChildAbuse, languageService.tipFeedElderlyAbuse,
-          languageService.tipFeedDomesticViolence, languageService.tipFeedDrugs, languageService.tipFeedHomicide, languageService.tipFeedAnimalAbuse,
-          languageService.tipFeedRobbery, languageService.tipFeedSexOffenses, languageService.tipFeedBullying, languageService.tipFeedPoliceMisconduct, languageService.tipFeedBribery,
-          languageService.tipFeedVehicleTheft, languageService.tipFeedVandalism, languageService.tipFeedAutoAccident, languageService.tipFeedCivilRights, languageService.tipFeedArson,
-          languageService.tipFeedOther
-        ];
+        self.currentPageNum = parseInt($stateParams.pageNum);
 
         self.notificationDialogIsOn = false;
         self.attachmentDialogIsOn = false;
 
-        self.selectedCrimeType = languageService.tipFeedAll;
+        self.selectedCrimeType = 0;
 
         self.setCrimeType = function (type) {
-          var index = self.crimeTypes.indexOf(type);
-          self.selectedCrimeType = self.crimeTypes[index] || 'All';
+          var index = type;
+          self.selectedCrimeType = index;
           self.getPage(1);
         };
 
@@ -181,19 +178,18 @@
 
         self.changeView = function (filter) {
 
-          var tabIndex = self.tabs.indexOf(filter);
+          var tabIndex = filter;
           self.successMessage = "";
           self.hasError = false;
-          
 
-          self.currentTab = self.tabs[tabIndex] || self.currentTab;
-        
-          
+
+          self.currentTab = tabIndex || self.currentTab;
+
+
           self.getPage(1);
 
         };
 
-        
 
         self.showHidePanel = function () {
           return {
@@ -206,7 +202,17 @@
             newTips: Tip.getNewTips().length > 0,
             howMany: Tip.getNewTips().length
           };
-        }
+        };
+
+        self.updateTipFeedState = function(pageNum){
+          $state.go('tipfeed', {
+            pageNum: pageNum
+          }, {
+            location: true
+          });
+          self.refreshPageNumbers();
+
+        };
 
         self.getPage = function (pageNum) {
 
@@ -214,26 +220,25 @@
             return;
           }
 
-          usSpinnerService.spin(spinner);
+          usSpinnerService.spin('loading-tips-spinner');
           self.currentPageNum = pageNum;
           self.skip = (self.currentPageNum - 1) * self.limit;
 
           var params = {
-            list: self.tabs.indexOf(self.currentTab),
+            list: self.currentTab,
             searchString: self.searchString,
             registrationDate: self.registrationDate,
-            crimeType: self.crimeTypes.indexOf(self.selectedCrimeType) - 1,
+            crimeType: self.selectedCrimeType - 1,
             skip: self.skip,
             limit: self.limit,
-            type: self.tabs.indexOf(self.currentTab)
+            type: self.currentTab
+
           };
 
           Tip.getTips(params)
             .then(function (data) {
               self.lastPageNum = data.lastPageNum;
               self.totalTips = data.totalTips;
-
-
 
               self.tips = angular.copy(data.tips);
 
@@ -244,7 +249,7 @@
               self.successMessag = err.message;
             })
             .then(function () {
-              usSpinnerService.stop(spinner);
+              usSpinnerService.stop('loading-tips-spinner');
               $location.hash('top');
               $anchorScroll();
               self.refreshPageNumbers();
@@ -273,7 +278,6 @@
         };
 
 
-        
 
         self.showTip = function (tip) {
           $state.go('tip', {

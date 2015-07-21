@@ -16,6 +16,7 @@
       var homeClient = request.session.user.homeClient.objectId;
       var crimeType = request.query.crimeType;
       var reportType = request.query.type;
+      var page = request.query.page;
 
       tipsModel
         .listTips({
@@ -25,14 +26,17 @@
           registeredOn: registrationDate,
           type: crimeType,
           searchString: searchString,
-          reportType: reportType
+          reportType: reportType,
+          page : page
         })
         .then(function (data) {
-          var tips = data[0], totalTips = data[1] || 0, lastPageNum = data[2] || 0;
+          var tips = data[0], totalTips = data[1] || 0, lastPageNum = data[2] || 0, page = data[3];
           response.json({
             tips: tips,
             totalTips: totalTips,
-            lastPageNum: lastPageNum
+            lastPageNum: lastPageNum,
+            page: page
+
           });
         }, function (err) {
           console.warn(err.message);

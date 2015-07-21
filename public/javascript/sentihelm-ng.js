@@ -9,7 +9,7 @@
     //$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://s3.amazonaws.com/stream-archive/44755992/**']);
     $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44755992/**']);
 
-    // For any unmatched url, redirect to /tipfeed
+    // For any unmatched url, redirect to /dashboard
     $urlRouterProvider.otherwise("/dashboard");
 
     $stateProvider
@@ -56,7 +56,7 @@
 
       //Tipfeed endpoint/url
       .state('tipfeed', {
-        url: "/tipfeed",
+        url: "/tipfeed/:pageNum/",
         templateUrl: "/tipfeed.html",
         data: {
           authorizedRoles: [USER_ROLES.admin, USER_ROLES.user]
@@ -1411,7 +1411,7 @@
 
       this.resetPasswordAvailable = true;
       
-      this.lang = languageService;
+
 
       //Credentials that will be passed to the authenticator service
       this.credentials = {
@@ -1518,8 +1518,8 @@
 
   //Controller for the drawer, which hides/shows
   //on button click contains navigation options
-  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip', 'languageService',
-    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip, languageService) {
+  app.controller('DrawerController', ['$scope', '$rootScope', 'snapRemote', '$state', 'socket', 'Session', '$window', 'ngToast', '$sce', 'ngAudio', 'Tip', 'languageService', '$stateParams',
+    function ($scope, $rootScope, snapRemote, $state, socket, Session, $window, ngToast, $sce, ngAudio, Tip, languageService, $stateParams) {
       var drawer = this;
       this.newTips = 0;
       this.isAdmin = Session.userRoles.indexOf('admin') === -1 ? false : true;
@@ -1528,7 +1528,9 @@
       drawer.clientLogo = Session.clientLogo;
       drawer.sound = ngAudio.load("resources/sounds/notification-sound.mp3"); // returns NgAudioObject
       drawer.newTips = Tip.newTipCount;
-      drawer.lang = languageService;
+      drawer.lang = languageService.getlang().then(function(response){
+        drawer.lang = response;
+      });
 
       //Drawer options with name and icon;
       //entries are off by default
@@ -1583,6 +1585,14 @@
         }, {
           reload: true
         });
+
+        var num = 1;
+        if(state==="tipfeed" ){
+        $state.go('tipfeed', {
+          pageNum: num
+        }, {
+          location: true
+        });}
       };
 
       this.logOut = function () {
@@ -1750,8 +1760,8 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
 //Controller for Google map in the maps state;
 //sets map center and police station position
 //in map
-  app.controller('GoogleMapController', function () {
-
+  app.controller('GoogleMapController', ['languageService', function (languageService) {
+    var lang = languageService;
     //This position variables will store the position
     //data so that the tip.center variable remain unchanged.
     var markerPosition = {
@@ -1813,7 +1823,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       markerKey++;
       return "key" + key + markerKey;
     };
-  });
+  }]);
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
@@ -2142,17 +2152,21 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
   ]);
 
 //Controller for Google map in the 'Maps' state.
-  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function (PoliceStationsService, $scope) {
+  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope','languageService', function (PoliceStationsService, $scope, languageService) {
 
-    var mapCtrl = this;
+    var self = this;
+    self.lang = languageService.getlang().then(function(response){
+      self.lang = response;
+    });
+
 
     //Hack to avoid google-map directive bug when updating
     //marker's window.
-    mapCtrl.redrawMarkers = function () {
+    self.redrawMarkers = function () {
       return PoliceStationsService.redrawMarkers;
     };
 
-    mapCtrl.map = {
+    self.map = {
       zoom: 14,
       center: {
         latitude: 0,
@@ -2162,14 +2176,14 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
 
     PoliceStationsService.getCenter()
       .then(function (center) {
-        mapCtrl.map.center = angular.copy(center);
+        self.map.center = angular.copy(center);
       });
 
-    PoliceStationsService.map = mapCtrl.map;
+    PoliceStationsService.map = self.map;
 
-    mapCtrl.policeStationsMarkers = [];
+    self.policeStationsMarkers = [];
 
-    mapCtrl.searchbox = {
+    self.searchbox = {
       template: 'searchbox.tpl.html',
       position: 'top-left',
       options: {
@@ -2183,11 +2197,11 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
           }
           //Take only the first place on the list.
           var place = places[0];
-          mapCtrl.map.center = {
+          self.map.center = {
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng()
           };
-          PoliceStationsService.map.center = mapCtrl.map.center;
+          PoliceStationsService.map.center = self.map.center;
         }
       }
     };
@@ -2196,27 +2210,27 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
 
 
     //Check if the user is adding a new station.
-    mapCtrl.isAdding = function () {
+    self.isAdding = function () {
       return PoliceStationsService.isAdding;
     };
 
-    mapCtrl.refresh = function () {
+    self.refresh = function () {
 
       PoliceStationsService.getStationsMarkers()
         .then(function setMarkers(markers) {
-          mapCtrl.policeStationsMarkers = markers;
+          self.policeStationsMarkers = markers;
           PoliceStationsService.redrawMarkers = false;
         });
     };
 
     // get first points
-    mapCtrl.refresh();
+    self.refresh();
 
     $scope.$watch(function () {
       return PoliceStationsService.redrawMarkers;
     }, function (newVal) {
       if (newVal === true) {
-        mapCtrl.refresh();
+        self.refresh();
       }
     });
 
@@ -2369,7 +2383,11 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
   adminPanelCtrl.viewingAdministrators = false;
   adminPanelCtrl.viewingLoggedIn = false;
   adminPanelCtrl.addingUser = false;
-  adminPanelCtrl.lang = languageService;
+  adminPanelCtrl.lang = languageService.getlang().then(function(response){
+    console.log('login');
+    console.log(response);
+    adminPanelCtrl.lang = response;
+  });
 
 
     adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];

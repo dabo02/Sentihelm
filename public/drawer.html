@@ -23,33 +23,118 @@
       </h5>
     </li>
 
-    <!--======Drawer buttons in ng-repeat======-->
-    <!--=======================================-->
-    <li class="list-group-item dark-gray-bg drawer-item pointer"
-     ng-repeat="item in drawerCtrl.entries"
-     ng-click="drawerCtrl.changeState(item.state)"
-    >
 
-      <h5 style="color:inherit;">
-        <span class="{{item.icon}}"></span>
-        <span style="margin-left:10px;">{{item.name}}</span>
-        <span ng-if="item.name==='Tip Feed'&&drawerCtrl.newTips" class="badge pull-right">{{drawerCtrl.newTips}}</span>
-      </h5>
+      <!--======Drawer button for dashboard======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
 
-    </li>
+          ng-click="drawerCtrl.changeState('dashboard')">
 
-    <!--======Drawer button for Admin Panel======-->
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-dashboard"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.dashboardH1}}</span>
+          </h5>
+
+      </li>
+      <!--======Drawer button for TipFeed======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
+
+          ng-click="drawerCtrl.changeState('tipfeed')">
+
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-inbox"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.drawerTipFeed}}</span>
+          </h5>
+
+      </li>
+      <!--======Drawer button for VideoStreams======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
+
+          ng-click="drawerCtrl.changeState('video-streams')">
+
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-facetime-video"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.drawerVideo}}</span>
+          </h5>
+
+      </li>
+      <!--======Drawer button for video Archive======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
+
+          ng-click="drawerCtrl.changeState('video-archive')">
+
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-film"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.drawerVideoArchive}}</span>
+          </h5>
+
+      </li>
+      <!--======Drawer button for Notifications======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
+
+          ng-click="drawerCtrl.changeState('regional-notifications')">
+
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-send"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.drawerNotifications}}</span>
+          </h5>
+
+      </li>
+      <!--======Drawer button for maps======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
+
+          ng-click="drawerCtrl.changeState('maps')">
+
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-map-marker"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.drawerMaps}}</span>
+          </h5>
+
+
+    <!--======Drawer button for most-wanted======-->
     <!--=========================================-->
     <li class="list-group-item dark-gray-bg drawer-item pointer"
-     ng-if="drawerCtrl.isAdmin"
-     ng-click="drawerCtrl.('admin-panel')">
+
+     ng-click="drawerCtrl.changeState('most-wanted')">
 
       <h5 style="color:inherit;">
-        <span class="glyphicon glyphicon-briefcase"></span>
-        <span style="margin-left:10px;">{{drawerCtrl.lang.drawerAdmin}}</span>
+        <span class="glyphicon glyphicon-list-alt"></span>
+        <span style="margin-left:10px;">{{drawerCtrl.lang.drawerWanted}}</span>
       </h5>
       
     </li>
+      <!--======Drawer button for Admin======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
+
+          ng-click="drawerCtrl.changeState('data-analysis')">
+
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-stats"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.drawerData}}</span>
+          </h5>
+
+      </li>
+
+      <!--======Drawer button for Admin Panel======-->
+      <!--=========================================-->
+      <li class="list-group-item dark-gray-bg drawer-item pointer"
+          ng-if="drawerCtrl.isAdmin"
+          ng-click="drawerCtrl.changeState('admin-panel')">
+
+          <h5 style="color:inherit;">
+              <span class="glyphicon glyphicon-briefcase"></span>
+              <span style="margin-left:10px;">{{drawerCtrl.lang.drawerAdmin}}</span>
+          </h5>
+
+      </li>
+
+
 
     <!--======Log out button======-->
     <!--==========================-->
