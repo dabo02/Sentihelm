@@ -52,7 +52,9 @@
         self.unwatch = 0;
         self.unreadChats = 0;
         self.responseTime = 0;
-        self.lang = languageService;
+        self.lang = languageService.getlang().then(function(response){
+          self.lang = response;
+        });
         self.dashService = dashboardService;
         self.d = new Date().toISOString();
         self.currentDate = self.d;
