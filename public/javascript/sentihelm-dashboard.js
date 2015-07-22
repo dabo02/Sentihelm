@@ -147,14 +147,14 @@
             if ( Math.floor(sum/response.data.length) >60){
               self.responseTime = Math.floor((sum/response.data.length)/60);
               console.log((sum/response.data.length)/60);
-              self.time = self.lang.dashboardHour;
+              self.time = "H";
             }
             else{
               self.responseTime = Math.floor(sum/response.data.length);
-              self.time = self.lang.dashboardMinutes;
+              self.time = "M";
             }
 
-            console.log(self.responseTime);
+
           });
         };
 

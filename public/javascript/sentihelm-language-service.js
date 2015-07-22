@@ -181,7 +181,8 @@
         "AdminUsers" : "Users",
         "mapSearch" : "Search",
         "mapAdd" : "Add Police Station",
-        "mapSelect" : "Select Location"
+        "mapSelect" : "Select Location",
+        "minutesAgo" : "minutes ago"
 
 
       };
@@ -196,6 +197,7 @@
         "dashboardYear": "Año",
         "dashboardSelectYear": "Seleccione el Año",
         "dashboardRecent": "Actividad Reciente",
+        "minutesAgo" : "minutos transcurridos",
         "profileH1": "Perfil",
         "profilePassword": "Cambiar Contraseña",
         "profileFName": "Nombre",
