@@ -43,7 +43,17 @@
 
     .get('/getOTKey', function(req,res){
       res.send(config.opentok.key);
+    })
+
+  .get('/getActiveStreams', function (req, res) {
+    req.query.homeClient = req.session.user.homeClient.objectId;
+    videoSessionsModel.getActiveStreams(req.query).then(function (streams) {
+      res.send(streams);
+    }, function (error) {
+      res.status(503).send(error);
     });
+  });
+
 
 
   module.exports = router;

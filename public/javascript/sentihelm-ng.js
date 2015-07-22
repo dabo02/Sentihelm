@@ -971,12 +971,22 @@
     };
 
     //Get all active video streams from Parse
-    VideoStreamsService.getActiveStreams = function (clientId) {
+    VideoStreamsService.getActiveStreams = function () {
 
-      socket.emit('get-active-streams', clientId);
-      socket.on('get-active-streams-response', function (streams) {
-        $rootScope.$broadcast('active-streams-fetched', streams);
-      });
+      $http.get('/videosessions/getActiveStreams')
+        .success(function(streams){
+          $rootScope.$broadcast('active-streams-fetched', streams);
+        })
+        .error(function(){
+          console.log("Error");
+        });
+
+
+      //socket.emit('get-active-streams', clientId);
+      //socket.on('get-active-streams-response', function (streams) {
+      //  $rootScope.$broadcast('active-streams-fetched', streams);
+      //});
+
 
     };
 
@@ -1703,7 +1713,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
     $scope.$on('active-streams-fetched', function (event, data) {
       vidStrmCtrl.queue = data;
       vidStrmCtrl.currentStream = data[0];
-      $scope.$apply();
+      //$scope.$apply();
     });
 
     socket.on('new-video-stream', function (data) {
