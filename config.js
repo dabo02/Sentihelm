@@ -11,7 +11,7 @@ module.exports = {
 
     },
     opentok: {
-        /*
+/*
         key: '44755992',
         secret: '66817543d6b84f279a2f5557065b061875a4871f'
          */

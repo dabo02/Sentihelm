@@ -26,6 +26,11 @@
 }
 .dashPanel{
     padding-top:5px;
+
+}
+
+.panel-body{
+    padding-bottom: 0px;
 }
 .panel-time{
 	 border-color: #0F4A6B;
@@ -34,9 +39,10 @@
 }
 
 .panel-chat{
-	 border-color: #60839b;
+	 border-color: #3e7998;
     color: #fff;
-    background-color: #60839b;
+    background-color: #3e7998;
+
 }
 .panel-video{
 	 border-color: #256784;

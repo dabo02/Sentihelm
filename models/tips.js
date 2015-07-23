@@ -136,7 +136,7 @@
           // Returns the tips, the number of tips for the query, and the "page" or section number
           tipReportQuery.count({
             success: function (count) {
-              resolve([resultingTips, count, Math.ceil(count / options.limitTo)]);
+              resolve([resultingTips, count, Math.ceil(count / options.limitTo), options.page]);
             },
             error: function (object, error) {
               // The object was not retrieved successfully.

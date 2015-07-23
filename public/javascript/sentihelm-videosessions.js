@@ -2,7 +2,7 @@
  * Created by brianlandron on 4/30/15.
  */
 
-(function() {
+(function () {
   'use strict';
 
   angular.module('sentihelm')
@@ -22,9 +22,9 @@
       videoArchiveCtrl.skip;
       videoArchiveCtrl.videoTotal;
 
-      videoArchiveCtrl.getPage = function(pageNum){
+      videoArchiveCtrl.getPage = function (pageNum) {
 
-        if(pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum){
+        if (pageNum < 1 || pageNum > videoArchiveCtrl.lastPageNum) {
           return;
         }
 
@@ -43,25 +43,25 @@
         };
 
         $http.get('/videosessions/list', {params: params})
-          .success(function(data){
+          .success(function (data) {
 
             videoArchiveCtrl.lastPageNum = data.lastPageNum;
             videoArchiveCtrl.videoTotal = data.videoTotal;
 
             videoArchiveCtrl.videoArchiveArray = angular.copy(data.videos);
 
-            if(videoArchiveCtrl.videoArchiveArray.length===0){
+            if (videoArchiveCtrl.videoArchiveArray.length === 0) {
               videoArchiveCtrl.videosAvailable = false;
             }
-            else{
+            else {
               videoArchiveCtrl.videosAvailable = true;
             }
 
           })
-          .error(function(err){
+          .error(function (err) {
             videoArchiveCtrl.videosAvailable = false;
 
-          }).then(function(){
+          }).then(function () {
             usSpinnerService.stop('loading-video-archive-spinner');
             $location.hash('top');
             $anchorScroll();
@@ -69,40 +69,40 @@
           });
       };
 
-      videoArchiveCtrl.refreshPageNumbers = function(){
+      videoArchiveCtrl.refreshPageNumbers = function () {
 
         var baseNum = Math.floor(videoArchiveCtrl.currentPageNum / videoArchiveCtrl.limit);
-        var firstNum =  videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0 ? (baseNum - 1) * videoArchiveCtrl.limit + 1 : baseNum  * videoArchiveCtrl.limit + 1;
+        var firstNum = videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0 ? (baseNum - 1) * videoArchiveCtrl.limit + 1 : baseNum * videoArchiveCtrl.limit + 1;
         var lastNum = 0;
 
-        if(videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0){
+        if (videoArchiveCtrl.currentPageNum % videoArchiveCtrl.limit === 0) {
           lastNum = videoArchiveCtrl.currentPageNum;
         }
-        else if(baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit > videoArchiveCtrl.lastPageNum){
+        else if (baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit > videoArchiveCtrl.lastPageNum) {
           lastNum = videoArchiveCtrl.lastPageNum;
         }
-        else{
+        else {
           lastNum = baseNum * videoArchiveCtrl.limit + videoArchiveCtrl.limit;
         }
 
         videoArchiveCtrl.pageNumbers = [];
 
-        for(var i = 0, j = firstNum; j <= lastNum; i++, j++){
+        for (var i = 0, j = firstNum; j <= lastNum; i++, j++) {
           videoArchiveCtrl.pageNumbers[i] = j;
         }
       }
 
-      videoArchiveCtrl.showVideo = function(video){
+      videoArchiveCtrl.showVideo = function (video) {
 
         /*
-        AWS.config.update({accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q', secretAccessKey: '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'});
-        AWS.config.region = 'us-east-1';
-        var s3 = new AWS.S3();
+         AWS.config.update({accessKeyId: 'AKIAI7FBDAXKQOTH7A5Q', secretAccessKey: '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'});
+         AWS.config.region = 'us-east-1';
+         var s3 = new AWS.S3();
 
-        // This URL will expire in one minute (60 seconds)
-        var params = {Bucket: 'stream-archive', Key: '44755992/' + video.archiveId + '/archive.mp4', Expires: 500};
-        var videoUrl = s3.getSignedUrl('getObject', params);
-        */
+         // This URL will expire in one minute (60 seconds)
+         var params = {Bucket: 'stream-archive', Key: '44755992/' + video.archiveId + '/archive.mp4', Expires: 500};
+         var videoUrl = s3.getSignedUrl('getObject', params);
+         */
 
         //$sce.trustAsResourceUrl('https://stream-archive.s3.amazonaws.com/44755992/**');
         var videoUrl = '';
@@ -113,14 +113,14 @@
 
 
         $http.get('videosessions/getVideoUrl', {params: params})
-          .success(function(data){
+          .success(function (data) {
             videoUrl = data;
           })
-          .error(function(error){
+          .error(function (error) {
             //TODO add error management
-          }).then(function(){
+          }).then(function () {
 
-            if(videoArchiveCtrl.watchStatusFilter === 'Unwatched'){
+            if (videoArchiveCtrl.watchStatusFilter === 'Unwatched') {
               // inform user of unwatched list updates when video is watched
               ngDialog.open({
                 template: '../info-dialog.html',
@@ -144,7 +144,7 @@
                   });
                 });
             }
-            else{
+            else {
               //ngDialog can only handle stringified JSONs
               var data = JSON.stringify({
                 attachmentType: 'VID',
@@ -169,46 +169,46 @@
         }
 
         $http.post('videosessions/updateWatchersList', data)
-          .success(function(data){
+          .success(function (data) {
             videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum);
           })
-          .error(function(error){
+          .error(function (error) {
             //TODO add error management
           });
 
-/*
-        //Update VideoSession's lastWatcher
-        var VideoSession = Parse.Object.extend("VideoSession");
-        var videoSessionQuery = new Parse.Query(VideoSession);
-        videoSessionQuery.get(video.id, {
-          success: function(videoSession) {
-            videoSession.set('hasBeenWatched', true);
-            videoSession.set('lastWatcher', {
-              __type: "Pointer",
-              className: "User",
-              objectId: Session.userId
-            });
-            videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
-          },
-          error: function(object, error) {
-            // The object was not retrieved successfully.
-            console.log("Error fetching video for lastWatcher update.");
-          }
-        });*/
+        /*
+         //Update VideoSession's lastWatcher
+         var VideoSession = Parse.Object.extend("VideoSession");
+         var videoSessionQuery = new Parse.Query(VideoSession);
+         videoSessionQuery.get(video.id, {
+         success: function(videoSession) {
+         videoSession.set('hasBeenWatched', true);
+         videoSession.set('lastWatcher', {
+         __type: "Pointer",
+         className: "User",
+         objectId: Session.userId
+         });
+         videoSession.save().then(videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum));
+         },
+         error: function(object, error) {
+         // The object was not retrieved successfully.
+         console.log("Error fetching video for lastWatcher update.");
+         }
+         });*/
       };
 
-      videoArchiveCtrl.fetchDownloadUrl = function(archiveId, index){
+      videoArchiveCtrl.fetchDownloadUrl = function (archiveId, index) {
 
         var params = {
           archiveId: archiveId
         }
 
         $http.get('videosessions/getVideoUrl', {params: params})
-          .success(function(data){
+          .success(function (data) {
             videoArchiveCtrl.videoArchiveArray[index].downloadLink = data;
             $('.downloadLink' + index)[0].click();
           })
-          .error(function(error){
+          .error(function (error) {
 
           });
       };

@@ -16,8 +16,11 @@
       profileCtrl.savingPass = false;
       profileCtrl.showPasswordChanger = false;
       profileCtrl.user = angular.copy(Session.user);
-      profileCtrl.lang = languageService;
-      console.log(profileCtrl.lang);
+      profileCtrl.lang = languageService.getlang().then(function(response){
+        console.log('login');
+        console.log(response);
+        profileCtrl.lang = response;
+      });
 
       //Adds new SentiHelm user
       profileCtrl.saveUser = function (user) {

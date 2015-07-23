@@ -29,3 +29,19 @@ module.exports.getById = function (clientId) {
       });
   });
 };
+
+module.exports.language = function (data, homeClient){
+  return Q.promise(function (resolve,reject){
+    var langQuery = new db.Query(Client);
+    langQuery.equalTo('objectId', homeClient);
+    langQuery.find({
+      success: function(lang){
+        resolve(lang[0].attributes.language);
+        console.log('model');
+      },
+      error: function (err) {
+        reject(err);
+      }
+    })
+  })
+};
