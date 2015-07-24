@@ -21,7 +21,7 @@
 							</div>
 						</div>
 					</div>
-					<a href="#/tipfeed">
+					<a href="#/tipfeed/1">
 						<div class="panel-footer">
 							<span class="pull-left">View Details</span>
 							<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
@@ -142,7 +142,7 @@
 						<div class="list-group">
 							<div >
 								<div ng-repeat ="notification in dashCtrl.getTips">
-									<a href="#/tip/{{notification.objectId}}/" class="list-group-item">
+									<a href="#/tip/{{notification.objectId}}" class="list-group-item">
 										<i class="fa fa-folder-open fa-fw"></i> {{notification.crimeType}}
 										<span class="pull-right text-muted small"><em>{{notification.timeAgo}} {{dashCtrl.lang.minutesAgo}}</em>
 									</span>
