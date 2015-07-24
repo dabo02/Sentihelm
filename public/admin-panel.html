@@ -9,7 +9,7 @@
 
     <div class="row">
         <div class="row-fluid">
-            <ul class="nav nav-tabs nav-justified">
+            <ul class="nav nav-tabs nav-justified bold">
                 <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingAll}" ng-click="adminPanelCtrl.changeView('all')"><a class="pointer">{{adminPanelCtrl.lang.adminAll}}</a></li>
                 <!--<li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingUsers}" ng-click="adminPanelCtrl.changeView('users')"><a class="pointer">Users</a></li>-->
                 <li class="main-menu-list-item" ng-class="{'selected-filter':adminPanelCtrl.viewingEmployees}" ng-click="adminPanelCtrl.changeView('employees')"><a class="pointer">{{adminPanelCtrl.lang.adminOfficers}}</a></li>
@@ -27,7 +27,7 @@
                 <div class="container-fluid">
                     <ul class="nav navbar-nav navbar-left">
                         <li class="dropdown">
-                            <a class="dropdown-toggle pointer" data-toggle="dropdown" role="button" aria-expanded="false">{{adminPanelCtrl.lang.adminBulk}}<span class="caret"></span></a>
+                            <a class="dropdown-toggle pointer bold" data-toggle="dropdown" role="button" aria-expanded="false">{{adminPanelCtrl.lang.adminBulk}}<span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
                                 <!--<li><a>Add to Users</a></li>-->
                                 <li><a class="pointer" ng-click="adminPanelCtrl.updateRole('add','employee')">{{adminPanelCtrl.lang.adminAddo}}</a></li>
@@ -40,7 +40,7 @@
                         </li>
                     </ul>
                     <form class="navbar-form admin-panel-action-form navbar-left" role="search">
-                        <div class="form-group">{{adminPanelCtrl.lang.adminRegistration}}
+                        <div class="form-group"><span clas="bold">{{adminPanelCtrl.lang.adminRegistration}}</span>
                             <input class="form-control" type="date" placeholder="Registration Date" ng-model="adminPanelCtrl.registrationDate"/>
                         </div>
                         <div class="form-group">
@@ -57,8 +57,8 @@
             <div class="tab-content">
                 <div class="tab-pane user-list" ng-class="{'active':!adminPanelCtrl.addingUser && !adminPanelCtrl.editingUser}" ng-show="adminPanelCtrl.usersAvailable && !adminPanelCtrl.fetchingUsers">
                     <div class="paginationText">
-                        <p ng-show="adminPanelCtrl.usersAvailable">{{adminPanelCtrl.lang.tipFeedPage}}  {{adminPanelCtrl.currentPageNum}} {{adminPanelCtrl.lang.tipFeedOf}} {{adminPanelCtrl.lastPageNum}}</p>
-                        <p ng-show="adminPanelCtrl.usersAvailable">{{adminPanelCtrl.lang.tipFeedShowing}} {{adminPanelCtrl.skip + 1}} - {{adminPanelCtrl.skip + 10 > adminPanelCtrl.userTotal ? adminPanelCtrl.userTotal : adminPanelCtrl.skip + 10}} {{adminPanelCtrl.lang.tipFeedOf}} {{adminPanelCtrl.userTotal}} {{adminPanelCtrl.lang.AdminUsers}}</p>
+                        <p class="bold" ng-show="adminPanelCtrl.usersAvailable">{{adminPanelCtrl.lang.tipFeedPage}}  {{adminPanelCtrl.currentPageNum}} {{adminPanelCtrl.lang.tipFeedOf}} {{adminPanelCtrl.lastPageNum}}</p>
+                        <p class="bold" ng-show="adminPanelCtrl.usersAvailable">{{adminPanelCtrl.lang.tipFeedShowing}} {{adminPanelCtrl.skip + 1}} - {{adminPanelCtrl.skip + 10 > adminPanelCtrl.userTotal ? adminPanelCtrl.userTotal : adminPanelCtrl.skip + 10}} {{adminPanelCtrl.lang.tipFeedOf}} {{adminPanelCtrl.userTotal}} {{adminPanelCtrl.lang.AdminUsers}}</p>
                     </div>
                     <!--Show if NO video archives are available -->
                     <div ng-show="!adminPanelCtrl.usersAvailable">
@@ -112,7 +112,7 @@
                             </li>
 
 
-                            <li class="paginator-control" ng-repeat="pageNumber in adminPanelCtrl.pageNumbers" ng-class="{'light-blue': adminPanelCtrl.currentPageNum === pageNumber}" ng-click="adminPanelCtrl.getPage(pageNumber)">
+                            <li class="paginator-control" ng-repeat="pageNumber in adminPanelCtrl.pageNumbers" ng-class="{'light-blue bold': adminPanelCtrl.currentPageNum === pageNumber}" ng-click="adminPanelCtrl.getPage(pageNumber)">
                                 {{pageNumber}}
                             </li>
 

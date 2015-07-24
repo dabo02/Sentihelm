@@ -22,7 +22,7 @@
 
     <div class="row">
         <div class="row-fluid">
-            <ul class="nav nav-tabs nav-justified">
+            <ul class="nav nav-tabs nav-justified bold">
                 <li class="main-menu-list-item" ng-class="tipFeed.getTabClass(0)" ng-click="tipFeed.changeView(0)"><a class="pointer">{{tipFeed.lang.tipFeedAll}}</a></li>
                 <li class="main-menu-list-item" ng-class="tipFeed.getTabClass(1)" ng-click="tipFeed.changeView(1)"><a class="pointer">{{tipFeed.lang.tipFeedCrimeReports}}</a></li>
                 <li class="main-menu-list-item" ng-class="tipFeed.getTabClass(2)" ng-click="tipFeed.changeView(2)"><a class="pointer">{{tipFeed.lang.tipFeedTip}}</a></li>
@@ -35,7 +35,7 @@
                 <div class="container-fluid">
                     <ul class="nav navbar-nav navbar-left">
                         <li class="dropdown">
-                            <a class="dropdown-toggle pointer" data-toggle="dropdown" role="button"
+                            <a class="dropdown-toggle pointer bold" data-toggle="dropdown" role="button"
                                aria-expanded="false">{{tipFeed.lang.tipfeedCrimeType}}<span
                                     class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
@@ -80,7 +80,7 @@
                         </li>
                     </ul>
                     <form class="navbar-form admin-panel-action-form navbar-left" role="search">
-                        <div class="form-group">{{tipFeed.lang.tipfeedSubmitted}}
+                        <div class="form-group"><span class="bold">{{tipFeed.lang.tipfeedSubmitted}}</span>
                             <input class="form-control" type="date" placeholder="Submited At"
                                    ng-model="tipFeed.registrationDate"/>
                         </div>
@@ -104,7 +104,7 @@
                     <h3 class="text-center">Try a different filter or refresh your browser</h3>
                 </div>
                 <div class="tab-pane user-list" ng-class="tipFeed.showHidePanel()">
-                    <div class="paginationText" ng-show="tipFeed.tipsAvailable">
+                    <div class="paginationText bold" ng-show="tipFeed.tipsAvailable">
                         <p>{{tipFeed.lang.tipFeedPage}} {{tipFeed.currentPageNum}} {{tipFeed.lang.tipFeedOf}}
                             {{tipFeed.lastPageNum}}
                         </p>

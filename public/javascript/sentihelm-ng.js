@@ -972,6 +972,7 @@
       $http.get('/videosessions/getActiveStreams')
         .success(function(streams){
           $rootScope.$broadcast('active-streams-fetched', streams);
+
         })
         .error(function(){
           console.log("Error");
@@ -1702,6 +1703,8 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
     // clear all toasts:
     ngToast.dismiss();
 
+
+
     VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
 
     VideoStreamsService.checkActiveStream();
@@ -1709,6 +1712,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
     $scope.$on('active-streams-fetched', function (event, data) {
       vidStrmCtrl.queue = data;
       vidStrmCtrl.currentStream = data[0];
+
       //$scope.$apply();
     });
 

@@ -183,7 +183,7 @@
           self.hasError = false;
 
 
-          self.currentTab = tabIndex || self.currentTab;
+          self.currentTab = tabIndex ; //|| self.currentTab;
 
 
           self.getPage(1);

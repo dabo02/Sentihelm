@@ -196,6 +196,10 @@ input.strong{
   width: 25px;
   height: 25px;
 }
+
+.bold{
+  font-weight:bold;
+}
 /*
 .feed-spinner{
   position: relative;

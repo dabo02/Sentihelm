@@ -44,8 +44,8 @@
         <span  us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-video-archive-spinner" spinner-start-active="1">
 
         </span>
-			<p ng-show="videoArchiveCtrl.videosAvailable">Page {{videoArchiveCtrl.currentPageNum}} of {{videoArchiveCtrl.lastPageNum}}</p>
-			<p ng-show="videoArchiveCtrl.videosAvailable">Showing Videos {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}}</p>
+			<p class="bold" ng-show="videoArchiveCtrl.videosAvailable">Page {{videoArchiveCtrl.currentPageNum}} of {{videoArchiveCtrl.lastPageNum}}</p>
+			<p class="bold" ng-show="videoArchiveCtrl.videosAvailable">Showing Videos {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}}</p>
 			<li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray track by $index" ng-show="video" ng-class="{'orange-border':!video.hasBeenWatched}">
 
 				<!-------------------->
@@ -144,7 +144,7 @@
 			</li>
 
 
-			<li class="paginator-control" ng-repeat="pageNumber in videoArchiveCtrl.pageNumbers" ng-class="{'light-blue': videoArchiveCtrl.currentPageNum === pageNumber}" ng-click="videoArchiveCtrl.getPage(pageNumber)">
+			<li class="paginator-control" ng-repeat="pageNumber in videoArchiveCtrl.pageNumbers" ng-class="{'light-blue bold': videoArchiveCtrl.currentPageNum === pageNumber}" ng-click="videoArchiveCtrl.getPage(pageNumber)">
 				{{pageNumber}}
 			</li>
 

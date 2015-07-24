@@ -141,8 +141,8 @@
 					<div class="panel-body">
 						<div class="list-group">
 							<div >
-								<div ng-repeat ="notification in dashCtrl.getTips"  ng-click="dashCtrl.changeState('tipfeed')">
-									<a href="#/tipfeed" class="list-group-item">
+								<div ng-repeat ="notification in dashCtrl.getTips">
+									<a href="#/tip/{{notification.objectId}}/" class="list-group-item">
 										<i class="fa fa-folder-open fa-fw"></i> {{notification.crimeType}}
 										<span class="pull-right text-muted small"><em>{{notification.timeAgo}} {{dashCtrl.lang.minutesAgo}}</em>
 									</span>
