@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'ngCsv', 'ngToast', 'ngAudio']);
+  var app = angular.module('sentihelm', ['ngSanitize', 'ui.router', 'btford.socket-io', 'google-maps'.ns(), 'ngDialog', 'angularFileUpload', 'angularSpinner', 'snap', 'naif.base64', 'googlechart', 'ui.sortable', 'ngCsv', 'ngToast', 'ngAudio', 'luegg.directives']);
 
   //Sets up all the states/routes the app will handle,
   //so as to have a one page app with deep-linking
@@ -992,8 +992,8 @@
       if (!!VideoStreamsService.currentSession) {
         var subscriber = VideoStreamsService.currentSession.subscribe(currStream, createDivElement(VideoStreamsService.currentSession.id), {
             insertMode: 'replace',
-            height: '400.6',
-            width: '591'
+            height: '430',
+            width: '626'
           },
           function (error) {
             if (!!error) {
@@ -1049,8 +1049,8 @@
 
             var subscriber = session.subscribe(currStream, createDivElement(session.id), {
                 insertMode: 'replace',
-                height: '400.6',
-                width: '591'
+                height: '430',
+                width: '626'
               },
               function (error) {
                 if (!!error) {
@@ -1085,8 +1085,8 @@
 
             var subscriber = session.subscribe(event.stream, createDivElement(session.id), {
                 insertMode: 'replace',
-                height: '400.6',
-                width: '591'
+                height: '430',
+                width: '626'
               },
               function (error) {
                 if (!!error) {
@@ -1697,6 +1697,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
 //to swap video calls
   app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', '$rootScope', function ($scope, socket, VideoStreamsService, ngToast, $rootScope) {
     var vidStrmCtrl = this;
+    $scope.glued = true;
     this.queue = [];
     this.currentStream = {};
 
@@ -1843,6 +1844,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       this.name = $scope.$parent.ngDialogData.name;
       this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
       this.channel = $scope.$parent.ngDialogData.channel;
+      this.tipId = $scope.$parent.ngDialogData.tipId;
       this.userId = this.channel.substring(5);
       this.file = undefined;
       var notificationCtrl = this;
@@ -1917,6 +1919,8 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
           notification.attachment = this.file.base64;
           notification.attachmentType = this.file.filetype.substring(0, 5);
         }
+
+        notification.tipId = this.tipId;
 
         $http.post('/notifications/followup', {
             notification: notification

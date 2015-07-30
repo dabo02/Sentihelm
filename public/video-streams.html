@@ -1,61 +1,55 @@
-<div class="container" ng-controller="VideoStreamsController as videoStreamsCtrl">
-
-    <div id="video-streams-container" ng-if="videoStreamsCtrl.queue.length!=0">
-
-        <div id="video-streams-queue">
-
-            <ul class="video-streams-queue-list">
-
-                <li class="video-streams-queue-list-item"
-                    ng-repeat="stream in videoStreamsCtrl.queue track by $index">
+<div class="container-fluid" id="streams-container" ng-controller="VideoStreamsController as videoStreamsCtrl">
+    <div ng-if="videoStreamsCtrl.queue.length!=0">
+        <div class="row">
+            <div class="col-md-2" >
+                <li class="video-streams-queue-list-item" ng-repeat="stream in videoStreamsCtrl.queue track by $index">
                     <button class="list-item-button"
                             ng-click="videoStreamsCtrl.activateStream(stream); joinChat(stream.connectionId, stream.userObjectId)">
                         {{stream.firstName+" "+stream.lastName}}
                     </button>
-                </li>
+            </div>
+            <div class="col-md-5 no-padding">
+                <div class="row">
+                    <div id="video-streams-video">
+                    </div>
+                </div>
 
-            </ul>
+                    <sh-chatterbox class="row"  chat-id="videoStreamsController.currentStream.connectionId"
+                                   mobile-user-id="videoStreamsController.currentStream.userObjectId">
+                    </sh-chatterbox>
 
-        </div>
+            </div>
+            <div class="col-md-5">
+                <div class="row" id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
+                    <ui-gmap-google-map
+                            center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"
+                            zoom="mapCtrl.zoom" draggable="true" ng-if="videoStreamsCtrl.currentStream" ng-cloak>
+                        <ui-gmap-marker idKey="videoStreamsCtrl.currentStream.connectionId"
+                                        coords="mapCtrl.getMarkerPosition({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"></ui-gmap-marker>
+                    </ui-gmap-google-map>
+                </div>
 
-        <div id="video-streams-video-container">
-            <div id="video-streams-video">
+                <div class="row" id="video-streams-info-container">
+                    <div class="col-md-8">
+                        <b>{{videoStreamsCtrl.lang.wantedName}}:</b> {{videoStreamsCtrl.currentStream.firstName+"
+                        "+videoStreamsCtrl.currentStream.lastName}}<br>
+                        <b>{{videoStreamsCtrl.lang.profileEmail}}:</b> {{videoStreamsCtrl.currentStream.email}}<br>
+                        <b>{{videoStreamsCtrl.lang.profilePhone}}:</b> {{videoStreamsCtrl.currentStream.phone}}<br>
+                        <b>{{videoStreamsCtrl.lang.streamUbication}}:</b> <br/> Lat
+                        {{videoStreamsCtrl.currentStream.latitude}} Lon {{videoStreamsCtrl.currentStream.longitude}}<br>
+
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-danger btn-lg btn-bloc"
+                                ng-click="videoStreamsCtrl.stopStream(); stopChat();"
+                                ng-disabled="videoStreamsCtrl.hello">{{videoStreamsCtrl.lang.streamStop}}
+                        </button>
+                    </div>
+                </div>
 
             </div>
         </div>
-
-        <div>
-            <!-- This is experimental-->
-            <sh-chatterbox chat-id="videoStreamsController.currentStream.connectionId"
-                           mobile-user-id="videoStreamsController.currentStream.userObjectId">
-            </sh-chatterbox>
-            <!-- End experiment -->
-        </div>
-
-        <div id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
-            <ui-gmap-google-map
-                    center="mapCtrl.getMapCenter({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"
-                    zoom="mapCtrl.zoom" draggable="true" ng-if="videoStreamsCtrl.currentStream" ng-cloak>
-                <ui-gmap-marker idKey="videoStreamsCtrl.currentStream.connectionId"
-                                coords="mapCtrl.getMarkerPosition({latitude:videoStreamsCtrl.currentStream.latitude, longitude:videoStreamsCtrl.currentStream.longitude})"></ui-gmap-marker>
-            </ui-gmap-google-map>
-        </div>
-
-        <div id="video-streams-info-container">
-            <div id="video-streams-info">
-                {{videoStreamsCtrl.currentStream.firstName+" "+videoStreamsCtrl.currentStream.lastName}}<br>
-                {{videoStreamsCtrl.currentStream.email}}<br>
-                {{videoStreamsCtrl.currentStream.phone}}<br>
-            </div>
-            <button type="submit" class="btn btn-success"
-                    ng-click="videoStreamsCtrl.stopStream(); stopChat();"
-                    ng-disabled="videoStreamsCtrl.hello">Stop Video Stream
-            </button>
-        </div>
-
-
     </div>
-
     <div class="container vertical-center" ng-if="videoStreamsCtrl.queue.length===0">
         <h2 class="text-center" style="width: 100%;">No Video Streams Available</h2>
     </div>

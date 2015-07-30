@@ -1,20 +1,22 @@
-#video-streams-container{
-  margin-top:3%;
-  height:582px;
-  width:1136px;
-  border:solid 0.2em #4d4d4d;
+#streams-container{
+  margin:1%;
+
+
+}
+.no-padding{
+  padding: 0px;
 }
 
 #video-streams-queue{
   display:inline-block;
   float:left;
   height:100%;
-  width:226.4px;
+
   border-right:solid 0.2em #4d4d4d;
 }
 .video-streams-queue-list{
   height:inherit;
-  overflow:auto;
+
   list-style-type:none;
   padding:0;
 }
@@ -39,52 +41,48 @@
   background-color:#1a7fba;
 }
 
-#video-streams-video-container{
-  display:inline-block;
-  float:left;
-  height:402.6px;
-  width:593px;
-  border-right:solid 0.2em #4d4d4d;
-  border-bottom:solid 0.2em #4d4d4d;
-}
+
 #video-streams-video{
   /*display:inline-block;
   float:left;*/
   display:block;
-  height:400.6px;
-  width:591px;
+  width:100%;
+  height:57%;
+  border: solid 0.1em #4d4d4d;
   /*border-right:solid 0.2em #4d4d4d;
   border-bottom:solid 0.2em #4d4d4d;*/
 }
 
 #video-streams-chat{
-  display:inline-block;
+
   float:left;
-  height:175.4px;
-  width:593px;
-  border-right:solid 0.2em #4d4d4d;
+  height:200px;
+  width:100%;
+  padding:0px;
 }
 #video-streams-chat-log{
-  height:140px;
+
+  height:80%;
   width:inherit;
-  resize:none;
-  border-bottom:solid 0.1em #4d4d4d;
+
+  padding:0px;
+
 }
 
 #video-streams-map{
   display:inline-block;
-  height:50%;
-  width:311.3px;
-  border-bottom:solid 0.2em #4d4d4d;
+  height:57%;
+  width:100%;
+  border-right:solid 0.15em #4d4d4d;
+  border-top:solid 0.1em #4d4d4d;
+  border-bottom:solid 0.15em #4d4d4d;
 }
 
 #video-streams-info-container{
   display:inline-block;
-  height:50%;
-  width:311.3px;
-  text-align:center;
-  background-color:#fff;
-  font-size:2em;
+  font-size:1.5em;
+  padding-left:.5em;
+  padding-top: .5em;
 }
 #video-streams-info{
   display:block;
@@ -94,17 +92,17 @@
 #video-streams-chat-log {
   overflow-y: scroll;
   background-color: #ecf0f1;
-  border-right: solid #000 1px;
+
 
 }
 
 #video-streams-chat-log div { /* was .message */
-  position: relative;
+
   width: 50%;
   background-color: #bdc3c7;
   float: left;
-  padding: 2px 1%;
-  margin: 1% 2%;
+
+
   color: white;
   font-size: 13px;
   border-radius: 5px;

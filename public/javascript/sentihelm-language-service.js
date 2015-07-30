@@ -182,7 +182,13 @@
         "mapSearch" : "Search",
         "mapAdd" : "Add Police Station",
         "mapSelect" : "Select Location",
-        "minutesAgo" : "minutes ago"
+        "minutesAgo" : "minutes ago",
+        "streamUbication" : "Ubication",
+        "streamStop" : "Stop Video Stream",
+        "streamSend" : "Send",
+        "streamPlaceholder" : "Enter message here..."
+
+
 
 
       };
@@ -348,7 +354,11 @@
         "AdminUsers" : "Usuarios",
         "mapSearch" : "Search",
         "mapAdd" : "Añadir Estacion de Policia",
-        "mapSelect" : "Elegir Direccion"
+        "mapSelect" : "Elegir Direccion",
+        "streamUbication" : "Ubicacion",
+        "streamStop" : "Detener la Transmisión",
+        "streamSend" : "Enviar",
+        "streamPlaceholder" : "Escribir el mensaje aqui"
 
 
       };

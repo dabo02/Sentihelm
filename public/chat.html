@@ -1,7 +1,7 @@
 
-<form name="messageForm" novalidate>
+<form name="messageForm" novalidate >
     <div id="video-streams-chat">
-        <div id="video-streams-chat-log">
+        <div id="video-streams-chat-log" scroll-glue>
             <div ng-repeat="message in messages()"
                  ng-class="{sent: message.sender === Session.user.userId}"
                  id="{{message.date}}">
@@ -18,13 +18,14 @@
             <input name="message" ng-model="messageText"
                    type="text" minlength="1" required
                    id="message-box"
-                   placeholder="Enter message here..."/>
+                   placeholder={{videoStreamsCtrl.lang.streamPlaceholder}}>
             <button type="submit" ng-click="messageForm.$valid && sendMessage()"
-                    class="send">Send
+                    class="send">{{videoStreamsCtrl.lang.streamSend}}
             </button>
         </div>
     </div>
 </form>
+
 
 <!--
 <form name="messageForm" novalidate>

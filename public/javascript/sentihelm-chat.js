@@ -72,7 +72,7 @@
           chatSocket.emit('message-sent', {
             receiver: receiver,
             message: message,
-            sender: null
+            sender: sender
           }, chatId);
 
         },
@@ -99,19 +99,18 @@
         link: function (scope, attrs) {
 
           scope.joinChat = function (chatId, mobileUserId){
-            if(scope.chatId){
+            if(scope.chatId && scope.chatId != chatId){
               scope.leaveChat().then(function(){
-                shChat.enterChat(chatId, scope.Session.user.objectId, mobileUserId);
+                shChat.enterChat(chatId, scope.Session.userId, mobileUserId);
                 scope.chatId = chatId;
                 scope.mobileUserId = mobileUserId;
               });
             }
             else{
-              shChat.enterChat(chatId, scope.Session.user.objectId, mobileUserId);
+              shChat.enterChat(chatId, scope.Session.userId, mobileUserId);
               scope.chatId = chatId;
               scope.mobileUserId = mobileUserId;
             }
-
           };
 
           scope.stopChat = function(){
@@ -122,7 +121,7 @@
 
           scope.leaveChat = function (){
             var deferred = $q.defer();
-            shChat.leaveChat(scope.chatId, scope.Session.user.objectId, scope.mobileUserId);
+            shChat.leaveChat(scope.chatId, scope.Session.userId, scope.mobileUserId);
             scope.chatId = null;
             scope.mobileUserId = null;
             deferred.resolve();
@@ -137,7 +136,7 @@
             console.log(scope.Session);
             shChat.send(scope.messageText,
               scope.chatId,
-              scope.Session.user.objectId,
+              scope.Session.userId,
               scope.mobileUserId);
             // reset form
             scope.messageText = '';

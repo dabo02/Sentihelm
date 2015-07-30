@@ -386,7 +386,7 @@
         });
       };
 
-      self.showNotificationDialog = function (firstName, lastName, controlNumber, channel) {
+      self.showNotificationDialog = function (firstName, lastName, controlNumber, channel, tipId) {
         self.sendingFollowUp = false;
         self.successMessage = '';
         // Only show dialog if it, and attachmentDialog,
@@ -396,7 +396,8 @@
           var data = JSON.stringify({
             name: firstName + " " + lastName,
             controlNumber: controlNumber,
-            channel: channel
+            channel: channel,
+            tipId: tipId
           });
 
           //Open dialog, and add it to the $scope
