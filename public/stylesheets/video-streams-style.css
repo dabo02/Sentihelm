@@ -100,9 +100,9 @@
 
   width: 50%;
   background-color: #bdc3c7;
-  float: left;
+  /*float: left; chatterbox is now wider so float left renders even count messages nex to odd count messages */
 
-
+  margin: 7px 0 7px 10px;
   color: white;
   font-size: 13px;
   border-radius: 5px;
@@ -132,7 +132,7 @@
 }
 
 
-.send {
+.sent {
   width: 10%;
   float: left;
   height: 35px;

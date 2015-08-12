@@ -31,7 +31,7 @@
       {
         "dashboardH1": "Dashboard",
         "dashboardUnreadTips": "Unread Tips",
-        "dashboardUnwatch": "Unwatch Videos",
+        "dashboardUnwatch": "Unwatched Videos",
         "dashboardUnreadChats": "Unread Chats",
         "dashboardResponse": "Avg. Response time",
         "dashboardYear": "Year",
@@ -183,13 +183,15 @@
         "mapAdd" : "Add Police Station",
         "mapSelect" : "Select Location",
         "minutesAgo" : "minutes ago",
-        "streamUbication" : "Ubication",
+        "streamUbication" : "Location",
         "streamStop" : "Stop Video Stream",
         "streamSend" : "Send",
-        "streamPlaceholder" : "Enter message here..."
-
-
-
+        "streamPlaceholder" : "Enter message here...",
+        "notificationSend" : "Send A Notification",
+        "notificationTitle" : "Title",
+        "notificationMessage" : "Message",
+        "notificationAllSelected" : "All Regions Selected",
+        "notificationSubmit" : "Submit Notification"
 
       };
 
@@ -358,7 +360,12 @@
         "streamUbication" : "Ubicacion",
         "streamStop" : "Detener la Transmisión",
         "streamSend" : "Enviar",
-        "streamPlaceholder" : "Escribir el mensaje aqui"
+        "streamPlaceholder" : "Escribir el mensaje aqui",
+        "notificationSend" : "Enviar una Notificación",
+        "notificationTitle" : "Titulo",
+        "notificationMessage" : "Mensage",
+        "notificationAllSelected" : "Todas Las Regiones Seleccionadas",
+        "notificationSubmit" : "Enviar Notificación"
 
 
       };

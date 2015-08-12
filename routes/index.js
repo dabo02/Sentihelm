@@ -102,6 +102,7 @@
           });
       }
     })
+    /*
     .post('/new-tip', function (request, response) {
       var tip = request.body;
       var pass = tip.pass;
@@ -114,6 +115,7 @@
         response.send(200);
       }
     })
+    */
     //Recieve a request for a video stream connection;
     //get data form mobile client, save session info in
     //db and pass on to front-end
@@ -160,33 +162,7 @@
 
     })
 
-    //Recieve  request to start archiving a video session
-    //and pass it along to front-end
-    .post('/opentok-callback', function (request, response) {
 
-      //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
-      console.log("\n\nIn opentok-callback...\n\n");
-
-      var opentokCallbackJSON = request.body;
-
-      if (opentokCallbackJSON.partnerId === config.opentok.key) {
-        var videoSessionQuery = new db.Query(VideoSession);
-        videoSessionQuery.equalTo("sessionId", opentokCallbackJSON.sessionId);
-        videoSessionQuery.find({
-          success: function (videoSessions) {
-            videoSessions[0].set('archiveStatus', opentokCallbackJSON.status);
-            videoSessions[0].set('duration', opentokCallbackJSON.duration);
-            videoSessions[0].set('reason', opentokCallbackJSON.reason);
-            videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
-            videoSessions[0].save();
-          },
-          error: function (object, error) {
-            // The object was not retrieved successfully.
-            console.log("Error fetching video for archive ID update on Opentok callback.");
-          }
-        });
-      }
-    })
 
     //send sms message using cloud code
     .post('/sendSMS', function (request, response) {

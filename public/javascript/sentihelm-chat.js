@@ -34,12 +34,13 @@
       });
 
       // Listen for new messages on joined rooms.
-      chatSocket.on('mobile-disconnect', function (status) {
+      chatSocket.on('mobile-disconnect', function (status ,chatId) {
         alert('The stream you were watching was dropped by the mobile user');
         //stopChat(chatId);
       });
 
-      chatSocket.on('mobile-paused', function () {
+      chatSocket.on('mobile-paused', function (status) {
+        connectedRooms[status.chatId].messages.push(status);
         alert('The stream you are watching was paused by the mobile user');
         //stopChat(chatId);
       });
@@ -164,6 +165,19 @@
              }
              */
             return messages;
+          };
+
+          scope.findSender = function(message){
+            var sender = message.sender;
+            if(sender === Session.user.userId){
+              return 'sent';
+            }
+            else if(sender === 'server'){
+                return 'system'
+            }
+            else{
+              return 'mobile';
+            }
           };
         }
       }

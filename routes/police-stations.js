@@ -70,7 +70,7 @@
     function getStation() {
       return Q.promise(function (resolve, reject) {
         if (!stationInfo.id) {
-          station = new PoliceMap()
+          var station = new PoliceMap()
             .set("latitude", tempMarker.latitude)
             .set("longitude", tempMarker.longitude)
             .set("coordinates", new db.GeoPoint({

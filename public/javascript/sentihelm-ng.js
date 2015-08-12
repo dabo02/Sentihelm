@@ -7,7 +7,8 @@
   app.config(['$stateProvider', '$urlRouterProvider', 'USER_ROLES', '$sceDelegateProvider', function ($stateProvider, $urlRouterProvider, USER_ROLES, $sceDelegateProvider) {
 
     //$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://s3.amazonaws.com/stream-archive/44755992/**']);
-    $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44755992/**']);
+    //$sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44755992/**']);
+    $sceDelegateProvider.resourceUrlWhitelist(['self', 'https://stream-archive.s3.amazonaws.com/44999872/**']);
 
     // For any unmatched url, redirect to /dashboard
     $urlRouterProvider.otherwise("/dashboard");
@@ -730,6 +731,7 @@
             file: notificationData.attachment
           });
         } else {
+          console.log('Entro al js new reg notif');
           return $http.post('/notifications/regional', {
 
             notification: notificationData,
@@ -992,8 +994,8 @@
       if (!!VideoStreamsService.currentSession) {
         var subscriber = VideoStreamsService.currentSession.subscribe(currStream, createDivElement(VideoStreamsService.currentSession.id), {
             insertMode: 'replace',
-            height: '430',
-            width: '626'
+            height: '100%',
+            width: '100%'
           },
           function (error) {
             if (!!error) {
@@ -1049,8 +1051,8 @@
 
             var subscriber = session.subscribe(currStream, createDivElement(session.id), {
                 insertMode: 'replace',
-                height: '430',
-                width: '626'
+                height: '100%',
+                width: '100%'
               },
               function (error) {
                 if (!!error) {
@@ -1085,8 +1087,8 @@
 
             var subscriber = session.subscribe(event.stream, createDivElement(session.id), {
                 insertMode: 'replace',
-                height: '430',
-                width: '626'
+                height: '100%',
+                width: '100%'
               },
               function (error) {
                 if (!!error) {
@@ -1637,22 +1639,22 @@
         });
         drawer.sound.play();
       });
-      /*
+
        //Display toast for succesful archive creation
        socket.on('new-video-archive', function (data) {
-       //Open toast.
-       ngToast.create({
-       //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
-       content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoArchive()">Video stored in archive successfully.</a>'),
-       class: 'success',
-       dismissOnTimeout: $state.current.name !== 'video-archive' ? false : true,
-       dismissButton: true,
-       compileContent: true,
-       dismissOnClick: false
+         //Open toast.
+         ngToast.create({
+           //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
+           content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoArchive()">Video stored in archive successfully.</a>'),
+           class: 'success',
+           dismissOnTimeout: $state.current.name !== 'video-archive' ? false : true,
+           dismissButton: true,
+           compileContent: true,
+           dismissOnClick: false
+         });
+         drawer.sound.play();
        });
-       drawer.sound.play();
-       });
-*/
+
 
 $scope.$on('update-user', function (event, data) {
   drawer.userFullName = Session.userFullName;
@@ -1695,12 +1697,14 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
 //current video, chat with current mobile client,
 //information on current call and all other controls
 //to swap video calls
-  app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', '$rootScope', function ($scope, socket, VideoStreamsService, ngToast, $rootScope) {
+  app.controller('VideoStreamsController', ['$scope', 'socket', 'VideoStreamsService', 'ngToast', '$rootScope', 'languageService', function ($scope, socket, VideoStreamsService, ngToast, $rootScope, languageService) {
     var vidStrmCtrl = this;
     $scope.glued = true;
     this.queue = [];
     this.currentStream = {};
-
+    vidStrmCtrl.lang = languageService.getlang().then(function(response){
+      vidStrmCtrl.lang = response;
+    });
     // clear all toasts:
     ngToast.dismiss();
 
@@ -1740,7 +1744,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
     // });
 
     vidStrmCtrl.activateStream = function (stream) {
-      this.currentStream = stream;
+      vidStrmCtrl.currentStream = stream;
       VideoStreamsService.subscribeToStream(stream, $scope.currentUser);
     };
 
@@ -1838,8 +1842,8 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
-  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', '$http',
-    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, $http) {
+  app.controller('NotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory', '$http', 'languageService',
+    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, $http, languageService) {
       //Get data from ngDialog directive
       this.name = $scope.$parent.ngDialogData.name;
       this.controlNumber = $scope.$parent.ngDialogData.controlNumber;
@@ -1850,6 +1854,11 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       var notificationCtrl = this;
       notificationCtrl.sending = false;
       var thisDialogId = $scope.$parent.notificationDialog.id;
+
+      this.lang = languageService.getlang().then(function(response){
+        this.lang = response;
+      });
+
 
       //Set focus on message box once dialog pops up
       $scope.$on('ngDialog.opened', function (event, $dialog) {
@@ -2037,8 +2046,8 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
 
 //Controller for user follow-up notification; controls the
 //dialog that allows for message/attachment to be sent to users
-  app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory',
-    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory) {
+  app.controller('RegionalNotificationController', ['$rootScope', '$scope', 'parseNotificationService', 'ngDialog', 'errorFactory','languageService',
+    function ($rootScope, $scope, parseNotificationService, ngDialog, errorFactory, languageService) {
 
 
       this.regions = $scope.currentRegions;
@@ -2048,6 +2057,10 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       regionalNotificationCtrl.hasError = false;
       regionalNotificationCtrl.successMessage = '';
       this.file = undefined;
+      var self = this;
+      self.lang = languageService.getlang().then(function(response){
+        self.lang = response;
+      });
 
       //Once a file is selected, prep file for upload to Parse
       //this.onFileSelect = function ($files) {

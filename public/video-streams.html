@@ -1,23 +1,23 @@
 <div class="container-fluid" id="streams-container" ng-controller="VideoStreamsController as videoStreamsCtrl">
     <div ng-if="videoStreamsCtrl.queue.length!=0">
         <div class="row">
-            <div class="col-md-2" >
+            <div class="col-md-2 no-padding" >
                 <li class="video-streams-queue-list-item" ng-repeat="stream in videoStreamsCtrl.queue track by $index">
                     <button class="list-item-button"
                             ng-click="videoStreamsCtrl.activateStream(stream); joinChat(stream.connectionId, stream.userObjectId)">
                         {{stream.firstName+" "+stream.lastName}}
                     </button>
             </div>
-            <div class="col-md-5 no-padding">
+            <div class="col-md-5">
                 <div class="row">
                     <div id="video-streams-video">
                     </div>
                 </div>
-
+                <div class="row">
                     <sh-chatterbox class="row"  chat-id="videoStreamsController.currentStream.connectionId"
                                    mobile-user-id="videoStreamsController.currentStream.userObjectId">
                     </sh-chatterbox>
-
+                </div>
             </div>
             <div class="col-md-5">
                 <div class="row" id="video-streams-map" ng-controller="GoogleMapController as mapCtrl">
@@ -50,7 +50,7 @@
             </div>
         </div>
     </div>
-    <div class="container vertical-center" ng-if="videoStreamsCtrl.queue.length===0">
+    <div class="row vertical-center" ng-if="videoStreamsCtrl.queue.length===0">
         <h2 class="text-center" style="width: 100%;">No Video Streams Available</h2>
     </div>
 </div>

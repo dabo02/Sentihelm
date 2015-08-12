@@ -6,6 +6,7 @@
 
       var values = {};
 
+
       values.unreadTips = function () {
         return $http.get('/dashboard/unreadTipsCount');
       };
@@ -44,9 +45,9 @@
 
     }])
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-    .controller('DashboardController', ['languageService', 'dashboardService', '$http',
-      function (languageService, dashboardService, $http) {
+
+    .controller('DashboardController', ['languageService', 'dashboardService',
+      function (languageService, dashboardService) {
         var self = this;
         self.unreadTips = 0;
         self.unwatch = 0;
@@ -61,6 +62,8 @@
         console.log(self.currentDate);
 
 
+
+        //params to get the last 4 tips
         self.params = {
           list: 0,
           searchString: null,
@@ -73,8 +76,10 @@
 
 
         self.getTips = self.dashService.getTips(self.params).then(function (response) {
-
           var tips = response.tips;
+
+          //loops though the tips and calculates the time elapsed fromm the time the tip was submitted to the
+          //current time in minutes
           tips.forEach(function (element, index, array) {
             var currentTime = new Date();
             currentTime = Date.parse(currentTime);
@@ -84,12 +89,15 @@
           self.getTips = tips;
         });
 
+        //params to get the last 4 video streams
         var videoParams = {
           lastVideoCreatedAt: false, // adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt || undefined,
           skip: 0,
           limit: 4
         };
 
+        //loops though the video archive and calculates the time elapsed fromm the time the video was submitted to the
+        //current time in minutes
         self.getVideos = self.dashService.getVideos(videoParams).then(function (response) {
           var videos = response.data.videos;
           videos.forEach(function (element, index, array) {
@@ -102,7 +110,7 @@
           self.getVideos = videos;
         });
 
-
+        //TODO when the chat is working
         self.chat = [
           {type: 'Assult', time: '4 miuntes ago'},
           {type: 'Robbery', time: '25 miuntes ago'},
@@ -126,12 +134,19 @@
         self.fetchTotalChats = function () {
           self.unreadChats = 2;
         };
+
+
+        //calculates the ave response time for tips
         self.fetchResponceTime = function () {
+          //fetch all the tips from the current client
           self.dashService.ave().then(function (response) {
             var responseTimeData = response.data;
             var sum = 0;
+
             responseTimeData.forEach(function (element, index, array) {
+
               var firstRead = element.readBy[0].date;
+              //loops though the readBy array of each tip to get the fist time the tip was read
               for (var i = 0; i<element.readBy.length; i++) {
                 if (element.readBy[i].date < firstRead) {
 

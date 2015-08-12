@@ -5,6 +5,8 @@
   "private": true,
   "repository": "bitbucket.org:optivon/sentinel.git",
   "dependencies": {
+    "angularjs-scroll-glue": "^2.0.4",
+    "aws-sdk": "^2.1.11",
     "blob": "0.0.4",
     "body-parser": "^1.0.2",
     "cli-color": "^0.3.1",
@@ -26,8 +28,7 @@
     "parse": "^1.4.1",
     "q": "^1.2.0",
     "sjcl": "git+https://github.com/Optivon/sjcl.git",
-    "socket.io": "^1.0.6",
-    "aws-sdk": "^2.1.11"
+    "socket.io": "^1.0.6"
   },
   "scripts": {
     "start": "./bin/www"

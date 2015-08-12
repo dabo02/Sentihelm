@@ -5,10 +5,10 @@ module.exports = {
     /*  Senti_Guard
         appId: 'csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd',
         jsKey: 'T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor'
-        SentiGuard_Testing
-        appId: 'ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL',
-        jsKey: 'oC7TEezvGdh3FTZJneATR23UN47E9uAO7rzstK6A'
-    */
+     */ //SentiGuard_Testing
+        //appId: 'ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL',
+        //jsKey: 'oC7TEezvGdh3FTZJneATR23UN47E9uAO7rzstK6A'
+
         //SentiGuard
         appId: 'GbxkftLOI1n5SbEX4SShFyrX8r5ItIYj4C9RDHQI',
         jsKey: 'c9jey3pNfUaZC94d1MYNVWCLWogIJ95Rfv9ozsor'
