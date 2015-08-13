@@ -167,6 +167,7 @@
 
     })
 
+
       //Receive  OT callback
       //and pass it along to front-end
       .post('/opentok-callback', function (request, response) {
@@ -185,12 +186,16 @@
             videoSessions[0].set('duration', opentokCallbackJSON.duration);
             videoSessions[0].set('reason', opentokCallbackJSON.reason);
             videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
-            videoSessions[0].save();
+            videoSessions[0].save().then(function(video){
+              if(opentokCallbackJSON.status == 'uploaded'){
+                io.to(video.attributes.client.id).emit('new-video-archive');
+              }
+            });
             console.log("OT callback received and processed");
             response.send("OT callback received and processed");
 
             if(opentokCallbackJSON.status == 'uploaded'){
-              io.to(videoSessions[0].client.id).emit('new-video-archive');
+              io.to(video.attributes.client.id).emit('new-video-archive');
             }
           },
           error: function (object, error) {

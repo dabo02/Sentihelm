@@ -227,6 +227,9 @@
         this.disableNewButton = false;
         this.editedPeopleIndices = [];
 
+        MostWantedCtrl.recentUrl = null;
+        MostWantedCtrl.recentIndex = 0;
+
 
         function getList(count) {
           count = count|0;
@@ -240,7 +243,10 @@
               list = list instanceof Array ? list : [];
               if (list.length >= 1) {
                 MostWantedCtrl.wantedArray = angular.copy(list);
-
+                if(MostWantedCtrl.recentUrl){
+                  MostWantedCtrl.wantedArray[MostWantedCtrl.recentIndex].photo.url = MostWantedCtrl.recentUrl;
+                  MostWantedCtrl.recentUrl = null;
+                }
                 MostWantedCtrl.disableNewButton = false;
                 MostWantedCtrl.editedPeopleIndices = [];
                 MostWantedCtrl.parseArrayLength = list.length;
@@ -281,9 +287,11 @@
         //Save new most wanted, or update an old one,
         //to Parse
         this.save = function (index) {
+          MostWantedCtrl.recentUrl = this.wantedArray[index].photoUrl;
+          MostWantedCtrl.recentIndex = index;
           //Check if it is a new most wanted
           MostWantedService
-            .saveMostWanted(wantedList, index === this.parseArrayLength ? -1 : index)
+            .saveMostWanted(this.wantedArray[index], index === this.parseArrayLength ? -1 : index)
             .then(getList);
         };
 

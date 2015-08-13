@@ -1645,7 +1645,7 @@
          //Open toast.
          ngToast.create({
            //Create content that uses the ToastController to handle onClicks. Maybe put this on a different file?
-           content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoArchive()">Video stored in archive successfully.</a>'),
+           content: $sce.trustAsHtml('<a ng-controller="ToastController as toastCtrl" class="pointer" ng-click="toastCtrl.goToVideoArchive()">New video stream stored to archive.</a>'),
            class: 'success',
            dismissOnTimeout: $state.current.name !== 'video-archive' ? false : true,
            dismissButton: true,
