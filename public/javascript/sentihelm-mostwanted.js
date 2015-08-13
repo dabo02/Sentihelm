@@ -114,7 +114,7 @@
     //Service for managing the most wanted list. It can save, add
     //or delete most wanted people to/from Parse
     .factory("MostWantedService", ['errorFactory', '$http', '$upload',
-      function (errorFactory, $http, Upload) {
+      function (errorFactory, $http, $upload) {
         var mostWantedService = {};
         var mostWantedArray = [];
 
@@ -149,7 +149,7 @@
 
 
           if (person.file) {
-            return Upload.upload({
+            return $upload.upload({
               url: '/mostwanted/save',
               data: fields,
               file: person.file
@@ -197,8 +197,6 @@
           oldList = [],
           newList = [];
         languageService.getlang().then(function(response){
-          console.log('mostwanted');
-          console.log(response);
           MostWantedCtrl.lang = response;
         });
 
@@ -211,7 +209,6 @@
 
           for (var i = 0; i < newList.length; i++) {
             if (oldList[i] !== newList[i]) {
-              console.log('new list order!');
               MostWantedService.rearrangeList(newList)
                 .then(getList);
               return;
@@ -286,7 +283,7 @@
         this.save = function (index) {
           //Check if it is a new most wanted
           MostWantedService
-            .saveMostWanted(this.wantedArray[index], index === this.parseArrayLength ? -1 : index)
+            .saveMostWanted(wantedList, index === this.parseArrayLength ? -1 : index)
             .then(getList);
         };
 

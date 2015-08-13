@@ -7,7 +7,8 @@
   var util = require('../lib/util');
   var Q = require('q');
   var _ = require('lodash');
-  var multipart = require('connect-multiparty');
+  var multiparty = require('connect-multiparty');
+  var multipart = multiparty();
   var config = require('../config');
   var fs = require('fs');
 
@@ -96,9 +97,7 @@
             });
         });
     })
-    .post('/save', multipart({
-      uploadDir: config.tmp
-    }), function (request, response) {
+    .post('/save', multipart, function (request, response) {
       var wantedPerson;
       var person = typeof request.body.person !== 'string' ? request.body.person : JSON.parse(request.body.person);
       var newTip = JSON.parse(request.body.new) || false;

@@ -190,7 +190,7 @@
             response.send("OT callback received and processed");
 
             if(opentokCallbackJSON.status == 'uploaded'){
-              io.to(videoSessions[0].client).emit('new-video-archive');
+              io.to(videoSessions[0].client.id).emit('new-video-archive');
             }
           },
           error: function (object, error) {

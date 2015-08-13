@@ -1192,7 +1192,7 @@
     var onLoad = function (reader, deferred, scope) {
       return function () {
         scope.$apply(function () {
-          deferred.resolve(reader.result);z
+          deferred.resolve(reader.result);
         });
       };
     };
