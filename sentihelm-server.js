@@ -187,8 +187,8 @@
             videoSessions[0].set('reason', opentokCallbackJSON.reason);
             videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
             videoSessions[0].save().then(function(video){
-              if(opentokCallbackJSON.status == 'uploaded'){
-                io.to(video.attributes.client.id).emit('new-video-archive');
+              if(opentokCallbackJSON.status === 'uploaded'){
+                //io.to(video.attributes.client.id).emit('new-video-archive');
               }
             });
             console.log("OT callback received and processed");
