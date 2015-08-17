@@ -46,18 +46,20 @@
         .then(function (clientParseObj) {
           var saved = [];
           return Q.Promise(function (resolve, reject) {
+            clientParseObj.unset('mostWantedList');
             _.forEach(newList, function (person, index, array) {
               var personData = {
                 __type: "Pointer",
                 className: "MostWanted",
                 objectId: person.objectId
               };
-              clientParseObj.remove('mostWantedList', personData);
+              //clientParseObj.remove('mostWantedList', personData);
+              clientParseObj.add('mostWantedList', personData);
               clientParseObj.save()
                 .then(function (client) {
-                  client.add('mostWantedList', personData);
+                  //client.add('mostWantedList', personData);
                   if (index === array.length - 1) {
-                    client.save();
+                    //client.save();
                     resolve();
                   }
                 });

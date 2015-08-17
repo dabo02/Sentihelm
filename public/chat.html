@@ -3,7 +3,7 @@
     <div id="video-streams-chat">
         <div id="video-streams-chat-log" scroll-glue>
             <div ng-repeat="message in messages()"
-                 ng-class="{sent: message.sender === Session.user.userId}"
+                 ng-class="{send: message.sender === Session.user.userId}"
                  id="{{message.date}}">
                 <span class="message-heading"><em>{{message.from}}</em> at {{message.date | date:'short'}}</span>
 
@@ -20,7 +20,7 @@
                    id="message-box"
                    placeholder={{videoStreamsCtrl.lang.streamPlaceholder}}>
             <button type="submit" ng-click="messageForm.$valid && sendMessage()"
-                    class="send">{{videoStreamsCtrl.lang.streamSend}}
+                    class="sent">{{videoStreamsCtrl.lang.streamSend}}
             </button>
         </div>
     </div>
