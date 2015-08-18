@@ -476,7 +476,7 @@
       if (client.smsNumber && client.smsNumber.length > 0)
         session.clientPhoneNumber = client.smsNumber[0];
 
-      session.clientLogo = client.logo.url;
+      session.clientLogo = angular.copy(client.logo._url);
       session.regions = regions;
       session.userFullName = user.firstName + " " + user.lastName;
       session.clientAgency = client.agency;
@@ -1637,7 +1637,7 @@
           compileContent: true,
           dismissOnClick: false
         });
-        drawer.sound.play();
+        //drawer.sound.play();
       });
 
        //Display toast for succesful archive creation

@@ -188,15 +188,11 @@
             videoSessions[0].set('archiveSize', opentokCallbackJSON.size);
             videoSessions[0].save().then(function(video){
               if(opentokCallbackJSON.status === 'uploaded'){
-                //io.to(video.attributes.client.id).emit('new-video-archive');
+                io.to(video.attributes.client.id).emit('new-video-archive');
               }
             });
             console.log("OT callback received and processed");
             response.send("OT callback received and processed");
-
-            if(opentokCallbackJSON.status == 'uploaded'){
-              io.to(video.attributes.client.id).emit('new-video-archive');
-            }
           },
           error: function (object, error) {
             // The object was not retrieved successfully.
