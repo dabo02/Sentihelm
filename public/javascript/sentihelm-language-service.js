@@ -29,12 +29,18 @@
 
       self.EN =
       {
+        "dashboardAgo":"ago",
+        "dashboardMinutes":"Minute(s)",
+        "dashboardHour":"Hour(s)",
+        "dashboardDay":"Day(s)",
+        "dashboardWeek":"Week(s)",
+        "dashboardMonth": "Month(s)",
+        "dashboardYear": "Year(s)",
         "dashboardH1": "Dashboard",
         "dashboardUnreadTips": "Unread Tips",
         "dashboardUnwatch": "Unwatched Videos",
         "dashboardUnreadChats": "Unread Chats",
         "dashboardResponse": "Avg. Response time",
-        "dashboardYear": "Year",
         "dashboardSelectYear": "Select Year",
         "dashboardRecent": "Recent Acitvity",
         "profileH1": "Profile",
@@ -197,12 +203,18 @@
 
       self.ES = {
 
+        "dashboardAgo":"atrás",
+        "dashboardMinutes":"Minuto(s)",
+        "dashboardHour":"Hora(s)",
+        "dashboardDay":"Día(s)",
+        "dashboardWeek":"Semana(s)",
+        "dashboardMonth": "Mes(s)",
+        "dashboardYear": "Año(s)",
         "dashboardH1": "Centro de Comando",
         "dashboardUnreadTips": "Reportes sin leer",
         "dashboardUnwatch": "Videos Nuevos",
         "dashboardUnreadChats": "Conversaciones nuevas",
         "dashboardResponse": "Tiempo de respuesta promedio",
-        "dashboardYear": "Año",
         "dashboardSelectYear": "Seleccione el Año",
         "dashboardRecent": "Actividad Reciente",
         "minutesAgo" : "minutos transcurridos",

@@ -158,9 +158,11 @@
                                 <div ng-repeat="notification in dashCtrl.getTips">
                                     <a href="#/tip/{{notification.objectId}}" class="list-group-item">
                                         <i class="fa fa-folder-open fa-fw"></i> {{notification.crimeType}}
-										<span class="pull-right text-muted small"><em>{{notification.timeAgo}}
-                                            {{dashCtrl.lang.minutesAgo}}</em>
-									</span>
+										<span class="pull-right text-muted small">
+                                            <em>
+                                                {{ (notification.timeAgo>60*24*365-1) ? (notification.timeAgo%(60*24*365)) + dashCtrl.lang.dashboardYear + ' ' : (notification.timeAgo>60*24*30-1) ? (notification.timeAgo%(60*24*30)) + dashCtrl.lang.dashboardMonth + ' ' : (notification.timeAgo>60*24*7-1) ? (notification.timeAgo%(60*24*7)) + dashCtrl.lang.dashboardWeek + ' ' : (notification.timeAgo>60*24-1) ? (notification.timeAgo - notification.timeAgo%(60*24))/(60*24) + dashCtrl.lang.dashboardDay + ' ' : (notification.timeAgo>59) ? (notification.timeAgo%1440-notification.timeAgo%60)/60 + dashCtrl.lang.dashboardHour + ' ' : notification.timeAgo%60 + dashCtrl.lang.dashboardMinutes + ' '}} {{dashCtrl.lang.dashboardAgo}}
+                                            </em>
+                                        </span>
                                     </a>
                                 </div>
                             </div>
@@ -168,9 +170,11 @@
                                 <div ng-repeat="notification in dashCtrl.getVideos">
                                     <a href="#/video-archive" class="list-group-item">
                                         <i class="fa fa-play fa-fw"></i> {{notification.mobileUser}}
-										<span class="pull-right text-muted small"><em>{{notification.timeAgo}}
-                                            {{dashCtrl.lang.minutesAgo}}</em>
-										</span>
+										<span class="pull-right text-muted small">
+                                            <em>
+                                                {{ (notification.timeAgo>60*24*365-1) ? (notification.timeAgo%(60*24*365)) + dashCtrl.lang.dashboardYear + ' ' : (notification.timeAgo>60*24*30-1) ? (notification.timeAgo%(60*24*30)) + dashCtrl.lang.dashboardMonth + ' ' : (notification.timeAgo>60*24*7-1) ? (notification.timeAgo%(60*24*7)) + dashCtrl.lang.dashboardWeek + ' ' : (notification.timeAgo>60*24-1) ? (notification.timeAgo - notification.timeAgo%(60*24))/(60*24) + dashCtrl.lang.dashboardDay + ' ' : (notification.timeAgo>59) ? (notification.timeAgo%1440-notification.timeAgo%60)/60 + dashCtrl.lang.dashboardHour + ' ' : notification.timeAgo%60 + dashCtrl.lang.dashboardMinutes + ' '}} {{dashCtrl.lang.dashboardAgo}}
+                                            </em>
+                                        </span>
                                     </a>
                                 </div>
                             </div>

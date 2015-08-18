@@ -170,7 +170,7 @@
         mostWantedService.deleteMostWanted = function (index) {
           var wantedPerson = mostWantedArray[index];
 
-          $http.delete('/mostwanted/remove/' + wantedPerson.objectId)
+          return $http.delete('/mostwanted/remove/' + wantedPerson.objectId)
             .then(null, function (errResponse) {
               return;
             });
