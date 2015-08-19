@@ -35,13 +35,12 @@
 
       // Listen for new messages on joined rooms.
       chatSocket.on('mobile-disconnect', function (status ,chatId) {
-        alert('The stream you were watching was dropped by the mobile user');
+        //alert('The stream you were watching was dropped by the mobile user');
         //stopChat(chatId);
       });
 
       chatSocket.on('mobile-paused', function (status) {
         connectedRooms[status.chatId].messages.push(status);
-        alert('The stream you are watching was paused by the mobile user');
         //stopChat(chatId);
       });
 
@@ -89,7 +88,7 @@
     // <sh-chatterbox chat-id="xyz.." mobile-user-id="...">
     // </sh-chatterbox>
     // ```
-    .directive('shChatterbox', ['shChat', '$location', '$anchorScroll', 'Session', '$q', function (shChat, $location, $anchorScroll, Session, $q) {
+    .directive('shChatterbox', ['shChat', '$location', '$anchorScroll', 'Session', '$q', 'languageService', function (shChat, $location, $anchorScroll, Session, $q, languageService) {
       return {
         restrict: 'E',
         scope: false/*{
@@ -98,6 +97,10 @@
          }*/,
         templateUrl: '/chat.html',
         link: function (scope, attrs) {
+
+          languageService.getlang().then(function(response){
+            scope.chatLang = response;
+          });
 
           scope.joinChat = function (chatId, mobileUserId){
             if(scope.chatId && scope.chatId != chatId){
@@ -173,7 +176,7 @@
               return 'sent';
             }
             else if(sender === 'server'){
-                return 'system'
+                return 'server-message';
             }
             else{
               return 'mobile';

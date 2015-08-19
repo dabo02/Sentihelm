@@ -3,13 +3,17 @@
     <div id="video-streams-chat">
         <div id="video-streams-chat-log" scroll-glue>
             <div ng-repeat="message in messages()"
-                 ng-class="{send: message.sender === Session.user.userId}"
+                     ng-class='findSender(message)'
                  id="{{message.date}}">
-                <span class="message-heading"><em>{{message.from}}</em> at {{message.date | date:'short'}}</span>
+                <span class="message-heading" ng-show="message.sender !== 'server' "><!--<em>{{message.sender}}</em>-->&nbsp {{message.date | date:'short'}} &nbsp</span>
 
-                <p class="chat-message">
-                    - {{message.message}}
+                <p class="chat-message" ng-show="message.sender !== 'server' ">
+                   &nbsp - {{message.message}}
                 </p>
+
+                <p class="server-message" ng-show="message.sender === 'server' ">
+                    {{message.message}} <br> <em>{{message.date | date:'short'}}</em>
+
             </div>
             <a id="chat-bottom"></a>
         </div>
