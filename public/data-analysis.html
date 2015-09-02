@@ -7,7 +7,7 @@
 	    <div id="chart_div" class="data-analysis-mid-container" ng-show='!analysisCtrl.loading && !analysisCtrl.showErrorMessage'>
 
 	    	<!-- YEAR SELECTOR -->
-	        <label class="">Year</label>
+	        <label class="">{{analysisCtrl.lang.analysisYear}}</label>
 	        <select class="custom-selector" ng-model="analysisCtrl.yearInSelector">
 	          <option value="{{analysisCtrl.currentYear}}">{{analysisCtrl.currentYear}}</option>
 	          <option value="{{year}}" ng-repeat="year in analysisCtrl.previousAvailableYears">{{year}}</option>

@@ -2785,7 +2785,7 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
   }]);
 
 //Controller for Data Analysis page
-  app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', function ($scope, DataAnalysisService) {
+  app.controller('DataAnalysisController', ['$scope', 'DataAnalysisService', 'languageService', function ($scope, DataAnalysisService, languageService) {
 
     var analysisCtrl = this;
     analysisCtrl.loading = true;
@@ -2798,6 +2798,11 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
     analysisCtrl.monthChartCsvHeader = ["Month", "Amount of Tips"];
     analysisCtrl.typeChartCsvHeader = ["Crime Type", "Amount of Tips"];
     analysisCtrl.showErrorMessage = false;
+
+    analysisCtrl.lang = languageService.getlang().then(function(response){
+      analysisCtrl.lang = response;
+    });
+
 
     var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
       "October", "November", "December"
