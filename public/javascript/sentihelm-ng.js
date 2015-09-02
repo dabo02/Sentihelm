@@ -228,7 +228,7 @@
 
   app.config(['GoogleMapApiProvider'.ns(), function (GoogleMapApi) {
     GoogleMapApi.configure({
-      //    key: 'your api key',
+      //key: 'AIzaSyDkCmpYYUoePu2NTRq0BiMxQ7zfkXlKwbg',
       v: '3.16',
       libraries: 'places'
     });
@@ -712,11 +712,11 @@
 
 
       function upload() {
-        return $http.post('/notifications/regional', {
+        /*return $http.post('/notifications/regional', {
 
           notification: notificationData,
           channels: parseNotificationService.channels
-        });
+        });*/
 
         if (notificationData.attachment) {
           var fields = {
@@ -727,7 +727,7 @@
           return $upload.upload({
             url: '/notifications/regional',
             //method: 'POST',
-            fields: fields,
+            data: fields,
             file: notificationData.attachment
           });
         } else {
@@ -1339,7 +1339,7 @@
 
       //Delete a station from Parse.
       PoliceStationsService.deleteStation = function (id) {
-        $http.delete('/mostwanted/remove/' + id)
+        $http.delete('/stations/remove/' + id)
           .then(function () {
 
           });
@@ -2063,21 +2063,21 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       });
 
       //Once a file is selected, prep file for upload to Parse
-      //this.onFileSelect = function ($files) {
-      //  //Fetch file
-      //  this.file = $files[0];
-      //
-      //  //Set file type
-      //  if (this.file.type.match('image.*')) {
-      //    this.fileType = "image";
-      //  } else if (this.file.type.match('video.*')) {
-      //    this.fileType = "video";
-      //  } else {
-      //    this.fileType = "audio";
-      //  }
-      //  //Set file name
-      //  this.fileLabel = this.file.name;
-      //};
+      this.onFileSelect = function ($files) {
+        //Fetch file
+        this.file = $files[0];
+
+        //Set file type
+        if (this.file.type.match('image.*')) {
+          this.fileType = "image";
+        } else if (this.file.type.match('video.*')) {
+          this.fileType = "video";
+        } else {
+          this.fileType = "audio";
+        }
+        //Set file name
+        this.fileLabel = this.file.name;
+      };
 
       //Send the notification to the user
       this.submitNotification = function () {
@@ -2116,9 +2116,15 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
         notification.title = this.title;
         notification.message = this.message;
         //If a file is present, attach it and set its type
+        //if (this.file) {
+        //  notification.attachment = this.file.base64;
+        //  notification.attachmentType = this.file.filetype.substring(0, 5);
+        //
+        //}
+
         if (this.file) {
-          notification.attachment = this.file.base64;
-          notification.attachmentType = this.file.filetype.substring(0, 5);
+          notification.attachment = this.file;
+          notification.attachmentType = this.fileType;
 
         }
 

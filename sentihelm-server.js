@@ -15,7 +15,7 @@
     secret: 'hzrhQG(qv%qEf$Fx8C^CSb*msCmnGW8@',
     name: 'sentihelm.id',
     cookie: {
-      maxAge: 3000000
+      maxAge: 3000000000
     }, // expire in 5 minutes
     store: new SessionStore()
   });
@@ -170,7 +170,7 @@
 
       //Receive  OT callback
       //and pass it along to front-end
-      .post('/opentok-callback', function (request, response) {
+    .post('/opentok-callback', function (request, response) {
 
         //TODO add another request with a password sent in parameters that would actually tend to the opentok callback
         console.log("\n\nIn opentok-callback...\n\n");
@@ -201,9 +201,9 @@
           }
         });
         //}
-      })
+    })
 
-      .post('/new-tip', function (request, response) {
+    .post('/new-tip', function (request, response) {
       var tip = request.body;
       var pass = tip.pass;
       var clientId = tip.clientId;

@@ -173,6 +173,14 @@
         });
 
 
+    })
+    .post('/saveBastaYaTip', function(request, response){
+      tipModel.saveBastaYaTip(req.body.tip, req.session.user.homeClient.objectId).then(function () {
+        res.send("SUCCESS: tip saved to SentiHelm.");
+
+      }, function (error) {
+        res.status(503).send("FAILURE: Tip not saved to SentiHelm.");
+      });
     });
 
   module.exports = router;

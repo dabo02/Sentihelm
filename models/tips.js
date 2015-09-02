@@ -182,4 +182,55 @@
           });
     });
   };
+
+  module.exports.saveBastaYaTip = function(tip, clientId){
+
+    //var encryptedUser = util.encryptionManager.encryptUser(officerData);
+    //Generate passphrase for encryption
+    var passPhrase = "";
+    passPhrase = util.passwordGenerator.generatePassword('bastaya');
+    //var hashedPassword = util.passwordGenerator.md5('b@st4y@pr.0rg');
+
+    //Encrypt user information
+    var encryptedDescription = util.encryptionManager.encrypt(tip.description, passPhrase);
+    var encryptedLongitude = util.encryptionManager.encrypt(tip.longitude, passPhrase);
+    var encryptedLatitude = util.encryptionManager.encrypt(tip.latitude, passPhrase);
+    var encryptedCrimeType = util.encryptionManager.encrypt(tip.crimeType, passPhrase);
+
+    var newTip = new db.TipReport();
+
+    newTip.set('clientId', clientId);
+    newTip.set('crimeListPosition', crimeTypes[tip.crimeType].indexOf);
+    newTip.set('crimeType',encryptedCrimeType);
+    newTip.set('crimeDescription', encryptedDescription);
+    newTip.set('longitude', encryptedLongitude);
+    newTip.set('latitude', encryptedLatitude);
+
+    newTip.set('User', {
+      __type: "Pointer",
+      className: "User",
+      objectId: 'EHp63tRW1x'
+    });
+
+    if(tip.imageBytes.length > 0){
+      //var encryptedImage = util.encryptionManager.encrypt(tip.imageBytes, passPhrase);
+      newTip.set('attachmentPhoto', new db.File('photo', {
+        base64: tip.imageBytes.toString('base64')
+      }));
+    }
+
+    if(tip.audioBytes.length > 0){
+      newTip.set('attachmentAudio', new db.File('audio', {
+        base64: tip.audioBytes.toString('base64')
+      }));
+    }
+
+    if(tip.videoBytes.length > 0){
+      newTip.set('attachmentVideo', new db.File('video', {
+        base64: tip.videoBytes.toString('base64')
+      }));
+    }
+
+  };
+
 })();

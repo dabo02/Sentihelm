@@ -26,11 +26,15 @@
 
       <div class="form-group">
 
-
-
         <div class="col-md-6 col-md-offset-3">
-          <input type="file" ng-model="regionalNotifCtrl.file" base-sixty-four-input>
+          <div class="btn btn-block white ng-binding btn-primary" accept="image/*,video/*,audio/*" ng-class="{'btn-success': regionalNotifCtrl.file.name, 'btn-primary':!regionalNotifCtrl.file.name}" ng-file-select="regionalNotifCtrl.onFileSelect($files)" style="position: relative;">
+            {{regionalNotifCtrl.file.name || regionalNotifCtrl.lang.notificationChooseFile}}
+            <input type="file" class="btn btn-block white ng-binding" accept="image/*,video/*,audio/*" ng-class="{'btn-success': regionalNotifCtrl.file.name, 'btn-primary':!regionalNotifCtrl.file.name}" ng-file-select="regionalNotifCtrl.onFileSelect($files)" style="top: 0px; bottom: 0px; left: 0px; right: 0px; width: 100%; opacity: 0; position: absolute;"></div>
         </div>
+
+        <!--<div class="col-md-6 col-md-offset-3">
+          <input type="file" ng-model="regionalNotifCtrl.file" base-sixty-four-input>
+        </div>-->
       </div>
 
       <div class="col-md-6 col-md-offset-3">
@@ -39,7 +43,7 @@
            ng-click="regionalNotifCtrl.allRegions = !regionalNotifCtrl.allRegions"
            ng-class="{'list-group-item-success': regionalNotifCtrl.allRegions, 'list-group-item-danger':!regionalNotifCtrl.allRegions}"
           >
-           <h4 class="text-center">{{regionalNotifCtrl.allRegions? 'All Regions Selected' : 'Send To All Regions'}}</h4>
+           <h4 class="text-center">{{regionalNotifCtrl.allRegions ? regionalNotifCtrl.lang.notificationAllSelected : regionalNotifCtrl.lang.notificationChooseAllRegions}}</h4>
           </li>
           <li class="list-group-item" style="cursor:pointer;"
            ng-repeat="region in regionalNotifCtrl.regions"

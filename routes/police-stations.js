@@ -125,7 +125,7 @@
       .then(function () {
       response.send(200);
     }, function () {
-        console.log("Error fetching or deliting police station");
+        console.log("Error fetching or deleting police station");
         response.send(504);
       });
   })

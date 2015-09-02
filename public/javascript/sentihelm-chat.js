@@ -37,6 +37,8 @@
       chatSocket.on('mobile-disconnect', function (status ,chatId) {
         //alert('The stream you were watching was dropped by the mobile user');
         //stopChat(chatId);
+        chatId = null;
+        //scope.$apply();
       });
 
       chatSocket.on('mobile-paused', function (status) {
@@ -58,7 +60,8 @@
         },
 
         stopChat: function(chatId){
-          delete connectedRooms[chatId];
+          //connectedRooms[chatId] = null;
+          //delete connectedRooms[chatId];
         },
 
         // Leave a room listening for messages on a specific chat.

@@ -146,7 +146,7 @@
         "drawerVideo": "Video Streams",
         "drawerVideoArchive": "Video Archive",
         "drawerNotifications": "Send Notification",
-        "drawerMaps": "Maps",
+        "drawerMaps": "Police Stations Map",
         "drawerWanted": "Wanted List",
         "drawerData": "Data Analysis",
         "tipFeedAll": "All",
@@ -197,7 +197,9 @@
         "notificationTitle" : "Title",
         "notificationMessage" : "Message",
         "notificationAllSelected" : "All Regions Selected",
-        "notificationSubmit" : "Submit Notification"
+        "notificationSubmit" : "Submit Notification",
+        "notificationChooseFile" : "Attach a File",
+        "notificationChooseAllRegions" : "Send To All Regions"
 
       };
 
@@ -360,7 +362,7 @@
         "drawerVideo": "Video en Vivo",
         "drawerVideoArchive": "Archivos de video",
         "drawerNotifications": "Enviar una Notificación",
-        "drawerMaps": "Mapas",
+        "drawerMaps": "Mapa de Estaciones",
         "drawerWanted": "Los Más Buscados",
         "drawerData": "Análisis de Datos",
         "resetPasswordMessage": "¿Olvidaste tu contraseña?",
@@ -375,9 +377,11 @@
         "streamPlaceholder" : "Escribir el mensaje aqui",
         "notificationSend" : "Enviar una Notificación",
         "notificationTitle" : "Titulo",
-        "notificationMessage" : "Mensage",
-        "notificationAllSelected" : "Todas Las Regiones Seleccionadas",
-        "notificationSubmit" : "Enviar Notificación"
+        "notificationMessage" : "Mensaje",
+        "notificationAllSelected" : "Todas las Regiones Seleccionadas",
+        "notificationSubmit" : "Enviar Notificación",
+        "notificationChooseFile" : "Escoja un Anejo",
+        "notificationChooseAllRegions" : "Enviar a Todas las Regiones"
 
 
       };

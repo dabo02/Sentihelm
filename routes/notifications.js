@@ -9,7 +9,8 @@
   var router = express.Router();
   var util = require('../lib/util');
   var db = require('../lib/db');
-  var multipart = require('connect-multiparty');
+  var multiparty = require('connect-multiparty');
+  var multipart = multiparty();
   var config = require('../config');
   var fs = require('fs');
   var path = require('path');
@@ -138,10 +139,14 @@
         });
 
     })
-    .post('/regional', function (request, response) {
+    .post('/regional', multipart, function (request, response) {
 
 
-      var attachment = request.body.notification.attachment;
+      if (request.files) {
+        var imageFile = request.files.file || null;
+      }
+
+      //var attachment = request.body.notification.attachment;
 
       function save() {
         return Q.Promise(function (resolve, reject) {
@@ -156,7 +161,7 @@
         });
 
 
-        };
+      };
 
 
         // if being uploaded, it might stringify the json and this might cause a crash
@@ -188,10 +193,18 @@
         });
 
 
-      if (attachment) {
-        notification.set(notificationData.attachmentType, new db.File('file', {base64: notificationData.attachment}));
-      }
-        //notification.set(notificationData.attachmentType, new db.File('file', notificationData.attachment));
+        //if (attachment) {
+        //  notification.set(notificationData.attachmentType, new db.File('file', {base64: notificationData.attachment}));
+        //}
+          //notification.set(notificationData.attachmentType, new db.File('file', notificationData.attachment));
+        if (imageFile) {
+          fs.readFile(imageFile.path, function (err, data) {
+            notification.set(notificationData.attachmentType, new db.File('file', {
+              base64: data.toString('base64')
+            }));
+            notification.save();
+          });
+        }
 
         save()
           .then(function (notification) {
@@ -218,12 +231,9 @@
             deleteSavedNotification(notification, error);
             response.status(400).send(error);
           });
-      }
+      })
 
-      )
-
-      .
-      post('/sms', function (req, res) {
+      .post('/sms', function (req, res) {
 
         db.Cloud.run('sendSMS', {
           To: req.body.To,
