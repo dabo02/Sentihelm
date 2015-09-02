@@ -155,10 +155,7 @@
               file: person.file
             });
           } else {
-            return $http.post('/mostwanted/save', fields)
-              .then(null, function (errResponse) {
-                return;
-              });
+            return $http.post('/mostwanted/save', fields);
           }
 
 
@@ -170,10 +167,7 @@
         mostWantedService.deleteMostWanted = function (index) {
           var wantedPerson = mostWantedArray[index];
 
-          return $http.delete('/mostwanted/remove/' + wantedPerson.objectId)
-            .then(null, function (errResponse) {
-              return;
-            });
+          return $http.delete('/mostwanted/remove/' + wantedPerson.objectId);
         };
 
 
