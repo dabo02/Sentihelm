@@ -1637,7 +1637,7 @@
           compileContent: true,
           dismissOnClick: false
         });
-        //drawer.sound.play();
+        drawer.sound.play();
       });
 
        //Display toast for succesful archive creation
@@ -1652,7 +1652,7 @@
            compileContent: true,
            dismissOnClick: false
          });
-         drawer.sound.play();
+         //drawer.sound.play();
        });
 
 
