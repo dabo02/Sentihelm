@@ -270,7 +270,7 @@
   app.constant('USER_ROLES', {
     all: '*',
     demo: 'demo',
-    user: 'manager',
+    user: 'employee',
     admin: 'admin'
   });
 

@@ -6,6 +6,7 @@
   var util = require('../lib/util');
   var clientModel = require('../models/client');
   var usersModel = require('../models/users');
+  var tipModel = require('../models/tips');
   var config = require('../config');
   var bodyParser = require('body-parser');
   var OpenTok = require('opentok');
@@ -19,7 +20,7 @@
       var password = req.body.password;
 
       function sendError(error) {
-        res.send(503, error);
+        res.send(503, "Parse failed: " + error);
       }
 
       function sendLoginAnswer(client, user) {
@@ -64,7 +65,8 @@
 
         req.session.regenerate(function (err) {
           if (err) {
-            res.status(503).send({});
+            res.status(503).send("Express session failed: " + err);
+            //res.status(503).send({});
           }
           // perform a deep copy of the user object to keep in the session.
           var userJSON = user.toJSON();
@@ -176,6 +178,21 @@
       });
 
     })
+    .post('/saveBastaYaTip', function(req, res){
+
+      util.logIn(req.body.username, req.body.password)
+        .then(function(user){
+          tipModel.saveBastaYaTip(req.body.tip, user).then(function () {
+            res.send("SUCCESS: Tip saved to SentiHelm.");
+
+          }, function (error) {
+            res.status(503).send("FAILURE: Tip not saved to SentiHelm.");
+          });
+        }, function(error){
+          res.status(503).send("FAILURE: Tip not saved to SentiHelm.");
+        });
+    })
+    .use(util.restrict)
     .get('/language', function (req, res) {
       clientModel.language(req.body, req.session.user.homeClient.objectId).then(function (lang) {
         res.send(lang);

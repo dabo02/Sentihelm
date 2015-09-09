@@ -18,7 +18,11 @@
   }
 
   router
+
+
+
     .use(util.restrict)
+
     .get('/:tipId/media', function (request, response) {
       var type = request.query.type;
       var tipId = request.params.tipId;
@@ -173,15 +177,8 @@
         });
 
 
-    })
-    .post('/saveBastaYaTip', function(request, response){
-      tipModel.saveBastaYaTip(req.body.tip, req.session.user.homeClient.objectId).then(function () {
-        res.send("SUCCESS: tip saved to SentiHelm.");
-
-      }, function (error) {
-        res.status(503).send("FAILURE: Tip not saved to SentiHelm.");
-      });
     });
+
 
   module.exports = router;
 })();
