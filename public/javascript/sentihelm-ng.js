@@ -1708,8 +1708,6 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
     // clear all toasts:
     ngToast.dismiss();
 
-
-
     VideoStreamsService.getActiveStreams($scope.currentClient.objectId);
 
     VideoStreamsService.checkActiveStream();
@@ -1858,7 +1856,6 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       this.lang = languageService.getlang().then(function(response){
         this.lang = response;
       });
-
 
       //Set focus on message box once dialog pops up
       $scope.$on('ngDialog.opened', function (event, $dialog) {
@@ -2408,17 +2405,17 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
     this.sending = false;
     adminPanelCtrl.hasError = false;
 
-  adminPanelCtrl.viewingAll = true;
-  adminPanelCtrl.viewingUsers = false;
-  adminPanelCtrl.viewingEmployees = false;
-  adminPanelCtrl.viewingAdministrators = false;
-  adminPanelCtrl.viewingLoggedIn = false;
-  adminPanelCtrl.addingUser = false;
-  adminPanelCtrl.lang = languageService.getlang().then(function(response){
-    console.log('login');
-    console.log(response);
-    adminPanelCtrl.lang = response;
-  });
+    adminPanelCtrl.viewingAll = true;
+    adminPanelCtrl.viewingUsers = false;
+    adminPanelCtrl.viewingEmployees = false;
+    adminPanelCtrl.viewingAdministrators = false;
+    adminPanelCtrl.viewingLoggedIn = false;
+    adminPanelCtrl.addingUser = false;
+    adminPanelCtrl.lang = languageService.getlang().then(function(response){
+      console.log('login');
+      console.log(response);
+      adminPanelCtrl.lang = response;
+    });
 
 
     adminPanelCtrl.states = ["Select","AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","PR","RI","SC","SD","TN","TX","UT","VI","VT","VA","WA","WV","WI","WY"];
@@ -2438,6 +2435,18 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
     adminPanelCtrl.usersAvailable = true;
     adminPanelCtrl.fetchingUsers = true;
     adminPanelCtrl.rolesFilter = "";
+
+
+    //var postData = {};
+    //postData["username"] = "bastaya2";
+    //postData["password"] = "12345";
+    //postData["description"]  = "Rock and Roll";
+    //postData["latitude"] = "18";
+    //postData["longitude"] = "-66";
+    //postData["crimeType"] = "Assault";
+    //postData["crimeListPosition"] = "0";
+    //
+    //$http.post('/saveBastaYaTip', postData);
 
     adminPanelCtrl.getPage = function(pageNum){
 

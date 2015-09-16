@@ -4,6 +4,7 @@
   var db = require('../lib/db');
   var TipReport = db.Object.extend('TipReport');
   var Q = require('q');
+  var util = require('../lib/util');
 
   // Specify the crime types.
   var crimeTypes = ["Assault",
@@ -185,62 +186,96 @@
 
   module.exports.saveBastaYaTip = function(tip, user){
 
-    var clientId = user.attributes.homeClient.id;
-    var userId = user.id;
+    return Q.Promise(function (resolve, reject) {
+      var clientId = user.attributes.homeClient.id;
+      var userId = user.id;
 
-    //var encryptedUser = util.encryptionManager.encryptUser(officerData);
-    //Generate passphrase for encryption
-    var passPhrase = "";
-    passPhrase = util.passwordGenerator.generatePassword('bastaya2');
-    //var hashedPassword = util.passwordGenerator.md5('b@st4y@pr.0rg');
+      //var encryptedUser = util.encryptionManager.encryptUser(officerData);
+      //Generate passphrase for encryption
+      var passPhrase = "";
+      passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
 
-    //Encrypt user information
-    var encryptedDescription = util.encryptionManager.encrypt(passPhrase, tip.description);
-    var encryptedLongitude = util.encryptionManager.encrypt(passPhrase, tip.longitude);
-    var encryptedLatitude = util.encryptionManager.encrypt(passPhrase, tip.latitude);
-    var encryptedCrimeType = util.encryptionManager.encrypt(passPhrase, tip.crimeType);
+      //Encrypt user information
+      var encryptedDescription = util.encryptionManager.encrypt(passPhrase, tip.description);
+      var encryptedLongitude = util.encryptionManager.encrypt(passPhrase, tip.longitude);
+      var encryptedLatitude = util.encryptionManager.encrypt(passPhrase, tip.latitude);
+      var encryptedCrimeType = util.encryptionManager.encrypt(passPhrase, tip.crimeType);
 
-    var newTip = new TipReport();
+      var newTip = new TipReport();
 
-    newTip.set('clientId', clientId);
-    newTip.set('crimeListPosition', tip.crimeListPosition);
-    newTip.set('crimeType', encryptedCrimeType);
-    newTip.set('crimeDescription', encryptedDescription);
-    newTip.set('longitude', encryptedLongitude);
-    newTip.set('latitude', encryptedLatitude);
+      newTip.set('clientId', clientId);
 
-    newTip.set('User', {
-      __type: "Pointer",
-      className: "User",
-      objectId: userId
-    });
+      newTip.set('crimeListPosition', parseInt(tip.crimeListPosition));
 
-    if(tip.imageBytes.length > 0){
-      newTip.set('attachmentPhoto', new db.File('photo', {
-        base64: util.encryptionManager.encrypt(passPhrase, tip.imageBytes)
-      }));
-    }
+      newTip.set('crimeType', {
+        __type: "Bytes",
+        base64: encryptedCrimeType
+      });
 
-    if(tip.audioBytes.length > 0){
-      newTip.set('attachmentAudio', new db.File('audio', {
-        base64: util.encryptionManager.encrypt(passPhrase, tip.audioBytes)
-      }));
-    }
+      newTip.set('crimeDescription', {
+        __type: "Bytes",
+        base64: encryptedDescription
+      });
 
-    if(tip.videoBytes.length > 0){
-      newTip.set('attachmentVideo', new db.File('video', {
-        base64: util.encryptionManager.encrypt(passPhrase, tip.videoBytes)
-      }));
-    }
+      newTip.set('longitude', {
+        __type: "Bytes",
+        base64: encryptedLongitude
+      });
 
-    newTip.save({
-      success: function () {
-        resolve();
-      },
-      error: function (e) {
-        reject(e);
+      newTip.set('latitude', {
+        __type: "Bytes",
+        base64: encryptedLatitude
+      });
+
+      newTip.set('crimePositionLongitude', {
+        __type: "Bytes",
+        base64: encryptedLongitude
+      });
+
+      newTip.set('crimePositionLatitude', {
+        __type: "Bytes",
+        base64: encryptedLatitude
+      });
+
+      newTip.set('clientId', {
+        __type: "Pointer",
+        className: "Client",
+        objectId: clientId
+      });
+
+      newTip.set('user', {
+        __type: "Pointer",
+        className: "User",
+        objectId: userId
+      });
+
+      if(tip.imageBytes){
+        newTip.set('attachmentPhoto', new db.File('photo', {
+          base64: util.encryptionManager.encrypt(passPhrase, tip.imageBytes)
+        }));
       }
-    });
+
+      if(tip.audioBytes){
+        newTip.set('attachmentAudio', new db.File('audio', {
+          base64: util.encryptionManager.encrypt(passPhrase, tip.audioBytes)
+        }));
+      }
+
+      if(tip.videoBytes){
+        newTip.set('attachmentVideo', new db.File('video', {
+          base64: util.encryptionManager.encrypt(passPhrase, tip.videoBytes)
+        }));
+      }
+
+      newTip.save(null,{
+        success: function (tip) {
+          resolve(tip);
+        },
+        error: function (tip, error) {
+          reject(error);
+        }
+      });
+    })
   };
 
 })();

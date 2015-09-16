@@ -180,19 +180,20 @@
     })
     .post('/saveBastaYaTip', function(req, res){
 
+      //res.header("Access-Control-Allow-Origin", "*");
       util.logIn(req.body.username, req.body.password)
         .then(function(user){
-          tipModel.saveBastaYaTip(req.body.tip, user).then(function () {
+          tipModel.saveBastaYaTip(req.body, user).then(function () {
             res.send("SUCCESS: Tip saved to SentiHelm.");
 
           }, function (error) {
             res.status(503).send("FAILURE: Tip not saved to SentiHelm.");
           });
         }, function(error){
-          res.status(503).send("FAILURE: Tip not saved to SentiHelm.");
+          res.status(503).send("FAILURE: BastaYa! authentication failed.");
         });
     })
-    .use(util.restrict)
+    //.use(util.restrict)
     .get('/language', function (req, res) {
       clientModel.language(req.body, req.session.user.homeClient.objectId).then(function (lang) {
         res.send(lang);
