@@ -27,7 +27,7 @@
     "opentok": "^2.2.4",
     "parse": "^1.4.1",
     "q": "^1.2.0",
-    "sjcl": "git+https://github.com/Optivon/sjcl.git",
+    "sjcl": "git@bitbucket.org:optivon_juicebox/sjcl.git",
     "socket.io": "^1.0.6"
   },
   "scripts": {
