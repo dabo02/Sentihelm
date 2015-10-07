@@ -89,7 +89,7 @@
                                    ng-model="tipFeed.searchString"/>
                         </div>
                         <button type="submit" class="btn btn-default btn-primary"
-                                ng-click="tipFeed.getPage(tipFeed.currentPageNum)">{{tipFeed.lang.tipfeedFilter}}
+                                ng-click="tipFeed.getPage(tipFeed.currentPageNum)">{{tipFeed.lang.adminFilter}}
                         </button>
                     </form>
                 </div>
@@ -99,9 +99,9 @@
             <div class="tab-content">
                 <!--Show if NO video archives are available -->
                 <div ng-show="!tipFeed.tipsAvailable">
-                    <h2 class="text-center">No Records Found</h2>
+                    <h2 class="text-center">{{tipFeed.lang.adminRecord}}</h2>
 
-                    <h3 class="text-center">Try a different filter or refresh your browser</h3>
+                    <h3 class="text-center">{{tipFeed.lang.adminError}}</h3>
                 </div>
                 <div class="tab-pane user-list" ng-class="tipFeed.showHidePanel()">
                     <div class="paginationText bold" ng-show="tipFeed.tipsAvailable">
@@ -128,7 +128,7 @@
                             <th>{{tipFeed.lang.tipFeedControlNumber}}</th>
                             <th>{{tipFeed.lang.tipFeeduser}}</th>
                             <th>{{tipFeed.lang.tipFeedCrimeType}}</th>
-                            <th>{{tipFeed.lang.tipFeedSubmittedOn}}</th>
+                            <th>{{tipFeed.lang.tipFeedSubmitted}}</th>
                             <th>{{tipFeed.lang.tipFeedReadBy}}</th>
                             <th>{{tipFeed.lang.tipFeedReadOn}}</th>
                             <th>{{tipFeed.lang.tipFeedAction}}</th>
@@ -139,11 +139,11 @@
                         <tr ng-repeat="tip in tipFeed.tips" class="pointer tips-color"
                             ng-class="{'unread-filter':tip.readBy== null}">
                             <td ng-click="tipFeed.showTip(tip)">{{tip.objectId + "-" + tip.controlNumber}}</td>
-                            <td ng-click="tipFeed.showTip(tip)">{{tip.user.username || 'anonymous'}}</td>
+                            <td ng-click="tipFeed.showTip(tip)">{{tip.user.username || tipFeed.lang.tipFeedAnonymous}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.crimeType || 'not set'}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.createdAt}} {{tip.time}}</td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.readBy ? tip.readBy[tip.readBy.length -
-                                1].username : "unread"}}
+                                1].username : tipFeed.lang.tipFeedUnread}}
                             </td>
                             <td ng-click="tipFeed.showTip(tip)">{{tip.readBy[tip.readBy.length - 1].date |
                                 date:"" +

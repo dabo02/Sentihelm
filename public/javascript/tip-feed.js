@@ -325,7 +325,7 @@
         self.getPage(self.currentPageNum);
       }
     ])
-    .controller('TipController', ['$http', '$stateParams', '$scope', 'Tip', 'ngDialog', function ($http, $stateParams, $scope, Tip, ngDialog) {
+    .controller('TipController', ['$http', '$stateParams', '$scope', 'languageService', 'Tip', 'ngDialog', function ($http, $stateParams, $scope, languageService, Tip, ngDialog) {
       var self = this;
 
       self.tipError = null;
@@ -335,6 +335,9 @@
       self.hasError = false;
       self.sendingFollowUp = false;
       self.successMessage = '';
+      self.lang = languageService.getlang().then(function(response){
+              self.lang = response;
+      });
 
       //Note that notification dialog is off
       $scope.$on('notification-dialog-closed', function (event, data) {

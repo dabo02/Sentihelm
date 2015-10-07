@@ -4,17 +4,17 @@
 
 	<!-- archive main content -->
 	<div class="video-archive-mid-container">
-		<h1>Video Archives</h1><br>
+		<h1>{{videoArchiveCtrl.lang.drawerVideoArchive}}</h1><br>
 		<div class="tip-filter-container row">
 			<div class="filter-controls">
 
 				<div class="crime-filter col-xs-5">
-					<label class="">Video Creation Date</label>
+					<label class="">{{videoArchiveCtrl.lang.drawerVideoCreationDate}}</label>
 					<input class="crime-date" type="date" ng-model="videoArchiveCtrl.videoDateFilter"/>
 				</div>
 
 				<div class="crime-filter col-xs-6">
-					<label>Watch Status</label>
+					<label>{{videoArchiveCtrl.lang.drawerWatchStatus}}</label>
 					<select class="crime-type" ng-model="videoArchiveCtrl.watchStatusFilter">
 						<option value="{{status}}" ng-repeat="status in videoArchiveCtrl.videoWatchStatuses">
 							{{status}}
@@ -22,7 +22,7 @@
 					</select>
 				</div>
 
-				<button class="btn btn-primary filter-submit col-xs-1" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum)">Filter</button>
+				<button class="btn btn-primary filter-submit col-xs-1" ng-click="videoArchiveCtrl.getPage(videoArchiveCtrl.currentPageNum)">{{videoArchiveCtrl.lang.drawerFilter}}</button>
 
 			</div>
 		</div>
@@ -37,15 +37,15 @@
 			<a id="top"></a>
 			<!--Show if NO video archives are available -->
 			<div ng-if="!videoArchiveCtrl.videosAvailable">
-				<h2 class="text-center">No Records Found</h2>
+				<h2 class="text-center">{{videoArchiveCtrl.lang.drawerNoRecord}}</h2>
 			</div>
 
 			<!--======SPINNER (LOADING)======-->
         <span  us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="loading-video-archive-spinner" spinner-start-active="1">
 
         </span>
-			<p class="bold" ng-show="videoArchiveCtrl.videosAvailable">Page {{videoArchiveCtrl.currentPageNum}} of {{videoArchiveCtrl.lastPageNum}}</p>
-			<p class="bold" ng-show="videoArchiveCtrl.videosAvailable">Showing Videos {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} of {{videoArchiveCtrl.videoTotal}}</p>
+			<p class="bold" ng-show="videoArchiveCtrl.videosAvailable">{{videoArchiveCtrl.lang.drawerPage}} {{videoArchiveCtrl.currentPageNum}} {{videoArchiveCtrl.lang.drawerOf}} {{videoArchiveCtrl.lastPageNum}}</p>
+			<p class="bold" ng-show="videoArchiveCtrl.videosAvailable">{{videoArchiveCtrl.lang.drawerShowingVideos}} {{videoArchiveCtrl.skip + 1}} - {{videoArchiveCtrl.skip + 10 > videoArchiveCtrl.videoTotal ? videoArchiveCtrl.videoTotal : videoArchiveCtrl.skip + 10}} {{videoArchiveCtrl.lang.drawerOf}} {{videoArchiveCtrl.videoTotal}}</p>
 			<li class="video-archive-entry tip" ng-repeat="video in videoArchiveCtrl.videoArchiveArray track by $index" ng-show="video" ng-class="{'orange-border':!video.hasBeenWatched}">
 
 				<!-------------------->
@@ -98,14 +98,14 @@
 								<div class="col-xs-12">
 									<div class="row">
 										<h2 ng-class="{'orange':!video.hasBeenWatched, 'light-blue':video.hasBeenWatched}">
-											{{video.hasBeenWatched ? 'Watched' : 'Un-watched'}}
+											{{video.hasBeenWatched ? videoArchiveCtrl.lang.drawerWatched : videoArchiveCtrl.lang.drawerUnWatched}}
 										</h2>
 									</div><br>
-									<div class="row"><em>Watched Live By:</em> {{video.officerUser}}</div>
-									<div class="row"><em>Last Watched By:</em> {{video.lastWatcher}}</div>
-									<div class="row" ng-if="video.duration>=60"><em>Stream Duration:</em> {{video.duration / 60 | number : 2}} {{video.duration / 60 == 1 ? ' minute' : ' minutes'}}
+									<div class="row"><em>{{videoArchiveCtrl.lang.drawerWatchedLiveBy}}:</em> {{video.officerUser}}</div>
+									<div class="row"><em>{{videoArchiveCtrl.lang.drawerLastWatchedBy}}:</em> {{video.lastWatcher}}</div>
+									<div class="row" ng-if="video.duration>=60"><em>{{videoArchiveCtrl.lang.drawerStreamDuration}}:</em> {{video.duration / 60 | number : 2}} {{video.duration / 60 == 1 ? ' '+videoArchiveCtrl.lang.drawerMinute : ' '+videoArchiveCtrl.lang.drawerMinutes}}
 									</div>
-									<div class="row" ng-if="video.duration<60"><em>Stream Duration:</em> {{video.duration}} {{video.duration == 1 ? ' second' : ' seconds'}}
+									<div class="row" ng-if="video.duration<60"><em>{{videoArchiveCtrl.lang.drawerStreamDuration}}:</em> {{video.duration}} {{video.duration == 1 ? ' '+videoArchiveCtrl.lang.drawerSecond : ' '+videoArchiveCtrl.lang.drawerSeconds}}
 									</div>
 								</div>
 							</div>

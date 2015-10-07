@@ -43,23 +43,23 @@
 
           <!------CONTACT USER INFORMATION------>
           <div ng-hide="tipCtrl.tip.anonymous" class="contact-info">
-            CONTACT USER
+            {{tipCtrl.lang.tipContactUser}}
             <br>
             <span class="contact-number">{{tipCtrl.tip.phone}}</span>
             <span>{{tipCtrl.tip.user.email}}</span>
             <br>
             <button class="notification-button" ng-click="tipCtrl.showNotificationDialog(tipCtrl.tip.firstName, tipCtrl.tip.lastName, tipCtrl.tip.controlNumber, tipCtrl.tip.channel, tipCtrl.tip.objectId)">
-              Send Notification
+              {{tipCtrl.lang.tipSend}}
             </button>
           </div>
 
           <div ng-show="tipCtrl.tip.smsNumber" class="contact-info">
-            CONTACT USER
+            {{tipCtrl.lang.tipContactUser}}
             <br>
             <span class="contact-number">{{tipCtrl.tip.phone}}</span>
             <br>
             <button class="notification-button" ng-click="tipCtrl.showSMSDialog()">
-              Send Text Message
+              {{tipCtrl.lang.tipSendText}}
             </button>
           </div>
 
@@ -96,7 +96,7 @@
           <div class="map-canvas" id="{{tipCtrl.tip.controlNumber}}">
 
             <!------ANON NO LOCATION------>
-            <span ng-show="tipCtrl.tip.smsNumber" style="line-height: 290px;">NO LOCATION AVAILABLE</span>
+            <span ng-show="tipCtrl.tip.smsNumber" style="line-height: 290px;">{{tipCtrl.lang.tipNoLocation}}</span>
 
             <!------GOOGLE MAP------>
             <ui-gmap-google-map ng-if="!tipCtrl.tip.smsNumber" center="mapCtrl.getMapCenter(tipCtrl.tip.center)" zoom="mapCtrl.zoom" draggable="true" ng-cloak>

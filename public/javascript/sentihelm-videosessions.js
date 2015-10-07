@@ -7,13 +7,15 @@
 
   angular.module('sentihelm')
 
-    .controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', '$http', '$sce', function ($scope, Session, socket, ngDialog, usSpinnerService, $location, $anchorScroll, $http, $sce) {
+    .controller('VideoArchiveController', ['$scope', 'Session', 'socket', 'languageService', 'ngDialog', 'usSpinnerService', '$location', '$anchorScroll', '$http', '$sce', function ($scope, Session, socket, languageService, ngDialog, usSpinnerService, $location, $anchorScroll, $http, $sce) {
 
       var videoArchiveCtrl = this;
       videoArchiveCtrl.videoArchiveArray;
       videoArchiveCtrl.videoWatchStatuses = ['Watched', 'Unwatched', 'All'];
       videoArchiveCtrl.videosAvailable = true;
-
+      videoArchiveCtrl.lang = languageService.getlang().then(function(response){
+        videoArchiveCtrl.lang = response;
+      });
       //pagination variables
       videoArchiveCtrl.currentPageNum = 1;
       videoArchiveCtrl.lastPageNum;

@@ -20,14 +20,14 @@
       <br/>
 
       <div class="col-xs-3">
-        <em>{{mostWantedCtrl.lang.wantedAge}}</em> {{criminal.age || "Unknown"}}</div>
+        <em>{{mostWantedCtrl.lang.wantedAge}}</em> {{criminal.age || mostWantedCtrl.lang.mostwantedUnknown}}</div>
       <div class="col-xs-3 col-xs-offset-2">
-        <em>{{mostWantedCtrl.lang.wantedHeight}}</em> {{criminal.height || "Unknown"}}</div>
+        <em>{{mostWantedCtrl.lang.wantedHeight}}</em> {{criminal.height || mostWantedCtrl.lang.mostwantedUnknown}}</div>
 
       <br/>
 
       <div class="col-xs-9">
-        <em>{{mostWantedCtrl.lang.wantedFor}}</em> {{criminal.summary || "Reasons: unknown." | limitSummary}}
+        <em>{{mostWantedCtrl.lang.wantedFor}}</em> {{criminal.summary || mostWantedCtrl.lang.mostwantedUnknown | limitSummary}}
       </div>
       <br/>
       <br/>

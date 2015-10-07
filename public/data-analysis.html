@@ -12,28 +12,28 @@
 	          <option value="{{analysisCtrl.currentYear}}">{{analysisCtrl.currentYear}}</option>
 	          <option value="{{year}}" ng-repeat="year in analysisCtrl.previousAvailableYears">{{year}}</option>
 	        </select>
-	        <button class="btn btn-primary" ng-click="analysisCtrl.selectYear(analysisCtrl.yearInSelector)">Select Year</button>
+	        <button class="btn btn-primary" ng-click="analysisCtrl.selectYear(analysisCtrl.yearInSelector)">{{analysisCtrl.lang.dashboardSelectYear}}</button>
 	        <br><br>
-	        <span style="font-weight: bold;">{{analysisCtrl.selectedMonth? analysisCtrl.selectedMonth+', '+analysisCtrl.selectedYear: 'Year: ' + analysisCtrl.selectedYear}}</span>
+	        <span style="font-weight: bold;">{{analysisCtrl.selectedMonth? analysisCtrl.selectedMonth+', '+analysisCtrl.selectedYear: +analysisCtrl.lang.analysisYear+': ' + analysisCtrl.selectedYear}}</span>
 
 	        <!-- NUM OF TIPS vs DATE Chart-->
 			<div google-chart chart="analysisCtrl.tipsDateChart" style="height: 350px; width: 100%; xmenposition: relative;" class="ng-scope ng-isolate-scope"></div>
-			<button class="btn btn-primary" ng-click="" ng-csv="analysisCtrl.tipsDateChart.dataArray" csv-header="analysisCtrl.selectedMonth? analysisCtrl.dateChartCsvHeader: analysisCtrl.monthChartCsvHeader" filename="dateChartData.csv">Export CSV</button>
+			<button class="btn btn-primary" ng-click="" ng-csv="analysisCtrl.tipsDateChart.dataArray" csv-header="analysisCtrl.selectedMonth? analysisCtrl.dateChartCsvHeader: analysisCtrl.monthChartCsvHeader" filename="dateChartData.csv">{{analysisCtrl.lang.analysisCvs}}</button>
 
 			<!-- NUM OF TIPS vs CRIME TYPE Chart-->
 			<div google-chart chart="analysisCtrl.tipsTypeChart" style="height: 350px; width: 100%; xmenposition: relative;" class="ng-scope ng-isolate-scope"></div>
-			<button class="btn btn-primary" ng-click="" ng-csv="analysisCtrl.tipsTypeChart.dataArray" csv-header="analysisCtrl.typeChartCsvHeader" filename="typeChartData.csv">Export CSV</button>
+			<button class="btn btn-primary" ng-click="" ng-csv="analysisCtrl.tipsTypeChart.dataArray" csv-header="analysisCtrl.typeChartCsvHeader" filename="typeChartData.csv">{{analysisCtrl.lang.analysisCvs}}</button>
 
 		</div>
 
 		<!--======SPINNER (LOADING)======-->
 		<span ng-if='analysisCtrl.loading' us-spinner="{radius:30, width:15, length: 0, color: '#219ef9'}" spinner-key="analizing-data-spinner" spinner-start-active="1"></span>
 		<div class="container data-analysis-vertical-center" ng-if='analysisCtrl.loading'>
-			<h2 class="text-center col-xs-offset-4 col-xs-4">Analizing Data</h2>
+			<h2 class="text-center col-xs-offset-4 col-xs-4">{{analysisCtrl.lang.analysisData}}</h2>
 		</div>
 
 		<div class="vertical-center" ng-if="analysisCtrl.showErrorMessage">
-			<h2 class="text-center" style="width: 100%;">Error Parsing the Data</h2>
+			<h2 class="text-center" style="width: 100%;">{{analysisCtrl.lang.analysisError}}</h2>
 		</div>
 
 	</div>

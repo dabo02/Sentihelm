@@ -286,6 +286,14 @@
         document.getElementById("login-dialog-username").focus();
       }
     },
+    'LOGIN-undefined': {
+      title: 'Undefined Error',
+      message: 'Please contact SetiHelm developers',
+      code: 'LOGIN-undefined',
+      onClose: function () {
+        //document.getElementById("login-dialog-username").focus();
+      }
+    },
     'LOGIN-NO-USERID': {
       title: 'No UserId',
       message: 'You must provide a username',
@@ -2165,7 +2173,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
     function ($scope, ERRORS, errorFactory) {
       //Set controller title and message
       var error = ERRORS[$scope.$parent.ngDialogData.errorCode];
-      this.title = error.title;
+      this.title = error.title || "";
       this.message = error.message;
 
       $scope.$on('ngDialog.opened', function (event, $dialog) {

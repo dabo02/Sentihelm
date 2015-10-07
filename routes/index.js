@@ -20,7 +20,7 @@
       var password = req.body.password;
 
       function sendError(error) {
-        res.send(503, "Parse failed: " + error);
+        res.send(503, error);
       }
 
       function sendLoginAnswer(client, user) {
@@ -42,24 +42,35 @@
         var passPhrase = util.passwordGenerator.generatePassword(user.attributes.username);
         //user = util.encryptionManager.decryptUser(passPhrase, user);
 
+        //var decryptedUser = {};
+        //decryptedUser.homeClient.objectId = user.attributes.homeClient.id;
+        //decryptedUser.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
+        //decryptedUser.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
+        //decryptedUser.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
+        //decryptedUser.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
+
         user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
         user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
         user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
         user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
 
         if (user.attributes.state) {
+          //decryptedUser.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
           user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
         }
 
         if (user.attributes.addressLine1) {
+          //decryptedUser.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
           user.attributes.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
         }
 
         if (user.attributes.addressLine2) {
+          //decryptedUser.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
           user.attributes.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
         }
 
         if (user.attributes.city) {
+          //decryptedUser.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
           user.attributes.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
         }
 
@@ -82,8 +93,9 @@
       }
 
       util.logIn(username, password)
-        .then(userLogedIn)
-        .then(null, sendError);
+        .then(userLogedIn, sendError);
+        /*.then(userLogedIn)
+        .then(null, sendError);*/
     })
     //Recieve  request to start archiving a video session
     //and pass it along to front-end

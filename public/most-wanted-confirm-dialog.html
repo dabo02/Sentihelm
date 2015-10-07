@@ -1,9 +1,9 @@
-<p>Are you sure you want to remove this person from the list?</p>
+<p ng-controller="MostWantedController as mostWantedCtrl">{{mostWantedCtrl.lang.wantedAreYouSure}}</p>
 
 <div class="ngdialog-buttons">
 
   <button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">No</button>
 
-  <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="confirm(1)">Yes</button>
+  <button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="confirm(1)">{{mostWantedCtrl.lang.wantedYes}}</button>
 
 </div>

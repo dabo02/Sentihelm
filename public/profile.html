@@ -69,7 +69,7 @@
 			</div>
 		</div>
 		<div class="row">
-			<button type="submit" class="btn btn-primary col-xs-2 col-xs-offset-5" ng-click="editProfileForm.$valid && profileCtrl.user.state!=='Select' && profileCtrl.saveUser(profileCtrl.user)">
+			<button type="submit" class="btn btn-success col-xs-2 col-xs-offset-5" ng-click="editProfileForm.$valid && profileCtrl.user.state!=='Select' && profileCtrl.saveUser(profileCtrl.user)">
 				<span ng-hide="profileCtrl.savingUser" class="">{{profileCtrl.lang.profileSaveProfile}}</span>
 				<div class="spinner ng-hide" ng-show="profileCtrl.savingUser">
 					<div class="bounce1"></div>
@@ -85,7 +85,7 @@
 		<h1>
 			{{profileCtrl.lang.profilePassword}}
 		</h1><br>
-		<a class="pointer" ng-click="profileCtrl.editProfile()">Back</a>
+		<a class="pointer" ng-click="profileCtrl.editProfile()">{{profileCtrl.lang.profileBack}}</a>
 
 		<h3 class="text-center"  ng-class="{'green':!profileCtrl.hasError, 'red':profileCtrl.hasError}" ng-show="!(profileCtrl.savingPass || profileCtrl.savingUser)">{{profileCtrl.lang.successMessage}}</h3>
 		<br>
@@ -105,7 +105,7 @@
 			<input type="password" class="form-control" id="new-officer-password" placeholder={{profileCtrl.lang.profileConfirmPassword}} ng-model="profileCtrl.user.confirmPassword" required />
 		</div>
 
-		<button type="submit" class="btn btn-primary col-sm-2 col-sm-offset-5" ng-click="changePasswordForm.$valid && profileCtrl.savePassword(profileCtrl.user.prevPassword, profileCtrl.user.newPassword, profileCtrl.user.confirmPassword)" ng-disabled="profileCtrl.user.newPassword !== profileCtrl.user.confirmPassword ">
+		<button type="submit" class="btn btn-success col-sm-2 col-sm-offset-5" ng-click="changePasswordForm.$valid && profileCtrl.savePassword(profileCtrl.user.prevPassword, profileCtrl.user.newPassword, profileCtrl.user.confirmPassword)" ng-disabled="profileCtrl.user.newPassword !== profileCtrl.user.confirmPassword ">
 			<span ng-hide="profileCtrl.savingPass">{{profileCtrl.lang.profileSPassword}}</span>
 			<div class="spinner" ng-show="profileCtrl.savingPass">
 				<div class="bounce1"></div>
