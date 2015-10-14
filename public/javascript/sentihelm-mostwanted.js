@@ -247,9 +247,10 @@
               } else {
                 // list was delivered blank, let's try fetching it again,
                 // at a maximum of 10 times.
-                if (count < 10) {
-                  getList(count+1);
-                }
+                //if (count < 10) {
+                //  console.log("Calling recursion");
+                //  getList(count+1);
+                //}
               }
             });
         }
@@ -317,5 +318,4 @@
         getList();
       }
     ]);
-
 })();

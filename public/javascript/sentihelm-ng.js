@@ -1861,9 +1861,9 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       notificationCtrl.sending = false;
       var thisDialogId = $scope.$parent.notificationDialog.id;
 
-      this.lang = languageService.getlang().then(function(response){
-        this.lang = response;
-      });
+      //languageService.getlang().then(function(response){
+      //  this.lang = response;
+      //});
 
       //Set focus on message box once dialog pops up
       $scope.$on('ngDialog.opened', function (event, $dialog) {
