@@ -11,11 +11,12 @@
 
       var videoArchiveCtrl = this;
       videoArchiveCtrl.videoArchiveArray;
-      videoArchiveCtrl.videoWatchStatuses = ['Watched', 'Unwatched', 'All'];
-      videoArchiveCtrl.videosAvailable = true;
       videoArchiveCtrl.lang = languageService.getlang().then(function(response){
+
         videoArchiveCtrl.lang = response;
       });
+        videoArchiveCtrl.videoWatchStatuses = ['Watched', 'Unwatched', 'All'];
+      videoArchiveCtrl.videosAvailable = true;
       //pagination variables
       videoArchiveCtrl.currentPageNum = 1;
       videoArchiveCtrl.lastPageNum;

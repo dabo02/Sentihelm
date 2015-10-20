@@ -16,7 +16,7 @@
 				<div class="crime-filter col-xs-6">
 					<label>{{videoArchiveCtrl.lang.drawerWatchStatus}}</label>
 					<select class="crime-type" ng-model="videoArchiveCtrl.watchStatusFilter">
-						<option value="{{status}}" ng-repeat="status in videoArchiveCtrl.videoWatchStatuses">
+						<option value="{{status}}" ng-repeat="status in {{videoArchiveCtrl.lang.watchStatus}}">
 							{{status}}
 						</option>
 					</select>
