@@ -229,7 +229,8 @@
         "notificationNoRegionDefined" : "No Regions Have Been Defined",
         "videostreamNoVideoStream" : "No Video Stream Available",
         "mostwantedUnknown" : "Unknown",
-        "watchStatus" : ['Watched', 'Unwatched', 'All']
+        "watchStatus" : ['Watched', 'Unwatched', 'All'],
+        "videoStatus" : "Status"
       };
 
       self.ES = {
@@ -439,8 +440,8 @@
         "notificationNoRegionDefined" : "No Hay Regiones Definidas",
         "videostreamNoVideoStream" : "No Hay Videollamadas Disponibles",
         "mostwantedUnknown" : "Desconocido",
-        "watchStatus" : ['Visto', 'No-Visto', 'Todo']
-
+        "watchStatus" : ['Visto', 'No-Visto', 'Todo'],
+        "videoStatus" : "Estado"
 
       };
 

@@ -33,13 +33,22 @@
 
         usSpinnerService.spin('loading-video-archive-spinner');
         var parseSkipLimit = 10000;
+        var watchStatusQuery;
         videoArchiveCtrl.videoArchiveArray = [];
         videoArchiveCtrl.currentPageNum = pageNum;
         videoArchiveCtrl.skip = (videoArchiveCtrl.currentPageNum - 1) * videoArchiveCtrl.limit;
-
+        if(videoArchiveCtrl.watchStatusFilter === 'Visto'){
+          watchStatusQuery = "Watched";
+        }
+        else if(videoArchiveCtrl.watchStatusFilter === 'No-Visto'){
+          watchStatusQuery = "Unwatched";
+        }
+        else{
+          watchStatusQuery = "All";
+        }
         var params = {
           videoDateFilter: videoArchiveCtrl.videoDateFilter,
-          watchStatusFilter: videoArchiveCtrl.watchStatusFilter,
+          watchStatusFilter: watchStatusQuery,
           lastVideoCreatedAt: false, // adminPanelCtrl.adminPanelUsersArray[adminPanelCtrl.limit - 1].createdAt || undefined,
           skip: videoArchiveCtrl.skip,
           limit: videoArchiveCtrl.limit
