@@ -2192,9 +2192,10 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
   ]);
 
 //Controller for Google map in the 'Maps' state.
-  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function (PoliceStationsService, $scope) {
+  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'languageService', function (PoliceStationsService, $scope, languageService) {
 
     var self = this;
+
 
     //Hack to avoid google-map directive bug when updating
     //marker's window.
@@ -2209,6 +2210,10 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
         longitude: 0
       }
     };
+
+    self.lang = languageService.getlang().then(function(response){
+      self.lang = response;
+    });
 
     PoliceStationsService.getCenter()
       .then(function (center) {
