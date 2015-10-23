@@ -1,19 +1,21 @@
 <div class="map-container" ng-controller="PoliceStationsMapController as mapCtrl">
   <div class="map-canvas">
 
-    <div style="z-index: 9994;
+    <div style="margin-top: 9px;
+    margin-left: 118px;
+    z-index: 9994;
     position: absolute;">
         <div class="row">
-            <input class="form-control map-searchbox col-md-2" type="text/ng-template" placeholder="Search">
+            <input class="form-control map-searchbox col-md-2" type="text/ng-template" id="searchbox.tpl.html" placeholder="{{mapCtrl.lang.mapSearch}}">
         </div>
 
         <div>
             <!-- Cannot put a whitespace between script and button. -->
-            <button type="submit" class="btn btn-primary" ng-click="buttonCtrl.newStationMarker() && mapCtrl.refresh()" ng-disabled="buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">{{mapCtrl.lang.mapAddPoliceStation}}</button>
+            <button type="submit" class="btn btn-primary" id="control.tpl.html" ng-click="buttonCtrl.newStationMarker() && mapCtrl.refresh()" ng-disabled="buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">{{mapCtrl.lang.mapAddPoliceStation}}</button>
             <!-- Cannot put a whitespace between script and button. -->
-            <button type="submit" class="btn btn-danger" ng-click="buttonCtrl.cancel() && mapCtrl.refresh()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">{{mapCtrl.lang.mapCancel}}</button>
+            <button type="submit" class="btn btn-danger" id="control3.tpl.html" ng-click="buttonCtrl.cancel() && mapCtrl.refresh()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px">{{mapCtrl.lang.mapCancel}}</button>
             <!-- Cannot put a whitespace between script and button. -->
-            <button type="submit" class="btn btn-primary" ng-click="buttonCtrl.showFormDialog()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px;">{{mapCtrl.lang.mapSelectLocation}}</button>
+            <button type="submit" class="btn btn-primary" id="control2.tpl.html" ng-click="buttonCtrl.showFormDialog()" ng-disabled="!buttonCtrl.isAdding()" style="margin-top:5px; margin-left:5px;">{{mapCtrl.lang.mapSelectLocation}}</button>
         </div>
     </div>
     <ui-gmap-google-map center="mapCtrl.map.center" zoom="mapCtrl.map.zoom" draggable="true">

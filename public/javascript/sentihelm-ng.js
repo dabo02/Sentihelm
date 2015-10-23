@@ -2539,7 +2539,7 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
 
     this.saveUser = function(){
 
-      if(adminPanelCtrl.formUser.state !== 'Select' || adminPanelCtrl.formUser.role !== 'Select') {
+      if(adminPanelCtrl.formUser.state !== 'Select' && adminPanelCtrl.formUser.roles !== 'Select') {
         if(/(^\d{1,5}$)|(^\d{1,5}-\d{1,4}$)/.test(adminPanelCtrl.formUser.zipCode)){
           if (adminPanelCtrl.addingUser) {
             adminPanelCtrl.addUser(adminPanelCtrl.formUser);
@@ -2566,7 +2566,8 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
       adminPanelCtrl.successMessage = "";
       adminPanelCtrl.sending = true;
 
-      newUser.roles = [newUser.roles];
+      newUser.roles= [newUser.roles];
+
 
       var data = {
         newOfficer: newUser
@@ -2586,6 +2587,7 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
         }).then(function(){
           $location.hash('top');
           $anchorScroll();
+          adminPanelCtrl.formUser = {};
         });
     };
 
