@@ -26,7 +26,7 @@
 
       <div class="form-group">
 
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-xs-6 col-xs-offset-3">
           <div class="btn btn-block white ng-binding btn-primary" accept="image/*,video/*,audio/*" ng-class="{'btn-success': regionalNotifCtrl.file.name, 'btn-primary':!regionalNotifCtrl.file.name}" ng-file-select="regionalNotifCtrl.onFileSelect($files)" style="position: relative;">
             {{regionalNotifCtrl.file.name || regionalNotifCtrl.lang.notificationChooseFile}}
             <input type="file" class="btn btn-block white ng-binding" accept="image/*,video/*,audio/*" ng-class="{'btn-success': regionalNotifCtrl.file.name, 'btn-primary':!regionalNotifCtrl.file.name}" ng-file-select="regionalNotifCtrl.onFileSelect($files)" style="top: 0px; bottom: 0px; left: 0px; right: 0px; width: 100%; opacity: 0; position: absolute;"></div>
@@ -37,7 +37,7 @@
         </div>-->
       </div>
 
-      <div class="col-md-6 col-md-offset-3">
+      <div class="col-xs-6 col-xs-offset-3">
         <ul class="list-group region-list">
           <li class="list-group-item pointer"
            ng-click="regionalNotifCtrl.allRegions = !regionalNotifCtrl.allRegions"
@@ -57,7 +57,7 @@
 
 
       <div class="form-group">
-        <div class="col-md-3 col-md-offset-5">
+        <div class="col-xs-3 col-xs-offset-5">
           <button type="submit" class="btn btn-success" ng-click="regionalNotifCtrl.submitNotification()">
             <span ng-hide="regionalNotifCtrl.sending">{{regionalNotifCtrl.lang.notificationSubmit}}</span>
             <div class="spinner" ng-show="regionalNotifCtrl.sending">
