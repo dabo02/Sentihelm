@@ -132,11 +132,16 @@
       videoSessionQuery.get(videoId, {
         success: function (videoSession) {
           videoSession.set('hasBeenWatched', true);
-          videoSession.set('lastWatcher', {
-            __type: "Pointer",
-            className: "User",
-            objectId: userId
+
+          videoSession.add("watchedBy", {
+            userId: userId,
+            date: Date.now()
           });
+          //videoSession.set('lastWatcher', {
+          //  __type: "Pointer",
+          //  className: "User",
+          //  objectId: userId
+          //});
           if (!videoSession.get('officerUser')) {
             videoSession.set('officerUser', {
               __type: "Pointer",

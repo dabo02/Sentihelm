@@ -49,6 +49,12 @@
 
       tip.newTipCount = 0;
 
+      tip.fetchTipFeedCsvData = function(searchParams){
+        return $http.post('/csvexports/exportTipFeed', {
+          params: searchParams
+        });
+      };
+
       tip.getTips = function (searchParams) {
         return $http.get('/tips/list', {
           params: searchParams
@@ -133,8 +139,8 @@
         ioSocket: tipSocket
       });
     }])
-    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService', '$stateParams',
-      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService, $stateParams) {
+    .controller('TipFeedController', ['usSpinnerService', '$anchorScroll', '$state', '$scope', 'Tip', '$location', 'languageService', '$stateParams', '$timeout',
+      function (usSpinnerService, $anchorScroll, $state, $scope, Tip, $location, languageService, $stateParams, $timeout) {
 
         var self = this;
         var spinner = 'loading-tips-spinner';
@@ -146,6 +152,11 @@
 
 
         self.currentTab = 0;
+
+        // csv export headers
+        self.csvHeader = ["Control Number", "First Name", "Last Name", "Username", "Phone", "Crime Type", "Submitted At", "Latitude", "Longitude", "Crime Description"];
+        self.csvData = [];
+
 
         // pagination variables
 
@@ -162,6 +173,21 @@
         self.attachmentDialogIsOn = false;
 
         self.selectedCrimeType = 0;
+
+        self.exportTips = function(){
+
+          var params = {
+            searchString: self.searchString,
+            registrationDate: self.registrationDate,
+            crimeType: self.selectedCrimeType - 1,
+            type: self.currentTab
+
+          };
+
+          Tip.fetchTipFeedCsvData(params).then(function(data){
+            swal("Success!", "The SentiHelm server is processing your Tip Feed export. You will shortly receive an email with a link to the requested file.", "success");
+          })
+        };
 
         self.setCrimeType = function (type) {
           var index = type;

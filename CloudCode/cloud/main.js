@@ -144,8 +144,7 @@ Parse.Cloud.afterSave("TipReport", function(request, response) {
 
   function  sendRequest (clientObject, response) {
 
-    createRequest('http://208.80.239.58:1080/new-tip', clientObject);
-    createRequest('http://sentihelm.elasticbeanstalk.com/new-tip', clientObject);
+    createRequest('http://sentihelmtesting.elasticbeanstalk.com/new-tip', clientObject);
     sendEmail(request, response, clientObject);
 
   }
@@ -165,7 +164,7 @@ Parse.Cloud.afterSave("TipReport", function(request, response) {
       },
 
       success: function(httpResponse) {
-
+        console.log(httpResponse);
       },
       error: function(httpResponse) {
         console.error('Request failed with response code ' + httpResponse.status);
@@ -241,7 +240,8 @@ Parse.Cloud.job("removeInactiveStreams", function(request, status) {
   var VideoSession = Parse.Object.extend("VideoSession");
   var sessions = new Parse.Query(VideoSession);
   sessions.notEqualTo("status", "dropped");
-
+  sessions.descending("createdAt");
+  sessions.limit(1000);
   console.log("Debug 1");
   sessions.find({
     success:function(results){
@@ -256,6 +256,7 @@ Parse.Cloud.job("removeInactiveStreams", function(request, status) {
         console.log("Days " + date.getDate() + " "+ result.updatedAt.getDate());
         if(delayHours >= 2 || delayDays >0 ){
           result.set("status", "dropped");
+          console.log(result.id);
           result.save();
         }
       });
@@ -283,7 +284,7 @@ Parse.Cloud.job("editUsers", function(request, status) {
 
   var User = Parse.Object.extend("User");
 
-  var users = ['jblack', 'tbaldwin', 'dbaloglou', 'gmarksberry',
+  var users = ['jblack', 'tbaldwin', 'Parsealoglou', 'gmarksberry',
     'slinville', 'abiddle', 'jblack', 'ntimon', 'tbaldwin',
     'jsmith_admin', 'jsmith'
   ];
@@ -369,7 +370,7 @@ Parse.Cloud.define("updateUserRole", function(req, res){
   users.forEach(function(user, index){
     userQuery.get(user.objectId).then(function(fetchedUser) {
       if (action === "add") {
-       if(role === "employee"){
+        if(role === "employee"){
           fetchedUser.remove("roles", "admin");
         }
         else{
@@ -480,11 +481,11 @@ Parse.Cloud.define("updateUser", function(req, res){
 
       if(action === "delete"){ // on delete only roles and permissions ar unset
         user.unset(attrs[i]);
-        if(attrs[i] === 'roles'){
+        if(attrs[i] === "roles"){
           user.addUnique(attrs[i], "user");
         }
       }
-      else if(attrs[i] === 'roles'){
+      else if(attrs[i] === "roles"){
         if(values[i] === "employee"){
           user.remove(attrs[i], "admin");
         }
@@ -508,7 +509,7 @@ Parse.Cloud.define("updateUser", function(req, res){
       }
       else{
         user.set(attrs[i], {
-          __type: 'Bytes',
+          __type: "Bytes",
           base64: values[i]
         });
       }
@@ -523,4 +524,262 @@ Parse.Cloud.define("updateUser", function(req, res){
   }).then(null, function(error){
     res.error(error);
   });
+});
+
+
+Parse.Cloud.define('exportTipFeed-trigger', function(response,request){
+
+  console.log(request);
+  Parse.Cloud.httpRequest({
+    method: "POST",
+    url: "https://api.parse.com/1/jobs/exportTipFeed",
+    headers: {
+      "X-Parse-Application-Id": "myAppId",
+      "X-Parse-Master-Key": "MyMasterKey",
+      "Content-Type": "application/json"
+    },
+    body: {
+      "request": request,
+      "response": response
+    },
+    success: function(httpResponse) {
+      response.success(httpResponse.text);
+    },
+    error: function(httpResponse) {
+      response.error('Request failed with response code ' + httpResponse.status);
+    }
+  });
+});
+
+Parse.Cloud.job("exportTipFeed", function(request, status){
+
+  console.log("Entro al job" + request);
+  //var allTips = [];
+  console.log("Entered cc");
+  var allTips = "Control Number,First Name,Last Name,Username,Phone,Crime Type,Submitted At,Latitude,Longitude,Crime Description\n";
+  var options = request.params;
+
+  var EncryptionManager = require("cloud/EncryptionManager.js").EncryptionManager;
+  var PasswordGenerator = require("cloud/PasswordGenerator.js").PasswordGenerator;
+
+  //Generates the password for the encription manager.
+  var passwordGenerator = new PasswordGenerator();
+
+  //Encrypts and decrypts
+  var encryptionManager = new EncryptionManager();
+
+  function getAllTips(loopCount){
+
+
+    var TipReport = Parse.Object.extend("TipReport");
+    var tipReportQuery = new Parse.Query(TipReport);
+    var parseSkipLimit = 10000;
+
+    // If there's a searchString get the username or email associated with that tip.
+    if (options.searchString) {
+      var usernameQuery = new Parse.Query("_User");
+      usernameQuery.startsWith("username", options.searchString);
+
+      var emailQuery = new Parse.Query("_User");
+      emailQuery.startsWith("email", options.searchString);
+
+      var innerQuery = Parse.Query.or(usernameQuery, emailQuery);
+      tipReportQuery.matchesQuery("user", innerQuery);
+    }
+
+    // Starts to find tips on a date greater than or equal to what was specified.
+    if (options.registeredOn) {
+      tipReportQuery.greaterThanOrEqualTo("createdAt", new Date(options.registeredOn));
+    }
+
+    // Gets crimes of a type
+    if (parseInt(options.type) && parseInt(options.type) > -1) {
+      tipReportQuery.equalTo("crimeListPosition", parseInt(options.type));
+    }
+
+    tipReportQuery.equalTo("clientId", {
+      __type: "Pointer",
+      className: "Client",
+      objectId: options.homeClient
+    });
+
+    // Sort by date
+    tipReportQuery.descending("createdAt");
+
+    tipReportQuery.include("user");
+
+
+    // Switch between report types
+    if (parseInt(options.reportType) > 0) {
+      //var reportType = options.reportType.toLowerCase() || 'all';
+
+      // Show only crime reports
+      if (parseInt(options.reportType) == 1) {
+        tipReportQuery.exists("user");
+      }
+      // Show only anonymous tips
+      if (parseInt(options.reportType) == 2) {
+        tipReportQuery.equalTo("user", undefined);
+      }
+
+    }
+
+    var limit = 1000;
+    var skip = limit * loopCount;
+
+    if (skip > parseSkipLimit) {
+      //todo track last tip creation date for parse hack
+      //tipReportQuery.lessThanOrEqualTo("createdAt", lastUserCreatedAt); // talk over this
+      //skip = 0;
+    }
+
+    tipReportQuery.skip(skip);
+    tipReportQuery.limit(limit);
+
+    tipReportQuery.find({
+      success: function (tips) {
+        if(tips.length > 0) {
+          tips.forEach(function (singleTip) {
+
+            var tip = singleTip.toJSON();
+
+            if (tip.user) {
+              tip.user = singleTip.get("user").toJSON();
+              var tipUser = tip.user;
+            }
+
+            var passPhrase;
+            if (!tip.smsId) {
+              passPhrase = passwordGenerator.generatePassword((!!tipUser ? tipUser.username : tip.anonymousPassword), !tipUser);
+            } else {
+              passPhrase = passwordGenerator.generatePassword(tip.smsId);
+            }
+
+            //If not an anonymous tip, get user information
+            if (!!tipUser) {
+              tip.firstName = encryptionManager.decrypt(passPhrase, tipUser.firstName.base64);
+              tip.lastName = encryptionManager.decrypt(passPhrase, tipUser.lastName.base64);
+              tip.username = tipUser.username;
+              tip.phone = encryptionManager.decrypt(passPhrase, tipUser.phoneNumber.base64);
+            } else {
+              //Set tip to anonymous if the user was not found
+              tip.firstName = "ANONYMOUS";
+              tip.lastName = "";
+              tip.username = "";
+              tip.phone = "";
+            }
+
+            //Prepare tip object with the values needed in
+            //the front end; coordinates for map, tip control
+            //number, and formatted date
+            tip.latitude = encryptionManager.decrypt(passPhrase, tip.crimePositionLatitude.base64);
+            tip.longitude = encryptionManager.decrypt(passPhrase, tip.crimePositionLongitude.base64)
+
+            tip.controlNumber = tip.objectId + "-" + tip.controlNumber;
+            var tempDate = (new Date(tip.createdAt));
+            tempDate = tempDate.toDateString() + " - " + tempDate.toLocaleTimeString();
+            tip.date = tempDate;
+            tip.crimeDescription = tip.crimeDescription ? encryptionManager.decrypt(passPhrase, tip.crimeDescription.base64) : "";
+            tip.crimeType = encryptionManager.decrypt(passPhrase, tip.crimeType.base64);
+            tip.crimeListPosition = tip.crimeListPosition;
+
+            if (tip.smsNumber) {
+              tip.phone = encryptionManager.decrypt(passPhrase, tip.smsNumber.base64);
+            }
+
+            allTips += tip.controlNumber + "," + tip.firstName + "," + tip.lastName + "," + tip.username + "," + tip.phone + "," +
+            tip.crimeType + "," + tip.date + "," + tip.latitude + "," + tip.longitude + "," + tip.crimeDescription + "\n";
+
+            //var info = {
+            //  controlNumber: tip.controlNumber,
+            //  firstName: tip.firstName,
+            //  lastName: tip.lastName,
+            //  username: tip.username,
+            //  phone: tip.phone,
+            //  crimeType: tip.crimeType,
+            //  date: tip.date,
+            //  latitude: tip.latitude,
+            //  longitude: tip.longitude,
+            //  description: tip.crimeDescription
+            //};
+            //allTips.push(info);
+          });
+
+          loopCount++;
+          getAllTips(loopCount);
+        }
+        else{
+          //save file to parse
+          var CSVExport = Parse.Object.extend("CSVExport");
+
+          var csvExport = new CSVExport();
+
+          var Buffer = require("buffer").Buffer;
+
+          csvExport.set("csvFile", new Parse.File("file", {
+            base64: new Buffer(allTips).toString("base64")
+          }));
+
+          csvExport.set("client", {
+            __type: "Pointer",
+            className: "Client",
+            objectId: options.homeClient
+        });
+
+          csvExport.set("type", "tipFeed");
+
+          csvExport.save().then(function(report){
+            //send email using mailgun
+
+            var Mailgun = require("mailgun");
+            Mailgun.initialize("bastaya.mailgun.org", "key-6hn8wfe4o5-k--6kzt4nclk1df2zyik0");
+
+            //Create html string to send in E-email
+            var htmlMsg = "";
+            htmlMsg += "<html>";
+            htmlMsg += "<head><script src='http://code.jquery.com/jquery-1.11.0.min.js'></script> <link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css'>  <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js'></script></head>";
+            htmlMsg += "<body><div style='margin-left:25%; margin-right:25%;'><center><a href='http://sentihelm.elasticbeanstalk.com'><img src='http://sentihelm.elasticbeanstalk.com/resources/images/sentihelm.png' height='70' width='300'/></a></center><br/><br/><br/>";
+            htmlMsg += "<font size ='4'>Hello Officer, <br /><br/><p>A new TipFeed CSV Export is ready for download</p>";
+            htmlMsg += "<p><br /><center><a href='http://sentihelm.elasticbeanstalk.com/csvexports/:'" + report.id + "><button type='button' id='button' class='btn btn-primary'>Download Report</button></a></center> <br /></p>";
+            htmlMsg += "Kind Regards, <br />The SentiGuard Team</font><br/><br/><br/>";
+            htmlMsg += "<center><p><font size = '4'> If you have any question call Customer Support: 813-600-6060</font> <br/><br/>";
+            htmlMsg += "<a href='https://www.facebook.com/pages/SentiGuard/391316054350720'><img src='http://sentiguard.com/assets/facebook.png' /></a>";
+            htmlMsg +="<a href='https://www.linkedin.com/company/sentiguard?trk=company_logo'><img src ='http://sentiguard.com/assets/linkedin.png'/></a></p></center>";
+
+            htmlMsg +="</div></body> </html>";
+
+            //Send Email
+            Mailgun.sendEmail ({
+
+                from: "SentiGuard App <contact@sentiguard.com>",
+                subject: "SentiHelm TipFeed CSV Export Link",
+                html: htmlMsg,
+                to: options.email
+
+              },
+              {
+                success: function(httpResponse) {
+
+                },
+                error: function(httpResponse) {
+                  console.error(httpResponse);
+                }
+              });
+
+            status.success();
+          }).then(null, function(error){
+            status.error(error);
+          });
+        }
+      },
+      error: function (object, error) {
+        // The object was not retrieved successfully.
+        console.error("Error fetching tip feed data for export");
+        status.error(error);
+      }
+    });
+  }
+
+  getAllTips(0);
+
 });

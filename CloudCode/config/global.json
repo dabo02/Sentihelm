@@ -1,11 +1,11 @@
 {
     "applications": {
-        "SentiGuard": {
-            "applicationId": "csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd", 
-            "masterKey": "DuduvRG41DNRDbbF0Ik2mi7WVKR8FdaFBSH7Pdqu"
+        "SentiGuard_Testing": {
+            "applicationId": "ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL", 
+            "masterKey": "vM4jrDPgyosomU5pxwByYPrxZ39o8DZM8sQ1wpST"
         }, 
         "_default": {
-            "link": "SentiGuard"
+            "link": "SentiGuard_Testing"
         }
     }, 
     "global": {

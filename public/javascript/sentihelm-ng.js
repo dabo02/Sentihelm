@@ -213,6 +213,26 @@
             return routingService.checkUserStatus(this.data.authorizedRoles, "Video Archive");
           }
         }
+      })
+
+      //csvExport endpoint/url
+      .state('csv-exports', {
+        url: "/csv-exports",
+        templateUrl: "/csv-exports.html",
+        data: {
+          authorizedRoles: [USER_ROLES.admin]
+        },
+        resolve: {
+          // Reads the Routing Service
+          routingService: 'RoutingService',
+
+          // Receives the Routing Service, checks if user is logged in,
+          // executes the login dialog if needed and waits for the dialog
+          // to close before loading the state.
+          authenticate: function (routingService) {
+            return routingService.checkUserStatus(this.data.authorizedRoles, "CSV Exports");
+          }
+        }
       });
     }]);
 
@@ -2532,9 +2552,9 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
       }
     }
 
-    this.saveUser = function(){
+    adminPanelCtrl.saveUser = function(){
 
-      if(adminPanelCtrl.formUser.state !== 'Select' || adminPanelCtrl.formUser.role !== 'Select') {
+      if(adminPanelCtrl.formUser.state !== 'SELECT' || adminPanelCtrl.formUser.roles !== 'SSELECT') {
         if(/(^\d{1,5}$)|(^\d{1,5}-\d{1,4}$)/.test(adminPanelCtrl.formUser.zipCode)){
           if (adminPanelCtrl.addingUser) {
             adminPanelCtrl.addUser(adminPanelCtrl.formUser);
@@ -2556,12 +2576,12 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
     }
 
     //Adds new SentiHelm user
-    this.addUser = function (newUser) {
+    adminPanelCtrl.addUser = function (newUser) {
 
       adminPanelCtrl.successMessage = "";
       adminPanelCtrl.sending = true;
 
-      newUser.roles = [newUser.roles];
+      newUser.roles = newUser.roles;
 
       var data = {
         newOfficer: newUser

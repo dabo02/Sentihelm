@@ -29,6 +29,7 @@
   var db = require('./lib/db');
   var VideoSession = db.Object.extend('VideoSession');
 
+
   /**
    * The server makes extensive use of socket.io to send real time notifications
    * to connected users.
@@ -65,6 +66,7 @@
     var videoSessions = require('./routes/video-sessions');
     var notifications = require('./routes/notifications');
     var dashboard = require('./routes/dashboard');
+    var csvexports = require('./routes/csv-exports');
 
     app
       .use(routes)
@@ -76,7 +78,8 @@
       .use('/analyze', dataAnalysis)
       .use('/videosessions', videoSessions)
       .use('/notifications', notifications)
-      .use('/dashboard', dashboard);
+      .use('/dashboard', dashboard)
+      .use('/csvexports', csvexports);
 
     app.post('/request-video-connection', bodyParser(), function (request, response) {
 
