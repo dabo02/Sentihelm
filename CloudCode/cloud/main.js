@@ -527,15 +527,15 @@ Parse.Cloud.define("updateUser", function(req, res){
 });
 
 
-Parse.Cloud.define('exportTipFeed-trigger', function(response,request){
+Parse.Cloud.define('exportTipFeedTrigger', function(response,request){
 
   console.log(request);
   Parse.Cloud.httpRequest({
     method: "POST",
     url: "https://api.parse.com/1/jobs/exportTipFeed",
     headers: {
-      "X-Parse-Application-Id": "myAppId",
-      "X-Parse-Master-Key": "MyMasterKey",
+      "X-Parse-Application-Id": "ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL",
+      "X-Parse-Master-Key": "vM4jrDPgyosomU5pxwByYPrxZ39o8DZM8sQ1wpST",
       "Content-Type": "application/json"
     },
     body: {
@@ -553,6 +553,7 @@ Parse.Cloud.define('exportTipFeed-trigger', function(response,request){
 
 Parse.Cloud.job("exportTipFeed", function(request, status){
 
+  Parse.Cloud.useMasterKey();
   console.log("Entro al job" + request);
   //var allTips = [];
   console.log("Entered cc");

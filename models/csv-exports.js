@@ -14,7 +14,7 @@
 
     return Q.Promise(function (resolve, reject) {
 
-      db.Cloud.run('exportTipFeed-trigger', options, {
+      db.Cloud.run('exportTipFeedTrigger', options, {
         success: function (result) {
           console.log('success cc')
         },
