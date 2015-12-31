@@ -2212,7 +2212,7 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
   ]);
 
 //Controller for Google map in the 'Maps' state.
-  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', function (PoliceStationsService, $scope) {
+  app.controller('PoliceStationsMapController', ['PoliceStationsService', '$scope', 'languageService', function (PoliceStationsService, $scope, languageService) {
 
     var self = this;
 
@@ -2230,6 +2230,9 @@ app.controller('ToastController', ['$scope', '$state', 'ngToast', function ($sco
       }
     };
 
+    self.lang = languageService.getlang().then(function(response){
+            self.lang = response;
+    });
     PoliceStationsService.getCenter()
       .then(function (center) {
         self.map.center = angular.copy(center);
@@ -2554,7 +2557,7 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
 
     adminPanelCtrl.saveUser = function(){
 
-      if(adminPanelCtrl.formUser.state !== 'SELECT' || adminPanelCtrl.formUser.roles !== 'SSELECT') {
+      if(adminPanelCtrl.formUser.state !== 'Select' && adminPanelCtrl.formUser.roles !== 'Select') {
         if(/(^\d{1,5}$)|(^\d{1,5}-\d{1,4}$)/.test(adminPanelCtrl.formUser.zipCode)){
           if (adminPanelCtrl.addingUser) {
             adminPanelCtrl.addUser(adminPanelCtrl.formUser);
@@ -2601,6 +2604,7 @@ app.controller('AdminPanelController', ['socket', 'Session', '$anchorScroll', '$
         }).then(function(){
           $location.hash('top');
           $anchorScroll();
+          adminPanelCtrl.formUser = {};
         });
     };
 

@@ -211,8 +211,8 @@
         "tipFeedAnonymous":"Anonymous",
         "AdminUsers" : "Users",
         "mapSearch" : "Search",
-        "mapAdd" : "Add Police Station",
-        "mapSelect" : "Select Location",
+        "mapAddPoliceStation" : "Add Police Station",
+        "mapSelectLocation" : "Select Location",
         "mapCancel" : "Cancel",
         "minutesAgo" : "minutes ago",
         "streamUbication" : "Location",
@@ -228,8 +228,9 @@
         "notificationChooseAllRegions" : "Send To All Regions",
         "notificationNoRegionDefined" : "No Regions Have Been Defined",
         "videostreamNoVideoStream" : "No Video Stream Available",
-        "mostwantedUnknown" : "Unknown"
-
+        "mostwantedUnknown" : "Unknown",
+        "watchStatus" : ['Watched', 'Unwatched', 'All'],
+        "videoStatus" : "Status"
       };
 
       self.ES = {
@@ -422,8 +423,8 @@
         "tipFeedNoNew": "No hay nuevos reportes",
         "AdminUsers" : "Usuarios",
         "mapSearch" : "Buscar",
-        "mapAdd" : "Añadir Estación de Policia",
-        "mapSelect" : "Elegir Dirección",
+        "mapAddPoliceStation" : "Añadir Estación de Policia",
+        "mapSelectLocation" : "Elegir Ubicación",
         "mapCancel" : "Cancelar",
         "streamUbication" : "Ubicación",
         "streamStop" : "Detener la Transmisión",
@@ -438,8 +439,9 @@
         "notificationChooseAllRegions" : "Enviar a Todas las Regiones",
         "notificationNoRegionDefined" : "No Hay Regiones Definidas",
         "videostreamNoVideoStream" : "No Hay Videollamadas Disponibles",
-        "mostwantedUnknown" : "Desconocido"
-
+        "mostwantedUnknown" : "Desconocido",
+        "watchStatus" : ['Visto', 'No-Visto', 'Todo'],
+        "videoStatus" : "Estado"
 
       };
 

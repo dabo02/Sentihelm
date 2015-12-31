@@ -7,6 +7,98 @@
   var util = require('../lib/util');
   var Q = require('q');
 
+
+  module.exports.getUsersList = function (query, session){
+
+    return Q.Promise(function(resolve,reject, notify) {
+
+      var User = db.Object.extend("_User");
+      var adminPanelQuery = new db.Query(User);
+      var skip = parseInt(query.skip, 10);
+      var limit = parseInt(query.limit, 10);
+      var searchString = query.searchString;
+      var registrationDate = query.registrationDate;
+      var role = query.role;
+      var homeClient = session.user.homeClient.objectId;
+      var lastUserCreatedAt = query.lastUserCreatedAt;
+      var parseSkipLimit = 10000;
+
+      if (homeClient) {
+        if (searchString) {
+          var usernameQuery = new db.Query("_User");
+          usernameQuery.startsWith("username", searchString);
+
+          var emailQuery = new db.Query("_User");
+          emailQuery.startsWith("email", searchString);
+
+          adminPanelQuery = db.Query.or(usernameQuery, emailQuery);
+        }
+
+        if (registrationDate) {
+          adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(registrationDate));
+        }
+
+        if(role){
+          adminPanelQuery.equalTo('roles', role);
+        }
+        else{
+          adminPanelQuery.containedIn('roles', ['admin','employee']);
+        }
+
+        adminPanelQuery.equalTo('homeClient', {
+          __type: "Pointer",
+          className: "Client",
+          objectId: homeClient
+        });
+
+        adminPanelQuery.descending("createdAt");
+
+        //parse skip limit hack for fetching more than 11,001 records..
+        if (skip > parseSkipLimit) {
+          adminPanelQuery.lessThanOrEqualTo("createdAt", lastUserCreatedAt); // talk over this
+          skip = 0;
+        }
+
+        adminPanelQuery.skip(skip);
+        adminPanelQuery.limit(limit);
+        adminPanelQuery.find({
+          success: function (users) {
+
+
+            adminPanelQuery.count({
+              success: function (count) {
+                var lastPageNum = Math.ceil(count / limit);
+
+                var data = {
+                  users: users,
+                  lastPageNum: lastPageNum,
+                  userTotal: count
+                };
+                resolve(data);
+              },
+              error: function (object, error) {
+                // The object was not retrieved successfully.
+                console.log("Error counting video archives.");
+                reject(error);
+              }
+            })
+
+
+          },
+          error: function (object, error) {
+            // The object was not retrieved successfully.
+            console.error('Error fetching users list');
+            reject(error);
+          }
+        });
+      }
+      else{
+        reject(error);
+      }
+
+    });
+  };
+
   module.exports.sendPasswordResetRequest = function (email) {
     return Q.Promise(function (resolve, reject, notify) {
       db.requestPasswordReset(email)

@@ -7,91 +7,11 @@ var usersModel = require('../models/users');
 router
     .use(util.restrict)
     .get('/list', function (req, res) {
-        var User = db.Object.extend("_User");
-        var adminPanelQuery = new db.Query(User);
-        var skip = parseInt(req.query.skip, 10);
-        var limit = parseInt(req.query.limit, 10);
-        var searchString = req.query.searchString;
-        var registrationDate = req.query.registrationDate;
-        var role = req.query.role;
-        var homeClient = req.session.user.homeClient.objectId;
-        var lastUserCreatedAt = req.query.lastUserCreatedAt;
-        var parseSkipLimit = 10000;
-
-        if (homeClient) {
-            if (searchString) {
-                var usernameQuery = new db.Query("_User");
-                usernameQuery.startsWith("username", searchString);
-
-                var emailQuery = new db.Query("_User");
-                emailQuery.startsWith("email", searchString);
-
-                adminPanelQuery = db.Query.or(usernameQuery, emailQuery);
-            }
-
-            if (registrationDate) {
-                adminPanelQuery.greaterThanOrEqualTo('createdAt', new Date(registrationDate));
-            }
-
-            if(role){
-                adminPanelQuery.equalTo('roles', role);
-            }
-            else{
-                adminPanelQuery.containedIn('roles', ['admin','employee']);
-            }
-
-            adminPanelQuery.equalTo('homeClient', {
-            __type: "Pointer",
-            className: "Client",
-            objectId: homeClient
-            });
-
-            adminPanelQuery.descending("createdAt");
-
-            //parse skip limit hack for fetching more than 11,001 records..
-            if (skip > parseSkipLimit) {
-                adminPanelQuery.lessThanOrEqualTo("createdAt", lastUserCreatedAt); // talk over this
-                skip = 0;
-            }
-
-            adminPanelQuery.skip(skip);
-            adminPanelQuery.limit(limit);
-            adminPanelQuery.find({
-            success: function (users) {
-
-
-              adminPanelQuery.count({
-                  success: function (count) {
-                    var lastPageNum = Math.ceil(count / limit);
-
-                      res.send({
-                          users: users,
-                          lastPageNum: lastPageNum,
-                          userTotal: count
-                      });
-                  },
-                  error: function (object, error) {
-                    // The object was not retrieved successfully.
-                    console.log("Error counting video archives.");
-                    res.status(503)
-                      .send('Error counting video archives.');
-                  }
-                })
-
-
-            },
-            error: function (object, error) {
-              // The object was not retrieved successfully.
-              console.error('Error fetching users list');
-              res.status(503)
-                .send('Error fetching users list');
-            }
-            });
-        }
-      else{
-            res.status(503)
-              .send('Error fetching users list');
-        }
+        usersModel.getUsersList(req.query, req.session).then(function (data) {
+            res.send(data);
+        }, function (error) {
+            res.status(503).send("FAILURE: Could not get user(s).");
+        });
     })
 
     .post('/update/role', function(req, res){

@@ -88,20 +88,20 @@
     </div>
   </div>
 
-  <div class="form-group">
-    <div class="col-md-8">
+  <div class="form-group row">
+    <div class="col-xs-4">
 
             <button type="submit" class="btn btn-danger" ng-click="confirm({index: index}); toggleEditing()" ng-disabled="disableNewButton
                     && index === (wantedArray.length-1)" ng-hide="justCreated">
                     {{mostWantedCtrl.lang.wantedWdelete}}
             </button>
     </div>
-    <div class="col-md-3 col-md-pull-3">
+    <div class="col-xs-4">
             <button class="btn btn-warning col-md-offset-3" type="submit" ng-click="toggleEditing()" ng-hide="justCreated">
                     {{mostWantedCtrl.lang.wantedDiscard}}
             </button>
     </div>
-    <div class="col-md-1 col-md-pull-3">
+    <div class="col-xs-4">
       <button type="submit" class="btn btn-success done-editing-btn" ng-click="save({index:index}); toggleEditing()" ng-disabled="!editedPeopleIndices[index]">
               <span class="glyphicon glyphicon-ok"></span>
               {{mostWantedCtrl.lang.wantedFinish}}
