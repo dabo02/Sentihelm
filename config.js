@@ -6,18 +6,18 @@ module.exports = {
         appId: 'csvQJc5N6LOCQbAnzeBlutmYO0e6juVPwiEcW9Hd',
         jsKey: 'T9wCcLw0g1OBtlVg0s2gQoGITog5a0p77Pg3CIor'
      */ //SentiGuard_Testing
-        appId: 'ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL',
-        jsKey: 'oC7TEezvGdh3FTZJneATR23UN47E9uAO7rzstK6A'
+        //appId: 'ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL',
+        //jsKey: 'oC7TEezvGdh3FTZJneATR23UN47E9uAO7rzstK6A'
 
         //SentiGuard
-        //appId: 'GbxkftLOI1n5SbEX4SShFyrX8r5ItIYj4C9RDHQI',
-        //jsKey: 'c9jey3pNfUaZC94d1MYNVWCLWogIJ95Rfv9ozsor'
+        appId: 'GbxkftLOI1n5SbEX4SShFyrX8r5ItIYj4C9RDHQI',
+        jsKey: 'c9jey3pNfUaZC94d1MYNVWCLWogIJ95Rfv9ozsor'
     },
     opentok: {
-    /*
-        key: '44755992',
-        secret: '66817543d6b84f279a2f5557065b061875a4871f'
-    */
+
+        //key: '44755992',
+        //secret: '66817543d6b84f279a2f5557065b061875a4871f'
+
         key: '44999872',
         secret: '285e2ae6786c262146dcd2d0dd16e676ef120f9d'
 

@@ -24,7 +24,7 @@
     "mime-types": "^2.0.10",
     "morgan": "^1.0.1",
     "node-karma-wrapper": "^0.2.2",
-    "opentok": "^2.2.4",
+    "opentok": "^2.4.0",
     "parse": "1.4.1",
     "q": "^1.2.0",
     "sjcl": "git+https://github.com/optivondevelopers/sjcl.git",

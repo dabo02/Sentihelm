@@ -554,11 +554,10 @@ Parse.Cloud.define('exportTipFeedTrigger', function(response,request){
 Parse.Cloud.job("exportTipFeed", function(request, status){
 
   Parse.Cloud.useMasterKey();
-  console.log("Entro al job" + request);
+  console.log("Entro al job \n" + JSON.stringify(request.params));
   //var allTips = [];
-  console.log("Entered cc");
   var allTips = "Control Number,First Name,Last Name,Username,Phone,Crime Type,Submitted At,Latitude,Longitude,Crime Description\n";
-  var options = request.params;
+  var options = request.body.response;
 
   var EncryptionManager = require("cloud/EncryptionManager.js").EncryptionManager;
   var PasswordGenerator = require("cloud/PasswordGenerator.js").PasswordGenerator;
@@ -577,31 +576,31 @@ Parse.Cloud.job("exportTipFeed", function(request, status){
     var parseSkipLimit = 10000;
 
     // If there's a searchString get the username or email associated with that tip.
-    if (options.searchString) {
+    if (options.requirement.params.searchString) {
       var usernameQuery = new Parse.Query("_User");
-      usernameQuery.startsWith("username", options.searchString);
+      usernameQuery.startsWith("username", options.requirement.params.searchString);
 
       var emailQuery = new Parse.Query("_User");
-      emailQuery.startsWith("email", options.searchString);
+      emailQuery.startsWith("email", options.requirement.params.searchString);
 
       var innerQuery = Parse.Query.or(usernameQuery, emailQuery);
       tipReportQuery.matchesQuery("user", innerQuery);
     }
 
     // Starts to find tips on a date greater than or equal to what was specified.
-    if (options.registeredOn) {
-      tipReportQuery.greaterThanOrEqualTo("createdAt", new Date(options.registeredOn));
+    if (options.requirement.params.registeredOn) {
+      tipReportQuery.greaterThanOrEqualTo("createdAt", new Date(options.requirement.params.registeredOn));
     }
 
     // Gets crimes of a type
-    if (parseInt(options.type) && parseInt(options.type) > -1) {
-      tipReportQuery.equalTo("crimeListPosition", parseInt(options.type));
+    if (parseInt(options.requirement.params.type) && parseInt(options.requirement.params.type) > -1) {
+      tipReportQuery.equalTo("crimeListPosition", parseInt(options.requirement.params.type));
     }
 
     tipReportQuery.equalTo("clientId", {
       __type: "Pointer",
       className: "Client",
-      objectId: options.homeClient
+      objectId: options.requirement.params.homeClient
     });
 
     // Sort by date
@@ -611,15 +610,15 @@ Parse.Cloud.job("exportTipFeed", function(request, status){
 
 
     // Switch between report types
-    if (parseInt(options.reportType) > 0) {
-      //var reportType = options.reportType.toLowerCase() || 'all';
+    if (parseInt(options.requirement.params.reportType) > 0) {
+      //var reportType = options.requirement.params.reportType.toLowerCase() || 'all';
 
       // Show only crime reports
-      if (parseInt(options.reportType) == 1) {
+      if (parseInt(options.requirement.params.reportType) == 1) {
         tipReportQuery.exists("user");
       }
       // Show only anonymous tips
-      if (parseInt(options.reportType) == 2) {
+      if (parseInt(options.requirement.params.reportType) == 2) {
         tipReportQuery.equalTo("user", undefined);
       }
 
@@ -724,7 +723,7 @@ Parse.Cloud.job("exportTipFeed", function(request, status){
           csvExport.set("client", {
             __type: "Pointer",
             className: "Client",
-            objectId: options.homeClient
+            objectId: options.requirement.params.homeClient
         });
 
           csvExport.set("type", "tipFeed");
@@ -755,7 +754,7 @@ Parse.Cloud.job("exportTipFeed", function(request, status){
                 from: "SentiGuard App <contact@sentiguard.com>",
                 subject: "SentiHelm TipFeed CSV Export Link",
                 html: htmlMsg,
-                to: options.email
+                to: options.requirement.params.email
 
               },
               {

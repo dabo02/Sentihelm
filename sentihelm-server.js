@@ -108,7 +108,7 @@
         //Create the token that will be sent to the mobile client
         var clientToken = opentok.generateToken(session.sessionId, {
           role: 'publisher',
-          expireTime: ((new Date().getTime()) + 36000),
+          expireTime: ((new Date().getTime()/1000) + 36000),
           data: JSON.stringify(connection)
         });
 
