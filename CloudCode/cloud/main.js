@@ -1,6 +1,6 @@
 Parse.Cloud.define("receiveSMS", function(request, response) {
-  var EncryptionManager = require('cloud/EncryptionManager.js').EncryptionManager;
-  var PasswordGenerator = require('cloud/PasswordGenerator.js').PasswordGenerator;
+  var EncryptionManager = require('./EncryptionManager').EncryptionManager;
+  var PasswordGenerator = require('./PasswordGenerator').PasswordGenerator;
 
   //Query the client to whom the To number pertains
   var Client = Parse.Object.extend("Client");
@@ -91,6 +91,24 @@ Parse.Cloud.define("sendSMS",function(request, response){
     }
   );
 
+});
+
+
+Parse.Cloud.define("sendPushNotification",function(request, response){
+
+  //Parse.Cloud.useMasterKey();
+
+  Parse.Push.send(request.params.notifParams, {
+    success: function() {
+      console.log('##### PUSH OK');
+      response.success("Push Sent");
+    },
+    error: function(error) {
+      console.log('##### PUSH ERROR: ' + error.message);
+      response.error(error);
+    },
+    useMasterKey: true
+  });
 })
 
 Parse.Cloud.beforeSave("TipReport", function(request,response){
@@ -273,8 +291,8 @@ Parse.Cloud.job("removeInactiveStreams", function(request, status) {
 
 Parse.Cloud.job("editUsers", function(request, status) {
 
-  var EncryptionManager = require('cloud/EncryptionManager.js').EncryptionManager;
-  var PasswordGenerator = require('cloud/PasswordGenerator.js').PasswordGenerator;
+  var EncryptionManager = require('./EncryptionManager').EncryptionManager;
+  var PasswordGenerator = require('./PasswordGenerator').PasswordGenerator;
 
   //Generates the password for the encription manager.
   var passwordGenerator = new PasswordGenerator();
@@ -376,6 +394,7 @@ Parse.Cloud.define("updateUserRole", function(req, res){
         else{
           fetchedUser.remove("roles", "employee");
         }
+
         Parse.Cloud.useMasterKey();
         fetchedUser.save();
 
@@ -404,7 +423,7 @@ Parse.Cloud.define("updateUserRole", function(req, res){
 
 Parse.Cloud.define("updatePassword", function(req, res){
 
-  var PasswordGenerator = require('cloud/PasswordGenerator.js').PasswordGenerator;
+  var PasswordGenerator = require('./PasswordGenerator').PasswordGenerator;
 
   //Generates the password for the encription manager.
   var passwordGenerator = new PasswordGenerator();
@@ -425,6 +444,7 @@ Parse.Cloud.define("updatePassword", function(req, res){
       //Throw pass incorrect
       fetchedUser.set("password", newPass);
       fetchedUser.set("userPassword", passwordGenerator.md5(newPass));
+
       Parse.Cloud.useMasterKey();
 
       fetchedUser.save().then(function(savedUser){
@@ -559,8 +579,8 @@ Parse.Cloud.job("exportTipFeed", function(request, status){
   var allTips = "Control Number,First Name,Last Name,Username,Phone,Crime Type,Submitted At,Latitude,Longitude,Crime Description\n";
   var options = request.body.response;
 
-  var EncryptionManager = require("cloud/EncryptionManager.js").EncryptionManager;
-  var PasswordGenerator = require("cloud/PasswordGenerator.js").PasswordGenerator;
+  var EncryptionManager = require("./EncryptionManager").EncryptionManager;
+  var PasswordGenerator = require("./PasswordGenerator").PasswordGenerator;
 
   //Generates the password for the encription manager.
   var passwordGenerator = new PasswordGenerator();

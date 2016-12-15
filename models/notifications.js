@@ -35,7 +35,8 @@
 
     function pushNotification(notification) {
         var pushChannels = ['user_' + notification.attributes.userId];
-        return db.Push.send({
+
+        var notifParams = {
             channels: pushChannels,
             data: {
                 alert: "New Follow-up Notification Available",
@@ -45,7 +46,32 @@
                 pushId: notification.id,
                 type: "follow-up"
             }
+        };
+
+        db.Cloud.run('sendPushNotification', {
+            notifParams: notifParams
+        }, {
+            success: function (result) {
+               console.log(result)
+            },
+            error: function (error) {
+                //deleteSavedNotification(notification, error);
+               console.log(error);
+            }
         });
+
+        //db.Cloud.useMasterKey();
+        //return db.Push.send({
+        //    channels: pushChannels,
+        //    data: {
+        //        alert: "New Follow-up Notification Available",
+        //        badge: "Increment",
+        //        sound: "cheering.caf",
+        //        title: "Notification",
+        //        pushId: notification.id,
+        //        type: "follow-up"
+        //    }
+        //});
     }
 
     function saveAndPushNotification(notificationData) {
@@ -162,14 +188,27 @@
                             type: "regional"
                         }
                     }
-                    return db.Push.send(notifParams);
-                })
-                .then(function () {
-                    resolve();
-                }, function (error) {
-                    deleteSavedNotification(notification, error);
-                    reject(error);
+                    //return db.Push.send(notifParams);
+
+                    db.Cloud.run('sendPushNotification', {
+                        notifParams: notifParams
+                    }, {
+                        success: function (result) {
+                            resolve(result);
+                        },
+                        error: function (notification, error) {
+                            deleteSavedNotification(notification, error);
+                            reject(error);
+                        }
+                    });
+
                 });
+                //.then(function () {
+                //    resolve();
+                //}, function (error) {
+                //    deleteSavedNotification(notification, error);
+                //    reject(error);
+                //});
         });
     };
 

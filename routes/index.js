@@ -49,29 +49,43 @@
         //decryptedUser.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
         //decryptedUser.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
 
-        user.attributes.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
-        user.attributes.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
-        user.attributes.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
-        user.attributes.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
+        var myUser = {
+
+          firstName: '',
+          lastName: '',
+          phoneNumber: '',
+          zipCode: '',
+          state: '',
+          addressLine1: '',
+          addressLine2: '',
+          city:'',
+          homeClient: user.attributes.homeClient,
+          roles: user.attributes.roles
+        };
+
+        myUser.firstName = util.encryptionManager.decrypt(passPhrase, user.attributes.firstName.base64);
+        myUser.lastName = util.encryptionManager.decrypt(passPhrase, user.attributes.lastName.base64);
+        myUser.phoneNumber = util.encryptionManager.decrypt(passPhrase, user.attributes.phoneNumber.base64);
+        myUser.zipCode = util.encryptionManager.decrypt(passPhrase, user.attributes.zipCode.base64);
 
         if (user.attributes.state) {
           //decryptedUser.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
-          user.attributes.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
+          myUser.state = util.encryptionManager.decrypt(passPhrase, user.attributes.state.base64);
         }
 
         if (user.attributes.addressLine1) {
           //decryptedUser.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
-          user.attributes.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
+          myUser.addressLine1 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine1.base64);
         }
 
         if (user.attributes.addressLine2) {
           //decryptedUser.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
-          user.attributes.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
+          myUser.addressLine2 = util.encryptionManager.decrypt(passPhrase, user.attributes.addressLine2.base64);
         }
 
         if (user.attributes.city) {
           //decryptedUser.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
-          user.attributes.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
+          myUser.city = util.encryptionManager.decrypt(passPhrase, user.attributes.city.base64);
         }
 
         req.session.regenerate(function (err) {
@@ -80,15 +94,30 @@
             //res.status(503).send({});
           }
           // perform a deep copy of the user object to keep in the session.
-          var userJSON = user.toJSON();
-          req.session.user = _.clone(userJSON, true);
+          //var userJSON = user.toJSON();
+          req.session.user = myUser;//_.clone(userJSON, true);
         });
 
         console.log('client for now is %s', clientId);
 
+        var adjustedUser = user.toJSON();
+
+        adjustedUser.firstName = myUser.firstName;
+        adjustedUser.lastName = myUser.lastName;
+        adjustedUser.phoneNumber = myUser.phoneNumber;
+        adjustedUser.zipCode = myUser.zipCode;
+        adjustedUser.state = myUser.state;
+        adjustedUser.addressLine1 = myUser.addressLine1;
+        adjustedUser.addressLine2 = myUser.addressLine2;
+        adjustedUser.city = myUser.city;
+        adjustedUser.homeClient = myUser.homeClient;
+        adjustedUser.roles = myUser.roles;
+        adjustedUser.homeClientAgency = util.encryptionManager.decrypt(passPhrase, user.attributes.homeClientAgency.base64);
+
+
         return clientModel.getById(clientId)
           .then(function (client) {
-            sendLoginAnswer(client, user);
+            sendLoginAnswer(client, adjustedUser);
           });
       }
 

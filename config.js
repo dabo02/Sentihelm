@@ -10,8 +10,15 @@ module.exports = {
         //jsKey: 'oC7TEezvGdh3FTZJneATR23UN47E9uAO7rzstK6A'
 
         //SentiGuard
-        appId: 'GbxkftLOI1n5SbEX4SShFyrX8r5ItIYj4C9RDHQI',
-        jsKey: 'c9jey3pNfUaZC94d1MYNVWCLWogIJ95Rfv9ozsor'
+        //appId: 'GbxkftLOI1n5SbEX4SShFyrX8r5ItIYj4C9RDHQI',
+        //jsKey: 'c9jey3pNfUaZC94d1MYNVWCLWogIJ95Rfv9ozsor'
+
+        //SentiGuard_Testing AWS
+        appId: 'ppejTan0nxzC495cG2et1zIlHfkiHGc9ONUYCkNL',
+        jsKey: 'c9jey3pNfUaZC94d1MYNVWCLWogIJ95Rfv9ozsor',
+        serverUrl: 'http://parsemigratio-4i64m-env.us-east-1.elasticbeanstalk.com/parse',
+        masterKey: 'vM4jrDPgyosomU5pxwByYPrxZ39o8DZM8sQ1wpST'
+
     },
     opentok: {
 

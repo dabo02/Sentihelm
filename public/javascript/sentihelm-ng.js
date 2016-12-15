@@ -503,7 +503,8 @@
       if (client.smsNumber && client.smsNumber.length > 0)
         session.clientPhoneNumber = client.smsNumber[0];
 
-      session.clientLogo = angular.copy(client.logo._url);
+      //session.clientLogo = angular.copy(client.logo._url);
+      session.clientLogo = angular.copy(client.logo.url);
       session.regions = regions;
       session.userFullName = user.firstName + " " + user.lastName;
       session.clientAgency = client.agency;

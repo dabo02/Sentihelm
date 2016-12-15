@@ -1,6 +1,6 @@
-var CryptoJS = require('cloud/crypto-js/index.js').CryptoJS;
+var CryptoJS = require('./crypto-js/index').CryptoJS;
 var Buffer = require("buffer").Buffer;
-var sjcl = require('cloud/sjcl.js').sjcl;
+var sjcl = require('./sjcl').sjcl;
 
 var ivLength = 16;
 var defaultKeySize = 128;
